@@ -131,7 +131,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
       partyA: clientName,
       partyB: 'CIC', // Default
       clientInitials: clientName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 5),
-      customerId: '', // TODO: Should map to real customer
+      customerId: null, // Force null for now until we have customer selection
       unitId,
       salespersonId,
       value: totals.signingValue,

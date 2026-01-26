@@ -111,8 +111,9 @@ const App: React.FC = () => {
                 await ContractsAPI.create(data);
                 setIsCreating(false);
                 // Refresh if needed, but switching to contracts tab will re-mount logic in ContractList
-              } catch (e) {
-                alert("Có lỗi khi tạo hợp đồng: " + e);
+              } catch (e: any) {
+                console.error(e);
+                alert("Có lỗi khi tạo hợp đồng: " + (e.message || JSON.stringify(e)));
               }
             }}
             onCancel={() => setIsCreating(false)}
