@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   X, Save, Calendar, User, FileText,
   DollarSign, Calculator, Building2,
@@ -11,9 +11,9 @@ import {
   Unit, ContractType, LineItem,
   ContractContact, PaymentSchedule,
   RevenueSchedule, AdministrativeCosts,
-  Contract
+  Contract, SalesPerson
 } from '../types';
-import { MOCK_UNITS, MOCK_SALESPEOPLE } from '../constants';
+import { UnitsAPI, PersonnelAPI } from '../services/api';
 
 interface ContractFormProps {
   contract?: Contract; // For edit mode
@@ -24,9 +24,34 @@ interface ContractFormProps {
 const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel }) => {
   const isEditing = !!contract;
 
+  // Data Options State
+  const [units, setUnits] = useState<Unit[]>([]);
+  const [salespeople, setSalespeople] = useState<SalesPerson[]>([]);
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const [unitsData, peopleData] = await Promise.all([
+          UnitsAPI.getAll(),
+          PersonnelAPI.getAll()
+        ]);
+        setUnits(unitsData);
+        setSalespeople(peopleData);
+
+        // Set default unit if creating new and no unit selected yet
+        if (!isEditing && !unitId && unitsData.length > 0) {
+          setUnitId(unitsData[0].id);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchOptions();
+  }, []);
+
   // 1. Identification & Responsibility
   const [contractType, setContractType] = useState<ContractType>(contract?.contractType || 'HĐ');
-  const [unitId, setUnitId] = useState(contract?.unitId || MOCK_UNITS[1].id);
+  const [unitId, setUnitId] = useState(contract?.unitId || '');
   const [salespersonId, setSalespersonId] = useState(contract?.salespersonId || '');
   const [title, setTitle] = useState(contract?.title || '');
   const [clientName, setClientName] = useState(contract?.partyA || '');
@@ -51,17 +76,19 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
 
   // Filter sales based on selected unit
   const filteredSales = useMemo(() => {
-    return MOCK_SALESPEOPLE.filter(s => s.unitId === unitId);
-  }, [unitId]);
+    return salespeople.filter(s => s.unitId === unitId);
+  }, [unitId, salespeople]);
 
   // Auto-generate Contract ID: HĐ_STT/Đơn vị_Khách hàng_Năm
   const contractId = useMemo(() => {
-    const unit = MOCK_UNITS.find(u => u.id === unitId);
+    const unit = units.find(u => u.id === unitId);
+    if (!unit) return 'HĐ_NEW'; // Fallback
+
     const unitCode = unit?.code || 'UNIT';
-    const clientInitial = clientName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 5);
+    const clientInitial = clientName ? clientName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 5) : 'KH';
     const year = signedDate.split('-')[0];
-    return `${contractType}_001/${unitCode}_${clientInitial || 'CLIENT'}_${year}`;
-  }, [contractType, unitId, clientName, signedDate]);
+    return `${contractType}_001/${unitCode}_${clientInitial}_${year}`;
+  }, [contractType, unitId, clientName, signedDate, units]);
 
   // Logic tính toán chuyên sâu
   const totals = useMemo(() => {
@@ -139,7 +166,8 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                     onChange={(e) => { setUnitId(e.target.value); setSalespersonId(''); }}
                     className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:border-indigo-500 transition-all"
                   >
-                    {MOCK_UNITS.filter(u => u.id !== 'all').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                    <option value="">-- Chọn đơn vị --</option>
+                    {units.filter(u => u.id !== 'all').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
