@@ -1,0 +1,438 @@
+import React, { useState, useMemo, useEffect } from 'react';
+import {
+    Search,
+    Package,
+    Tag,
+    TrendingUp,
+    Filter,
+    ChevronDown,
+    Plus,
+    MoreVertical,
+    CheckCircle,
+    XCircle,
+    Loader2,
+    Pencil,
+    Trash2
+} from 'lucide-react';
+import { ProductsAPI } from '../services/api';
+import { Product, ProductCategory } from '../types';
+import { MOCK_UNITS } from '../constants';
+import ProductForm from './ProductForm';
+
+interface ProductListProps {
+    onSelectProduct?: (id: string) => void;
+}
+
+const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
+    const [searchQuery, setSearchQuery] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState<string>('all');
+    const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+
+    // Data state
+    const [products, setProducts] = useState<Product[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // CRUD state
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
+    const [actionMenuId, setActionMenuId] = useState<string | null>(null);
+
+    const categories: ProductCategory[] = ['Phần mềm', 'Tư vấn', 'Thiết kế', 'Thi công', 'Bảo trì', 'Đào tạo'];
+
+    // Fetch products
+    useEffect(() => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                const data = await ProductsAPI.getAll();
+                setProducts(data);
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    // Filtered products
+    const filteredProducts = useMemo(() => {
+        let result = products;
+
+        if (categoryFilter !== 'all') {
+            result = result.filter(p => p.category === categoryFilter);
+        }
+
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            result = result.filter(p =>
+                p.name.toLowerCase().includes(query) ||
+                p.code.toLowerCase().includes(query) ||
+                p.description.toLowerCase().includes(query)
+            );
+        }
+
+        return result;
+    }, [products, categoryFilter, searchQuery]);
+
+    const getUnitName = (unitId?: string) => {
+        if (!unitId) return 'N/A';
+        return MOCK_UNITS.find(u => u.id === unitId)?.name || 'N/A';
+    };
+
+    const formatCurrency = (val: number) => {
+        if (val >= 1e9) return `${(val / 1e9).toFixed(1)} tỷ`;
+        if (val >= 1e6) return `${(val / 1e6).toFixed(0)} tr`;
+        if (val >= 1000) return `${(val / 1000).toFixed(0)}k`;
+        return val.toLocaleString('vi-VN');
+    };
+
+    const getCategoryColor = (category: ProductCategory) => {
+        switch (category) {
+            case 'Phần mềm': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400';
+            case 'Tư vấn': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+            case 'Thiết kế': return 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400';
+            case 'Thi công': return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
+            case 'Bảo trì': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+            case 'Đào tạo': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+            default: return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400';
+        }
+    };
+
+    // Stats
+    const stats = useMemo(() => {
+        const active = filteredProducts.filter(p => p.isActive).length;
+        const totalBasePrice = filteredProducts.reduce((sum, p) => sum + p.basePrice, 0);
+        const avgMargin = filteredProducts.length > 0
+            ? filteredProducts.reduce((sum, p) => {
+                const margin = p.costPrice ? ((p.basePrice - p.costPrice) / p.basePrice) * 100 : 50;
+                return sum + margin;
+            }, 0) / filteredProducts.length
+            : 0;
+
+        return { total: filteredProducts.length, active, totalBasePrice, avgMargin };
+    }, [filteredProducts]);
+
+    const selectedCategoryLabel = categoryFilter === 'all' ? 'Tất cả danh mục' : categoryFilter;
+
+    // CRUD handlers
+    const handleAdd = () => {
+        setEditingProduct(undefined);
+        setIsFormOpen(true);
+    };
+
+    const handleEdit = (product: Product) => {
+        setEditingProduct(product);
+        setIsFormOpen(true);
+        setActionMenuId(null);
+    };
+
+    const handleSave = async (data: Omit<Product, 'id'> | Product) => {
+        if ('id' in data) {
+            // Update existing
+            await ProductsAPI.update(data.id, data);
+            setProducts(prev => prev.map(p => p.id === data.id ? data as Product : p));
+        } else {
+            // Create new
+            const newProduct = await ProductsAPI.create(data);
+            setProducts(prev => [newProduct, ...prev]);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+            await ProductsAPI.delete(id);
+            setProducts(prev => prev.filter(p => p.id !== id));
+        }
+        setActionMenuId(null);
+    };
+
+    return (
+        <div className="space-y-6 animate-in fade-in duration-500">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100">
+                        Sản phẩm & Dịch vụ
+                    </h1>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                        {filteredProducts.length} sản phẩm/dịch vụ
+                    </p>
+                </div>
+
+                <div className="flex gap-3">
+                    {/* Category Filter Dropdown */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                            className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:border-indigo-300 transition-all min-w-[160px]"
+                        >
+                            <Filter size={18} className="text-slate-400" />
+                            <span className="flex-1 text-left truncate">{selectedCategoryLabel}</span>
+                            <ChevronDown size={16} className={`text-slate-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {isCategoryDropdownOpen && (
+                            <>
+                                <div
+                                    className="fixed inset-0 z-10"
+                                    onClick={() => setIsCategoryDropdownOpen(false)}
+                                />
+                                <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-20 overflow-hidden">
+                                    <button
+                                        onClick={() => {
+                                            setCategoryFilter('all');
+                                            setIsCategoryDropdownOpen(false);
+                                        }}
+                                        className={`w-full px-4 py-3 text-sm text-left transition-colors ${categoryFilter === 'all'
+                                            ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300'
+                                            : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                            }`}
+                                    >
+                                        Tất cả danh mục
+                                    </button>
+                                    {categories.map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => {
+                                                setCategoryFilter(cat);
+                                                setIsCategoryDropdownOpen(false);
+                                            }}
+                                            className={`w-full px-4 py-3 text-sm text-left transition-colors ${categoryFilter === cat
+                                                ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300'
+                                                : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                                }`}
+                                        >
+                                            {cat}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Search */}
+                    <div className="relative flex-1 md:w-64">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Tìm sản phẩm..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                        />
+                    </div>
+
+                    {/* Add Button */}
+                    <button
+                        onClick={handleAdd}
+                        className="flex items-center gap-2 px-5 py-3 bg-indigo-600 text-white rounded-2xl font-bold text-sm hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 dark:shadow-none"
+                    >
+                        <Plus size={18} />
+                        <span className="hidden md:inline">Thêm SP</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* Product Form Modal */}
+            <ProductForm
+                isOpen={isFormOpen}
+                onClose={() => { setIsFormOpen(false); setEditingProduct(undefined); }}
+                onSave={handleSave}
+                product={editingProduct}
+            />
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl text-indigo-600 dark:text-indigo-400">
+                            <Package size={20} />
+                        </div>
+                        <div>
+                            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{stats.total}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Sản phẩm</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl text-emerald-600 dark:text-emerald-400">
+                            <CheckCircle size={20} />
+                        </div>
+                        <div>
+                            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{stats.active}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Đang bán</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-amber-100 dark:bg-amber-900/30 rounded-xl text-amber-600 dark:text-amber-400">
+                            <Tag size={20} />
+                        </div>
+                        <div>
+                            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{categories.length}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Danh mục</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-purple-100 dark:bg-purple-900/30 rounded-xl text-purple-600 dark:text-purple-400">
+                            <TrendingUp size={20} />
+                        </div>
+                        <div>
+                            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{stats.avgMargin.toFixed(0)}%</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Biên lợi nhuận TB</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Products Table */}
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-16">
+                        <Loader2 size={32} className="animate-spin text-indigo-500" />
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                                    <th className="text-left py-4 px-6 text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Mã SP</th>
+                                    <th className="text-left py-4 px-6 text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tên sản phẩm</th>
+                                    <th className="text-left py-4 px-6 text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell">Danh mục</th>
+                                    <th className="text-left py-4 px-6 text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden lg:table-cell">Đơn vị</th>
+                                    <th className="text-right py-4 px-6 text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Đơn giá</th>
+                                    <th className="text-right py-4 px-6 text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden sm:table-cell">LN %</th>
+                                    <th className="text-center py-4 px-6 text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden sm:table-cell">Trạng thái</th>
+                                    <th className="py-4 px-6 w-12"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredProducts.map((product) => {
+                                    const margin = product.costPrice
+                                        ? ((product.basePrice - product.costPrice) / product.basePrice) * 100
+                                        : 50;
+
+                                    return (
+                                        <tr
+                                            key={product.id}
+                                            onClick={() => onSelectProduct?.(product.id)}
+                                            className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer"
+                                        >
+                                            {/* Code */}
+                                            <td className="py-4 px-6">
+                                                <span className="font-mono font-bold text-slate-900 dark:text-slate-100 text-sm">{product.code}</span>
+                                            </td>
+
+                                            {/* Name */}
+                                            <td className="py-4 px-6">
+                                                <div>
+                                                    <p className="font-bold text-slate-900 dark:text-slate-100 text-sm">{product.name}</p>
+                                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">{product.description}</p>
+                                                </div>
+                                            </td>
+
+                                            {/* Category */}
+                                            <td className="py-4 px-6 hidden md:table-cell">
+                                                <span className={`px-3 py-1 rounded-lg text-[10px] font-bold ${getCategoryColor(product.category)}`}>
+                                                    {product.category}
+                                                </span>
+                                            </td>
+
+                                            {/* Unit */}
+                                            <td className="py-4 px-6 hidden lg:table-cell">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm text-slate-700 dark:text-slate-300">{product.unit}</span>
+                                                    <span className="text-[10px] text-slate-400">• {getUnitName(product.unitId)}</span>
+                                                </div>
+                                            </td>
+
+                                            {/* Price */}
+                                            <td className="py-4 px-6 text-right">
+                                                <p className="font-bold text-slate-900 dark:text-slate-100">{formatCurrency(product.basePrice)}</p>
+                                                {product.costPrice && (
+                                                    <p className="text-[10px] text-slate-400">Giá vốn: {formatCurrency(product.costPrice)}</p>
+                                                )}
+                                            </td>
+
+                                            {/* Margin */}
+                                            <td className="py-4 px-6 text-right hidden sm:table-cell">
+                                                <span className={`font-bold ${margin >= 50 ? 'text-emerald-600' : margin >= 30 ? 'text-amber-600' : 'text-rose-600'}`}>
+                                                    {margin.toFixed(0)}%
+                                                </span>
+                                            </td>
+
+                                            {/* Status */}
+                                            <td className="py-4 px-6 text-center hidden sm:table-cell">
+                                                {product.isActive ? (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-lg text-[10px] font-bold">
+                                                        <CheckCircle size={12} />
+                                                        Active
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-lg text-[10px] font-bold">
+                                                        <XCircle size={12} />
+                                                        Inactive
+                                                    </span>
+                                                )}
+                                            </td>
+
+                                            {/* Action */}
+                                            <td className="py-4 px-6 relative">
+                                                <button
+                                                    onClick={() => setActionMenuId(actionMenuId === product.id ? null : product.id)}
+                                                    className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-all"
+                                                >
+                                                    <MoreVertical size={16} />
+                                                </button>
+
+                                                {/* Action Menu */}
+                                                {actionMenuId === product.id && (
+                                                    <>
+                                                        <div className="fixed inset-0 z-10" onClick={() => setActionMenuId(null)} />
+                                                        <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-20 overflow-hidden">
+                                                            <button
+                                                                onClick={() => handleEdit(product)}
+                                                                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                                            >
+                                                                <Pencil size={14} />
+                                                                Chỉnh sửa
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDelete(product.id)}
+                                                                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                                Xóa
+                                                            </button>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
+                {!isLoading && filteredProducts.length === 0 && (
+                    <div className="text-center py-16">
+                        <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Package size={32} className="text-slate-400" />
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">Không tìm thấy sản phẩm</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default ProductList;

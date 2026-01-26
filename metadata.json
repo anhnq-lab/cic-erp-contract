@@ -1,0 +1,7 @@
+{
+  "name": "Copy of ContractPro - Hệ thống Quản lý Hợp đồng Thông minh",
+  "description": "Giải pháp quản lý hợp đồng hiện đại tích hợp AI để phân tích và theo dõi tiến độ tự động.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

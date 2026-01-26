@@ -1,0 +1,504 @@
+import React, { useState, useMemo } from 'react';
+import {
+  X, Save, Calendar, User, FileText,
+  DollarSign, Calculator, Building2,
+  Plus, Trash2, Users, Briefcase,
+  TrendingUp, CreditCard, Receipt,
+  Info, Package, ShieldCheck, Wallet,
+  MapPin, UserCheck, Hash
+} from 'lucide-react';
+import {
+  Unit, ContractType, LineItem,
+  ContractContact, PaymentSchedule,
+  RevenueSchedule, AdministrativeCosts,
+  Contract
+} from '../types';
+import { MOCK_UNITS, MOCK_SALESPEOPLE } from '../constants';
+
+interface ContractFormProps {
+  contract?: Contract; // For edit mode
+  onSave: (contract: any) => void;
+  onCancel: () => void;
+}
+
+const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel }) => {
+  const isEditing = !!contract;
+
+  // 1. Identification & Responsibility
+  const [contractType, setContractType] = useState<ContractType>(contract?.contractType || 'HĐ');
+  const [unitId, setUnitId] = useState(contract?.unitId || MOCK_UNITS[1].id);
+  const [salespersonId, setSalespersonId] = useState(contract?.salespersonId || '');
+  const [title, setTitle] = useState(contract?.title || '');
+  const [clientName, setClientName] = useState(contract?.partyA || '');
+  const [signedDate, setSignedDate] = useState(contract?.signedDate || new Date().toISOString().split('T')[0]);
+
+  // 2. Client Contacts (Multi-entry)
+  const [contacts, setContacts] = useState<ContractContact[]>(contract?.contacts || [{ id: '1', name: '', role: 'Mua sắm' }]);
+
+  // 3. Line Items (Sản phẩm/Dịch vụ chi tiết)
+  const [lineItems, setLineItems] = useState<LineItem[]>([{
+    id: '1', name: '', quantity: 1, supplier: '', inputPrice: 0, outputPrice: 0, directCosts: 0
+  }]);
+
+  // 4. Financial Schedules (Hóa đơn & Tiền về)
+  const [revenueSchedules, setRevenueSchedules] = useState<RevenueSchedule[]>([{ id: '1', date: '', amount: 0, description: 'Đợt 1' }]);
+  const [paymentSchedules, setPaymentSchedules] = useState<PaymentSchedule[]>([{ id: '1', date: '', amount: 0, description: 'Tạm ứng' }]);
+
+  // 5. Overhead Costs
+  const [adminCosts, setAdminCosts] = useState<AdministrativeCosts>({
+    transferFee: 0, contractorTax: 0, importFee: 0, expertHiring: 0, documentProcessing: 0
+  });
+
+  // Filter sales based on selected unit
+  const filteredSales = useMemo(() => {
+    return MOCK_SALESPEOPLE.filter(s => s.unitId === unitId);
+  }, [unitId]);
+
+  // Auto-generate Contract ID: HĐ_STT/Đơn vị_Khách hàng_Năm
+  const contractId = useMemo(() => {
+    const unit = MOCK_UNITS.find(u => u.id === unitId);
+    const unitCode = unit?.code || 'UNIT';
+    const clientInitial = clientName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 5);
+    const year = signedDate.split('-')[0];
+    return `${contractType}_001/${unitCode}_${clientInitial || 'CLIENT'}_${year}`;
+  }, [contractType, unitId, clientName, signedDate]);
+
+  // Logic tính toán chuyên sâu
+  const totals = useMemo(() => {
+    const signingValue = lineItems.reduce((acc, item) => acc + (item.quantity * item.outputPrice), 0);
+    const totalInput = lineItems.reduce((acc, item) => acc + (item.quantity * item.inputPrice), 0);
+    const totalDirectCosts = lineItems.reduce((acc, item) => acc + item.directCosts, 0);
+
+    // Explicit typing for admin costs sum
+    const adminSum = (Object.values(adminCosts) as number[]).reduce((acc: number, val: number) => acc + val, 0);
+
+    const estimatedRevenue = signingValue / 1.1; // Giá trị ký kết trừ thuế VAT (giả định 10%)
+    const totalCosts = totalInput + totalDirectCosts + adminSum;
+    const grossProfit = signingValue - totalCosts;
+    const profitMargin = signingValue > 0 ? (grossProfit / signingValue) * 100 : 0;
+
+    return { signingValue, estimatedRevenue, totalCosts, grossProfit, profitMargin, totalInput, totalDirectCosts, adminSum };
+  }, [lineItems, adminCosts]);
+
+  const formatVND = (val: number) => new Intl.NumberFormat('vi-VN').format(Math.round(val));
+
+  // Handlers for dynamic lists
+  const addContact = () => setContacts([...contacts, { id: Date.now().toString(), name: '', role: '' }]);
+  const removeContact = (id: string) => setContacts(contacts.filter(c => c.id !== id));
+
+  const addLineItem = () => setLineItems([...lineItems, { id: Date.now().toString(), name: '', quantity: 1, supplier: '', inputPrice: 0, outputPrice: 0, directCosts: 0 }]);
+  const removeLineItem = (id: string) => setLineItems(lineItems.filter(i => i.id !== id));
+
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-w-7xl w-full mx-auto flex flex-col h-[92vh]">
+
+      {/* HEADER */}
+      <div className="px-10 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+        <div className="flex items-center gap-6">
+          <div className="w-14 h-14 bg-indigo-600 rounded-[20px] flex items-center justify-center text-white shadow-xl shadow-indigo-100 dark:shadow-none">
+            <Plus size={28} strokeWidth={3} />
+          </div>
+          <div>
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+                {isEditing ? 'Chỉnh sửa hợp đồng' : 'Khai báo hồ sơ hợp đồng'}
+              </h2>
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-[10px] font-black rounded-lg uppercase tracking-wider">
+                <Hash size={10} /> {isEditing ? contract?.id : contractId}
+              </div>
+            </div>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Nghiệp vụ Quản trị & Theo dõi KPI mục tiêu</p>
+          </div>
+        </div>
+        <button onClick={onCancel} className="p-3 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-2xl text-slate-400 hover:text-rose-500 transition-all">
+          <X size={24} />
+        </button>
+      </div>
+
+      {/* BODY */}
+      <div className="flex-1 overflow-y-auto p-10 custom-scrollbar space-y-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+
+          {/* LEFT COLUMN: Data Input (8 cols) */}
+          <div className="lg:col-span-8 space-y-12">
+
+            {/* 1. ĐƠN VỊ & NHÂN SỰ */}
+            <section className="space-y-6">
+              <div className="flex items-center gap-3 border-l-4 border-indigo-600 pl-4">
+                <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+                  <UserCheck size={16} /> Đơn vị & Nhân sự thực hiện
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase ml-1 flex items-center gap-1">
+                    <MapPin size={10} /> Đơn vị thực hiện (Trung tâm/Chi nhánh)
+                  </label>
+                  <select
+                    value={unitId}
+                    onChange={(e) => { setUnitId(e.target.value); setSalespersonId(''); }}
+                    className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:border-indigo-500 transition-all"
+                  >
+                    {MOCK_UNITS.filter(u => u.id !== 'all').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase ml-1 flex items-center gap-1">
+                    <User size={10} /> Sale thực hiện (Chịu trách nhiệm KPI)
+                  </label>
+                  <select
+                    value={salespersonId}
+                    onChange={(e) => setSalespersonId(e.target.value)}
+                    className="w-full px-5 py-3 bg-indigo-50 dark:bg-indigo-900/20 border-2 border-indigo-100 dark:border-indigo-800 rounded-2xl text-sm font-bold text-indigo-700 dark:text-indigo-300 outline-none"
+                  >
+                    <option value="">-- Chọn nhân viên phụ trách --</option>
+                    {filteredSales.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                </div>
+              </div>
+            </section>
+
+            {/* 2. THÔNG TIN KHÁCH HÀNG & NỘI DUNG */}
+            <section className="space-y-6">
+              <div className="flex items-center gap-3 border-l-4 border-slate-600 pl-4">
+                <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+                  <Building2 size={16} /> Thông tin Khách hàng & Nội dung
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase ml-1">Tên khách hàng</label>
+                  <input
+                    placeholder="VD: Công ty Cổ phần Fecon..."
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase ml-1">Ngày ký kết</label>
+                  <input
+                    type="date"
+                    value={signedDate}
+                    onChange={(e) => setSignedDate(e.target.value)}
+                    className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-slate-500 uppercase ml-1">Nội dung hợp đồng</label>
+                <textarea
+                  placeholder="VD: Tư vấn giải pháp BIM, Đào tạo chuyên sâu phần mềm Plaxis 3D..."
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none h-20"
+                ></textarea>
+              </div>
+
+              {/* Multi-contact List */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Đầu mối liên hệ phía khách hàng</label>
+                  <button onClick={addContact} className="flex items-center gap-1 text-indigo-600 font-black text-[10px] uppercase">
+                    <Plus size={12} /> Thêm đầu mối
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {contacts.map((contact, index) => (
+                    <div key={contact.id} className="grid grid-cols-12 gap-3 items-center animate-in slide-in-from-left-2 duration-300">
+                      <div className="col-span-5">
+                        <input placeholder="Họ tên..." className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-xs font-bold" />
+                      </div>
+                      <div className="col-span-6">
+                        <input placeholder="Vai trò (Mua sắm, Kế toán, Kỹ thuật...)" className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-xs font-bold" />
+                      </div>
+                      <div className="col-span-1 text-center">
+                        {contacts.length > 1 && (
+                          <button onClick={() => removeContact(contact.id)} className="text-slate-300 hover:text-rose-500 transition-colors">
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* 3. DANH MỤC SẢN PHẨM/DỊCH VỤ CHI TIẾT */}
+            <section className="space-y-6">
+              <div className="flex items-center justify-between border-l-4 border-emerald-500 pl-4">
+                <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+                  <Package size={16} /> Chi tiết Sản phẩm & Dịch vụ cung cấp
+                </h3>
+                <button onClick={addLineItem} className="px-4 py-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl text-[10px] font-black uppercase flex items-center gap-2 border border-emerald-100 dark:border-emerald-800">
+                  Thêm hạng mục
+                </button>
+              </div>
+
+              <div className="overflow-x-auto rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                <table className="w-full text-left text-xs min-w-[1200px]">
+                  <thead className="bg-slate-50 dark:bg-slate-800/50">
+                    <tr>
+                      <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter">Sản phẩm/Dịch vụ</th>
+                      <th className="px-2 py-4 font-black text-slate-400 uppercase tracking-tighter w-16">SL</th>
+                      <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter">Nhà cung cấp</th>
+                      <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter text-right">Giá Đầu vào</th>
+                      <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter text-right">Giá Đầu ra</th>
+                      <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter text-right">CP Trực tiếp</th>
+                      <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter text-right">Chênh lệch</th>
+                      <th className="px-4 py-4 w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                    {lineItems.map((item, index) => {
+                      const inputTotal = item.quantity * item.inputPrice;
+                      const outputTotal = item.quantity * item.outputPrice;
+                      const lineMargin = outputTotal - inputTotal - item.directCosts;
+                      const lineMarginRate = outputTotal > 0 ? (lineMargin / outputTotal) * 100 : 0;
+
+                      return (
+                        <tr key={item.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                          <td className="px-4 py-3">
+                            <input
+                              value={item.name}
+                              onChange={(e) => {
+                                const newList = [...lineItems];
+                                newList[index].name = e.target.value;
+                                setLineItems(newList);
+                              }}
+                              placeholder="Tên sản phẩm..."
+                              className="w-full bg-transparent font-black text-slate-700 dark:text-slate-200 outline-none"
+                            />
+                          </td>
+                          <td className="px-2 py-3">
+                            <input
+                              type="number"
+                              value={item.quantity}
+                              onChange={(e) => {
+                                const newList = [...lineItems];
+                                newList[index].quantity = Number(e.target.value);
+                                setLineItems(newList);
+                              }}
+                              className="w-full bg-transparent font-black outline-none"
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <input
+                              placeholder="Tên đối tác..."
+                              className="w-full bg-transparent font-bold outline-none text-slate-400"
+                              onChange={(e) => {
+                                const newList = [...lineItems];
+                                newList[index].supplier = e.target.value;
+                                setLineItems(newList);
+                              }}
+                            />
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <input
+                              type="number"
+                              value={item.inputPrice}
+                              onChange={(e) => {
+                                const newList = [...lineItems];
+                                newList[index].inputPrice = Number(e.target.value);
+                                setLineItems(newList);
+                              }}
+                              className="w-full bg-transparent font-black text-right outline-none text-rose-500"
+                            />
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <input
+                              type="number"
+                              value={item.outputPrice}
+                              onChange={(e) => {
+                                const newList = [...lineItems];
+                                newList[index].outputPrice = Number(e.target.value);
+                                setLineItems(newList);
+                              }}
+                              className="w-full bg-transparent font-black text-right outline-none text-indigo-600"
+                            />
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <input
+                              type="number"
+                              value={item.directCosts}
+                              onChange={(e) => {
+                                const newList = [...lineItems];
+                                newList[index].directCosts = Number(e.target.value);
+                                setLineItems(newList);
+                              }}
+                              className="w-full bg-transparent font-bold text-right outline-none text-slate-400"
+                            />
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <div className="flex flex-col">
+                              <span className={`font-black ${lineMargin >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                {formatVND(lineMargin)}
+                              </span>
+                              <span className="text-[9px] font-bold text-slate-400">{lineMarginRate.toFixed(1)}%</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            {lineItems.length > 1 && (
+                              <button onClick={() => removeLineItem(item.id)} className="text-slate-300 hover:text-rose-500 transition-colors">
+                                <Trash2 size={14} />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            {/* 4. LỘ TRÌNH DÒNG TIỀN */}
+            <section className="space-y-8">
+              <div className="flex items-center gap-3 border-l-4 border-amber-500 pl-4">
+                <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+                  <CreditCard size={16} /> Kế hoạch Doanh thu & Tiền về
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                {/* Doanh thu (Xuất hóa đơn) */}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Lịch xuất hóa đơn Doanh thu</p>
+                    <button className="text-indigo-600 font-bold text-[10px]">+ Thêm đợt</button>
+                  </div>
+                  <div className="space-y-3">
+                    {revenueSchedules.map((rev) => (
+                      <div key={rev.id} className="grid grid-cols-12 gap-2 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
+                        <input type="date" className="col-span-4 bg-transparent text-[11px] font-bold outline-none" />
+                        <input placeholder="Giai đoạn..." className="col-span-4 bg-transparent text-[11px] font-bold outline-none" />
+                        <input type="number" placeholder="Tiền..." className="col-span-4 bg-transparent text-[11px] font-black text-right outline-none text-indigo-600" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Tiền về (Thực thu) */}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Kế hoạch Tiền về (Cash flow)</p>
+                    <button className="text-emerald-600 font-bold text-[10px]">+ Thêm đợt</button>
+                  </div>
+                  <div className="space-y-3">
+                    {paymentSchedules.map((pay) => (
+                      <div key={pay.id} className="grid grid-cols-12 gap-2 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
+                        <input type="date" className="col-span-4 bg-transparent text-[11px] font-bold outline-none" />
+                        <input placeholder="Nội dung..." className="col-span-4 bg-transparent text-[11px] font-bold outline-none" />
+                        <input type="number" placeholder="Tiền..." className="col-span-4 bg-transparent text-[11px] font-black text-right outline-none text-emerald-600" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          {/* RIGHT COLUMN: Summary & Overhead (4 cols) */}
+          <div className="lg:col-span-4 space-y-8">
+
+            {/* CÁC LOẠI CHI PHÍ LIÊN QUAN */}
+            <section className="bg-slate-50 dark:bg-slate-800/40 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 space-y-6">
+              <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+                <Calculator size={16} /> Chi phí quản lý hợp đồng
+              </h3>
+              <div className="space-y-5">
+                {[
+                  { key: 'transferFee', label: 'Phí chuyển tiền / Ngân hàng' },
+                  { key: 'contractorTax', label: 'Thuế nhà thầu (nếu có)' },
+                  { key: 'importFee', label: 'Phí nhập khẩu / Logistics' },
+                  { key: 'expertHiring', label: 'Chi phí thuê khoán chuyên môn' },
+                  { key: 'documentProcessing', label: 'Chi phí xử lý chứng từ' }
+                ].map((cost) => (
+                  <div key={cost.key} className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">{cost.label}</label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
+                      <input
+                        type="number"
+                        value={(adminCosts as any)[cost.key]}
+                        onChange={(e) => setAdminCosts({ ...adminCosts, [cost.key]: Number(e.target.value) })}
+                        className="w-full pl-8 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black focus:ring-2 focus:ring-rose-500 outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* FINANCIAL SUMMARY CARD */}
+            <section className="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-[40px] p-8 text-white shadow-2xl relative overflow-hidden transition-all">
+              <div className="absolute top-0 right-0 p-8 opacity-10">
+                <TrendingUp size={120} />
+              </div>
+
+              <h3 className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-8 flex items-center gap-2">
+                <ShieldCheck size={16} /> Báo cáo Lợi nhuận dự kiến
+              </h3>
+
+              <div className="space-y-8 relative z-10">
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-1">Giá trị Ký kết (Tổng đầu ra)</p>
+                  <p className="text-3xl font-black text-white leading-none">{formatVND(totals.signingValue)} <span className="text-sm font-medium text-slate-500">đ</span></p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6">
+                  <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter mb-1">Doanh thu dự kiến (Trừ VAT)</p>
+                    <p className="text-lg font-black text-slate-200">{formatVND(totals.estimatedRevenue)}</p>
+                  </div>
+                  <div className="p-4 bg-rose-900/10 rounded-2xl border border-rose-900/30">
+                    <p className="text-[9px] font-bold text-rose-500/70 uppercase tracking-tighter mb-1">Tổng chi phí & Giá vốn</p>
+                    <p className="text-lg font-black text-rose-400">{formatVND(totals.totalCosts)}</p>
+                  </div>
+                </div>
+
+                <div className="p-6 bg-emerald-500/10 rounded-[28px] border border-emerald-500/30 backdrop-blur-md">
+                  <div className="flex justify-between items-center mb-4">
+                    <div>
+                      <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Lợi nhuận gộp</p>
+                      <p className="text-3xl font-black text-emerald-400">{formatVND(totals.grossProfit)}</p>
+                    </div>
+                    <div className="w-16 h-16 rounded-full border-4 border-emerald-500/20 flex items-center justify-center">
+                      <span className="text-sm font-black text-emerald-400">{totals.profitMargin.toFixed(0)}%</span>
+                    </div>
+                  </div>
+                  <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, totals.profitMargin)}%` }}></div>
+                  </div>
+                </div>
+
+                <p className="text-[9px] text-slate-500 leading-relaxed italic text-center">
+                  * Tỷ suất lợi nhuận được tính dựa trên Lợi nhuận gộp / Tổng giá trị ký kết.
+                </p>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      {/* FOOTER */}
+      <div className="px-10 py-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
+        <div className="flex items-center gap-6">
+          <div className="flex -space-x-3">
+            {[1, 2, 3].map(i => <div key={i} className="w-9 h-9 rounded-full border-2 border-white dark:border-slate-800 bg-slate-200 dark:bg-slate-700 shadow-sm"></div>)}
+          </div>
+          <p className="text-[11px] font-bold text-slate-400">Dữ liệu sẽ được lưu vào hệ thống Quản trị trung tâm.</p>
+        </div>
+        <div className="flex gap-4">
+          <button onClick={onCancel} className="px-8 py-3 text-slate-500 hover:text-slate-800 font-black text-xs uppercase tracking-widest transition-all">Hủy bỏ</button>
+          <button onClick={() => onSave({})} className="px-12 py-4 bg-indigo-600 text-white rounded-[24px] font-black text-sm flex items-center gap-3 hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-200 dark:shadow-none">
+            <Save size={20} strokeWidth={2.5} />
+            Hoàn tất & Lưu hồ sơ
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ContractForm;
