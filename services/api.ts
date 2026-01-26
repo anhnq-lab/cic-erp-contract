@@ -2,73 +2,214 @@
  * API Service Layer
  * 
  * This file centralizes all data fetching logic.
- * Currently uses mock data, but can easily be swapped for real API calls.
- * 
- * When ready for backend:
- * 1. Replace MOCK_* imports with actual fetch/axios calls
- * 2. Add error handling and loading states
- * 3. Add authentication headers as needed
+ * Now connected to Supabase Database.
  */
 
 import { supabase } from '../lib/supabase';
-import { MOCK_CONTRACTS, MOCK_UNITS, MOCK_SALESPEOPLE, MOCK_CUSTOMERS, MOCK_PRODUCTS, MOCK_PAYMENTS } from '../constants';
 import { Contract, Unit, SalesPerson, Customer, Product, Payment } from '../types';
+
+// ============================================
+// HELPERS
+// ============================================
+
+// Helper to map DB Unit to Frontend Unit
+const mapUnit = (u: any): Unit => ({
+    id: u.id,
+    name: u.name,
+    type: u.type,
+    code: u.code,
+    target: u.target,
+    lastYearActual: u.last_year_actual
+});
+
+// Helper to map DB Customer to Frontend Customer
+const mapCustomer = (c: any): Customer => ({
+    id: c.id,
+    name: c.name,
+    shortName: c.short_name,
+    industry: c.industry,
+    contactPerson: c.contact_person,
+    phone: c.phone,
+    email: c.email,
+    address: c.address,
+    taxCode: c.tax_code,
+    website: c.website,
+    notes: c.notes,
+    bankName: c.bank_name,
+    bankBranch: c.bank_branch,
+    bankAccount: c.bank_account,
+    foundedDate: c.founded_date
+});
+
+// Helper to map DB SalesPerson to Frontend SalesPerson
+const mapSalesPerson = (s: any): SalesPerson => ({
+    id: s.id,
+    name: s.name,
+    unitId: s.unit_id,
+    employeeCode: s.employee_code,
+    email: s.email,
+    phone: s.phone,
+    position: s.position,
+    dateJoined: s.date_joined,
+    avatar: s.avatar,
+    target: s.target
+});
+
+// Helper to map DB Product to Frontend Product
+const mapProduct = (p: any): Product => ({
+    id: p.id,
+    code: p.code,
+    name: p.name,
+    category: p.category,
+    description: p.description,
+    unit: p.unit,
+    basePrice: p.base_price,
+    costPrice: p.cost_price,
+    isActive: p.is_active,
+    unitId: p.unit_id
+});
+
+// Helper to map DB Contract to Frontend Contract
+const mapContract = (c: any): Contract => ({
+    id: c.id,
+    title: c.title,
+    contractType: c.contract_type,
+    partyA: c.party_a,
+    partyB: c.party_b,
+    clientInitials: c.client_initials,
+    customerId: c.customer_id,
+    unitId: c.unit_id,
+    salespersonId: c.salesperson_id,
+    value: c.value,
+    estimatedCost: c.estimated_cost,
+    actualRevenue: c.actual_revenue,
+    actualCost: c.actual_cost,
+    status: c.status,
+    stage: c.stage,
+    category: c.category,
+    signedDate: c.signed_date,
+    startDate: c.start_date,
+    endDate: c.end_date,
+    content: c.content,
+    contacts: c.contacts || [],
+    milestones: c.milestones || [],
+    paymentPhases: c.payment_phases || []
+});
+
+// Helper to map DB Payment to Frontend Payment
+const mapPayment = (p: any): Payment => ({
+    id: p.id,
+    contractId: p.contract_id,
+    customerId: p.customer_id,
+    phaseId: p.phase_id,
+    amount: p.amount,
+    paidAmount: p.paid_amount,
+    status: p.status,
+    method: p.method,
+    dueDate: p.due_date,
+    paymentDate: p.payment_date,
+    bankAccount: p.bank_account,
+    reference: p.reference,
+    invoiceNumber: p.invoice_number,
+    notes: p.notes
+});
 
 // ============================================
 // CONTRACTS API
 // ============================================
 export const ContractsAPI = {
     getAll: async (): Promise<Contract[]> => {
-        // TODO: Replace with real API call
-        // return fetch('/api/contracts').then(res => res.json());
-        return Promise.resolve(MOCK_CONTRACTS);
+        const { data, error } = await supabase.from('contracts').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        return data.map(mapContract);
     },
 
     getById: async (id: string): Promise<Contract | undefined> => {
-        // TODO: Replace with real API call
-        // return fetch(`/api/contracts/${id}`).then(res => res.json());
-        return Promise.resolve(MOCK_CONTRACTS.find(c => c.id === id));
+        const { data, error } = await supabase.from('contracts').select('*').eq('id', id).single();
+        if (error) return undefined;
+        return mapContract(data);
     },
 
     getByUnitId: async (unitId: string): Promise<Contract[]> => {
-        if (unitId === 'all') return Promise.resolve(MOCK_CONTRACTS);
-        return Promise.resolve(MOCK_CONTRACTS.filter(c => c.unitId === unitId));
+        let query = supabase.from('contracts').select('*');
+        if (unitId !== 'all') {
+            query = query.eq('unit_id', unitId);
+        }
+        const { data, error } = await query;
+        if (error) throw error;
+        return data.map(mapContract);
     },
 
     getBySalespersonId: async (salespersonId: string): Promise<Contract[]> => {
-        return Promise.resolve(MOCK_CONTRACTS.filter(c => c.salespersonId === salespersonId));
-    },
-
-    getByCustomer: async (customerShortName: string): Promise<Contract[]> => {
-        return Promise.resolve(
-            MOCK_CONTRACTS.filter(c =>
-                c.partyA.includes(customerShortName) || c.clientInitials === customerShortName
-            )
-        );
+        const { data, error } = await supabase.from('contracts').select('*').eq('salesperson_id', salespersonId);
+        if (error) throw error;
+        return data.map(mapContract);
     },
 
     create: async (data: Omit<Contract, 'id'>): Promise<Contract> => {
-        // TODO: Replace with real API call
-        // return fetch('/api/contracts', { method: 'POST', body: JSON.stringify(data) }).then(res => res.json());
-        const newContract: Contract = {
-            ...data,
-            id: `HĐ_${Date.now()}`,
-        } as Contract;
-        return Promise.resolve(newContract);
+        const payload = {
+            title: data.title,
+            contract_type: data.contractType,
+            party_a: data.partyA,
+            party_b: data.partyB,
+            client_initials: data.clientInitials,
+            customer_id: data.customerId,
+            unit_id: data.unitId,
+            salesperson_id: data.salespersonId,
+            value: data.value,
+            estimated_cost: data.estimatedCost,
+            actual_revenue: data.actualRevenue,
+            actual_cost: data.actualCost,
+            status: data.status,
+            stage: data.stage,
+            category: data.category,
+            signed_date: data.signedDate,
+            start_date: data.startDate,
+            end_date: data.endDate,
+            content: data.content,
+            contacts: data.contacts,
+            milestones: data.milestones,
+            payment_phases: data.paymentPhases
+        };
+        const { data: res, error } = await supabase.from('contracts').insert(payload).select().single();
+        if (error) throw error;
+        return mapContract(res);
     },
 
     update: async (id: string, data: Partial<Contract>): Promise<Contract | undefined> => {
-        // TODO: Replace with real API call
-        const contract = MOCK_CONTRACTS.find(c => c.id === id);
-        if (contract) {
-            Object.assign(contract, data);
-        }
-        return Promise.resolve(contract);
+        const payload: any = {};
+        if (data.title !== undefined) payload.title = data.title;
+        if (data.contractType !== undefined) payload.contract_type = data.contractType;
+        if (data.partyA !== undefined) payload.party_a = data.partyA;
+        if (data.partyB !== undefined) payload.party_b = data.partyB;
+        if (data.clientInitials !== undefined) payload.client_initials = data.clientInitials;
+        if (data.customerId !== undefined) payload.customer_id = data.customerId;
+        if (data.unitId !== undefined) payload.unit_id = data.unitId;
+        if (data.salespersonId !== undefined) payload.salesperson_id = data.salespersonId;
+        if (data.value !== undefined) payload.value = data.value;
+        if (data.estimatedCost !== undefined) payload.estimated_cost = data.estimatedCost;
+        if (data.actualRevenue !== undefined) payload.actual_revenue = data.actualRevenue;
+        if (data.actualCost !== undefined) payload.actual_cost = data.actualCost;
+        if (data.status !== undefined) payload.status = data.status;
+        if (data.stage !== undefined) payload.stage = data.stage;
+        if (data.category !== undefined) payload.category = data.category;
+        if (data.signedDate !== undefined) payload.signed_date = data.signedDate;
+        if (data.startDate !== undefined) payload.start_date = data.startDate;
+        if (data.endDate !== undefined) payload.end_date = data.endDate;
+        if (data.content !== undefined) payload.content = data.content;
+        if (data.contacts !== undefined) payload.contacts = data.contacts;
+        if (data.milestones !== undefined) payload.milestones = data.milestones;
+        if (data.paymentPhases !== undefined) payload.payment_phases = data.paymentPhases;
+
+        const { data: res, error } = await supabase.from('contracts').update(payload).eq('id', id).select().single();
+        if (error) throw error;
+        return mapContract(res);
     },
 
     delete: async (id: string): Promise<boolean> => {
-        // TODO: Replace with real API call
-        return Promise.resolve(true);
+        const { error } = await supabase.from('contracts').delete().eq('id', id);
+        if (error) throw error;
+        return true;
     },
 };
 
@@ -77,63 +218,21 @@ export const ContractsAPI = {
 // ============================================
 export const UnitsAPI = {
     getAll: async (): Promise<Unit[]> => {
-        const { data, error } = await supabase
-            .from('units')
-            .select('*');
-
-        if (error || !data || data.length === 0) {
-            console.warn('UnitsAPI: Fetch failed or empty, falling back to mock.', error);
-            return Promise.resolve(MOCK_UNITS);
-        }
-
-        return data.map((u: any) => ({
-            id: u.id,
-            name: u.name,
-            type: u.type,
-            code: u.code,
-            target: u.target,
-            lastYearActual: u.last_year_actual
-        })) as Unit[];
+        const { data, error } = await supabase.from('units').select('*');
+        if (error) throw error;
+        return data.map(mapUnit);
     },
 
     getById: async (id: string): Promise<Unit | undefined> => {
-        const { data, error } = await supabase
-            .from('units')
-            .select('*')
-            .eq('id', id)
-            .single();
-
-        if (error || !data) return Promise.resolve(MOCK_UNITS.find(u => u.id === id));
-
-        return {
-            id: data.id,
-            name: data.name,
-            type: data.type,
-            code: data.code,
-            target: data.target,
-            lastYearActual: data.last_year_actual
-        } as Unit;
+        const { data, error } = await supabase.from('units').select('*').eq('id', id).single();
+        if (error) return undefined;
+        return mapUnit(data);
     },
 
     getActive: async (): Promise<Unit[]> => {
-        // Fetch all except 'all'
-        const { data, error } = await supabase
-            .from('units')
-            .select('*')
-            .neq('id', 'all');
-
-        if (error || !data || data.length === 0) {
-            return Promise.resolve(MOCK_UNITS.filter(u => u.id !== 'all'));
-        }
-
-        return data.map((u: any) => ({
-            id: u.id,
-            name: u.name,
-            type: u.type,
-            code: u.code,
-            target: u.target,
-            lastYearActual: u.last_year_actual
-        })) as Unit[];
+        const { data, error } = await supabase.from('units').select('*').neq('id', 'all');
+        if (error) throw error;
+        return data.map(mapUnit);
     },
 };
 
@@ -142,56 +241,94 @@ export const UnitsAPI = {
 // ============================================
 export const PersonnelAPI = {
     getAll: async (): Promise<SalesPerson[]> => {
-        return Promise.resolve(MOCK_SALESPEOPLE);
+        const { data, error } = await supabase.from('sales_people').select('*');
+        if (error) throw error;
+        return data.map(mapSalesPerson);
     },
 
     getById: async (id: string): Promise<SalesPerson | undefined> => {
-        return Promise.resolve(MOCK_SALESPEOPLE.find(p => p.id === id));
+        const { data, error } = await supabase.from('sales_people').select('*').eq('id', id).single();
+        if (error) return undefined;
+        return mapSalesPerson(data);
     },
 
     getByUnitId: async (unitId: string): Promise<SalesPerson[]> => {
-        if (unitId === 'all') return Promise.resolve(MOCK_SALESPEOPLE);
-        return Promise.resolve(MOCK_SALESPEOPLE.filter(p => p.unitId === unitId));
+        let query = supabase.from('sales_people').select('*');
+        if (unitId !== 'all') {
+            query = query.eq('unit_id', unitId);
+        }
+        const { data, error } = await query;
+        if (error) throw error;
+        return data.map(mapSalesPerson);
     },
 
     getStats: async (id: string) => {
-        const person = MOCK_SALESPEOPLE.find(p => p.id === id);
-        const contracts = MOCK_CONTRACTS.filter(c => c.salespersonId === id);
+        // Need to fetch contracts to calc stats
+        const { data: contracts, error } = await supabase.from('contracts').select('*').eq('salesperson_id', id);
+        const { data: person } = await supabase.from('sales_people').select('*').eq('id', id).single();
 
-        const totalSigning = contracts.reduce((sum, c) => sum + c.value, 0);
-        const totalRevenue = contracts.reduce((sum, c) => sum + c.actualRevenue, 0);
+        if (error || !contracts) return {
+            contractCount: 0, totalSigning: 0, totalRevenue: 0, activeContracts: 0, completedContracts: 0, signingProgress: 0, revenueProgress: 0
+        };
+
+        const totalSigning = contracts.reduce((sum, c) => sum + (c.value || 0), 0);
+        const totalRevenue = contracts.reduce((sum, c) => sum + (c.actual_revenue || 0), 0);
         const activeContracts = contracts.filter(c => c.status === 'Active').length;
         const completedContracts = contracts.filter(c => c.status === 'Completed').length;
 
-        return Promise.resolve({
+        const personData = person ? mapSalesPerson(person) : null;
+        const targetSigning = personData?.target?.signing || 1;
+        const targetRevenue = personData?.target?.revenue || 1;
+
+        return {
             contractCount: contracts.length,
             totalSigning,
             totalRevenue,
             activeContracts,
             completedContracts,
-            signingProgress: person ? (totalSigning / person.target.signing) * 100 : 0,
-            revenueProgress: person ? (totalRevenue / person.target.revenue) * 100 : 0,
-        });
+            signingProgress: (totalSigning / targetSigning) * 100,
+            revenueProgress: (totalRevenue / targetRevenue) * 100,
+        };
     },
 
     create: async (data: Omit<SalesPerson, 'id'>): Promise<SalesPerson> => {
-        const newPerson: SalesPerson = {
-            ...data,
-            id: `s${Date.now()}`,
+        const payload = {
+            name: data.name,
+            unit_id: data.unitId,
+            employee_code: data.employeeCode,
+            email: data.email,
+            phone: data.phone,
+            position: data.position,
+            date_joined: data.dateJoined,
+            avatar: data.avatar,
+            target: data.target
         };
-        return Promise.resolve(newPerson);
+        const { data: res, error } = await supabase.from('sales_people').insert(payload).select().single();
+        if (error) throw error;
+        return mapSalesPerson(res);
     },
 
     update: async (id: string, data: Partial<SalesPerson>): Promise<SalesPerson | undefined> => {
-        const person = MOCK_SALESPEOPLE.find(p => p.id === id);
-        if (person) {
-            Object.assign(person, data);
-        }
-        return Promise.resolve(person);
+        const payload: any = {};
+        if (data.name) payload.name = data.name;
+        if (data.unitId) payload.unit_id = data.unitId;
+        if (data.employeeCode) payload.employee_code = data.employeeCode;
+        if (data.email) payload.email = data.email;
+        if (data.phone) payload.phone = data.phone;
+        if (data.position) payload.position = data.position;
+        if (data.dateJoined) payload.date_joined = data.dateJoined;
+        if (data.avatar) payload.avatar = data.avatar;
+        if (data.target) payload.target = data.target;
+
+        const { data: res, error } = await supabase.from('sales_people').update(payload).eq('id', id).select().single();
+        if (error) throw error;
+        return mapSalesPerson(res);
     },
 
     delete: async (id: string): Promise<boolean> => {
-        return Promise.resolve(true);
+        const { error } = await supabase.from('sales_people').delete().eq('id', id);
+        if (error) throw error;
+        return true;
     },
 };
 
@@ -200,52 +337,78 @@ export const PersonnelAPI = {
 // ============================================
 export const CustomersAPI = {
     getAll: async (): Promise<Customer[]> => {
-        return Promise.resolve(MOCK_CUSTOMERS);
+        const { data, error } = await supabase.from('customers').select('*');
+        if (error) throw error;
+        return data.map(mapCustomer);
     },
 
     getById: async (id: string): Promise<Customer | undefined> => {
-        return Promise.resolve(MOCK_CUSTOMERS.find(c => c.id === id));
-    },
-
-    getByIndustry: async (industry: string): Promise<Customer[]> => {
-        if (industry === 'all') return Promise.resolve(MOCK_CUSTOMERS);
-        return Promise.resolve(MOCK_CUSTOMERS.filter(c => c.industry === industry));
+        const { data, error } = await supabase.from('customers').select('*').eq('id', id).single();
+        if (error) return undefined;
+        return mapCustomer(data);
     },
 
     getStats: async (id: string) => {
-        const customer = MOCK_CUSTOMERS.find(c => c.id === id);
-        if (!customer) return Promise.resolve(null);
+        // This logic was previously doing text matching on partyA.
+        // Now better to use customerId relationship
+        const { data: contracts, error } = await supabase.from('contracts').select('*').eq('customer_id', id);
 
-        const contracts = MOCK_CONTRACTS.filter(c =>
-            c.partyA.includes(customer.shortName) || c.clientInitials === customer.shortName
-        );
+        if (error || !contracts) return null;
 
-        return Promise.resolve({
+        return {
             contractCount: contracts.length,
-            totalValue: contracts.reduce((sum, c) => sum + c.value, 0),
-            totalRevenue: contracts.reduce((sum, c) => sum + c.actualRevenue, 0),
+            totalValue: contracts.reduce((sum, c) => sum + (c.value || 0), 0),
+            totalRevenue: contracts.reduce((sum, c) => sum + (c.actual_revenue || 0), 0),
             activeContracts: contracts.filter(c => c.status === 'Active').length,
-        });
+        };
     },
 
     create: async (data: Omit<Customer, 'id'>): Promise<Customer> => {
-        const newCustomer: Customer = {
-            ...data,
-            id: `c${Date.now()}`,
+        const payload = {
+            name: data.name,
+            short_name: data.shortName,
+            industry: data.industry,
+            contact_person: data.contactPerson,
+            phone: data.phone,
+            email: data.email,
+            address: data.address,
+            tax_code: data.taxCode,
+            website: data.website,
+            notes: data.notes,
+            bank_name: data.bankName,
+            bank_branch: data.bankBranch,
+            bank_account: data.bankAccount
         };
-        return Promise.resolve(newCustomer);
+        const { data: res, error } = await supabase.from('customers').insert(payload).select().single();
+        if (error) throw error;
+        return mapCustomer(res);
     },
 
     update: async (id: string, data: Partial<Customer>): Promise<Customer | undefined> => {
-        const customer = MOCK_CUSTOMERS.find(c => c.id === id);
-        if (customer) {
-            Object.assign(customer, data);
-        }
-        return Promise.resolve(customer);
+        const payload: any = {};
+        if (data.name) payload.name = data.name;
+        if (data.shortName) payload.short_name = data.shortName;
+        if (data.industry) payload.industry = data.industry;
+        if (data.contactPerson) payload.contact_person = data.contactPerson;
+        if (data.phone) payload.phone = data.phone;
+        if (data.email) payload.email = data.email;
+        if (data.address) payload.address = data.address;
+        if (data.taxCode) payload.tax_code = data.taxCode;
+        if (data.website) payload.website = data.website;
+        if (data.notes) payload.notes = data.notes;
+        if (data.bankName) payload.bank_name = data.bankName;
+        if (data.bankBranch) payload.bank_branch = data.bankBranch;
+        if (data.bankAccount) payload.bank_account = data.bankAccount;
+
+        const { data: res, error } = await supabase.from('customers').update(payload).eq('id', id).select().single();
+        if (error) throw error;
+        return mapCustomer(res);
     },
 
     delete: async (id: string): Promise<boolean> => {
-        return Promise.resolve(true);
+        const { error } = await supabase.from('customers').delete().eq('id', id);
+        if (error) throw error;
+        return true;
     },
 };
 
@@ -254,45 +417,81 @@ export const CustomersAPI = {
 // ============================================
 export const ProductsAPI = {
     getAll: async (): Promise<Product[]> => {
-        return Promise.resolve(MOCK_PRODUCTS);
+        const { data, error } = await supabase.from('products').select('*');
+        if (error) throw error;
+        return data.map(mapProduct);
     },
 
     getById: async (id: string): Promise<Product | undefined> => {
-        return Promise.resolve(MOCK_PRODUCTS.find(p => p.id === id));
+        const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
+        if (error) return undefined;
+        return mapProduct(data);
     },
 
     getByCategory: async (category: string): Promise<Product[]> => {
-        if (category === 'all') return Promise.resolve(MOCK_PRODUCTS);
-        return Promise.resolve(MOCK_PRODUCTS.filter(p => p.category === category));
+        let query = supabase.from('products').select('*');
+        if (category !== 'all') {
+            query = query.eq('category', category);
+        }
+        const { data, error } = await query;
+        if (error) throw error;
+        return data.map(mapProduct);
     },
 
     getByUnitId: async (unitId: string): Promise<Product[]> => {
-        if (unitId === 'all') return Promise.resolve(MOCK_PRODUCTS);
-        return Promise.resolve(MOCK_PRODUCTS.filter(p => p.unitId === unitId));
+        let query = supabase.from('products').select('*');
+        if (unitId !== 'all') {
+            query = query.eq('unit_id', unitId);
+        }
+        const { data, error } = await query;
+        if (error) throw error;
+        return data.map(mapProduct);
     },
 
     getActive: async (): Promise<Product[]> => {
-        return Promise.resolve(MOCK_PRODUCTS.filter(p => p.isActive));
+        const { data, error } = await supabase.from('products').select('*').eq('is_active', true);
+        if (error) throw error;
+        return data.map(mapProduct);
     },
 
     create: async (data: Omit<Product, 'id'>): Promise<Product> => {
-        const newProduct: Product = {
-            ...data,
-            id: `p${Date.now()}`,
+        const payload = {
+            code: data.code,
+            name: data.name,
+            category: data.category,
+            description: data.description,
+            unit: data.unit,
+            base_price: data.basePrice,
+            cost_price: data.costPrice,
+            is_active: data.isActive,
+            unit_id: data.unitId
         };
-        return Promise.resolve(newProduct);
+        const { data: res, error } = await supabase.from('products').insert(payload).select().single();
+        if (error) throw error;
+        return mapProduct(res);
     },
 
     update: async (id: string, data: Partial<Product>): Promise<Product | undefined> => {
-        const product = MOCK_PRODUCTS.find(p => p.id === id);
-        if (product) {
-            Object.assign(product, data);
-        }
-        return Promise.resolve(product);
+        const payload: any = {};
+        if (data.code) payload.code = data.code;
+        if (data.name) payload.name = data.name;
+        if (data.category) payload.category = data.category;
+        if (data.description) payload.description = data.description;
+        if (data.unit) payload.unit = data.unit;
+        if (data.basePrice) payload.base_price = data.basePrice;
+        if (data.costPrice) payload.cost_price = data.costPrice;
+        if (data.isActive !== undefined) payload.is_active = data.isActive;
+        if (data.unitId) payload.unit_id = data.unitId;
+
+        const { data: res, error } = await supabase.from('products').update(payload).eq('id', id).select().single();
+        if (error) throw error;
+        return mapProduct(res);
     },
 
     delete: async (id: string): Promise<boolean> => {
-        return Promise.resolve(true);
+        const { error } = await supabase.from('products').delete().eq('id', id);
+        if (error) throw error;
+        return true;
     },
 };
 
@@ -301,94 +500,118 @@ export const ProductsAPI = {
 // ============================================
 export const PaymentsAPI = {
     getAll: async (): Promise<Payment[]> => {
-        return Promise.resolve(MOCK_PAYMENTS);
+        const { data, error } = await supabase.from('payments').select('*').order('due_date', { ascending: true });
+        if (error) throw error;
+        return data.map(mapPayment);
     },
 
     getById: async (id: string): Promise<Payment | undefined> => {
-        return Promise.resolve(MOCK_PAYMENTS.find(p => p.id === id));
+        const { data, error } = await supabase.from('payments').select('*').eq('id', id).single();
+        if (error) return undefined;
+        return mapPayment(data);
     },
 
     getByContractId: async (contractId: string): Promise<Payment[]> => {
-        return Promise.resolve(MOCK_PAYMENTS.filter(p => p.contractId === contractId));
+        const { data, error } = await supabase.from('payments').select('*').eq('contract_id', contractId);
+        if (error) throw error;
+        return data.map(mapPayment);
     },
 
     getByCustomerId: async (customerId: string): Promise<Payment[]> => {
-        return Promise.resolve(MOCK_PAYMENTS.filter(p => p.customerId === customerId));
+        const { data, error } = await supabase.from('payments').select('*').eq('customer_id', customerId);
+        if (error) throw error;
+        return data.map(mapPayment);
     },
 
     getByStatus: async (status: string): Promise<Payment[]> => {
-        return Promise.resolve(MOCK_PAYMENTS.filter(p => p.status === status));
+        const { data, error } = await supabase.from('payments').select('*').eq('status', status);
+        if (error) throw error;
+        return data.map(mapPayment);
     },
 
     getOverdue: async (): Promise<Payment[]> => {
-        return Promise.resolve(MOCK_PAYMENTS.filter(p => p.status === 'Overdue'));
+        const { data, error } = await supabase.from('payments').select('*').eq('status', 'Quá hạn');
+        if (error) throw error;
+        return data.map(mapPayment);
     },
 
     getPending: async (): Promise<Payment[]> => {
-        return Promise.resolve(MOCK_PAYMENTS.filter(p => p.status === 'Pending'));
+        const { data, error } = await supabase.from('payments').select('*').eq('status', 'Chờ xuất HĐ'); // Or Pending
+        if (error) throw error;
+        return data.map(mapPayment);
     },
 
     getStats: async () => {
-        const total = MOCK_PAYMENTS.reduce((sum, p) => sum + p.amount, 0);
-        const paid = MOCK_PAYMENTS.filter(p => p.status === 'Paid').reduce((sum, p) => sum + p.paidAmount, 0);
-        const pending = MOCK_PAYMENTS.filter(p => p.status === 'Pending').reduce((sum, p) => sum + p.amount, 0);
-        const overdue = MOCK_PAYMENTS.filter(p => p.status === 'Overdue').reduce((sum, p) => sum + p.amount - p.paidAmount, 0);
+        const { data, error } = await supabase.from('payments').select('*');
+        if (error || !data) return { totalAmount: 0, paidAmount: 0, pendingAmount: 0, overdueAmount: 0, paidCount: 0, pendingCount: 0, overdueCount: 0 };
 
-        return Promise.resolve({
+        const total = data.reduce((sum, p) => sum + (p.amount || 0), 0);
+        const paidQuery = data.filter(p => p.status === 'Tiền về' || p.status === 'Paid');
+        const paid = paidQuery.reduce((sum, p) => sum + (p.paid_amount || 0), 0);
+
+        const pendingQuery = data.filter(p => p.status === 'Chờ xuất HĐ' || p.status === 'Pending' || p.status === 'Đã xuất HĐ');
+        const pending = pendingQuery.reduce((sum, p) => sum + (p.amount || 0), 0);
+
+        const overdueQuery = data.filter(p => p.status === 'Quá hạn' || p.status === 'Overdue');
+        const overdue = overdueQuery.reduce((sum, p) => sum + ((p.amount || 0) - (p.paid_amount || 0)), 0);
+
+        return {
             totalAmount: total,
             paidAmount: paid,
             pendingAmount: pending,
             overdueAmount: overdue,
-            paidCount: MOCK_PAYMENTS.filter(p => p.status === 'Paid').length,
-            pendingCount: MOCK_PAYMENTS.filter(p => p.status === 'Pending').length,
-            overdueCount: MOCK_PAYMENTS.filter(p => p.status === 'Overdue').length,
-        });
+            paidCount: paidQuery.length,
+            pendingCount: pendingQuery.length,
+            overdueCount: overdueQuery.length,
+        };
     },
 
     create: async (data: Omit<Payment, 'id'>): Promise<Payment> => {
-        const newPayment: Payment = {
-            id: `PAY_${Date.now()}`,
-            ...data
+        const payload = {
+            contract_id: data.contractId,
+            customer_id: data.customerId,
+            phase_id: data.phaseId,
+            amount: data.amount,
+            paid_amount: data.paidAmount,
+            status: data.status,
+            method: data.method,
+            due_date: data.dueDate,
+            payment_date: data.paymentDate,
+            bank_account: data.bankAccount,
+            reference: data.reference,
+            invoice_number: data.invoiceNumber,
+            notes: data.notes
         };
-        MOCK_PAYMENTS.push(newPayment);
-        return Promise.resolve(newPayment);
+        const { data: res, error } = await supabase.from('payments').insert(payload).select().single();
+        if (error) throw error;
+        return mapPayment(res);
     },
 
     update: async (id: string, data: Partial<Payment>): Promise<Payment | undefined> => {
-        const payment = MOCK_PAYMENTS.find(p => p.id === id);
-        if (payment) {
-            Object.assign(payment, data);
-        }
-        return Promise.resolve(payment);
+        const payload: any = {};
+        if (data.contractId) payload.contract_id = data.contractId;
+        if (data.customerId) payload.customer_id = data.customerId;
+        if (data.phaseId) payload.phase_id = data.phaseId;
+        if (data.amount !== undefined) payload.amount = data.amount;
+        if (data.paidAmount !== undefined) payload.paid_amount = data.paidAmount;
+        if (data.status) payload.status = data.status;
+        if (data.method) payload.method = data.method;
+        if (data.dueDate) payload.due_date = data.dueDate;
+        if (data.paymentDate) payload.payment_date = data.paymentDate;
+        if (data.bankAccount) payload.bank_account = data.bankAccount;
+        if (data.reference) payload.reference = data.reference;
+        if (data.invoiceNumber) payload.invoice_number = data.invoiceNumber;
+        if (data.notes) payload.notes = data.notes;
+
+        const { data: res, error } = await supabase.from('payments').update(payload).eq('id', id).select().single();
+        if (error) throw error;
+        return mapPayment(res);
     },
 
     delete: async (id: string): Promise<boolean> => {
-        return Promise.resolve(true);
+        const { error } = await supabase.from('payments').delete().eq('id', id);
+        if (error) throw error;
+        return true;
     },
 };
-// ============================================
-// HELPER: Fetch wrapper for future use
-// ============================================
-export const fetchAPI = async <T>(
-    endpoint: string,
-    options?: RequestInit
-): Promise<T> => {
-    // TODO: Add base URL from environment
-    // const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
-    const baseUrl = '';
 
-    const response = await fetch(`${baseUrl}${endpoint}`, {
-        headers: {
-            'Content-Type': 'application/json',
-            // TODO: Add auth token
-            // 'Authorization': `Bearer ${getToken()}`,
-        },
-        ...options,
-    });
-
-    if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
-    }
-
-    return response.json();
-};
