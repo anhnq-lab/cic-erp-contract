@@ -112,7 +112,8 @@ const mapPayment = (p: any): Payment => ({
     bankAccount: p.bank_account,
     reference: p.reference,
     invoiceNumber: p.invoice_number,
-    notes: p.notes
+    notes: p.notes,
+    paymentType: p.payment_type || 'Revenue'
 });
 
 // ============================================
@@ -588,7 +589,8 @@ export const PaymentsAPI = {
             bank_account: data.bankAccount,
             reference: data.reference,
             invoice_number: data.invoiceNumber,
-            notes: data.notes
+            notes: data.notes,
+            payment_type: data.paymentType || 'Revenue'
         };
         const { data: res, error } = await supabase.from('payments').insert(payload).select().single();
         if (error) throw error;
@@ -610,6 +612,7 @@ export const PaymentsAPI = {
         if (data.reference) payload.reference = data.reference;
         if (data.invoiceNumber) payload.invoice_number = data.invoiceNumber;
         if (data.notes) payload.notes = data.notes;
+        if (data.paymentType) payload.payment_type = data.paymentType;
 
         const { data: res, error } = await supabase.from('payments').update(payload).eq('id', id).select().single();
         if (error) throw error;

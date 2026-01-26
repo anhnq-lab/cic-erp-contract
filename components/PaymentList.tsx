@@ -29,6 +29,7 @@ interface PaymentListProps {
 const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [typeFilter, setTypeFilter] = useState<'Revenue' | 'Expense'>('Revenue');
     const [payments, setPayments] = useState<Payment[]>(MOCK_PAYMENTS);
     const [stats, setStats] = useState<any>(null);
 
@@ -38,28 +39,29 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
     const [actionMenuId, setActionMenuId] = useState<string | null>(null);
 
     useEffect(() => {
-        // Calculate stats with new Vietnamese status
-        const total = payments.reduce((sum, p) => sum + p.amount, 0);
-        const cashReceived = payments.filter(p => p.status === 'Tiền về').reduce((sum, p) => sum + p.paidAmount, 0);
-        const invoiced = payments.filter(p => p.status === 'Đã xuất HĐ').reduce((sum, p) => sum + p.amount, 0);
-        const pending = payments.filter(p => p.status === 'Chờ xuất HĐ').reduce((sum, p) => sum + p.amount, 0);
-        const overdue = payments.filter(p => p.status === 'Quá hạn').reduce((sum, p) => sum + p.amount - p.paidAmount, 0);
+        // Calculate stats based on current type filter
+        const currentPayments = payments.filter(p => (p.paymentType || 'Revenue') === typeFilter);
+        const total = currentPayments.reduce((sum, p) => sum + p.amount, 0);
+        const paid = currentPayments.filter(p => p.status === 'Paid' || p.status === 'Tiền về').reduce((sum, p) => sum + p.paidAmount, 0);
+        const pending = currentPayments.filter(p => p.status === 'Pending' || p.status === 'Chờ xuất HĐ').reduce((sum, p) => sum + p.amount, 0);
+        const overdue = currentPayments.filter(p => p.status === 'Overdue' || p.status === 'Quá hạn').reduce((sum, p) => sum + (p.amount - p.paidAmount), 0);
 
         setStats({
             totalAmount: total,
-            cashReceivedAmount: cashReceived,
-            invoicedAmount: invoiced,
+            paidAmount: paid,
             pendingAmount: pending,
             overdueAmount: overdue,
-            cashReceivedCount: payments.filter(p => p.status === 'Tiền về').length,
-            invoicedCount: payments.filter(p => p.status === 'Đã xuất HĐ').length,
-            pendingCount: payments.filter(p => p.status === 'Chờ xuất HĐ').length,
-            overdueCount: payments.filter(p => p.status === 'Quá hạn').length,
+            paidCount: currentPayments.filter(p => p.status === 'Paid' || p.status === 'Tiền về').length,
+            pendingCount: currentPayments.filter(p => p.status === 'Pending' || p.status === 'Chờ xuất HĐ').length,
+            overdueCount: currentPayments.filter(p => p.status === 'Overdue' || p.status === 'Quá hạn').length,
         });
-    }, [payments]);
+    }, [payments, typeFilter]);
 
     const filteredPayments = useMemo(() => {
         return payments.filter(p => {
+            const isTypeMatch = (p.paymentType || 'Revenue') === typeFilter;
+            if (!isTypeMatch) return false;
+
             const contract = MOCK_CONTRACTS.find(c => c.id === p.contractId);
             const customer = MOCK_CUSTOMERS.find(c => c.id === p.customerId);
 
@@ -74,7 +76,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
 
             return matchSearch && matchStatus;
         });
-    }, [payments, searchQuery, statusFilter]);
+    }, [payments, searchQuery, statusFilter, typeFilter]);
 
     const formatCurrency = (val: number) => {
         if (val >= 1e9) return `${(val / 1e9).toFixed(2)} tỷ`;
@@ -85,12 +87,15 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
     const getStatusConfig = (status: PaymentStatus) => {
         switch (status) {
             case 'Tiền về':
-                return { color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: CheckCircle2, label: 'Tiền về' };
+            case 'Paid':
+                return { color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: CheckCircle2, label: typeFilter === 'Revenue' ? 'Tiền về' : 'Đã chi' };
             case 'Đã xuất HĐ':
                 return { color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', icon: FileCheck, label: 'Đã xuất HĐ' };
             case 'Chờ xuất HĐ':
-                return { color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', icon: Clock, label: 'Chờ xuất HĐ' };
+            case 'Pending':
+                return { color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', icon: Clock, label: typeFilter === 'Revenue' ? 'Chờ thu' : 'Chờ chi' };
             case 'Quá hạn':
+            case 'Overdue':
                 return { color: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400', icon: AlertCircle, label: 'Quá hạn' };
             default:
                 return { color: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400', icon: Clock, label: status };
@@ -128,7 +133,8 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
             // Create
             const newPayment: Payment = {
                 id: `PAY_${Date.now()}`,
-                ...paymentData
+                ...paymentData,
+                paymentType: typeFilter // Default to current filter
             };
             setPayments([newPayment, ...payments]);
         }
@@ -142,18 +148,32 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100">
-                        Quản lý Thanh toán
+                        Quản lý Tài chính
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-                        Theo dõi xuất hóa đơn và tiền về từ hợp đồng
+                        Theo dõi dòng tiền Thu & Chi
                     </p>
+                </div>
+                <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                    <button
+                        onClick={() => setTypeFilter('Revenue')}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${typeFilter === 'Revenue' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        Khoản Thu (Revenue)
+                    </button>
+                    <button
+                        onClick={() => setTypeFilter('Expense')}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${typeFilter === 'Expense' ? 'bg-white dark:bg-slate-700 text-rose-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        Khoản Chi (Expense)
+                    </button>
                 </div>
                 <button
                     onClick={handleAdd}
-                    className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 dark:shadow-none"
+                    className={`px-5 py-2.5 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-lg ${typeFilter === 'Revenue' ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200' : 'bg-rose-600 hover:bg-rose-700 shadow-rose-200'}`}
                 >
                     <Plus size={18} />
-                    Thêm thanh toán
+                    Thêm {typeFilter === 'Revenue' ? 'khoản thu' : 'khoản chi'}
                 </button>
             </div>
 
@@ -166,22 +186,24 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                                 <CheckCircle2 size={20} className="text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <div>
-                                <p className="text-2xl font-black text-emerald-600">{formatCurrency(stats.cashReceivedAmount)}</p>
-                                <p className="text-[11px] text-slate-500 dark:text-slate-400">Tiền về ({stats.cashReceivedCount})</p>
+                                <p className="text-2xl font-black text-emerald-600">{formatCurrency(stats.paidAmount)}</p>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400">{typeFilter === 'Revenue' ? 'Tiền về' : 'Đã chi'} ({stats.paidCount})</p>
                             </div>
                         </div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
-                                <FileCheck size={20} className="text-blue-600 dark:text-blue-400" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-black text-blue-600">{formatCurrency(stats.invoicedAmount)}</p>
-                                <p className="text-[11px] text-slate-500 dark:text-slate-400">Đã xuất HĐ ({stats.invoicedCount})</p>
+                    {typeFilter === 'Revenue' && (
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+                                    <FileCheck size={20} className="text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <div>
+                                    <p className="text-2xl font-black text-blue-600">{formatCurrency(stats.invoicedAmount || 0)}</p>
+                                    <p className="text-[11px] text-slate-500 dark:text-slate-400">Đã xuất HĐ</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                     <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
@@ -189,7 +211,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                             </div>
                             <div>
                                 <p className="text-2xl font-black text-amber-600">{formatCurrency(stats.pendingAmount)}</p>
-                                <p className="text-[11px] text-slate-500 dark:text-slate-400">Chờ xuất HĐ ({stats.pendingCount})</p>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400">{typeFilter === 'Revenue' ? 'Chờ thu' : 'Chờ chi'} ({stats.pendingCount})</p>
                             </div>
                         </div>
                     </div>

@@ -73,9 +73,20 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
     id: '1', name: '', quantity: 1, supplier: '', inputPrice: 0, outputPrice: 0, directCosts: 0
   }]);
 
-  // 4. Financial Schedules (Hóa đơn & Tiền về)
+  // 4. Financial Schedules (Hóa đơn & Tiền về & Chi trả NCC)
   const [revenueSchedules, setRevenueSchedules] = useState<RevenueSchedule[]>([{ id: '1', date: '', amount: 0, description: 'Đợt 1' }]);
-  const [paymentSchedules, setPaymentSchedules] = useState<PaymentSchedule[]>([{ id: '1', date: '', amount: 0, description: 'Tạm ứng' }]);
+  const [paymentSchedules, setPaymentSchedules] = useState<PaymentSchedule[]>([{ id: '1', date: '', amount: 0, description: 'Tạm ứng', type: 'Revenue' }]);
+  const [supplierSchedules, setSupplierSchedules] = useState<PaymentSchedule[]>([{ id: '1', date: '', amount: 0, description: 'Thanh toán đợt 1', type: 'Expense' }]);
+
+  // Load existing phases
+  useEffect(() => {
+    if (contract?.paymentPhases) {
+      const revenue = contract.paymentPhases.filter(p => !p.type || p.type === 'Revenue');
+      const expense = contract.paymentPhases.filter(p => p.type === 'Expense');
+      if (revenue.length > 0) setPaymentSchedules(revenue);
+      if (expense.length > 0) setSupplierSchedules(expense);
+    }
+  }, [contract]);
 
   // 5. Overhead Costs
   const [adminCosts, setAdminCosts] = useState<AdministrativeCosts>({
@@ -83,9 +94,46 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
   });
 
   // Filter sales based on selected unit
+  // Show all sales people, regardless of unit (User request)
   const filteredSales = useMemo(() => {
-    return salespeople.filter(s => s.unitId === unitId);
-  }, [unitId, salespeople]);
+    // return salespeople.filter(s => s.unitId === unitId);
+    return salespeople;
+  }, [salespeople]);
+
+  // Auto-generate Supplier Schedules from Line Items
+  const generateSupplierSchedules = () => {
+    const supplierGroups: { [key: string]: number } = {};
+
+    lineItems.forEach(item => {
+      if (item.supplier) {
+        const cost = item.quantity * item.inputPrice;
+        if (supplierGroups[item.supplier]) {
+          supplierGroups[item.supplier] += cost;
+        } else {
+          supplierGroups[item.supplier] = cost;
+        }
+      }
+    });
+
+    const newSchedules: PaymentSchedule[] = Object.keys(supplierGroups).map((supplierName, index) => {
+      const existing = supplierSchedules.find(s => s.description.includes(supplierName));
+      return {
+        id: existing?.id || `sup-${Date.now()}-${index}`,
+        date: existing?.date || '',
+        amount: supplierGroups[supplierName],
+        description: `Thanh toán cho ${supplierName}`,
+        status: 'Pending',
+        percentage: 0,
+        type: 'Expense'
+      };
+    });
+
+    if (newSchedules.length > 0) {
+      setSupplierSchedules(newSchedules);
+    } else {
+      alert("Chưa có thông tin Nhà cung cấp trong mục chi tiết sản phẩm!");
+    }
+  };
 
   // Auto-generate Contract ID: HĐ_STT/Đơn vị_Khách hàng_Năm
   const contractId = useMemo(() => {
@@ -154,7 +202,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
       content: title, // Simplified
       contacts: contacts,
       milestones: [],
-      paymentPhases: paymentSchedules
+      paymentPhases: [...paymentSchedules, ...supplierSchedules]
     };
 
     onSave(payload);
@@ -507,18 +555,128 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                     ))}
                   </div>
                 </div>
-                {/* Tiền về (Thực thu) */}
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Kế hoạch Tiền về (Cash flow)</p>
-                    <button className="text-emerald-600 font-bold text-[10px]">+ Thêm đợt</button>
+                    <p className="text-[11px] font-black text-emerald-600 uppercase tracking-widest">Kế hoạch Tiền về (Từ Khách hàng)</p>
+                    <button onClick={() => setPaymentSchedules([...paymentSchedules, { id: Date.now().toString(), date: '', amount: 0, description: '', status: 'Pending', percentage: 0, type: 'Revenue' }])} className="text-emerald-600 font-bold text-[10px]">+ Thêm đợt</button>
                   </div>
                   <div className="space-y-3">
-                    {paymentSchedules.map((pay) => (
-                      <div key={pay.id} className="grid grid-cols-12 gap-2 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
-                        <input type="date" className="col-span-4 bg-transparent text-[11px] font-bold outline-none" />
-                        <input placeholder="Nội dung..." className="col-span-4 bg-transparent text-[11px] font-bold outline-none" />
-                        <input type="number" placeholder="Tiền..." className="col-span-4 bg-transparent text-[11px] font-black text-right outline-none text-emerald-600" />
+                    {paymentSchedules.map((pay, idx) => (
+                      <div key={pay.id} className="grid grid-cols-12 gap-2 bg-emerald-50/50 dark:bg-emerald-900/20 p-3 rounded-2xl border border-emerald-100 dark:border-emerald-800">
+                        <div className="col-span-4 space-y-1">
+                          <label className="text-[9px] text-slate-400 font-bold uppercase">Ngày thanh toán</label>
+                          <input
+                            type="date"
+                            value={pay.date}
+                            onChange={(e) => {
+                              const newSched = [...paymentSchedules];
+                              newSched[idx].date = e.target.value;
+                              setPaymentSchedules(newSched);
+                            }}
+                            className="w-full bg-transparent text-[11px] font-bold outline-none"
+                          />
+                        </div>
+                        <div className="col-span-4 space-y-1">
+                          <label className="text-[9px] text-slate-400 font-bold uppercase">Nội dung</label>
+                          <input
+                            placeholder="Nội dung..."
+                            value={pay.description}
+                            onChange={(e) => {
+                              const newSched = [...paymentSchedules];
+                              newSched[idx].description = e.target.value;
+                              setPaymentSchedules(newSched);
+                            }}
+                            className="w-full bg-transparent text-[11px] font-bold outline-none"
+                          />
+                        </div>
+                        <div className="col-span-4 space-y-1 text-right">
+                          <label className="text-[9px] text-slate-400 font-bold uppercase">Số tiền</label>
+                          <div className="flex items-center justify-end gap-2">
+                            <input
+                              type="number"
+                              placeholder="Tiền..."
+                              value={pay.amount}
+                              onChange={(e) => {
+                                const newSched = [...paymentSchedules];
+                                newSched[idx].amount = Number(e.target.value);
+                                setPaymentSchedules(newSched);
+                              }}
+                              className="w-full bg-transparent text-[11px] font-black text-right outline-none text-emerald-600"
+                            />
+                            {paymentSchedules.length > 1 && (
+                              <button onClick={() => setPaymentSchedules(paymentSchedules.filter(p => p.id !== pay.id))} className="text-rose-400 hover:text-rose-600">
+                                <X size={12} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Chi trả Nhà cung cấp */}
+                <div className="space-y-4 md:col-span-2 border-t pt-6 border-dashed border-slate-200 dark:border-slate-800">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <p className="text-[11px] font-black text-rose-500 uppercase tracking-widest">Kế hoạch Chi trả Nhà cung cấp</p>
+                      <button
+                        onClick={generateSupplierSchedules}
+                        className="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-bold hover:bg-indigo-100 transition-colors"
+                      >
+                        <Calculator size={10} /> Tự động tính từ SP
+                      </button>
+                    </div>
+                    <button onClick={() => setSupplierSchedules([...supplierSchedules, { id: Date.now().toString(), date: '', amount: 0, description: '', status: 'Pending', percentage: 0, type: 'Expense' }])} className="text-rose-600 font-bold text-[10px]">+ Thêm đợt chi</button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {supplierSchedules.map((pay, idx) => (
+                      <div key={pay.id} className="grid grid-cols-12 gap-2 bg-rose-50/50 dark:bg-rose-900/20 p-3 rounded-2xl border border-rose-100 dark:border-rose-800 relative group">
+                        <div className="col-span-4 space-y-1">
+                          <label className="text-[9px] text-slate-400 font-bold uppercase">Hạn thanh toán</label>
+                          <input
+                            type="date"
+                            value={pay.date}
+                            onChange={(e) => {
+                              const newSched = [...supplierSchedules];
+                              newSched[idx].date = e.target.value;
+                              setSupplierSchedules(newSched);
+                            }}
+                            className="w-full bg-transparent text-[11px] font-bold outline-none"
+                          />
+                        </div>
+                        <div className="col-span-4 space-y-1">
+                          <label className="text-[9px] text-slate-400 font-bold uppercase">Nhà cung cấp / Nội dung</label>
+                          <input
+                            placeholder="Chi cho..."
+                            value={pay.description}
+                            onChange={(e) => {
+                              const newSched = [...supplierSchedules];
+                              newSched[idx].description = e.target.value;
+                              setSupplierSchedules(newSched);
+                            }}
+                            className="w-full bg-transparent text-[11px] font-bold outline-none"
+                          />
+                        </div>
+                        <div className="col-span-4 space-y-1 text-right">
+                          <label className="text-[9px] text-slate-400 font-bold uppercase">Số tiền chi</label>
+                          <div className="flex items-center justify-end gap-2">
+                            <input
+                              type="number"
+                              placeholder="Tiền..."
+                              value={pay.amount}
+                              onChange={(e) => {
+                                const newSched = [...supplierSchedules];
+                                newSched[idx].amount = Number(e.target.value);
+                                setSupplierSchedules(newSched);
+                              }}
+                              className="w-full bg-transparent text-[11px] font-black text-right outline-none text-rose-500"
+                            />
+                            <button onClick={() => setSupplierSchedules(supplierSchedules.filter(p => p.id !== pay.id))} className="text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <X size={12} />
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>

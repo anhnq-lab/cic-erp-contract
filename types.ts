@@ -55,6 +55,7 @@ export interface PaymentPhase {
   status: 'Paid' | 'Overdue' | 'Pending';
   percentage: number;
   amount: number;
+  type?: 'Revenue' | 'Expense'; // Thu hoặc Chi
 }
 
 /**
@@ -187,7 +188,7 @@ export interface Product {
  * Đã xuất HĐ = Invoiced but not paid
  * Tiền về = Cash received
  */
-export type PaymentStatus = 'Chờ xuất HĐ' | 'Đã xuất HĐ' | 'Tiền về' | 'Quá hạn';
+export type PaymentStatus = 'Chờ xuất HĐ' | 'Đã xuất HĐ' | 'Tiền về' | 'Quá hạn' | 'Paid' | 'Pending' | 'Overdue';
 
 /**
  * Payment method type
@@ -212,6 +213,7 @@ export interface Payment {
   reference?: string; // Số chứng từ, UNC
   invoiceNumber?: string;
   notes?: string;
+  paymentType: 'Revenue' | 'Expense'; // Thu hoặc Chi
   createdAt?: string;
   updatedAt?: string;
 }
