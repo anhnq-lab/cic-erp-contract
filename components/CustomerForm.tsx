@@ -78,8 +78,15 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
         }
     };
 
+    const getTitle = () => {
+        if (customer) return 'Chỉnh sửa Đối tác';
+        if (formData.type === 'Customer') return 'Thêm Khách hàng mới';
+        if (formData.type === 'Supplier') return 'Thêm Nhà cung cấp mới';
+        return 'Thêm Đối tác mới';
+    };
+
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={customer ? 'Chỉnh sửa Khách hàng' : 'Thêm Khách hàng mới'} size="lg">
+        <Modal isOpen={isOpen} onClose={onClose} title={getTitle()} size="lg">
             <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Type Selection */}
                 <div className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
@@ -237,7 +244,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
                         value={formData.notes}
                         onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                         rows={2}
-                        placeholder="Ghi chú thêm về khách hàng..."
+                        placeholder="Ghi chú thêm..."
                         className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm resize-none"
                     />
                 </div>

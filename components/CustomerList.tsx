@@ -24,7 +24,7 @@ interface CustomerListProps {
 const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [industryFilter, setIndustryFilter] = useState<string>('all');
-    const [typeFilter, setTypeFilter] = useState<'all' | 'Customer' | 'Supplier'>('Customer'); // Default to Customer view
+    const [typeFilter, setTypeFilter] = useState<'all' | 'Customer' | 'Supplier'>('all'); // Default to All view
     const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
 
     // CRUD state
@@ -157,7 +157,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                         className="flex items-center gap-2 px-5 py-3 bg-indigo-600 text-white rounded-2xl font-bold text-sm hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 dark:shadow-none"
                     >
                         <Plus size={18} />
-                        <span className="hidden md:inline">Thêm KH</span>
+                        <span className="hidden md:inline">Thêm Đối tác</span>
                     </button>
                 </div>
             </div>
@@ -362,7 +362,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                         <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Building2 size={32} className="text-slate-400" />
                         </div>
-                        <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">Không tìm thấy khách hàng</h3>
+                        <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">Không tìm thấy đối tác</h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
                     </div>
                 )}
