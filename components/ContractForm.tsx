@@ -56,6 +56,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
   const [title, setTitle] = useState(contract?.title || '');
   const [clientName, setClientName] = useState(contract?.partyA || '');
   const [signedDate, setSignedDate] = useState(contract?.signedDate || new Date().toISOString().split('T')[0]);
+  const [manualValue, setManualValue] = useState<number>(contract?.value || 0);
 
   // 2. Client Contacts (Multi-entry)
   const [contacts, setContacts] = useState<ContractContact[]>(contract?.contacts || [{ id: '1', name: '', role: 'Mua sắm' }]);
@@ -115,6 +116,42 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
 
   const addLineItem = () => setLineItems([...lineItems, { id: Date.now().toString(), name: '', quantity: 1, supplier: '', inputPrice: 0, outputPrice: 0, directCosts: 0 }]);
   const removeLineItem = (id: string) => setLineItems(lineItems.filter(i => i.id !== id));
+
+  const handleSave = () => {
+    // Validate
+    if (!unitId || !salespersonId || !clientName) {
+      alert("Vui lòng nhập đầy đủ thông tin bắt buộc (Đơn vị, Sale, Khách hàng)");
+      return;
+    }
+
+    const payload = {
+      id: contract?.id || contractId, // Use temp ID if new
+      title: title || 'Hợp đồng chưa đặt tên',
+      contractType,
+      partyA: clientName,
+      partyB: 'CIC', // Default
+      clientInitials: clientName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 5),
+      customerId: '', // TODO: Should map to real customer
+      unitId,
+      salespersonId,
+      value: totals.signingValue,
+      estimatedCost: totals.totalCosts,
+      actualRevenue: 0,
+      actualCost: totals.totalCosts,
+      status: 'Pending',
+      stage: 'New',
+      category: 'Project',
+      signedDate,
+      startDate: signedDate,
+      endDate: signedDate,
+      content: title, // Simplified
+      contacts: contacts,
+      milestones: [],
+      paymentPhases: paymentSchedules
+    };
+
+    onSave(payload);
+  };
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-w-7xl w-full mx-auto flex flex-col h-[92vh]">
@@ -212,6 +249,23 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                     className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-slate-500 uppercase ml-1">Giá trị hợp đồng (Tạm tính)</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={manualValue}
+                    onChange={(e) => setManualValue(Number(e.target.value))}
+                    disabled={lineItems.length > 0 && lineItems.some(i => i.outputPrice > 0)}
+                    className={`w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl text-sm font-black focus:border-indigo-500 outline-none ${lineItems.some(i => i.outputPrice > 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">VNĐ</span>
+                </div>
+                {lineItems.some(i => i.outputPrice > 0) && (
+                  <p className="text-[10px] text-indigo-500 italic ml-1">* Đang tính theo chi tiết sản phẩm bên dưới</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -519,7 +573,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
         </div>
         <div className="flex gap-4">
           <button onClick={onCancel} className="px-8 py-3 text-slate-500 hover:text-slate-800 font-black text-xs uppercase tracking-widest transition-all">Hủy bỏ</button>
-          <button onClick={() => onSave({})} className="px-12 py-4 bg-indigo-600 text-white rounded-[24px] font-black text-sm flex items-center gap-3 hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-200 dark:shadow-none">
+          <button onClick={handleSave} className="px-12 py-4 bg-indigo-600 text-white rounded-[24px] font-black text-sm flex items-center gap-3 hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-200 dark:shadow-none">
             <Save size={20} strokeWidth={2.5} />
             Hoàn tất & Lưu hồ sơ
           </button>

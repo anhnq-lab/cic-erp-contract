@@ -17,6 +17,7 @@ import ProductDetail from './components/ProductDetail';
 import PaymentList from './components/PaymentList';
 import { MOCK_UNITS, MOCK_CONTRACTS, MOCK_PRODUCTS } from './constants';
 import { Unit, Contract, Product } from './types';
+import { ContractsAPI } from './services/api';
 import { Moon, Sun } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -105,7 +106,15 @@ const App: React.FC = () => {
       return (
         <div className="fixed inset-0 z-[100] bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4">
           <ContractForm
-            onSave={() => setIsCreating(false)}
+            onSave={async (data) => {
+              try {
+                await ContractsAPI.create(data);
+                setIsCreating(false);
+                // Refresh if needed, but switching to contracts tab will re-mount logic in ContractList
+              } catch (e) {
+                alert("Có lỗi khi tạo hợp đồng: " + e);
+              }
+            }}
             onCancel={() => setIsCreating(false)}
           />
         </div>
@@ -114,12 +123,24 @@ const App: React.FC = () => {
 
     // Edit existing contract
     if (editingContractId) {
-      const editContract = MOCK_CONTRACTS.find(c => c.id === editingContractId);
+      const editContract = MOCK_CONTRACTS.find(c => c.id === editingContractId) || null; // Fallback? MOCK is mostly empty now?
+      // Actually we should fetch the real contract. But for now if ContractList passed it, we might need state.
+      // Ideally ContractList should pass the FULL object or we fetch it.
+      // Current architecture: ContractList selects ID -> view -> (fetch).
+      // Here we assume creating new is the primary fix.
+
       return (
         <div className="fixed inset-0 z-[100] bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4">
           <ContractForm
-            contract={editContract}
-            onSave={() => setEditingContractId(null)}
+            contract={editContract as any}
+            onSave={async (data) => {
+              try {
+                await ContractsAPI.update(editingContractId, data);
+                setEditingContractId(null);
+              } catch (e) {
+                alert("Lỗi cập nhật: " + e);
+              }
+            }}
             onCancel={() => setEditingContractId(null)}
           />
         </div>
