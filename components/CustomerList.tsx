@@ -175,18 +175,10 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                 {(['all', 'Customer', 'Supplier'] as const).map(type => (
                     <button
                         key={type}
-                        onClick={() => {
-                            // Filter logic here or pass to state. 
-                            // Current code uses industryFilter only. I need to add typeFilter state.
-                            // But wait, the Replace instruction below will rewrite the component part.
-                            // I should add state first? No, I am replacing a chunk.
-                            // Let's assume I added state `typeFilter` in a previous or same edit?
-                            // This tool call is only replacing lines 230ish? No, I need to do a larger replacement or multiple chunks.
-                            // Let's look at the file again. I need to add state `typeFilter` first.
-                        }}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                            // logic 
-                            ''
+                        onClick={() => setTypeFilter(type)}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${typeFilter === type
+                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none'
+                                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                             }`}
                     >
                         {type === 'all' ? 'Tất cả' : type === 'Customer' ? 'Khách hàng' : 'Nhà cung cấp'}
