@@ -235,11 +235,65 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
       </div>
 
       {/* BODY */}
-      <div className="flex-1 overflow-y-auto p-10 custom-scrollbar space-y-12">
+      <div className="flex-1 overflow-y-auto p-10 custom-scrollbar space-y-8">
+
+        {/* FINANCIAL SUMMARY REFACTORED (TOP) */}
+        <section className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-[32px] p-8 text-white shadow-2xl relative overflow-hidden shrink-0">
+          <div className="absolute top-0 right-0 p-8 opacity-10">
+            <TrendingUp size={120} />
+          </div>
+
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+            {/* Header Vertical */}
+            <div className="flex items-center gap-4 border-r border-white/10 pr-8 min-w-[200px]">
+              <div className="p-3 bg-indigo-500/20 rounded-2xl">
+                <ShieldCheck size={32} className="text-indigo-400" />
+              </div>
+              <div>
+                <h3 className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-1">Báo cáo</h3>
+                <p className="text-lg font-black text-white">Lợi nhuận dự kiến</p>
+              </div>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-8">
+              {/* Total Value */}
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-1">Giá trị Ký kết (Tổng đầu ra)</p>
+                <p className="text-2xl font-black text-white leading-none">{formatVND(totals.signingValue)} <span className="text-sm font-medium text-slate-500">đ</span></p>
+              </div>
+
+              {/* Revenue */}
+              <div>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mb-1">Doanh thu dự kiến (Trừ VAT)</p>
+                <p className="text-xl font-black text-slate-200">{formatVND(totals.estimatedRevenue)}</p>
+              </div>
+
+              {/* Costs */}
+              <div>
+                <p className="text-[9px] font-bold text-rose-400/80 uppercase tracking-tighter mb-1">Tổng chi phí & Giá vốn</p>
+                <p className="text-xl font-black text-rose-400">{formatVND(totals.totalCosts)}</p>
+              </div>
+
+              {/* Profit */}
+              <div className="relative group cursor-help">
+                <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-1">Lợi nhuận gộp</p>
+                <div className="flex items-end gap-2">
+                  <p className="text-3xl font-black text-emerald-400 leading-none">{formatVND(totals.grossProfit)}</p>
+                  <span className="text-sm font-bold text-emerald-600 mb-1">({totals.profitMargin.toFixed(0)}%)</span>
+                </div>
+                <div className="absolute -bottom-2 left-0 w-full h-1 bg-white/10 rounded-full overflow-hidden mt-2">
+                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, totals.profitMargin)}%` }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
 
-          {/* LEFT COLUMN: Data Input (8 cols) */}
-          <div className="lg:col-span-8 space-y-12">
+          {/* MAIN CONTENT (Now Full Width) */}
+          <div className="col-span-12 space-y-12">
 
             {/* 1. ĐƠN VỊ & NHÂN SỰ */}
             <section className="space-y-6">
@@ -451,25 +505,19 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                           </td>
                           <td className="px-4 py-3">
                             <select
-                              value={customers.find(c => c.name === item.supplier)?.id || ''}
+                              value={item.supplier}
                               onChange={(e) => {
-                                const sId = e.target.value;
-                                const supp = customers.find(c => c.id === sId);
                                 const newList = [...lineItems];
-                                if (supp) {
-                                  newList[index].supplier = supp.name;
-                                } else {
-                                  newList[index].supplier = '';
-                                }
+                                newList[index].supplier = e.target.value;
                                 setLineItems(newList);
                               }}
-                              className="w-full bg-transparent font-bold outline-none text-slate-400"
+                              className="w-full bg-transparent font-medium text-slate-500 outline-none"
                             >
                               <option value="">-- Chọn NCC --</option>
-                              {customers
-                                .filter(c => c.type === 'Supplier' || c.type === 'Both')
-                                .map(c => <option key={c.id} value={c.id}>{c.name}</option>)
-                              }
+                              {/* Use customers list filter by type 'Supplier' */}
+                              {customers.filter(c => c.type === 'Supplier' || c.type === 'Both').map(s => (
+                                <option key={s.id} value={s.shortName}>{s.shortName}</option>
+                              ))}
                             </select>
                           </td>
                           <td className="px-4 py-3 text-right">
@@ -481,7 +529,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                                 newList[index].inputPrice = Number(e.target.value);
                                 setLineItems(newList);
                               }}
-                              className="w-full bg-transparent font-black text-right outline-none text-rose-500"
+                              className="w-full bg-transparent font-bold text-slate-500 text-right outline-none"
                             />
                           </td>
                           <td className="px-4 py-3 text-right">
@@ -493,7 +541,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                                 newList[index].outputPrice = Number(e.target.value);
                                 setLineItems(newList);
                               }}
-                              className="w-full bg-transparent font-black text-right outline-none text-indigo-600"
+                              className="w-full bg-transparent font-bold text-indigo-600 text-right outline-none"
                             />
                           </td>
                           <td className="px-4 py-3 text-right">
@@ -505,18 +553,16 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                                 newList[index].directCosts = Number(e.target.value);
                                 setLineItems(newList);
                               }}
-                              className="w-full bg-transparent font-bold text-right outline-none text-slate-400"
+                              className="w-full bg-transparent font-bold text-rose-500 text-right outline-none"
                             />
                           </td>
                           <td className="px-4 py-3 text-right">
-                            <div className="flex flex-col">
-                              <span className={`font-black ${lineMargin >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                {formatVND(lineMargin)}
-                              </span>
+                            <div className="flex flex-col items-end">
+                              <span className={`font-black ${lineMargin >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{formatVND(lineMargin)}</span>
                               <span className="text-[9px] font-bold text-slate-400">{lineMarginRate.toFixed(1)}%</span>
                             </div>
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-3 text-center">
                             {lineItems.length > 1 && (
                               <button onClick={() => removeLineItem(item.id)} className="text-slate-300 hover:text-rose-500 transition-colors">
                                 <Trash2 size={14} />
@@ -531,30 +577,106 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
               </div>
             </section>
 
-            {/* 4. LỘ TRÌNH DÒNG TIỀN */}
-            <section className="space-y-8">
+            {/* CÁC LOẠI CHI PHÍ LIÊN QUAN */}
+            <section className="bg-slate-50 dark:bg-slate-800/40 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 space-y-6">
+              <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+                <Calculator size={16} /> Chi phí quản lý hợp đồng
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                {[
+                  { key: 'transferFee', label: 'Phí chuyển tiền / Ngân hàng' },
+                  { key: 'contractorTax', label: 'Thuế nhà thầu (nếu có)' },
+                  { key: 'importFee', label: 'Phí nhập khẩu / Logistics' },
+                  { key: 'expertHiring', label: 'Chi phí thuê khoán chuyên môn' },
+                  { key: 'documentProcessing', label: 'Chi phí xử lý chứng từ' }
+                ].map((cost) => (
+                  <div key={cost.key} className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">{cost.label}</label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
+                      <input
+                        type="number"
+                        value={(adminCosts as any)[cost.key]}
+                        onChange={(e) => setAdminCosts({ ...adminCosts, [cost.key]: Number(e.target.value) })}
+                        className="w-full pl-8 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black focus:ring-2 focus:ring-rose-500 outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* 4. Financial Schedules (Hóa đơn & Tiền về & Chi trả NCC) */}
+            <section className="space-y-6">
               <div className="flex items-center gap-3 border-l-4 border-amber-500 pl-4">
                 <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
-                  <CreditCard size={16} /> Kế hoạch Doanh thu & Tiền về
+                  <Wallet size={16} /> Kế hoạch Doanh thu & Tiền về
                 </h3>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                {/* Doanh thu (Xuất hóa đơn) */}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Revenue Schedules */}
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Lịch xuất hóa đơn Doanh thu</p>
-                    <button className="text-indigo-600 font-bold text-[10px]">+ Thêm đợt</button>
+                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Lịch xuất hóa đơn doanh thu</p>
+                    <button onClick={() => setRevenueSchedules([...revenueSchedules, { id: Date.now().toString(), date: '', amount: 0, description: 'Đợt mới' }])} className="text-indigo-600 font-bold text-[10px]">+ Thêm đợt</button>
                   </div>
                   <div className="space-y-3">
-                    {revenueSchedules.map((rev) => (
+                    {revenueSchedules.map((rev, idx) => (
                       <div key={rev.id} className="grid grid-cols-12 gap-2 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
-                        <input type="date" className="col-span-4 bg-transparent text-[11px] font-bold outline-none" />
-                        <input placeholder="Giai đoạn..." className="col-span-4 bg-transparent text-[11px] font-bold outline-none" />
-                        <input type="number" placeholder="Tiền..." className="col-span-4 bg-transparent text-[11px] font-black text-right outline-none text-indigo-600" />
+                        <div className="col-span-4 space-y-1">
+                          <label className="text-[9px] text-slate-400 font-bold uppercase">Ngày XHĐ</label>
+                          <input
+                            type="date"
+                            value={rev.date}
+                            onChange={(e) => {
+                              const newSched = [...revenueSchedules];
+                              newSched[idx].date = e.target.value;
+                              setRevenueSchedules(newSched);
+                            }}
+                            className="w-full bg-transparent text-[11px] font-bold outline-none"
+                          />
+                        </div>
+                        <div className="col-span-4 space-y-1">
+                          <label className="text-[9px] text-slate-400 font-bold uppercase">Giai đoạn</label>
+                          <input
+                            placeholder="Giai đoạn..."
+                            value={rev.description}
+                            onChange={(e) => {
+                              const newSched = [...revenueSchedules];
+                              newSched[idx].description = e.target.value;
+                              setRevenueSchedules(newSched);
+                            }}
+                            className="w-full bg-transparent text-[11px] font-bold outline-none"
+                          />
+                        </div>
+                        <div className="col-span-4 space-y-1 text-right">
+                          <label className="text-[9px] text-slate-400 font-bold uppercase">Tiền (VAT)</label>
+                          <div className="flex items-center justify-end gap-2">
+                            <input
+                              type="number"
+                              placeholder="Tiền..."
+                              value={rev.amount}
+                              onChange={(e) => {
+                                const newSched = [...revenueSchedules];
+                                newSched[idx].amount = Number(e.target.value);
+                                setRevenueSchedules(newSched);
+                              }}
+                              className="w-full bg-transparent text-[11px] font-black text-right outline-none"
+                            />
+                            {revenueSchedules.length > 1 && (
+                              <button onClick={() => setRevenueSchedules(revenueSchedules.filter(r => r.id !== rev.id))} className="text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <X size={12} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
+
+                {/* Payment Schedules (Incoming) */}
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <p className="text-[11px] font-black text-emerald-600 uppercase tracking-widest">Kế hoạch Tiền về (Từ Khách hàng)</p>
@@ -604,7 +726,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                               className="w-full bg-transparent text-[11px] font-black text-right outline-none text-emerald-600"
                             />
                             {paymentSchedules.length > 1 && (
-                              <button onClick={() => setPaymentSchedules(paymentSchedules.filter(p => p.id !== pay.id))} className="text-rose-400 hover:text-rose-600">
+                              <button onClick={() => setPaymentSchedules(paymentSchedules.filter(p => p.id !== pay.id))} className="text-emerald-400 hover:text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <X size={12} />
                               </button>
                             )}
@@ -614,162 +736,163 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                     ))}
                   </div>
                 </div>
+              </div>
 
-                {/* Chi trả Nhà cung cấp */}
-                <div className="space-y-4 md:col-span-2 border-t pt-6 border-dashed border-slate-200 dark:border-slate-800">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <p className="text-[11px] font-black text-rose-500 uppercase tracking-widest">Kế hoạch Chi trả Nhà cung cấp</p>
-                      <button
-                        onClick={generateSupplierSchedules}
-                        className="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-bold hover:bg-indigo-100 transition-colors"
-                      >
-                        <Calculator size={10} /> Tự động tính từ SP
-                      </button>
-                    </div>
-                    <button onClick={() => setSupplierSchedules([...supplierSchedules, { id: Date.now().toString(), date: '', amount: 0, description: '', status: 'Pending', percentage: 0, type: 'Expense' }])} className="text-rose-600 font-bold text-[10px]">+ Thêm đợt chi</button>
+              <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
+                <div className="flex justify-between items-center mb-4">
+                  <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest">Kế hoạch Chi trả Nhà cung cấp</p>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={generateSupplierSchedules}
+                      className="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-[10px] font-bold flex items-center gap-1.5 hover:bg-indigo-100 transition-colors"
+                    >
+                      <Calculator size={10} /> Tự động tính từ SP
+                    </button>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {supplierSchedules.map((pay, idx) => (
-                      <div key={pay.id} className="grid grid-cols-12 gap-2 bg-rose-50/50 dark:bg-rose-900/20 p-3 rounded-2xl border border-rose-100 dark:border-rose-800 relative group">
-                        <div className="col-span-4 space-y-1">
-                          <label className="text-[9px] text-slate-400 font-bold uppercase">Hạn thanh toán</label>
+                  <button onClick={() => setSupplierSchedules([...supplierSchedules, { id: Date.now().toString(), date: '', amount: 0, description: '', status: 'Pending', percentage: 0, type: 'Expense' }])} className="text-rose-600 font-bold text-[10px]">+ Thêm đợt chi</button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {supplierSchedules.map((pay, idx) => (
+                    <div key={pay.id} className="grid grid-cols-12 gap-2 bg-rose-50/50 dark:bg-rose-900/10 p-3 rounded-2xl border border-rose-100 dark:border-rose-800">
+                      <div className="col-span-4 space-y-1">
+                        <label className="text-[9px] text-slate-400 font-bold uppercase">Hạn thanh toán</label>
+                        <input
+                          type="date"
+                          value={pay.date}
+                          onChange={(e) => {
+                            const newSched = [...supplierSchedules];
+                            newSched[idx].date = e.target.value;
+                            setSupplierSchedules(newSched);
+                          }}
+                          className="w-full bg-transparent text-[11px] font-bold outline-none"
+                        />
+                      </div>
+                      <div className="col-span-4 space-y-1">
+                        <label className="text-[9px] text-slate-400 font-bold uppercase">Nhà cung cấp / Nội dung</label>
+                        <input
+                          placeholder="Chi cho..."
+                          value={pay.description}
+                          onChange={(e) => {
+                            const newSched = [...supplierSchedules];
+                            newSched[idx].description = e.target.value;
+                            setSupplierSchedules(newSched);
+                          }}
+                          className="w-full bg-transparent text-[11px] font-bold outline-none"
+                        />
+                      </div>
+                      <div className="col-span-4 space-y-1 text-right">
+                        <label className="text-[9px] text-slate-400 font-bold uppercase">Số tiền chi</label>
+                        <div className="flex items-center justify-end gap-2">
                           <input
-                            type="date"
-                            value={pay.date}
+                            type="number"
+                            placeholder="Tiền..."
+                            value={pay.amount}
                             onChange={(e) => {
                               const newSched = [...supplierSchedules];
-                              newSched[idx].date = e.target.value;
+                              newSched[idx].amount = Number(e.target.value);
                               setSupplierSchedules(newSched);
                             }}
-                            className="w-full bg-transparent text-[11px] font-bold outline-none"
+                            className="w-full bg-transparent text-[11px] font-black text-right outline-none text-rose-500"
                           />
-                        </div>
-                        <div className="col-span-4 space-y-1">
-                          <label className="text-[9px] text-slate-400 font-bold uppercase">Nhà cung cấp / Nội dung</label>
-                          <input
-                            placeholder="Chi cho..."
-                            value={pay.description}
-                            onChange={(e) => {
-                              const newSched = [...supplierSchedules];
-                              newSched[idx].description = e.target.value;
-                              setSupplierSchedules(newSched);
-                            }}
-                            className="w-full bg-transparent text-[11px] font-bold outline-none"
-                          />
-                        </div>
-                        <div className="col-span-4 space-y-1 text-right">
-                          <label className="text-[9px] text-slate-400 font-bold uppercase">Số tiền chi</label>
-                          <div className="flex items-center justify-end gap-2">
-                            <input
-                              type="number"
-                              placeholder="Tiền..."
-                              value={pay.amount}
-                              onChange={(e) => {
-                                const newSched = [...supplierSchedules];
-                                newSched[idx].amount = Number(e.target.value);
-                                setSupplierSchedules(newSched);
-                              }}
-                              className="w-full bg-transparent text-[11px] font-black text-right outline-none text-rose-500"
-                            />
-                            <button onClick={() => setSupplierSchedules(supplierSchedules.filter(p => p.id !== pay.id))} className="text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <X size={12} />
-                            </button>
-                          </div>
+                          <button onClick={() => setSupplierSchedules(supplierSchedules.filter(p => p.id !== pay.id))} className="text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <X size={12} />
+                          </button>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
-
-          {/* RIGHT COLUMN: Summary & Overhead (4 cols) */}
-          <div className="lg:col-span-4 space-y-8">
-
-            {/* CÁC LOẠI CHI PHÍ LIÊN QUAN */}
-            <section className="bg-slate-50 dark:bg-slate-800/40 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 space-y-6">
-              <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
-                <Calculator size={16} /> Chi phí quản lý hợp đồng
-              </h3>
-              <div className="space-y-5">
-                {[
-                  { key: 'transferFee', label: 'Phí chuyển tiền / Ngân hàng' },
-                  { key: 'contractorTax', label: 'Thuế nhà thầu (nếu có)' },
-                  { key: 'importFee', label: 'Phí nhập khẩu / Logistics' },
-                  { key: 'expertHiring', label: 'Chi phí thuê khoán chuyên môn' },
-                  { key: 'documentProcessing', label: 'Chi phí xử lý chứng từ' }
-                ].map((cost) => (
-                  <div key={cost.key} className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">{cost.label}</label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
-                      <input
-                        type="number"
-                        value={(adminCosts as any)[cost.key]}
-                        onChange={(e) => setAdminCosts({ ...adminCosts, [cost.key]: Number(e.target.value) })}
-                        className="w-full pl-8 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black focus:ring-2 focus:ring-rose-500 outline-none transition-all"
-                      />
                     </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* FINANCIAL SUMMARY CARD */}
-            <section className="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-[40px] p-8 text-white shadow-2xl relative overflow-hidden transition-all">
-              <div className="absolute top-0 right-0 p-8 opacity-10">
-                <TrendingUp size={120} />
-              </div>
-
-              <h3 className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-8 flex items-center gap-2">
-                <ShieldCheck size={16} /> Báo cáo Lợi nhuận dự kiến
-              </h3>
-
-              <div className="space-y-8 relative z-10">
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-1">Giá trị Ký kết (Tổng đầu ra)</p>
-                  <p className="text-3xl font-black text-white leading-none">{formatVND(totals.signingValue)} <span className="text-sm font-medium text-slate-500">đ</span></p>
+                  ))}
                 </div>
-
-                <div className="grid grid-cols-1 gap-6">
-                  <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter mb-1">Doanh thu dự kiến (Trừ VAT)</p>
-                    <p className="text-lg font-black text-slate-200">{formatVND(totals.estimatedRevenue)}</p>
-                  </div>
-                  <div className="p-4 bg-rose-900/10 rounded-2xl border border-rose-900/30">
-                    <p className="text-[9px] font-bold text-rose-500/70 uppercase tracking-tighter mb-1">Tổng chi phí & Giá vốn</p>
-                    <p className="text-lg font-black text-rose-400">{formatVND(totals.totalCosts)}</p>
-                  </div>
-                </div>
-
-                <div className="p-6 bg-emerald-500/10 rounded-[28px] border border-emerald-500/30 backdrop-blur-md">
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Lợi nhuận gộp</p>
-                      <p className="text-3xl font-black text-emerald-400">{formatVND(totals.grossProfit)}</p>
-                    </div>
-                    <div className="w-16 h-16 rounded-full border-4 border-emerald-500/20 flex items-center justify-center">
-                      <span className="text-sm font-black text-emerald-400">{totals.profitMargin.toFixed(0)}%</span>
-                    </div>
-                  </div>
-                  <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, totals.profitMargin)}%` }}></div>
-                  </div>
-                </div>
-
-                <p className="text-[9px] text-slate-500 leading-relaxed italic text-center">
-                  * Tỷ suất lợi nhuận được tính dựa trên Lợi nhuận gộp / Tổng giá trị ký kết.
-                </p>
               </div>
             </section>
           </div>
         </div>
       </div>
 
-      {/* FOOTER */}
-      <div className="px-10 py-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
+      {/* RIGHT COLUMN: Summary & Overhead (4 cols) */}
+      < div className="lg:col-span-4 space-y-8" >
+
+        {/* CÁC LOẠI CHI PHÍ LIÊN QUAN */}
+        < section className="bg-slate-50 dark:bg-slate-800/40 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 space-y-6" >
+          <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+            <Calculator size={16} /> Chi phí quản lý hợp đồng
+          </h3>
+          <div className="space-y-5">
+            {[
+              { key: 'transferFee', label: 'Phí chuyển tiền / Ngân hàng' },
+              { key: 'contractorTax', label: 'Thuế nhà thầu (nếu có)' },
+              { key: 'importFee', label: 'Phí nhập khẩu / Logistics' },
+              { key: 'expertHiring', label: 'Chi phí thuê khoán chuyên môn' },
+              { key: 'documentProcessing', label: 'Chi phí xử lý chứng từ' }
+            ].map((cost) => (
+              <div key={cost.key} className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">{cost.label}</label>
+                <div className="relative">
+                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
+                  <input
+                    type="number"
+                    value={(adminCosts as any)[cost.key]}
+                    onChange={(e) => setAdminCosts({ ...adminCosts, [cost.key]: Number(e.target.value) })}
+                    className="w-full pl-8 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black focus:ring-2 focus:ring-rose-500 outline-none transition-all"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section >
+
+        {/* FINANCIAL SUMMARY CARD */}
+        < section className="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-[40px] p-8 text-white shadow-2xl relative overflow-hidden transition-all" >
+          <div className="absolute top-0 right-0 p-8 opacity-10">
+            <TrendingUp size={120} />
+          </div>
+
+          <h3 className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-8 flex items-center gap-2">
+            <ShieldCheck size={16} /> Báo cáo Lợi nhuận dự kiến
+          </h3>
+
+          <div className="space-y-8 relative z-10">
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-1">Giá trị Ký kết (Tổng đầu ra)</p>
+              <p className="text-3xl font-black text-white leading-none">{formatVND(totals.signingValue)} <span className="text-sm font-medium text-slate-500">đ</span></p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6">
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter mb-1">Doanh thu dự kiến (Trừ VAT)</p>
+                <p className="text-lg font-black text-slate-200">{formatVND(totals.estimatedRevenue)}</p>
+              </div>
+              <div className="p-4 bg-rose-900/10 rounded-2xl border border-rose-900/30">
+                <p className="text-[9px] font-bold text-rose-500/70 uppercase tracking-tighter mb-1">Tổng chi phí & Giá vốn</p>
+                <p className="text-lg font-black text-rose-400">{formatVND(totals.totalCosts)}</p>
+              </div>
+            </div>
+
+            <div className="p-6 bg-emerald-500/10 rounded-[28px] border border-emerald-500/30 backdrop-blur-md">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Lợi nhuận gộp</p>
+                  <p className="text-3xl font-black text-emerald-400">{formatVND(totals.grossProfit)}</p>
+                </div>
+                <div className="w-16 h-16 rounded-full border-4 border-emerald-500/20 flex items-center justify-center">
+                  <span className="text-sm font-black text-emerald-400">{totals.profitMargin.toFixed(0)}%</span>
+                </div>
+              </div>
+              <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, totals.profitMargin)}%` }}></div>
+              </div>
+            </div>
+
+            <p className="text-[9px] text-slate-500 leading-relaxed italic text-center">
+              * Tỷ suất lợi nhuận được tính dựa trên Lợi nhuận gộp / Tổng giá trị ký kết.
+            </p>
+          </div>
+        </section >
+      </div >
+    </div >
+      </div >
+
+  {/* FOOTER */ }
+  < div className = "px-10 py-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center" >
         <div className="flex items-center gap-6">
           <div className="flex -space-x-3">
             {[1, 2, 3].map(i => <div key={i} className="w-9 h-9 rounded-full border-2 border-white dark:border-slate-800 bg-slate-200 dark:bg-slate-700 shadow-sm"></div>)}
@@ -783,8 +906,8 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
             Hoàn tất & Lưu hồ sơ
           </button>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 
