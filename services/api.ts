@@ -125,8 +125,12 @@ export const ContractsAPI = {
     },
 
     getById: async (id: string): Promise<Contract | undefined> => {
+        console.log("API: getById called for", id);
         const { data, error } = await supabase.from('contracts').select('*').eq('id', id).single();
-        if (error) return undefined;
+        if (error) {
+            console.error("API: getById error", error);
+            return undefined;
+        }
         return mapContract(data);
     },
 

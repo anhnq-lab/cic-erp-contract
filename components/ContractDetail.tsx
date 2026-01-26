@@ -39,7 +39,24 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
   const [loading, setLoading] = useState(!initialContract);
   const [error, setError] = useState('');
 
-  // ... (existing useEffect and helpers)
+  useEffect(() => {
+    if (initialContract) {
+      setContract(initialContract);
+      setLoading(false);
+      return;
+    }
+
+    if (contractId) {
+      setLoading(true);
+      ContractsAPI.getById(contractId)
+        .then(data => {
+          if (data) setContract(data);
+          else setError('Không tìm thấy hợp đồng');
+        })
+        .catch(err => setError('Lỗi tải hợp đồng: ' + err))
+        .finally(() => setLoading(false));
+    }
+  }, [contractId, initialContract]);
 
   const unit = useMemo(() => {
     if (!contract) return null;
