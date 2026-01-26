@@ -146,8 +146,9 @@ export const ContractsAPI = {
         return data.map(mapContract);
     },
 
-    create: async (data: Omit<Contract, 'id'>): Promise<Contract> => {
+    create: async (data: Contract): Promise<Contract> => {
         const payload = {
+            id: data.id,
             title: data.title,
             contract_type: data.contractType,
             party_a: data.partyA,
