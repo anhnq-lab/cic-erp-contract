@@ -149,7 +149,27 @@ const App: React.FC = () => {
     }
 
     if (activeTab === 'contract-detail' && viewingContractId) {
-      return <ContractDetail contractId={viewingContractId} onBack={handleBackToList} onEdit={() => setEditingContractId(viewingContractId)} />;
+      return (
+        <ContractDetail
+          contractId={viewingContractId}
+          onBack={handleBackToList}
+          onEdit={() => setEditingContractId(viewingContractId)}
+          onDelete={async () => {
+            try {
+              await ContractsAPI.delete(viewingContractId);
+              setViewingContractId(null);
+              // Force refresh list logic? 
+              // ContractList re-fetches on mount. When we back to list (setViewing(null)), activeTab actually needs to change?
+              // Ah, App's logic is: if viewingContractId exists, we show Detail. If not, we show List (if activeTab is contracts).
+              // So setting viewingContractId(null) will show ContractList.
+              // ContractList has useEffect [] to fetch.
+              alert("Đã xóa hợp đồng thành công!");
+            } catch (e: any) {
+              alert("Lỗi xóa hợp đồng: " + e.message);
+            }
+          }}
+        />
+      );
     }
 
     switch (activeTab) {

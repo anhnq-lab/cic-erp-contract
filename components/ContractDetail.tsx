@@ -31,31 +31,15 @@ interface ContractDetailProps {
   contractId?: string;
   onBack: () => void;
   onEdit: () => void;
+  onDelete: () => void;
 }
 
-const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContract, contractId, onBack, onEdit }) => {
+const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContract, contractId, onBack, onEdit, onDelete }) => {
   const [contract, setContract] = useState<Contract | null>(initialContract || null);
   const [loading, setLoading] = useState(!initialContract);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (initialContract) {
-      setContract(initialContract);
-      setLoading(false);
-      return;
-    }
-
-    if (contractId) {
-      setLoading(true);
-      ContractsAPI.getById(contractId)
-        .then(data => {
-          if (data) setContract(data);
-          else setError('Không tìm thấy hợp đồng');
-        })
-        .catch(err => setError('Lỗi tải hợp đồng: ' + err))
-        .finally(() => setLoading(false));
-    }
-  }, [contractId, initialContract]);
+  // ... (existing useEffect and helpers)
 
   const unit = useMemo(() => {
     if (!contract) return null;
@@ -93,6 +77,8 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
   return (
     <div className="space-y-6 animate-in slide-in-from-right-4 duration-500 pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* ... (existing header left part) */}
+
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}
@@ -113,6 +99,18 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (window.confirm("Bạn có chắc chắn muốn xóa hợp đồng này không? hành động này không thể hoàn tác.")) {
+                onDelete();
+              }
+            }}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all"
+          >
+            <div className="w-4 h-4"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></svg></div>
+            Xóa
+          </button>
+
           <button
             onClick={onEdit}
             className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
