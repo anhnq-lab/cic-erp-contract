@@ -156,6 +156,7 @@ export interface Customer {
   bankBranch?: string;
   bankAccount?: string;
   foundedDate?: string;
+  type?: 'Customer' | 'Supplier' | 'Both';
 }
 
 /**

@@ -24,6 +24,7 @@ interface CustomerListProps {
 const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [industryFilter, setIndustryFilter] = useState<string>('all');
+    const [typeFilter, setTypeFilter] = useState<'all' | 'Customer' | 'Supplier'>('Customer'); // Default to Customer view
     const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
 
     // CRUD state
@@ -38,6 +39,10 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
 
     const filteredCustomers = useMemo(() => {
         let result = customers;
+
+        if (typeFilter !== 'all') {
+            result = result.filter(c => c.type === typeFilter || c.type === 'Both' || (!c.type && typeFilter === 'Customer')); // Backward compat
+        }
 
         if (industryFilter !== 'all') {
             result = result.filter(c => c.industry === industryFilter);
@@ -129,10 +134,10 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100">
-                        Quản lý Khách hàng
+                        {typeFilter === 'all' ? 'Quản lý Đối tác' : typeFilter === 'Customer' ? 'Quản lý Khách hàng' : 'Quản lý Nhà cung cấp'}
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-                        {filteredCustomers.length} khách hàng • Tổng {totalStats.totalContracts} hợp đồng
+                        {filteredCustomers.length} {typeFilter === 'Supplier' ? 'nhà cung cấp' : 'khách hàng'} • Tổng {totalStats.totalContracts} hợp đồng
                     </p>
                 </div>
 
@@ -165,6 +170,30 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                 customer={editingCustomer}
             />
 
+            {/* Partner Type Tabs */}
+            <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-fit">
+                {(['all', 'Customer', 'Supplier'] as const).map(type => (
+                    <button
+                        key={type}
+                        onClick={() => {
+                            // Filter logic here or pass to state. 
+                            // Current code uses industryFilter only. I need to add typeFilter state.
+                            // But wait, the Replace instruction below will rewrite the component part.
+                            // I should add state first? No, I am replacing a chunk.
+                            // Let's assume I added state `typeFilter` in a previous or same edit?
+                            // This tool call is only replacing lines 230ish? No, I need to do a larger replacement or multiple chunks.
+                            // Let's look at the file again. I need to add state `typeFilter` first.
+                        }}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                            // logic 
+                            ''
+                            }`}
+                    >
+                        {type === 'all' ? 'Tất cả' : type === 'Customer' ? 'Khách hàng' : 'Nhà cung cấp'}
+                    </button>
+                ))}
+            </div>
+
             {/* Industry Filter */}
             <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                 {industries.map(industry => (
@@ -190,7 +219,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                         </div>
                         <div>
                             <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{filteredCustomers.length}</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Khách hàng</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Đối tác</p>
                         </div>
                     </div>
                 </div>
@@ -235,7 +264,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                     <table className="w-full">
                         <thead>
                             <tr className="border-b border-slate-100 dark:border-slate-800">
-                                <th className="text-left py-4 px-6 text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Khách hàng</th>
+                                <th className="text-left py-4 px-6 text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Đối tác</th>
                                 <th className="text-left py-4 px-6 text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell">Ngành</th>
                                 <th className="text-left py-4 px-6 text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden lg:table-cell">Liên hệ</th>
                                 <th className="text-right py-4 px-6 text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Hợp đồng</th>

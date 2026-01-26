@@ -38,7 +38,8 @@ const mapCustomer = (c: any): Customer => ({
     bankName: c.bank_name,
     bankBranch: c.bank_branch,
     bankAccount: c.bank_account,
-    foundedDate: c.founded_date
+    foundedDate: c.founded_date,
+    type: c.type || 'Customer'
 });
 
 // Helper to map DB SalesPerson to Frontend SalesPerson
@@ -382,7 +383,8 @@ export const CustomersAPI = {
             notes: data.notes,
             bank_name: data.bankName,
             bank_branch: data.bankBranch,
-            bank_account: data.bankAccount
+            bank_account: data.bankAccount,
+            type: data.type || 'Customer'
         };
         const { data: res, error } = await supabase.from('customers').insert(payload).select().single();
         if (error) throw error;
@@ -404,6 +406,7 @@ export const CustomersAPI = {
         if (data.bankName) payload.bank_name = data.bankName;
         if (data.bankBranch) payload.bank_branch = data.bankBranch;
         if (data.bankAccount) payload.bank_account = data.bankAccount;
+        if (data.type) payload.type = data.type;
 
         const { data: res, error } = await supabase.from('customers').update(payload).eq('id', id).select().single();
         if (error) throw error;

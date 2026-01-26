@@ -8,11 +8,12 @@ interface CustomerFormProps {
     onClose: () => void;
     onSave: (data: Omit<Customer, 'id'> | Customer) => Promise<void>;
     customer?: Customer;
+    defaultType?: 'Customer' | 'Supplier' | 'Both' | 'all';
 }
 
 const INDUSTRIES = ['Xây dựng', 'Bất động sản', 'Năng lượng', 'Công nghệ', 'Sản xuất', 'Khác'];
 
-const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, customer }) => {
+const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, customer, defaultType = 'Customer' }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -25,6 +26,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
         taxCode: '',
         website: '',
         notes: '',
+        type: (defaultType === 'all' ? 'Customer' : defaultType) as 'Customer' | 'Supplier' | 'Both',
     });
 
     useEffect(() => {
@@ -40,6 +42,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
                 taxCode: customer.taxCode || '',
                 website: customer.website || '',
                 notes: customer.notes || '',
+                type: customer.type || 'Customer',
             });
         } else {
             setFormData({
@@ -53,9 +56,10 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
                 taxCode: '',
                 website: '',
                 notes: '',
+                type: (defaultType === 'all' ? 'Customer' : defaultType) as 'Customer' | 'Supplier' | 'Both',
             });
         }
-    }, [customer, isOpen]);
+    }, [customer, isOpen, defaultType]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -77,6 +81,43 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={customer ? 'Chỉnh sửa Khách hàng' : 'Thêm Khách hàng mới'} size="lg">
             <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Type Selection */}
+                <div className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="radio"
+                            name="type"
+                            value="Customer"
+                            checked={formData.type === 'Customer'}
+                            onChange={() => setFormData(prev => ({ ...prev, type: 'Customer' }))}
+                            className="w-4 h-4 text-indigo-600"
+                        />
+                        <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Khách hàng</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="radio"
+                            name="type"
+                            value="Supplier"
+                            checked={formData.type === 'Supplier'}
+                            onChange={() => setFormData(prev => ({ ...prev, type: 'Supplier' }))}
+                            className="w-4 h-4 text-indigo-600"
+                        />
+                        <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Nhà cung cấp</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="radio"
+                            name="type"
+                            value="Both"
+                            checked={formData.type === 'Both'}
+                            onChange={() => setFormData(prev => ({ ...prev, type: 'Both' }))}
+                            className="w-4 h-4 text-indigo-600"
+                        />
+                        <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Cả hai</span>
+                    </label>
+                </div>
+
                 {/* Row 1: Name + Short Name */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
