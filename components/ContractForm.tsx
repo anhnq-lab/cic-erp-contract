@@ -11,9 +11,9 @@ import {
   Unit, ContractType, LineItem,
   ContractContact, PaymentSchedule,
   RevenueSchedule, AdministrativeCosts,
-  Contract, SalesPerson
+  Contract, SalesPerson, Customer, Product
 } from '../types';
-import { UnitsAPI, PersonnelAPI } from '../services/api';
+import { UnitsAPI, PersonnelAPI, CustomersAPI, ProductsAPI } from '../services/api';
 
 interface ContractFormProps {
   contract?: Contract; // For edit mode
@@ -27,16 +27,22 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
   // Data Options State
   const [units, setUnits] = useState<Unit[]>([]);
   const [salespeople, setSalespeople] = useState<SalesPerson[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const [unitsData, peopleData] = await Promise.all([
+        const [unitsData, peopleData, customersData, productsData] = await Promise.all([
           UnitsAPI.getAll(),
-          PersonnelAPI.getAll()
+          PersonnelAPI.getAll(),
+          CustomersAPI.getAll(),
+          ProductsAPI.getAll()
         ]);
         setUnits(unitsData);
         setSalespeople(peopleData);
+        setCustomers(customersData);
+        setProducts(productsData);
 
         // Set default unit if creating new and no unit selected yet
         if (!isEditing && !unitId && unitsData.length > 0) {
@@ -53,6 +59,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
   const [contractType, setContractType] = useState<ContractType>(contract?.contractType || 'HĐ');
   const [unitId, setUnitId] = useState(contract?.unitId || '');
   const [salespersonId, setSalespersonId] = useState(contract?.salespersonId || '');
+  const [customerId, setCustomerId] = useState(contract?.customerId || null);
   const [title, setTitle] = useState(contract?.title || '');
   const [clientName, setClientName] = useState(contract?.partyA || '');
   const [signedDate, setSignedDate] = useState(contract?.signedDate || new Date().toISOString().split('T')[0]);
@@ -130,8 +137,8 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
       contractType,
       partyA: clientName,
       partyB: 'CIC', // Default
-      clientInitials: clientName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 5),
-      customerId: null, // Force null for now until we have customer selection
+      clientInitials: clientName ? clientName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 5) : 'KH',
+      customerId: customerId,
       unitId,
       salespersonId,
       value: totals.signingValue,
@@ -233,12 +240,27 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-[11px] font-bold text-slate-500 uppercase ml-1">Tên khách hàng</label>
-                  <input
-                    placeholder="VD: Công ty Cổ phần Fecon..."
-                    value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
+                  <select
+                    value={customerId || ''}
+                    onChange={(e) => {
+                      const cId = e.target.value;
+                      setCustomerId(cId || null);
+                      const cust = customers.find(c => c.id === cId);
+                      if (cust) {
+                        setClientName(cust.name);
+                      } else {
+                        setClientName('');
+                      }
+                    }}
                     className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none"
-                  />
+                  >
+                    <option value="">-- Chọn khách hàng --</option>
+                    {customers
+                      .filter(c => !c.type || c.type === 'Customer' || c.type === 'Both')
+                      .map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                  </select>
                 </div>
                 <div className="space-y-2">
                   <label className="text-[11px] font-bold text-slate-500 uppercase ml-1">Ngày ký kết</label>
@@ -343,16 +365,29 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                       return (
                         <tr key={item.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                           <td className="px-4 py-3">
-                            <input
-                              value={item.name}
+                            <select
+                              value={products.find(p => p.name === item.name)?.id || ''}
                               onChange={(e) => {
+                                const pId = e.target.value;
+                                const prod = products.find(p => p.id === pId);
                                 const newList = [...lineItems];
-                                newList[index].name = e.target.value;
+                                if (prod) {
+                                  newList[index].name = prod.name;
+                                  newList[index].inputPrice = prod.costPrice;
+                                  newList[index].outputPrice = prod.basePrice;
+                                  // Optional: Set supplier if product has default supplier? Not in schema.
+                                } else {
+                                  newList[index].name = '';
+                                }
                                 setLineItems(newList);
                               }}
-                              placeholder="Tên sản phẩm..."
                               className="w-full bg-transparent font-black text-slate-700 dark:text-slate-200 outline-none"
-                            />
+                            >
+                              <option value="">-- Chọn SP --</option>
+                              {products.map(p => (
+                                <option key={p.id} value={p.id}>{p.name}</option>
+                              ))}
+                            </select>
                           </td>
                           <td className="px-2 py-3">
                             <input
@@ -367,15 +402,27 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                             />
                           </td>
                           <td className="px-4 py-3">
-                            <input
-                              placeholder="Tên đối tác..."
-                              className="w-full bg-transparent font-bold outline-none text-slate-400"
+                            <select
+                              value={customers.find(c => c.name === item.supplier)?.id || ''}
                               onChange={(e) => {
+                                const sId = e.target.value;
+                                const supp = customers.find(c => c.id === sId);
                                 const newList = [...lineItems];
-                                newList[index].supplier = e.target.value;
+                                if (supp) {
+                                  newList[index].supplier = supp.name;
+                                } else {
+                                  newList[index].supplier = '';
+                                }
                                 setLineItems(newList);
                               }}
-                            />
+                              className="w-full bg-transparent font-bold outline-none text-slate-400"
+                            >
+                              <option value="">-- Chọn NCC --</option>
+                              {customers
+                                .filter(c => c.type === 'Supplier' || c.type === 'Both')
+                                .map(c => <option key={c.id} value={c.id}>{c.name}</option>)
+                              }
+                            </select>
                           </td>
                           <td className="px-4 py-3 text-right">
                             <input
