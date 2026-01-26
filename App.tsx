@@ -149,8 +149,7 @@ const App: React.FC = () => {
     }
 
     if (activeTab === 'contract-detail' && viewingContractId) {
-      const contract = MOCK_CONTRACTS.find(c => c.id === viewingContractId);
-      if (contract) return <ContractDetail contract={contract} onBack={handleBackToList} onEdit={() => setEditingContractId(viewingContractId)} />;
+      return <ContractDetail contractId={viewingContractId} onBack={handleBackToList} onEdit={() => setEditingContractId(viewingContractId)} />;
     }
 
     switch (activeTab) {

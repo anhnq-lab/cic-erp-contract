@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   ArrowLeft,
   Calendar,
@@ -24,15 +24,43 @@ import {
 } from 'lucide-react';
 import { Contract, Unit, Milestone, PaymentPhase } from '../types';
 import { MOCK_UNITS } from '../constants';
+import { ContractsAPI } from '../services/api';
 
 interface ContractDetailProps {
-  contract: Contract;
+  contract?: Contract;
+  contractId?: string;
   onBack: () => void;
   onEdit: () => void;
 }
 
-const ContractDetail: React.FC<ContractDetailProps> = ({ contract, onBack, onEdit }) => {
-  const unit = MOCK_UNITS.find(u => u.id === contract.unitId);
+const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContract, contractId, onBack, onEdit }) => {
+  const [contract, setContract] = useState<Contract | null>(initialContract || null);
+  const [loading, setLoading] = useState(!initialContract);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (initialContract) {
+      setContract(initialContract);
+      setLoading(false);
+      return;
+    }
+
+    if (contractId) {
+      setLoading(true);
+      ContractsAPI.getById(contractId)
+        .then(data => {
+          if (data) setContract(data);
+          else setError('Không tìm thấy hợp đồng');
+        })
+        .catch(err => setError('Lỗi tải hợp đồng: ' + err))
+        .finally(() => setLoading(false));
+    }
+  }, [contractId, initialContract]);
+
+  const unit = useMemo(() => {
+    if (!contract) return null;
+    return MOCK_UNITS.find(u => u.id === contract.unitId);
+  }, [contract]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -53,10 +81,14 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract, onBack, onEdi
   };
 
   const totalPaidAmount = useMemo(() => {
+    if (!contract) return 0;
     return contract.paymentPhases?.filter(p => p.status === 'Paid').reduce((acc, curr) => acc + curr.amount, 0) || 0;
-  }, [contract.paymentPhases]);
+  }, [contract]);
 
-  const disbursementRate = (totalPaidAmount / contract.value) * 100;
+  const disbursementRate = contract && contract.value > 0 ? (totalPaidAmount / contract.value) * 100 : 0;
+
+  if (loading) return <div className="p-8 text-center text-slate-500">Đang tải dữ liệu hợp đồng...</div>;
+  if (error || !contract) return <div className="p-8 text-center text-rose-500 font-bold">{error || 'Không tìm thấy dữ liệu'}</div>;
 
   return (
     <div className="space-y-6 animate-in slide-in-from-right-4 duration-500 pb-12">
@@ -232,7 +264,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract, onBack, onEdi
               {contract.paymentPhases && contract.paymentPhases.length > 0 ? (
                 contract.paymentPhases.map((p) => (
                   <div key={p.id} className={`p-5 rounded-2xl border transition-all ${p.status === 'Paid' ? 'bg-emerald-50/30 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/40' :
-                      p.status === 'Overdue' ? 'bg-rose-50/30 dark:bg-rose-900/10 border-rose-100 dark:border-rose-900/40' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-800'
+                    p.status === 'Overdue' ? 'bg-rose-50/30 dark:bg-rose-900/10 border-rose-100 dark:border-rose-900/40' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-800'
                     }`}>
                     <div className="flex justify-between items-start mb-3">
                       <div>
