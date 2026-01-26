@@ -808,91 +808,8 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
         </div>
       </div>
 
-      {/* RIGHT COLUMN: Summary & Overhead (4 cols) */}
-      < div className="lg:col-span-4 space-y-8" >
-
-        {/* CÁC LOẠI CHI PHÍ LIÊN QUAN */}
-        < section className="bg-slate-50 dark:bg-slate-800/40 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 space-y-6" >
-          <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
-            <Calculator size={16} /> Chi phí quản lý hợp đồng
-          </h3>
-          <div className="space-y-5">
-            {[
-              { key: 'transferFee', label: 'Phí chuyển tiền / Ngân hàng' },
-              { key: 'contractorTax', label: 'Thuế nhà thầu (nếu có)' },
-              { key: 'importFee', label: 'Phí nhập khẩu / Logistics' },
-              { key: 'expertHiring', label: 'Chi phí thuê khoán chuyên môn' },
-              { key: 'documentProcessing', label: 'Chi phí xử lý chứng từ' }
-            ].map((cost) => (
-              <div key={cost.key} className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">{cost.label}</label>
-                <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
-                  <input
-                    type="number"
-                    value={(adminCosts as any)[cost.key]}
-                    onChange={(e) => setAdminCosts({ ...adminCosts, [cost.key]: Number(e.target.value) })}
-                    className="w-full pl-8 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black focus:ring-2 focus:ring-rose-500 outline-none transition-all"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section >
-
-        {/* FINANCIAL SUMMARY CARD */}
-        < section className="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-[40px] p-8 text-white shadow-2xl relative overflow-hidden transition-all" >
-          <div className="absolute top-0 right-0 p-8 opacity-10">
-            <TrendingUp size={120} />
-          </div>
-
-          <h3 className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-8 flex items-center gap-2">
-            <ShieldCheck size={16} /> Báo cáo Lợi nhuận dự kiến
-          </h3>
-
-          <div className="space-y-8 relative z-10">
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-1">Giá trị Ký kết (Tổng đầu ra)</p>
-              <p className="text-3xl font-black text-white leading-none">{formatVND(totals.signingValue)} <span className="text-sm font-medium text-slate-500">đ</span></p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-6">
-              <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter mb-1">Doanh thu dự kiến (Trừ VAT)</p>
-                <p className="text-lg font-black text-slate-200">{formatVND(totals.estimatedRevenue)}</p>
-              </div>
-              <div className="p-4 bg-rose-900/10 rounded-2xl border border-rose-900/30">
-                <p className="text-[9px] font-bold text-rose-500/70 uppercase tracking-tighter mb-1">Tổng chi phí & Giá vốn</p>
-                <p className="text-lg font-black text-rose-400">{formatVND(totals.totalCosts)}</p>
-              </div>
-            </div>
-
-            <div className="p-6 bg-emerald-500/10 rounded-[28px] border border-emerald-500/30 backdrop-blur-md">
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Lợi nhuận gộp</p>
-                  <p className="text-3xl font-black text-emerald-400">{formatVND(totals.grossProfit)}</p>
-                </div>
-                <div className="w-16 h-16 rounded-full border-4 border-emerald-500/20 flex items-center justify-center">
-                  <span className="text-sm font-black text-emerald-400">{totals.profitMargin.toFixed(0)}%</span>
-                </div>
-              </div>
-              <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, totals.profitMargin)}%` }}></div>
-              </div>
-            </div>
-
-            <p className="text-[9px] text-slate-500 leading-relaxed italic text-center">
-              * Tỷ suất lợi nhuận được tính dựa trên Lợi nhuận gộp / Tổng giá trị ký kết.
-            </p>
-          </div>
-        </section >
-      </div >
-    </div >
-      </div >
-
-  {/* FOOTER */ }
-  < div className = "px-10 py-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center" >
+      {/* FOOTER */}
+      <div className="px-10 py-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
         <div className="flex items-center gap-6">
           <div className="flex -space-x-3">
             {[1, 2, 3].map(i => <div key={i} className="w-9 h-9 rounded-full border-2 border-white dark:border-slate-800 bg-slate-200 dark:bg-slate-700 shadow-sm"></div>)}
@@ -906,8 +823,8 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
             Hoàn tất & Lưu hồ sơ
           </button>
         </div>
-      </div >
-    </div >
+      </div>
+    </div>
   );
 };
 
