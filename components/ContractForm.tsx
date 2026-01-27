@@ -234,11 +234,9 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
         </button>
       </div>
 
-      {/* BODY */}
-      <div className="flex-1 overflow-y-auto p-10 custom-scrollbar space-y-8">
-
-        {/* FINANCIAL SUMMARY REFACTORED (TOP) */}
-        <section className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-[32px] p-8 text-white shadow-2xl relative overflow-hidden shrink-0">
+      {/* FINANCIAL SUMMARY (FIXED) */}
+      <div className="px-10 pt-8 pb-4 shrink-0 z-10 bg-white dark:bg-slate-900">
+        <section className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-[32px] p-8 text-white shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-10">
             <TrendingUp size={120} />
           </div>
@@ -289,6 +287,10 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
             </div>
           </div>
         </section>
+      </div>
+
+      {/* BODY */}
+      <div className="flex-1 overflow-y-auto px-10 pb-10 pt-2 custom-scrollbar space-y-8">
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
 
