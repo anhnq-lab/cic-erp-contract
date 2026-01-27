@@ -145,6 +145,18 @@ export interface Contract {
   adminCosts?: AdministrativeCosts;
   milestones?: Milestone[];
   paymentPhases?: PaymentPhase[];
+  documents?: ContractDocument[];
+}
+
+export interface ContractDocument {
+  id: string;
+  contractId: string;
+  name: string;
+  url: string;
+  filePath: string;
+  type?: string;
+  size?: number;
+  uploadedAt: string;
 }
 
 /**

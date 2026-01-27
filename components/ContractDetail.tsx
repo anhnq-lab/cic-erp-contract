@@ -28,11 +28,12 @@ import {
   Building2,
   Users,
   Trash2,
-  Plus
+  Plus,
+  Loader2
 } from 'lucide-react';
-import { Contract, Unit, Milestone, PaymentPhase, AdministrativeCosts } from '../types';
+import { Contract, Unit, Milestone, PaymentPhase, AdministrativeCosts, ContractDocument } from '../types';
 import { MOCK_UNITS } from '../constants';
-import { ContractsAPI, UnitsAPI, PersonnelAPI, CustomersAPI } from '../services/api';
+import { ContractsAPI, UnitsAPI, PersonnelAPI, CustomersAPI, DocumentsAPI } from '../services/api';
 
 interface ContractDetailProps {
   contract?: Contract;
@@ -55,6 +56,10 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
   const [unitName, setUnitName] = useState('...');
   const [salesName, setSalesName] = useState('...');
   const [customerName, setCustomerName] = useState('...');
+
+  // Documents State
+  const [documents, setDocuments] = useState<ContractDocument[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     if (initialContract) {
@@ -110,6 +115,59 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
     };
     fetchRefs();
   }, [contract]);
+
+  // Fetch Documents
+  useEffect(() => {
+    if (contract?.id) {
+      DocumentsAPI.getByContractId(contract.id)
+        .then(setDocuments)
+        .catch(e => console.error("Load docs error", e));
+    }
+  }, [contract?.id]);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0] || !contract) return;
+    const file = e.target.files[0];
+    setIsUploading(true);
+    try {
+      const newDoc = await DocumentsAPI.upload(contract.id, file);
+      setDocuments(prev => [newDoc, ...prev]);
+      // alert("Upload thành công!");
+    } catch (err: any) {
+      alert("Upload thất bại: " + err.message);
+    } finally {
+      setIsUploading(false);
+      // Reset input to allow same file selection if needed
+      e.target.value = '';
+    }
+  };
+
+  const handleDeleteDoc = async (doc: ContractDocument, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm(`Xóa tài liệu ${doc.name}?`)) return;
+    try {
+      await DocumentsAPI.delete(doc.id, doc.filePath);
+      setDocuments(prev => prev.filter(d => d.id !== doc.id));
+    } catch (err: any) {
+      alert("Xóa thất bại: " + err.message);
+    }
+  };
+
+  const handleDownloadDoc = async (doc: ContractDocument) => {
+    try {
+      const blob = await DocumentsAPI.download(doc.filePath);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = doc.name;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (e: any) {
+      alert("Download error: " + e.message);
+    }
+  };
 
   // Business Logic Calculations
   const financials = useMemo(() => {
@@ -471,25 +529,32 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                 <Paperclip size={18} className="text-slate-400" />
                 Tài liệu hồ sơ
               </h4>
-              <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-1 rounded-lg font-bold">3</span>
+              <label className="cursor-pointer bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 p-2 rounded-lg transition-colors flex items-center justify-center">
+                {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                <input type="file" className="hidden" onChange={handleUpload} disabled={isUploading} />
+              </label>
             </div>
             <div className="space-y-2">
-              {[
-                { name: 'Hop_dong_goc_ky_so.pdf', size: '2.4 MB' },
-                { name: 'Phu_luc_01_Ky_thuat.pdf', size: '1.1 MB' },
-                { name: 'Bien_ban_nghiem_thu_T1.pdf', size: '0.8 MB' }
-              ].map((file, i) => (
-                <div key={i} className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-all cursor-pointer group">
+              {documents.length === 0 && <p className="text-xs text-slate-400 italic text-center py-4">Chưa có tài liệu nào</p>}
+              {documents.map((file) => (
+                <div key={file.id} className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-all cursor-pointer group" onClick={() => handleDownloadDoc(file)}>
                   <div className="flex items-center gap-3 overflow-hidden">
                     <div className="p-2 bg-rose-50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 rounded-lg group-hover:bg-rose-100 transition-colors">
                       <FileText size={16} />
                     </div>
                     <div className="overflow-hidden">
                       <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{file.name}</p>
-                      <p className="text-[10px] text-slate-400 dark:text-slate-500">{file.size}</p>
+                      <p className="text-[10px] text-slate-400 dark:text-slate-500">{((file.size || 0) / 1024).toFixed(0)} KB • {new Date(file.uploadedAt).toLocaleDateString('vi-VN')}</p>
                     </div>
                   </div>
-                  <Download size={14} className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" />
+                  <div className="flex items-center gap-2">
+                    <button onClick={(e) => handleDeleteDoc(file, e)} className="p-1.5 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100">
+                      <Trash2 size={14} />
+                    </button>
+                    <button className="p-1.5 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg text-slate-300 hover:text-indigo-600 transition-colors">
+                      <Download size={14} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

@@ -683,7 +683,7 @@ export const PaymentsAPI = {
         if (data.reference) payload.reference = data.reference;
         if (data.invoiceNumber) payload.invoice_number = data.invoiceNumber;
         if (data.notes) payload.notes = data.notes;
-        if (data.paymentType) payload.payment_type = data.paymentType;
+        if (data.dueDate) payload.due_date = data.dueDate;
 
         const { data: res, error } = await supabase.from('payments').update(payload).eq('id', id).select().single();
         if (error) throw error;
@@ -697,3 +697,89 @@ export const PaymentsAPI = {
     },
 };
 
+// ============================================
+// DOCUMENTS API
+// ============================================
+export const DocumentsAPI = {
+    getByContractId: async (contractId: string) => {
+        const { data, error } = await supabase.from('contract_documents').select('*').eq('contract_id', contractId);
+        if (error) throw error;
+        return data.map((d: any) => ({
+            id: d.id,
+            contractId: d.contract_id,
+            name: d.name,
+            url: d.url,
+            filePath: d.file_path,
+            type: d.type,
+            size: d.size,
+            uploadedAt: d.uploaded_at
+        }));
+    },
+
+    upload: async (contractId: string, file: File) => {
+        // 1. Upload to Storage
+        const filePath = `${contractId}/${Date.now()}_${file.name}`;
+        const { data: storageData, error: storageError } = await supabase.storage
+            .from('contract_docs')
+            .upload(filePath, file);
+
+        if (storageError) throw storageError;
+
+        // 2. Get Public URL (or Signed URL)
+        // Since bucket is private, we should use createSignedUrl for sensitive docs,
+        // but for now, if we want persistent links in DB, we might want to just store path
+        // and generate URL on fetch. OR, if we allowed "public" read in policy (even if bucket is private-ish),
+        // we can use public URL.
+        // Wait, I set bucket strict privaty in SQL. So public URL won't work unless I change policy or use signed URL.
+        // actually I set "Allow authenticated read access" for storage.objects.
+        // So authenticated users can download.
+        // We will store the Path, and when listing, we can generate a signed URL or just use the download method.
+        // But for "url" field in DB, let's store the path for now or a pseudo-url.
+
+        // Actually, to make it viewable in UI easily (<img> or <frame>), signed URL is best.
+        // User wants "upload ... scan ...".
+
+        // Let's insert into DB with the filePath.
+        const { data: dbData, error: dbError } = await supabase.from('contract_documents').insert({
+            contract_id: contractId,
+            name: file.name,
+            file_path: filePath,
+            url: filePath, // We can store path here too, or leave it.
+            type: file.type,
+            size: file.size
+        }).select().single();
+
+        if (dbError) throw dbError;
+
+        return {
+            id: dbData.id,
+            contractId: dbData.contract_id,
+            name: dbData.name,
+            url: dbData.url,
+            filePath: dbData.file_path,
+            type: dbData.type,
+            size: dbData.size,
+            uploadedAt: dbData.uploaded_at
+        };
+    },
+
+    delete: async (id: string, filePath: string) => {
+        // 1. Delete from Storage
+        const { error: storageError } = await supabase.storage
+            .from('contract_docs')
+            .remove([filePath]);
+
+        if (storageError) console.error("Storage delete error", storageError);
+
+        // 2. Delete from DB
+        const { error: dbError } = await supabase.from('contract_documents').delete().eq('id', id);
+        if (dbError) throw dbError;
+        return true;
+    },
+
+    download: async (filePath: string) => {
+        const { data, error } = await supabase.storage.from('contract_docs').download(filePath);
+        if (error) throw error;
+        return data;
+    }
+};
