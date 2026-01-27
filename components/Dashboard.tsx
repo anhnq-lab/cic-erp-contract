@@ -15,6 +15,7 @@ import {
   Line,
   ComposedChart,
 } from 'recharts';
+import ChatWidget from './ChatWidget';
 import {
   FileText,
   CreditCard,

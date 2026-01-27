@@ -700,7 +700,8 @@ export const PaymentsAPI = {
         // Filters
         if (search) {
             // Search by Invoice or Reference (avoiding UUID fields to prevent crash)
-            query = query.or(`invoice_number.ilike.%${search}%,reference.ilike.%${search}%,notes.ilike.%${search}%`);
+            // Search by Invoice Number (safest)
+            query = query.ilike('invoice_number', `%${search}%`);
         }
         if (type) {
             query = query.eq('payment_type', type);
