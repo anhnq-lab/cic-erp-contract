@@ -11,9 +11,10 @@ import {
   Unit, ContractType, LineItem,
   ContractContact, PaymentSchedule,
   RevenueSchedule, AdministrativeCosts,
-  Contract, SalesPerson, Customer, Product
+  Contract, SalesPerson, Customer, Product, DirectCostDetail
 } from '../types';
 import { UnitsAPI, PersonnelAPI, CustomersAPI, ProductsAPI } from '../services/api';
+import Modal from './ui/Modal';
 
 interface ContractFormProps {
   contract?: Contract; // For edit mode
@@ -97,6 +98,30 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
   const [adminCostPercentages, setAdminCostPercentages] = useState<AdministrativeCosts>({
     transferFee: 0, contractorTax: 0, importFee: 0, expertHiring: 0, documentProcessing: 0
   });
+
+  // 6. Direct Costs Modal State
+  const [activeCostModalIndex, setActiveCostModalIndex] = useState<number | null>(null);
+  const [tempCostDetails, setTempCostDetails] = useState<DirectCostDetail[]>([]);
+
+  // Function to open modal
+  const openCostModal = (index: number) => {
+    setActiveCostModalIndex(index);
+    setTempCostDetails(lineItems[index].directCostDetails || []);
+  };
+
+  // Function to save modal
+  const saveCostModal = () => {
+    if (activeCostModalIndex === null) return;
+
+    const newList = [...lineItems];
+    const totalAmount = tempCostDetails.reduce((acc, item) => acc + item.amount, 0);
+
+    newList[activeCostModalIndex].directCostDetails = tempCostDetails;
+    newList[activeCostModalIndex].directCosts = totalAmount;
+
+    setLineItems(newList);
+    setActiveCostModalIndex(null);
+  };
 
   // Filter sales based on selected unit
   // Show all sales people, regardless of unit (User request)
@@ -580,18 +605,32 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                                 />
                               </td>
                               <td className="px-4 py-3 text-right">
-                                <input
-                                  type="text"
-                                  value={item.directCosts ? formatVND(item.directCosts) : '0'}
-                                  onChange={(e) => {
-                                    const raw = e.target.value.replace(/\./g, '');
-                                    if (!/^\d*$/.test(raw)) return;
-                                    const newList = [...lineItems];
-                                    newList[index].directCosts = Number(raw);
-                                    setLineItems(newList);
-                                  }}
-                                  className="w-full bg-transparent font-bold text-rose-500 text-right outline-none"
-                                />
+                                <div className="relative group">
+                                  <input
+                                    type="text"
+                                    readOnly
+                                    onClick={() => openCostModal(index)}
+                                    value={item.directCosts ? formatVND(item.directCosts) : '0'}
+                                    className="w-full bg-transparent font-bold text-rose-500 text-right outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 rounded px-1"
+                                  />
+                                  {/* Hover Tooltip */}
+                                  {item.directCostDetails && item.directCostDetails.length > 0 && (
+                                    <div className="absolute top-full right-0 mt-2 w-64 p-3 bg-slate-900 text-white text-[10px] rounded-xl shadow-xl z-50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                      <div className="space-y-1">
+                                        {item.directCostDetails.map((detail, i) => (
+                                          <div key={i} className="flex justify-between items-center border-b border-slate-700 pb-1 last:border-0 last:pb-0">
+                                            <span className="font-medium">{detail.name}</span>
+                                            <span className="font-bold">{formatVND(detail.amount)}</span>
+                                          </div>
+                                        ))}
+                                        <div className="pt-2 mt-1 border-t border-slate-700 flex justify-between">
+                                          <span className="font-bold uppercase opacity-70">Tổng</span>
+                                          <span className="font-black text-emerald-400">{formatVND(item.directCosts)}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
                               </td>
                               <td className="px-4 py-3 text-right">
                                 <div className="flex flex-col items-end">

@@ -70,6 +70,12 @@ export interface ContractContact {
 /**
  * Represents an individual line item in the contract
  */
+export interface DirectCostDetail {
+  id: string;
+  name: string;
+  amount: number;
+}
+
 export interface LineItem {
   id: string;
   name: string;
@@ -78,6 +84,7 @@ export interface LineItem {
   inputPrice: number;
   outputPrice: number;
   directCosts: number;
+  directCostDetails?: DirectCostDetail[];
 }
 
 /**
