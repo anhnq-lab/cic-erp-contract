@@ -248,7 +248,7 @@ const App: React.FC = () => {
   const contentMaxWidthClass = isSidebarCollapsed ? 'max-w-[1600px]' : 'max-w-[1400px]';
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col transition-colors duration-300">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col transition-colors duration-300">
       <Sidebar
         activeTab={activeTab === 'contract-detail' ? 'contracts' : activeTab}
         setActiveTab={setActiveTab}
