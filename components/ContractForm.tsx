@@ -256,31 +256,31 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
             </div>
 
             {/* Stats Grid */}
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Total Value */}
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-1">Giá trị Ký kết (Tổng đầu ra)</p>
-                <p className="text-2xl font-black text-white leading-none">{formatVND(totals.signingValue)} <span className="text-sm font-medium text-slate-500">đ</span></p>
+                <p className="text-lg font-black text-white leading-none truncate" title={formatVND(totals.signingValue)}>{formatVND(totals.signingValue)} <span className="text-xs font-medium text-slate-500">đ</span></p>
               </div>
 
               {/* Revenue */}
               <div>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mb-1">Doanh thu dự kiến (Trừ VAT)</p>
-                <p className="text-xl font-black text-slate-200">{formatVND(totals.estimatedRevenue)}</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-1">Doanh thu dự kiến (Trừ VAT)</p>
+                <p className="text-lg font-black text-slate-200 truncate" title={formatVND(totals.estimatedRevenue)}>{formatVND(totals.estimatedRevenue)}</p>
               </div>
 
               {/* Costs */}
               <div>
-                <p className="text-[9px] font-bold text-rose-400/80 uppercase tracking-tighter mb-1">Tổng chi phí & Giá vốn</p>
-                <p className="text-xl font-black text-rose-400">{formatVND(totals.totalCosts)}</p>
+                <p className="text-[10px] font-bold text-rose-400/80 uppercase tracking-tighter mb-1">Tổng chi phí & Giá vốn</p>
+                <p className="text-lg font-black text-rose-400 truncate" title={formatVND(totals.totalCosts)}>{formatVND(totals.totalCosts)}</p>
               </div>
 
               {/* Profit */}
               <div className="relative group cursor-help">
-                <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-1">Lợi nhuận gộp</p>
+                <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Lợi nhuận gộp</p>
                 <div className="flex items-end gap-2">
-                  <p className="text-3xl font-black text-emerald-400 leading-none">{formatVND(totals.grossProfit)}</p>
-                  <span className="text-sm font-bold text-emerald-600 mb-1">({totals.profitMargin.toFixed(0)}%)</span>
+                  <p className="text-lg font-black text-emerald-400 leading-none truncate" title={formatVND(totals.grossProfit)}>{formatVND(totals.grossProfit)}</p>
+                  <span className="text-xs font-bold text-emerald-600 mb-0.5">({totals.profitMargin.toFixed(0)}%)</span>
                 </div>
                 <div className="absolute -bottom-2 left-0 w-full h-1 bg-white/10 rounded-full overflow-hidden mt-2">
                   <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, totals.profitMargin)}%` }}></div>
