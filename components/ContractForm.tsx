@@ -452,206 +452,219 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
               </div>
             </section>
 
-            {/* 3. DANH MỤC SẢN PHẨM/DỊCH VỤ CHI TIẾT */}
-            <section className="space-y-6">
-              <div className="flex items-center justify-between border-l-4 border-emerald-500 pl-4">
+            {/* 3. PHƯƠNG ÁN KINH DOANH */}
+            <section className="space-y-8">
+              <div className="flex items-center gap-3 border-l-4 border-indigo-500 pl-4">
                 <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
-                  <Package size={16} /> Chi tiết Sản phẩm & Dịch vụ cung cấp
+                  <Briefcase size={16} /> Phương án kinh doanh
                 </h3>
-                <button onClick={addLineItem} className="px-4 py-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl text-[10px] font-black uppercase flex items-center gap-2 border border-emerald-100 dark:border-emerald-800">
-                  Thêm hạng mục
-                </button>
               </div>
 
-              <div className="overflow-x-auto rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                <table className="w-full text-left text-xs min-w-[1200px]">
-                  <thead className="bg-slate-50 dark:bg-slate-800/50">
-                    <tr>
-                      <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter">Sản phẩm/Dịch vụ</th>
-                      <th className="px-2 py-4 font-black text-slate-400 uppercase tracking-tighter w-16">SL</th>
-                      <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter">Nhà cung cấp</th>
-                      <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter text-right">Giá Đầu vào</th>
-                      <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter text-right">Giá Đầu ra</th>
-                      <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter text-right">CP Trực tiếp</th>
-                      <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter text-right">Chênh lệch</th>
-                      <th className="px-4 py-4 w-10"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
-                    {lineItems.map((item, index) => {
-                      const inputTotal = item.quantity * item.inputPrice;
-                      const outputTotal = item.quantity * item.outputPrice;
-                      const lineMargin = outputTotal - inputTotal - item.directCosts;
-                      const lineMarginRate = outputTotal > 0 ? (lineMargin / outputTotal) * 100 : 0;
-
-                      return (
-                        <tr key={item.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                          <td className="px-4 py-3">
-                            <select
-                              value={products.find(p => p.name === item.name)?.id || ''}
-                              onChange={(e) => {
-                                const pId = e.target.value;
-                                const prod = products.find(p => p.id === pId);
-                                const newList = [...lineItems];
-                                if (prod) {
-                                  newList[index].name = prod.name;
-                                  newList[index].inputPrice = prod.costPrice || 0;
-                                  newList[index].outputPrice = prod.basePrice;
-                                  // Optional: Set supplier if product has default supplier? Not in schema.
-                                } else {
-                                  newList[index].name = '';
-                                }
-                                setLineItems(newList);
-                              }}
-                              className="w-full bg-transparent font-black text-slate-700 dark:text-slate-200 outline-none"
-                            >
-                              <option value="">-- Chọn SP --</option>
-                              {products.map(p => (
-                                <option key={p.id} value={p.id}>{p.name}</option>
-                              ))}
-                            </select>
-                          </td>
-                          <td className="px-2 py-3">
-                            <input
-                              type="number"
-                              value={item.quantity}
-                              onChange={(e) => {
-                                const newList = [...lineItems];
-                                newList[index].quantity = Number(e.target.value);
-                                setLineItems(newList);
-                              }}
-                              className="w-full bg-transparent font-black outline-none"
-                            />
-                          </td>
-                          <td className="px-4 py-3">
-                            <select
-                              value={item.supplier}
-                              onChange={(e) => {
-                                const newList = [...lineItems];
-                                newList[index].supplier = e.target.value;
-                                setLineItems(newList);
-                              }}
-                              className="w-full bg-transparent font-medium text-slate-500 outline-none"
-                            >
-                              <option value="">-- Chọn NCC --</option>
-                              {/* Use customers list filter by type 'Supplier' */}
-                              {customers.filter(c => c.type === 'Supplier' || c.type === 'Both').map(s => (
-                                <option key={s.id} value={s.shortName}>{s.shortName}</option>
-                              ))}
-                            </select>
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <input
-                              type="text"
-                              value={item.inputPrice ? formatVND(item.inputPrice) : '0'}
-                              onChange={(e) => {
-                                const raw = e.target.value.replace(/\./g, '');
-                                if (!/^\d*$/.test(raw)) return;
-                                const newList = [...lineItems];
-                                newList[index].inputPrice = Number(raw);
-                                setLineItems(newList);
-                              }}
-                              className="w-full bg-transparent font-bold text-slate-500 text-right outline-none"
-                            />
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <input
-                              type="text"
-                              value={item.outputPrice ? formatVND(item.outputPrice) : '0'}
-                              onChange={(e) => {
-                                const raw = e.target.value.replace(/\./g, '');
-                                if (!/^\d*$/.test(raw)) return;
-                                const newList = [...lineItems];
-                                newList[index].outputPrice = Number(raw);
-                                setLineItems(newList);
-                              }}
-                              className="w-full bg-transparent font-bold text-indigo-600 text-right outline-none"
-                            />
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <input
-                              type="text"
-                              value={item.directCosts ? formatVND(item.directCosts) : '0'}
-                              onChange={(e) => {
-                                const raw = e.target.value.replace(/\./g, '');
-                                if (!/^\d*$/.test(raw)) return;
-                                const newList = [...lineItems];
-                                newList[index].directCosts = Number(raw);
-                                setLineItems(newList);
-                              }}
-                              className="w-full bg-transparent font-bold text-rose-500 text-right outline-none"
-                            />
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <div className="flex flex-col items-end">
-                              <span className={`font-black ${lineMargin >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{formatVND(lineMargin)}</span>
-                              <span className="text-[9px] font-bold text-slate-400">{lineMarginRate.toFixed(1)}%</span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            {lineItems.length > 1 && (
-                              <button onClick={() => removeLineItem(item.id)} className="text-slate-300 hover:text-rose-500 transition-colors">
-                                <Trash2 size={14} />
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                  {/* TOTALS FOOTER */}
-                  <tfoot className="bg-slate-100 dark:bg-slate-800/80 font-black text-slate-700 dark:text-slate-200 border-t-2 border-slate-200 dark:border-slate-700">
-                    <tr>
-                      <td colSpan={3} className="px-4 py-4 text-left uppercase text-xs tracking-widest text-slate-500">
-                        Tổng cộng
-                      </td>
-                      <td className="px-4 py-4 text-right text-slate-600 dark:text-slate-400">
-                        {formatVND(totals.totalInput)}
-                      </td>
-                      <td className="px-4 py-4 text-right text-indigo-600">
-                        {formatVND(totals.signingValue)}
-                      </td>
-                      <td className="px-4 py-4 text-right text-rose-500">
-                        {formatVND(totals.totalDirectCosts)}
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <span className={totals.signingValue - totals.totalInput - totals.totalDirectCosts >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
-                          {formatVND(totals.signingValue - totals.totalInput - totals.totalDirectCosts)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4"></td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </section>
-
-            {/* CÁC LOẠI CHI PHÍ LIÊN QUAN */}
-            <section className="bg-slate-50 dark:bg-slate-800/40 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 space-y-6">
-              <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
-                <Calculator size={16} /> Chi phí quản lý hợp đồng
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                {[
-                  { key: 'transferFee', label: 'Phí chuyển tiền / Ngân hàng' },
-                  { key: 'contractorTax', label: 'Thuế nhà thầu (nếu có)' },
-                  { key: 'importFee', label: 'Phí nhập khẩu / Logistics' },
-                  { key: 'expertHiring', label: 'Chi phí thuê khoán chuyên môn' },
-                  { key: 'documentProcessing', label: 'Chi phí xử lý chứng từ' }
-                ].map((cost) => (
-                  <div key={cost.key} className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">{cost.label}</label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
-                      <input
-                        type="number"
-                        value={(adminCosts as any)[cost.key]}
-                        onChange={(e) => setAdminCosts({ ...adminCosts, [cost.key]: Number(e.target.value) })}
-                        className="w-full pl-8 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black focus:ring-2 focus:ring-rose-500 outline-none transition-all"
-                      />
-                    </div>
+              <div className="pl-4 border-l border-slate-200 dark:border-slate-800 space-y-8">
+                {/* 3.1 CHI TIẾT SẢN PHẨM & DỊCH VỤ CUNG CẤP */}
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <Package size={14} /> Chi tiết Sản phẩm & Dịch vụ
+                    </h4>
+                    <button onClick={addLineItem} className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 border border-emerald-100 dark:border-emerald-800 hover:bg-emerald-100 transition-colors">
+                      <Plus size={12} /> Thêm hạng mục
+                    </button>
                   </div>
-                ))}
+
+                  <div className="overflow-x-auto rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                    <table className="w-full text-left text-xs min-w-[1200px]">
+                      <thead className="bg-slate-50 dark:bg-slate-800/50">
+                        <tr>
+                          <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter">Sản phẩm/Dịch vụ</th>
+                          <th className="px-2 py-4 font-black text-slate-400 uppercase tracking-tighter w-16">SL</th>
+                          <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter">Nhà cung cấp</th>
+                          <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter text-right">Giá Đầu vào</th>
+                          <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter text-right">Giá Đầu ra</th>
+                          <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter text-right">CP Trực tiếp</th>
+                          <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter text-right">Chênh lệch</th>
+                          <th className="px-4 py-4 w-10"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                        {lineItems.map((item, index) => {
+                          const inputTotal = item.quantity * item.inputPrice;
+                          const outputTotal = item.quantity * item.outputPrice;
+                          const lineMargin = outputTotal - inputTotal - item.directCosts;
+                          const lineMarginRate = outputTotal > 0 ? (lineMargin / outputTotal) * 100 : 0;
+
+                          return (
+                            <tr key={item.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                              <td className="px-4 py-3">
+                                <select
+                                  value={products.find(p => p.name === item.name)?.id || ''}
+                                  onChange={(e) => {
+                                    const pId = e.target.value;
+                                    const prod = products.find(p => p.id === pId);
+                                    const newList = [...lineItems];
+                                    if (prod) {
+                                      newList[index].name = prod.name;
+                                      newList[index].inputPrice = prod.costPrice || 0;
+                                      newList[index].outputPrice = prod.basePrice;
+                                    } else {
+                                      newList[index].name = '';
+                                    }
+                                    setLineItems(newList);
+                                  }}
+                                  className="w-full bg-transparent font-black text-slate-700 dark:text-slate-200 outline-none"
+                                >
+                                  <option value="">-- Chọn SP --</option>
+                                  {products.map(p => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                  ))}
+                                </select>
+                              </td>
+                              <td className="px-2 py-3">
+                                <input
+                                  type="number"
+                                  value={item.quantity}
+                                  onChange={(e) => {
+                                    const newList = [...lineItems];
+                                    newList[index].quantity = Number(e.target.value);
+                                    setLineItems(newList);
+                                  }}
+                                  className="w-full bg-transparent font-black outline-none"
+                                />
+                              </td>
+                              <td className="px-4 py-3">
+                                <select
+                                  value={item.supplier}
+                                  onChange={(e) => {
+                                    const newList = [...lineItems];
+                                    newList[index].supplier = e.target.value;
+                                    setLineItems(newList);
+                                  }}
+                                  className="w-full bg-transparent font-medium text-slate-500 outline-none"
+                                >
+                                  <option value="">-- Chọn NCC --</option>
+                                  {customers.filter(c => c.type === 'Supplier' || c.type === 'Both').map(s => (
+                                    <option key={s.id} value={s.shortName}>{s.shortName}</option>
+                                  ))}
+                                </select>
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <input
+                                  type="text"
+                                  value={item.inputPrice ? formatVND(item.inputPrice) : '0'}
+                                  onChange={(e) => {
+                                    const raw = e.target.value.replace(/\./g, '');
+                                    if (!/^\d*$/.test(raw)) return;
+                                    const newList = [...lineItems];
+                                    newList[index].inputPrice = Number(raw);
+                                    setLineItems(newList);
+                                  }}
+                                  className="w-full bg-transparent font-bold text-slate-500 text-right outline-none"
+                                />
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <input
+                                  type="text"
+                                  value={item.outputPrice ? formatVND(item.outputPrice) : '0'}
+                                  onChange={(e) => {
+                                    const raw = e.target.value.replace(/\./g, '');
+                                    if (!/^\d*$/.test(raw)) return;
+                                    const newList = [...lineItems];
+                                    newList[index].outputPrice = Number(raw);
+                                    setLineItems(newList);
+                                  }}
+                                  className="w-full bg-transparent font-bold text-indigo-600 text-right outline-none"
+                                />
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <input
+                                  type="text"
+                                  value={item.directCosts ? formatVND(item.directCosts) : '0'}
+                                  onChange={(e) => {
+                                    const raw = e.target.value.replace(/\./g, '');
+                                    if (!/^\d*$/.test(raw)) return;
+                                    const newList = [...lineItems];
+                                    newList[index].directCosts = Number(raw);
+                                    setLineItems(newList);
+                                  }}
+                                  className="w-full bg-transparent font-bold text-rose-500 text-right outline-none"
+                                />
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <div className="flex flex-col items-end">
+                                  <span className={`font-black ${lineMargin >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{formatVND(lineMargin)}</span>
+                                  <span className="text-[9px] font-bold text-slate-400">{lineMarginRate.toFixed(1)}%</span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                {lineItems.length > 1 && (
+                                  <button onClick={() => removeLineItem(item.id)} className="text-slate-300 hover:text-rose-500 transition-colors">
+                                    <Trash2 size={14} />
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                      {/* TOTALS FOOTER */}
+                      <tfoot className="bg-slate-100 dark:bg-slate-800/80 font-black text-slate-700 dark:text-slate-200 border-t-2 border-slate-200 dark:border-slate-700">
+                        <tr>
+                          <td colSpan={3} className="px-4 py-4 text-left uppercase text-xs tracking-widest text-slate-500">
+                            Tổng cộng
+                          </td>
+                          <td className="px-4 py-4 text-right text-slate-600 dark:text-slate-400">
+                            {formatVND(totals.totalInput)}
+                          </td>
+                          <td className="px-4 py-4 text-right text-indigo-600">
+                            {formatVND(totals.signingValue)}
+                          </td>
+                          <td className="px-4 py-4 text-right text-rose-500">
+                            {formatVND(totals.totalDirectCosts)}
+                          </td>
+                          <td className="px-4 py-4 text-right">
+                            <span className={totals.signingValue - totals.totalInput - totals.totalDirectCosts >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
+                              {formatVND(totals.signingValue - totals.totalInput - totals.totalDirectCosts)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4"></td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+
+                {/* 3.2 CHI PHÍ QUẢN LÝ HỢP ĐỒNG */}
+                <div className="bg-slate-50 dark:bg-slate-800/40 p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 space-y-6">
+                  <h4 className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Calculator size={14} /> Chi phí quản lý hợp đồng
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                    {[
+                      { key: 'transferFee', label: 'Phí chuyển tiền / Ngân hàng' },
+                      { key: 'contractorTax', label: 'Thuế nhà thầu (nếu có)' },
+                      { key: 'importFee', label: 'Phí nhập khẩu / Logistics' },
+                      { key: 'expertHiring', label: 'Chi phí thuê khoán chuyên môn' },
+                      { key: 'documentProcessing', label: 'Chi phí xử lý chứng từ' }
+                    ].map((cost) => (
+                      <div key={cost.key} className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">{cost.label}</label>
+                        <div className="relative">
+                          <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
+                          <input
+                            type="text"
+                            value={(adminCosts as any)[cost.key] ? formatVND((adminCosts as any)[cost.key]) : '0'}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/\./g, '');
+                              if (!/^\d*$/.test(raw)) return;
+                              setAdminCosts({ ...adminCosts, [cost.key]: Number(raw) });
+                            }}
+                            className="w-full pl-8 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black focus:ring-2 focus:ring-rose-500 outline-none transition-all"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </section>
 
