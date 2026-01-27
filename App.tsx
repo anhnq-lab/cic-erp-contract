@@ -31,7 +31,7 @@ const App: React.FC = () => {
   const [viewingCustomerId, setViewingCustomerId] = useState<string | null>(null);
   const [viewingProductId, setViewingProductId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [editingContractId, setEditingContractId] = useState<string | null>(null);
+  const [editingContract, setEditingContract] = useState<Contract | null>(null);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
 
   // Theme management
@@ -124,26 +124,20 @@ const App: React.FC = () => {
     }
 
     // Edit existing contract
-    if (editingContractId) {
-      const editContract = MOCK_CONTRACTS.find(c => c.id === editingContractId) || null; // Fallback? MOCK is mostly empty now?
-      // Actually we should fetch the real contract. But for now if ContractList passed it, we might need state.
-      // Ideally ContractList should pass the FULL object or we fetch it.
-      // Current architecture: ContractList selects ID -> view -> (fetch).
-      // Here we assume creating new is the primary fix.
-
+    if (editingContract) {
       return (
         <div className="fixed inset-0 z-[100] bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4">
           <ContractForm
-            contract={editContract as any}
+            contract={editingContract}
             onSave={async (data) => {
               try {
-                await ContractsAPI.update(editingContractId, data);
-                setEditingContractId(null);
+                await ContractsAPI.update(editingContract.id, data);
+                setEditingContract(null);
               } catch (e) {
                 alert("Lỗi cập nhật: " + e);
               }
             }}
-            onCancel={() => setEditingContractId(null)}
+            onCancel={() => setEditingContract(null)}
           />
         </div>
       );
@@ -154,7 +148,7 @@ const App: React.FC = () => {
         <ContractDetail
           contractId={viewingContractId}
           onBack={handleBackToList}
-          onEdit={() => setEditingContractId(viewingContractId)}
+          onEdit={(contract) => setEditingContract(contract)}
           onDelete={async () => {
             try {
               await ContractsAPI.delete(viewingContractId);

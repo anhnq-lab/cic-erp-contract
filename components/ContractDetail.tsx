@@ -38,7 +38,7 @@ interface ContractDetailProps {
   contract?: Contract;
   contractId?: string;
   onBack: () => void;
-  onEdit: () => void;
+  onEdit: (contract: Contract) => void;
   onDelete: () => void;
 }
 
@@ -218,7 +218,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
           </button>
 
           <button
-            onClick={onEdit}
+            onClick={() => contract && onEdit(contract)}
             className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
           >
             <Edit3 size={16} />
