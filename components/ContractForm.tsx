@@ -13,7 +13,7 @@ import {
   RevenueSchedule, AdministrativeCosts,
   Contract, SalesPerson, Customer, Product, DirectCostDetail
 } from '../types';
-import { UnitsAPI, PersonnelAPI, CustomersAPI, ProductsAPI } from '../services/api';
+import { UnitsAPI, PersonnelAPI, CustomersAPI, ProductsAPI, ContractsAPI } from '../services/api';
 import Modal from './ui/Modal';
 
 interface ContractFormProps {
