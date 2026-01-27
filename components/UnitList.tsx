@@ -1,5 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Search, Building, Plus, Pencil, Trash2, Target, TrendingUp, Users, Eye } from 'lucide-react';
 import { UnitsAPI } from '../services/api';
 import { Unit } from '../types';
@@ -69,9 +70,10 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
             }
             await fetchUnits();
             setIsFormOpen(false);
+            toast.success("Lưu đơn vị thành công!");
         } catch (error) {
             console.error("Failed to save unit", error);
-            alert("Có lỗi xảy ra khi lưu đơn vị.");
+            toast.error("Có lỗi xảy ra khi lưu đơn vị.");
         }
     };
 
@@ -81,10 +83,10 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
                 await UnitsAPI.delete(id);
                 // Refresh list
                 await fetchUnits();
-                alert("Đã xóa đơn vị thành công.");
+                toast.success("Đã xóa đơn vị thành công.");
             } catch (error) {
                 console.error("Failed to delete unit", error);
-                alert("Không thể xóa đơn vị. Có thể đơn vị đang có dữ liệu liên kết.");
+                toast.error("Không thể xóa đơn vị. Có thể đơn vị đang có dữ liệu liên kết.");
             }
         }
     };

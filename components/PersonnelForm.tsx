@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Save, Loader2, Upload, X } from 'lucide-react';
 import Modal from './ui/Modal';
 import { SalesPerson, KPIPlan, Unit } from '../types';
@@ -102,7 +103,7 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, onSave, 
             return data.publicUrl;
         } catch (error) {
             console.error('Error uploading avatar:', error);
-            alert('Lỗi khi upload ảnh. Vui lòng thử lại hoặc đảm bảo bucket "avatars" đã được tạo và công khai.');
+            toast.error('Lỗi khi upload ảnh. Vui lòng thử lại hoặc đảm bảo bucket "avatars" đã được tạo và công khai.');
             return null;
         } finally {
             setIsUploading(false);
@@ -136,6 +137,7 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, onSave, 
             onClose();
         } catch (error) {
             console.error('Error saving personnel:', error);
+            toast.error('Lỗi khi lưu thông tin nhân viên');
         } finally {
             setIsSubmitting(false);
         }

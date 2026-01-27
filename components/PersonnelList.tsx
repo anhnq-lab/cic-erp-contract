@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Search, User, Target, TrendingUp, Building, ChevronRight, Award, ChevronDown, Loader2, Plus, Pencil, Trash2, MoreVertical } from 'lucide-react';
 import { PersonnelAPI, UnitsAPI } from '../services/api'; // Added UnitsAPI
 import { Unit, SalesPerson } from '../types';
@@ -450,9 +451,10 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                                                                 try {
                                                                     await PersonnelAPI.delete(person.id);
                                                                     setPersonnel(prev => prev.filter(p => p.id !== person.id));
+                                                                    toast.success("Đã xóa nhân viên");
                                                                 } catch (error) {
                                                                     console.error('Lỗi khi xóa nhân viên:', error);
-                                                                    alert('Không thể xóa nhân viên này (có thể do đang phụ trách hợp đồng).');
+                                                                    toast.error('Không thể xóa nhân viên này (có thể do đang phụ trách hợp đồng).');
                                                                 }
                                                             }
                                                         }}
@@ -505,9 +507,10 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                         }
                         setIsFormOpen(false);
                         setEditingPerson(undefined);
+                        toast.success("Lưu thông tin nhân viên thành công!");
                     } catch (error) {
                         console.error('Failed to save', error);
-                        alert('Lỗi lưu dữ liệu');
+                        toast.error('Lỗi lưu dữ liệu');
                     }
                 }}
                 person={editingPerson}

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { toast } from 'sonner';
 import {
   X, Save, Calendar, User, FileText,
   DollarSign, Calculator, Building2,
@@ -161,8 +162,9 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
 
     if (newSchedules.length > 0) {
       setSupplierSchedules(newSchedules);
+      toast.info("Đã cập nhật lịch thanh toán cho Nhà cung cấp");
     } else {
-      alert("Chưa có thông tin Nhà cung cấp trong mục chi tiết sản phẩm!");
+      toast.warning("Chưa có thông tin Nhà cung cấp trong mục chi tiết sản phẩm!");
     }
   };
 
@@ -222,7 +224,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
   const handleSave = () => {
     // Validate
     if (!unitId || !salespersonId || !clientName) {
-      alert("Vui lòng nhập đầy đủ thông tin bắt buộc (Đơn vị, Sale, Khách hàng)");
+      toast.error("Vui lòng nhập đầy đủ thông tin bắt buộc (Đơn vị, Sale, Khách hàng)");
       return;
     }
 

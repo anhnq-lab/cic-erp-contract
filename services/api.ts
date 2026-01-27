@@ -682,6 +682,45 @@ export const PaymentsAPI = {
         return data.map(mapPayment);
     },
 
+    list: async (params: {
+        page: number;
+        limit: number;
+        search?: string;
+        type?: string;
+        status?: string;
+    }): Promise<{ data: Payment[]; count: number }> => {
+        const { page, limit, search, type, status } = params;
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
+
+        let query = supabase
+            .from('payments')
+            .select('*', { count: 'exact' });
+
+        // Filters
+        if (search) {
+            // Search by ID or Invoice or Contract ID
+            query = query.or(`id.ilike.%${search}%,invoice_number.ilike.%${search}%,contract_id.ilike.%${search}%`);
+        }
+        if (type) {
+            query = query.eq('payment_type', type);
+        }
+        if (status && status !== 'all') {
+            query = query.eq('status', status);
+        }
+
+        // Pagination & Sort
+        query = query.order('due_date', { ascending: false }).range(from, to);
+
+        const { data, error, count } = await query;
+        if (error) throw error;
+
+        return {
+            data: data.map(mapPayment),
+            count: count || 0
+        };
+    },
+
     getById: async (id: string): Promise<Payment | undefined> => {
         const { data, error } = await supabase.from('payments').select('*').eq('id', id).single();
         if (error) return undefined;
@@ -718,15 +757,24 @@ export const PaymentsAPI = {
         return data.map(mapPayment);
     },
 
-    getStats: async () => {
-        const { data, error } = await supabase.from('payments').select('*');
+    getStats: async (params: { type?: string }) => {
+        const { type } = params;
+        let query = supabase.from('payments').select('*');
+
+        if (type) {
+            query = query.eq('payment_type', type);
+        }
+
+        const { data, error } = await query;
         if (error || !data) return { totalAmount: 0, paidAmount: 0, pendingAmount: 0, overdueAmount: 0, paidCount: 0, pendingCount: 0, overdueCount: 0 };
 
+        // TODO: Optimize with server-side aggregation later
         const total = data.reduce((sum, p) => sum + (p.amount || 0), 0);
+
         const paidQuery = data.filter(p => p.status === 'Tiền về' || p.status === 'Paid');
         const paid = paidQuery.reduce((sum, p) => sum + (p.paid_amount || 0), 0);
 
-        const pendingQuery = data.filter(p => p.status === 'Chờ xuất HĐ' || p.status === 'Pending' || p.status === 'Đã xuất HĐ');
+        const pendingQuery = data.filter(p => p.status === 'Chờ xuất HĐ' || p.status === 'Pending' || p.status === 'Đã xuất HĐ' || p.status === 'Chờ thu' || p.status === 'Chờ chi');
         const pending = pendingQuery.reduce((sum, p) => sum + (p.amount || 0), 0);
 
         const overdueQuery = data.filter(p => p.status === 'Quá hạn' || p.status === 'Overdue');

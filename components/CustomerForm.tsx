@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Save, Loader2 } from 'lucide-react';
 import Modal from './ui/Modal';
 import { Customer } from '../types';
@@ -73,6 +74,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
             onClose();
         } catch (error) {
             console.error('Error saving customer:', error);
+            toast.error('Lỗi khi lưu thông tin đối tác');
         } finally {
             setIsSubmitting(false);
         }

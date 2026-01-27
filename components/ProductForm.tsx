@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Save, X, Loader2 } from 'lucide-react';
 import Modal from './ui/Modal';
 import { Product, ProductCategory, Unit } from '../types';
@@ -68,6 +69,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
             onClose();
         } catch (error) {
             console.error('Error saving product:', error);
+            toast.error('Lỗi khi lưu sản phẩm');
         } finally {
             setIsSubmitting(false);
         }

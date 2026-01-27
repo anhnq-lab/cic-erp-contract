@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { toast } from 'sonner';
 import {
     Search,
     Building2,
@@ -132,19 +133,30 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
     };
 
     const handleSave = async (data: Omit<Customer, 'id'> | Customer) => {
-        if ('id' in data) {
-            await CustomersAPI.update(data.id, data);
-            setCustomers(prev => prev.map(c => c.id === data.id ? data as Customer : c));
-        } else {
-            const newCustomer = await CustomersAPI.create(data);
-            setCustomers(prev => [newCustomer, ...prev]);
+        try {
+            if ('id' in data) {
+                await CustomersAPI.update(data.id, data);
+                setCustomers(prev => prev.map(c => c.id === data.id ? data as Customer : c));
+                toast.success("Cập nhật đối tác thành công");
+            } else {
+                const newCustomer = await CustomersAPI.create(data);
+                setCustomers(prev => [newCustomer, ...prev]);
+                toast.success("Thêm đối tác thành công");
+            }
+        } catch (e: any) {
+            toast.error("Lỗi lưu đối tác: " + e.message);
         }
     };
 
     const handleDelete = async (id: string) => {
         if (confirm('Bạn có chắc chắn muốn xóa khách hàng này?')) {
-            await CustomersAPI.delete(id);
-            setCustomers(prev => prev.filter(c => c.id !== id));
+            try {
+                await CustomersAPI.delete(id);
+                setCustomers(prev => prev.filter(c => c.id !== id));
+                toast.success("Đã xóa đối tác");
+            } catch (e: any) {
+                toast.error("Không thể xóa: " + e.message);
+            }
         }
         setActionMenuId(null);
     };

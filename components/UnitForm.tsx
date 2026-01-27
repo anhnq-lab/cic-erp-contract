@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Save, Loader2, X } from 'lucide-react';
 import Modal from './ui/Modal';
 import { Unit, KPIPlan } from '../types';
@@ -60,7 +61,7 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
             onClose();
         } catch (error) {
             console.error('Lỗi khi lưu đơn vị:', error);
-            alert('Có lỗi xảy ra khi lưu dữ liệu. Vui lòng thử lại.');
+            toast.error('Có lỗi xảy ra khi lưu dữ liệu. Vui lòng thử lại.');
         } finally {
             setIsSubmitting(false);
         }

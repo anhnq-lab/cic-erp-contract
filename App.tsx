@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { Toaster, toast } from 'sonner';
 import DataSeeder from './components/admin/DataSeeder';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -133,10 +134,11 @@ const App: React.FC = () => {
               try {
                 await ContractsAPI.create(data);
                 setIsCreating(false);
-                // Refresh if needed, but switching to contracts tab will re-mount logic in ContractList
+                toast.success("Tạo hợp đồng thành công!");
+                // Refresh is handled by component mount or we can force it if needed
               } catch (e: any) {
                 console.error(e);
-                alert("Có lỗi khi tạo hợp đồng: " + (e.message || JSON.stringify(e)));
+                toast.error("Có lỗi khi tạo hợp đồng: " + (e.message || JSON.stringify(e)));
               }
             }}
             onCancel={() => setIsCreating(false)}
@@ -155,8 +157,9 @@ const App: React.FC = () => {
               try {
                 await ContractsAPI.update(editingContract.id, data);
                 setEditingContract(null);
-              } catch (e) {
-                alert("Lỗi cập nhật: " + e);
+                toast.success("Cập nhật hợp đồng thành công!");
+              } catch (e: any) {
+                toast.error("Lỗi cập nhật: " + (e.message || e));
               }
             }}
             onCancel={() => setEditingContract(null)}
@@ -180,9 +183,9 @@ const App: React.FC = () => {
               // Ah, App's logic is: if viewingContractId exists, we show Detail. If not, we show List (if activeTab is contracts).
               // So setting viewingContractId(null) will show ContractList.
               // ContractList has useEffect [] to fetch.
-              alert("Đã xóa hợp đồng thành công!");
+              toast.success("Đã xóa hợp đồng thành công!");
             } catch (e: any) {
-              alert("Lỗi xóa hợp đồng: " + e.message);
+              toast.error("Lỗi xóa hợp đồng: " + e.message);
             }
           }}
         />
@@ -303,6 +306,7 @@ const App: React.FC = () => {
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
       </button>
+      <Toaster richColors position="top-center" />
     </div>
   );
 };

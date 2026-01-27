@@ -1,5 +1,6 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import {
   XAxis,
   YAxis,
@@ -81,6 +82,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
         fetchAI(contracts);
       } catch (error) {
         console.error("Dashboard Fetch Error", error);
+        toast.error("Không thể tải dữ liệu Dashboard. Vui lòng thử lại.");
       } finally {
         setLoadingConfig(false);
       }
@@ -129,22 +131,19 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
   }, [selectedUnit, allSalespeople]);
 
   const stats = useMemo(() => {
+    // Create a Set for O(1) lookup of filtered contract IDs
+    const filteredContractIds = new Set(filteredContracts.map(c => c.id));
+
     const relevantPayments = allPayments.filter(p => {
       // Filter payments by Unit via Contract
       if (selectedUnit && selectedUnit.id !== 'all') {
         const contract = allContracts.find(c => c.id === p.contractId);
         if (contract?.unitId !== selectedUnit.id) return false;
       }
-      // Filter payments by Year (check payment due date or contract signing date? Usually Payment Date)
-      // For simplicity in this View, let's filter purely by the Relevant Contracts in filteredContracts
-      // But filteredContracts is already filtered by Year. So we should check if payment belongs to a filtered contract.
-      // However, cashflow is usually strictly by payment date. 
-      // User request: "Dashboard filter by Year". Usually means "Business Year" for contracts.
-      // Let's assume we count Cashflow of the contracts SIGNED in that year (Project View) OR actual cashflow in that year.
-      // Standard Dashboard: "Revenue in 2024" means revenue from invoices/payments in 2024.
-      // But the context here is "Management Overview" of Contracts.
-      // Let's stick to: Stats of the contracts appearing in the list.
-      return filteredContracts.some(c => c.id === p.contractId);
+
+      // Filter payments by contracts currently in the filtered view (Year filter)
+      // This ensures stats align with the contracts displayed/filtered by year
+      return filteredContractIds.has(p.contractId);
     });
 
     const totalRevenueIn = relevantPayments

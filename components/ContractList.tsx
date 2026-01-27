@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Search, Filter, Plus, MoreVertical, ExternalLink, User, Loader2, DollarSign, Briefcase, TrendingUp, Calendar, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
+import { Search, Filter, Plus, MoreVertical, ExternalLink, User, Loader2, DollarSign, Briefcase, TrendingUp, Calendar, Building2, ChevronLeft, ChevronRight, Download, Upload } from 'lucide-react';
 import { ContractsAPI, PersonnelAPI, UnitsAPI } from '../services/api';
 import { ContractStatus, Unit, Contract, SalesPerson } from '../types';
 // import { useDebounce } from '../hooks/useDebounce'; // Inline implementation used instead
@@ -54,6 +56,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         setUnits(unitsData);
       } catch (e) {
         console.error("Fetch lookups failed", e);
+        toast.error("Không thể tải dữ liệu danh mục");
       }
     };
     fetchLookups();
@@ -91,6 +94,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         setMetrics(statsRes);
       } catch (error) {
         console.error("Failed to fetch contracts:", error);
+        toast.error("Không thể tải danh sách hợp đồng");
       } finally {
         setLoading(false);
       }
@@ -122,6 +126,75 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
 
   const totalPages = Math.ceil(totalCount / limit);
 
+  // File input ref for import
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        const data = await file.arrayBuffer();
+        const workbook = XLSX.read(data);
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        let successCount = 0;
+        let failCount = 0;
+
+        // Process each row
+        // Expected headers: 'Mã HĐ', 'Tên HĐ', 'Khách hàng', 'Giá trị', 'Ngày ký', 'Trạng thái'
+        // Or simple object keys mapping
+        // We will try to map loosely
+        for (const row of jsonData as any[]) {
+          try {
+            // Minimal mapping
+            const contractData: any = {
+              id: row['Mã HĐ'] || row['id'] || `HD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+              title: row['Tên HĐ'] || row['title'] || 'Hợp đồng nhập khẩu',
+              partyA: row['Khách hàng'] || row['partyA'] || 'Khách hàng',
+              value: Number(row['Giá trị'] || row['value'] || 0),
+              actualRevenue: Number(row['Doanh thu'] || row['actualRevenue'] || 0),
+              signedDate: row['Ngày ký'] || row['signedDate'] || new Date().toISOString().split('T')[0],
+              status: row['Trạng thái'] || row['status'] || 'Pending',
+              // Defaults
+              contractType: 'HĐ',
+              unitId: selectedUnit?.id !== 'all' ? selectedUnit.id : (units[0]?.id || 'u1'),
+              customerId: 'mimock', // Placeholder, ideally should match by name
+              salespersonId: 'admin'
+            };
+
+            // Try create
+            // Note: ID must be unique. If 'Mã HĐ' exists, it might fail or we should use update?
+            // For now, assume create new items
+            await ContractsAPI.create(contractData);
+            successCount++;
+          } catch (err) {
+            console.error("Row error", err);
+            failCount++;
+          }
+        }
+
+        // Refresh list
+        setDebouncedSearch(prev => prev + " "); // Trigger effect
+
+        resolve(`Nhập thành công ${successCount} hợp đồng. Thất bại ${failCount}.`);
+      } catch (err) {
+        reject(err);
+      }
+    });
+
+    toast.promise(promise, {
+      loading: 'Đang xử lý file...',
+      success: (data: any) => data,
+      error: 'Lỗi khi nhập file',
+    });
+
+    // Reset input
+    e.target.value = '';
+  };
+
   return (
     <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500 pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -131,12 +204,74 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
             Đơn vị: <span className="text-indigo-700 dark:text-indigo-400 font-black uppercase">{selectedUnit?.name || 'Toàn công ty'}</span>
           </p>
         </div>
-        <button
-          onClick={onAdd}
-          className="flex items-center justify-center gap-2 bg-indigo-700 text-white px-6 py-3 rounded-2xl font-black hover:bg-indigo-800 transition-all shadow-xl shadow-indigo-100 dark:shadow-none"
-        >
-          <Plus size={22} /> Thêm mới
-        </button>
+        <div className="flex items-center gap-3">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImport}
+            className="hidden"
+            accept=".xlsx, .xls"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-5 py-3 rounded-2xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+          >
+            <Upload size={20} /> Nhập Excel
+          </button>
+          <button
+            onClick={async () => {
+              try {
+                toast.info("Đang tạo file Excel...");
+                // Resolve effective unit ID (Global > Local > All)
+                let effectiveUnitId = 'All';
+                if (selectedUnit && selectedUnit.id !== 'all') {
+                  effectiveUnitId = selectedUnit.id;
+                } else if (unitFilter !== 'All') {
+                  effectiveUnitId = unitFilter;
+                }
+
+                const { data } = await ContractsAPI.list({
+                  page: 1, limit: 10000,
+                  search: debouncedSearch,
+                  status: statusFilter,
+                  unitId: effectiveUnitId,
+                  year: yearFilter
+                });
+
+                // Map to export format
+                const exportData = data.map((c, idx) => ({
+                  'STT': idx + 1,
+                  'Mã HĐ': c.id,
+                  'Tên HĐ': c.title,
+                  'Khách hàng': c.partyA,
+                  'Giá trị': c.value,
+                  'Doanh thu': c.actualRevenue,
+                  'Ngày ký': c.signedDate,
+                  'Trạng thái': c.status
+                }));
+
+                const ws = XLSX.utils.json_to_sheet(exportData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Danh sách HĐ");
+                XLSX.writeFile(wb, `Danh_sach_Hop_dong_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+                toast.success("Xuất file thành công!");
+              } catch (e) {
+                console.error(e);
+                toast.error("Lỗi khi xuất file");
+              }
+            }}
+            className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-5 py-3 rounded-2xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+          >
+            <Download size={20} /> Xuất Excel
+          </button>
+          <button
+            onClick={onAdd}
+            className="flex items-center justify-center gap-2 bg-indigo-700 text-white px-6 py-3 rounded-2xl font-black hover:bg-indigo-800 transition-all shadow-xl shadow-indigo-100 dark:shadow-none"
+          >
+            <Plus size={22} /> Thêm mới
+          </button>
+        </div>
       </div>
 
       {/* SCORE CARDS */}

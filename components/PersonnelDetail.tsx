@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { toast } from 'sonner';
 
 import {
     ArrowLeft,
@@ -81,9 +82,10 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
             }
             setIsEditing(false);
             fetchData(); // Reload data
+            toast.success("Cập nhật thông tin nhân viên thành công");
         } catch (error) {
             console.error('Error updating personnel:', error);
-            alert('Có lỗi xảy ra khi cập nhật thông tin.');
+            toast.error('Có lỗi xảy ra khi cập nhật thông tin.');
         }
     };
 

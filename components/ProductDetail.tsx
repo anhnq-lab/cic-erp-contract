@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { toast } from 'sonner';
 import {
     ArrowLeft,
     Package,
@@ -150,10 +151,11 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack, onEdit
                             if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này? hành động này không thể hoàn tác.')) {
                                 try {
                                     await ProductsAPI.delete(productId);
+                                    toast.success("Đã xóa sản phẩm thành công");
                                     onBack();
                                 } catch (error) {
                                     console.error('Failed to delete product', error);
-                                    alert('Có lỗi xảy ra khi xóa sản phẩm');
+                                    toast.error('Có lỗi xảy ra khi xóa sản phẩm');
                                 }
                             }
                         }}

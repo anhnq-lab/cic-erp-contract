@@ -1,5 +1,6 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import {
   ArrowLeft,
   Calendar,
@@ -132,9 +133,9 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
     try {
       const newDoc = await DocumentsAPI.upload(contract.id, file);
       setDocuments(prev => [newDoc, ...prev]);
-      // alert("Upload thành công!");
+      toast.success("Upload tài liệu thành công!");
     } catch (err: any) {
-      alert("Upload thất bại: " + err.message);
+      toast.error("Upload thất bại: " + err.message);
     } finally {
       setIsUploading(false);
       // Reset input to allow same file selection if needed
@@ -148,8 +149,9 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
     try {
       await DocumentsAPI.delete(doc.id, doc.filePath);
       setDocuments(prev => prev.filter(d => d.id !== doc.id));
+      toast.success("Đã xóa tài liệu");
     } catch (err: any) {
-      alert("Xóa thất bại: " + err.message);
+      toast.error("Xóa thất bại: " + err.message);
     }
   };
 
@@ -164,8 +166,9 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      document.body.removeChild(a);
     } catch (e: any) {
-      alert("Download error: " + e.message);
+      toast.error("Download error: " + e.message);
     }
   };
 

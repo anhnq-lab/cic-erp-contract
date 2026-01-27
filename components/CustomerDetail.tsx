@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { toast } from 'sonner';
 import {
     ArrowLeft,
     Building2,
@@ -103,10 +104,11 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ customerId, onBack, onV
         if (confirm('Bạn có chắc chắn muốn xóa khách hàng này? Hành động này không thể hoàn tác.')) {
             try {
                 await CustomersAPI.delete(customerId);
+                toast.success("Đã xóa khách hàng thành công");
                 onBack();
             } catch (error) {
                 console.error("Error deleting customer", error);
-                alert("Có lỗi xảy ra khi xóa khách hàng");
+                toast.error("Có lỗi xảy ra khi xóa khách hàng");
             }
         }
     };
@@ -116,6 +118,7 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ customerId, onBack, onV
             await CustomersAPI.update(data.id, data);
             setCustomer(data as Customer);
             setIsEditing(false);
+            toast.success("Cập nhật thông tin khách hàng thành công");
         }
     };
 

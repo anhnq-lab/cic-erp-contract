@@ -1,5 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { toast } from 'sonner';
 import {
+    MoreVertical,
+    ChevronLeft,
+    ChevronRight,
+    Loader2,
     Search,
     CreditCard,
     DollarSign,
@@ -8,14 +13,12 @@ import {
     Clock,
     FileCheck,
     Filter,
-    ChevronRight,
     FileText,
     Building2,
     Calendar,
     Plus,
     Pencil,
-    Trash2,
-    MoreVertical
+    Trash2
 } from 'lucide-react';
 import { Payment, PaymentStatus, Customer } from '../types';
 import { PaymentsAPI, ContractsAPI, CustomersAPI } from '../services/api';
@@ -34,23 +37,50 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [stats, setStats] = useState<any>(null);
 
+    // Pagination State
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(20);
+    const [totalCount, setTotalCount] = useState(0);
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
     // CRUD state
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingPayment, setEditingPayment] = useState<Payment | undefined>(undefined);
     const [actionMenuId, setActionMenuId] = useState<string | null>(null);
 
-    // Fetch data
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+            setPage(1);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    // Fetch Data (Paginated)
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            const [paymentsData, customersData] = await Promise.all([
-                PaymentsAPI.getAll(),
-                CustomersAPI.getAll()
+            const [listRes, statsRes, customersData] = await Promise.all([
+                PaymentsAPI.list({
+                    page,
+                    limit,
+                    search: debouncedSearch,
+                    type: typeFilter,
+                    status: statusFilter
+                }),
+                PaymentsAPI.getStats({ type: typeFilter }),
+                customers.length === 0 ? CustomersAPI.getAll() : Promise.resolve(customers)
             ]);
-            setPayments(paymentsData);
-            setCustomers(customersData);
+
+            setPayments(listRes.data);
+            setTotalCount(listRes.count);
+            setStats(statsRes);
+            if (customers.length === 0) setCustomers(customersData as Customer[]);
+
         } catch (error) {
             console.error("Failed to fetch data:", error);
+            toast.error("Không thể tải dữ liệu thanh toán");
         } finally {
             setIsLoading(false);
         }
@@ -58,49 +88,12 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [page, limit, debouncedSearch, typeFilter, statusFilter]);
 
-    useEffect(() => {
-        // Calculate stats based on current type filter
-        const currentPayments = payments.filter(p => (p.paymentType || 'Revenue') === typeFilter);
-        const total = currentPayments.reduce((sum, p) => sum + p.amount, 0);
-        const paid = currentPayments.filter(p => p.status === 'Paid' || p.status === 'Tiền về').reduce((sum, p) => sum + p.paidAmount, 0);
-        const pending = currentPayments.filter(p => p.status === 'Pending' || p.status === 'Chờ xuất HĐ').reduce((sum, p) => sum + p.amount, 0);
-        const overdue = currentPayments.filter(p => p.status === 'Overdue' || p.status === 'Quá hạn').reduce((sum, p) => sum + (p.amount - p.paidAmount), 0);
+    // Legacy effect for stats calculation removed (now server-side or separately fetched)
 
-        setStats({
-            totalAmount: total,
-            paidAmount: paid,
-            pendingAmount: pending,
-            overdueAmount: overdue,
-            paidCount: currentPayments.filter(p => p.status === 'Paid' || p.status === 'Tiền về').length,
-            pendingCount: currentPayments.filter(p => p.status === 'Pending' || p.status === 'Chờ xuất HĐ').length,
-            overdueCount: currentPayments.filter(p => p.status === 'Overdue' || p.status === 'Quá hạn').length,
-        });
-    }, [payments, typeFilter]);
-
-    const filteredPayments = useMemo(() => {
-        return payments.filter(p => {
-            const isTypeMatch = (p.paymentType || 'Revenue') === typeFilter;
-            if (!isTypeMatch) return false;
-
-            if (!isTypeMatch) return false;
-
-            // Note: We might want to fetch contract/customer names if not available in payment
-            // For now assuming we rely on IDs or previously fetched lookups if we added them.
-            // Since we removed MOCK_CONTRACTS, we can't search by contract title easily without fetching all contracts.
-            // Let's stick to searching by ID/Invoice for now or fetch lookup maps.
-
-            const matchSearch = searchQuery === '' ||
-                p.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                p.contractId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                p.invoiceNumber?.toLowerCase().includes(searchQuery.toLowerCase());
-
-            const matchStatus = statusFilter === 'all' || p.status === statusFilter;
-
-            return matchSearch && matchStatus;
-        });
-    }, [payments, searchQuery, statusFilter, typeFilter]);
+    // Memoized is removed as we depend on API result now
+    const totalPages = Math.ceil(totalCount / limit);
 
     const formatCurrency = (val: number) => {
         if (val >= 1e9) return `${(val / 1e9).toFixed(2)} tỷ`;
@@ -148,9 +141,10 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
             try {
                 await PaymentsAPI.delete(id);
                 setPayments(payments.filter(p => p.id !== id));
+                toast.success("Đã xóa khoản thanh toán");
             } catch (error) {
                 console.error("Failed to delete payment:", error);
-                alert("Xóa thất bại");
+                toast.error("Xóa thất bại");
             }
         }
         setActionMenuId(null);
@@ -175,10 +169,13 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
             }
             setIsFormOpen(false);
             setEditingPayment(undefined);
+            setIsFormOpen(false);
+            setEditingPayment(undefined);
             fetchData(); // Refresh to ensure data consistency
+            toast.success("Lưu khoản thanh toán thành công");
         } catch (error) {
             console.error("Failed to save payment:", error);
-            alert("Lưu thất bại");
+            toast.error("Lưu thất bại");
         }
     };
 
@@ -196,13 +193,13 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                 </div>
                 <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                     <button
-                        onClick={() => setTypeFilter('Revenue')}
+                        onClick={() => { setTypeFilter('Revenue'); setPage(1); }}
                         className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${typeFilter === 'Revenue' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         Khoản Thu (Revenue)
                     </button>
                     <button
-                        onClick={() => setTypeFilter('Expense')}
+                        onClick={() => { setTypeFilter('Expense'); setPage(1); }}
                         className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${typeFilter === 'Expense' ? 'bg-white dark:bg-slate-700 text-rose-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         Khoản Chi (Expense)
@@ -285,7 +282,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                     <Filter size={16} className="text-slate-400" />
                     <select
                         value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
+                        onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
                         className="bg-transparent text-sm font-medium text-slate-700 dark:text-slate-300 focus:outline-none"
                     >
                         <option value="all">Tất cả trạng thái</option>
@@ -313,7 +310,13 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredPayments.slice(0, 50).map((payment) => {
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan={7} className="p-8 text-center text-slate-500">
+                                        <Loader2 className="animate-spin inline-block mr-2" /> Đang tải dữ liệu...
+                                    </td>
+                                </tr>
+                            ) : payments.map((payment) => {
                                 const statusConfig = getStatusConfig(payment.status);
                                 const StatusIcon = statusConfig.icon;
 
@@ -401,15 +404,48 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                     </table>
                 </div>
 
-                {filteredPayments.length > 50 && (
-                    <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 text-center">
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                            Hiển thị 50 / {filteredPayments.length} khoản thanh toán
-                        </p>
+                <div className="flex items-center justify-between p-4 border-t border-slate-100 dark:border-slate-800">
+                    <div className="text-sm font-bold text-slate-500">
+                        Hiển thị {payments.length} / {totalCount} kết quả
                     </div>
-                )}
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                            disabled={page === 1}
+                            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            <ChevronLeft size={20} />
+                        </button>
+                        <div className="flex items-center gap-1">
+                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                let p = i + 1;
+                                if (totalPages > 5 && page > 3) p = page - 2 + i;
+                                if (p > totalPages) return null;
+                                return (
+                                    <button
+                                        key={p}
+                                        onClick={() => setPage(p)}
+                                        className={`w-10 h-10 rounded-xl text-sm font-black transition-all ${page === p
+                                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none'
+                                            : 'bg-transparent text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                            }`}
+                                    >
+                                        {p}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <button
+                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                            disabled={page === totalPages || totalPages === 0}
+                            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            <ChevronRight size={20} />
+                        </button>
+                    </div>
+                </div>
 
-                {filteredPayments.length === 0 && (
+                {!isLoading && payments.length === 0 && (
                     <div className="text-center py-12">
                         <div className="w-14 h-14 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3">
                             <CreditCard size={24} className="text-slate-400" />
