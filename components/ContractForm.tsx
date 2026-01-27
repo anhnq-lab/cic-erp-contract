@@ -71,7 +71,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
   const [contacts, setContacts] = useState<ContractContact[]>(contract?.contacts || [{ id: '1', name: '', role: 'Mua sắm' }]);
 
   // 3. Line Items (Sản phẩm/Dịch vụ chi tiết)
-  const [lineItems, setLineItems] = useState<LineItem[]>([{
+  const [lineItems, setLineItems] = useState<LineItem[]>(contract?.lineItems || [{
     id: '1', name: '', quantity: 1, supplier: '', inputPrice: 0, outputPrice: 0, directCosts: 0
   }]);
 
@@ -91,7 +91,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
   }, [contract]);
 
   // 5. Overhead Costs
-  const [adminCosts, setAdminCosts] = useState<AdministrativeCosts>({
+  const [adminCosts, setAdminCosts] = useState<AdministrativeCosts>(contract?.adminCosts || {
     transferFee: 0, contractorTax: 0, importFee: 0, expertHiring: 0, documentProcessing: 0
   });
 
