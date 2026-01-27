@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Loader2 } from 'lucide-react';
+import { Save, Loader2, Upload, X } from 'lucide-react';
 import Modal from './ui/Modal';
 import { SalesPerson, KPIPlan } from '../types';
 import { MOCK_UNITS } from '../constants';
+import { supabase } from '../lib/supabase';
 
 interface PersonnelFormProps {
     isOpen: boolean;
@@ -13,6 +14,10 @@ interface PersonnelFormProps {
 
 const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, onSave, person }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string>('');
+
     const [formData, setFormData] = useState({
         name: '',
         unitId: '',
@@ -44,6 +49,8 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, onSave, 
                 dateJoined: person.dateJoined || '',
                 target: { ...person.target },
             });
+            setPreviewUrl(person.avatar_url || '');
+            setAvatarFile(null);
         } else {
             setFormData({
                 name: '',
@@ -62,17 +69,65 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, onSave, 
                     cash: 9e9,
                 },
             });
+            setPreviewUrl('');
+            setAvatarFile(null);
         }
     }, [person, isOpen]);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) {
+            return;
+        }
+        const file = e.target.files[0];
+        setAvatarFile(file);
+        setPreviewUrl(URL.createObjectURL(file));
+    };
+
+    const uploadAvatar = async (file: File): Promise<string | null> => {
+        try {
+            setIsUploading(true);
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random()}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file);
+
+            if (uploadError) {
+                throw uploadError;
+            }
+
+            const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+            return data.publicUrl;
+        } catch (error) {
+            console.error('Error uploading avatar:', error);
+            alert('Lỗi khi upload ảnh. Vui lòng thử lại hoặc đảm bảo bucket "avatars" đã được tạo và công khai.');
+            return null;
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
+            let finalAvatarUrl = formData.avatar_url;
+
+            if (avatarFile) {
+                const uploadedUrl = await uploadAvatar(avatarFile);
+                if (uploadedUrl) {
+                    finalAvatarUrl = uploadedUrl;
+                }
+            }
+
+            const dataToSave = { ...formData, avatar_url: finalAvatarUrl };
+
             if (person) {
-                await onSave({ ...formData, id: person.id });
+                await onSave({ ...dataToSave, id: person.id });
             } else {
-                await onSave(formData);
+                await onSave(dataToSave);
             }
             onClose();
         } catch (error) {
@@ -124,15 +179,48 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, onSave, 
                             ))}
                         </select>
                     </div>
-                    <div>
-                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Link Ảnh đại diện</label>
-                        <input
-                            type="text"
-                            value={formData.avatar_url}
-                            onChange={e => setFormData(prev => ({ ...prev, avatar_url: e.target.value }))}
-                            placeholder="https://..."
-                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                        />
+                </div>
+
+                {/* Avatar Upload */}
+                <div>
+                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Ảnh đại diện</label>
+                    <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
+                            {previewUrl ? (
+                                <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                            ) : (
+                                <Upload size={24} className="text-slate-400" />
+                            )}
+                        </div>
+                        <div className="flex-1">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                className="block w-full text-sm text-slate-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-xl file:border-0
+                                file:text-xs file:font-bold
+                                file:bg-indigo-50 file:text-indigo-700
+                                hover:file:bg-indigo-100 dark:file:bg-indigo-900/30 dark:file:text-indigo-400"
+                            />
+                            <p className="text-[10px] text-slate-400 mt-1">Hỗ trợ JPG, PNG. Tối đa 5MB.</p>
+                            {/* Optional: Text input for URL fallback */}
+                            <div className="mt-2 text-xs flex items-center gap-2">
+                                <span className="text-slate-400">Hoặc nhập link:</span>
+                                <input
+                                    type="text"
+                                    value={formData.avatar_url}
+                                    onChange={e => {
+                                        setFormData(prev => ({ ...prev, avatar_url: e.target.value }));
+                                        setPreviewUrl(e.target.value);
+                                        setAvatarFile(null); // Clear file if manually typing URL
+                                    }}
+                                    className="flex-1 bg-transparent border-b border-slate-200 dark:border-slate-700 focus:border-indigo-500 outline-none py-1"
+                                    placeholder="https://..."
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -246,10 +334,10 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, onSave, 
                     </button>
                     <button
                         type="submit"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || isUploading}
                         className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50"
                     >
-                        {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                        {isSubmitting || isUploading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                         {person ? 'Cập nhật' : 'Thêm mới'}
                     </button>
                 </div>

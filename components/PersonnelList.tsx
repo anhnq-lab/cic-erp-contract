@@ -410,10 +410,48 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                                             </td>
 
                                             {/* Action */}
-                                            <td className="py-4 px-6">
-                                                <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-all opacity-0 group-hover:opacity-100">
-                                                    <ChevronRight size={18} />
-                                                </button>
+                                            <td className="py-4 px-6 text-right">
+                                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onSelectPersonnel(person.id);
+                                                        }}
+                                                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-all"
+                                                        title="Xem chi tiết"
+                                                    >
+                                                        <ChevronRight size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setEditingPerson(person);
+                                                            setIsFormOpen(true);
+                                                        }}
+                                                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-all"
+                                                        title="Chỉnh sửa"
+                                                    >
+                                                        <Pencil size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={async (e) => {
+                                                            e.stopPropagation();
+                                                            if (window.confirm('Bạn có chắc chắn muốn xóa nhân viên này?')) {
+                                                                try {
+                                                                    await PersonnelAPI.delete(person.id);
+                                                                    setPersonnel(prev => prev.filter(p => p.id !== person.id));
+                                                                } catch (error) {
+                                                                    console.error('Lỗi khi xóa nhân viên:', error);
+                                                                    alert('Không thể xóa nhân viên này (có thể do đang phụ trách hợp đồng).');
+                                                                }
+                                                            }
+                                                        }}
+                                                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all"
+                                                        title="Xóa"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     );
@@ -433,6 +471,37 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                     </div>
                 )}
             </div>
+
+            <PersonnelForm
+                isOpen={isFormOpen}
+                onClose={() => {
+                    setIsFormOpen(false);
+                    setEditingPerson(undefined);
+                }}
+                onSave={async (data) => {
+                    try {
+                        if (editingPerson) {
+                            // Update
+                            await PersonnelAPI.update(editingPerson.id, data);
+                            // Refresh logic
+                            const updatedList = await PersonnelAPI.getByUnitId(unitFilter);
+                            setPersonnel(updatedList);
+                        } else {
+                            // Create
+                            await PersonnelAPI.create(data);
+                            // Refresh logic
+                            const updatedList = await PersonnelAPI.getByUnitId(unitFilter);
+                            setPersonnel(updatedList);
+                        }
+                        setIsFormOpen(false);
+                        setEditingPerson(undefined);
+                    } catch (error) {
+                        console.error('Failed to save', error);
+                        alert('Lỗi lưu dữ liệu');
+                    }
+                }}
+                person={editingPerson}
+            />
         </div>
     );
 };
