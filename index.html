@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,17 +14,17 @@
                     colors: {
                         // REPLACEMENT: 'slate' now maps to a Premium Deep Blue palette
                         slate: {
-                            50: '#f0f4f9',
-                            100: '#dbeafe',
-                            200: '#bfdbfe',
-                            300: '#93c5fd',
-                            400: '#60a5fa',
-                            500: '#3b82f6',
-                            600: '#2563eb', // Standard Blue
-                            700: '#1d4ed8',
-                            800: '#0f2c59', // Card/Surface Dark
-                            900: '#051630', // Deep Background
-                            950: '#020b18', // Darkest (Main Bg)
+                            50: '#f4f6fb',
+                            100: '#eef2ff',
+                            200: '#e0e7ff',
+                            300: '#c7d2fe',
+                            400: '#a5b4fc',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#1e1b4b', // Deep Indigo/Navy
+                            800: '#0f172a', // Rich Navy
+                            900: '#020617', // Very Dark Navy
+                            950: '#010208', // Abyssal Black-Blue (Target)
                         },
                         // REPLACEMENT: 'indigo' now maps to a Premium Gold/Orange palette
                         indigo: {
@@ -54,22 +54,26 @@
             font-family: 'Inter', sans-serif;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
+
         /* Đảm bảo scrollbar cũng đổi màu theo theme */
         .dark ::-webkit-scrollbar {
             width: 8px;
         }
+
         .dark ::-webkit-scrollbar-track {
             background: #0f172a;
         }
+
         .dark ::-webkit-scrollbar-thumb {
             background: #334155;
             border-radius: 10px;
         }
+
         .dark ::-webkit-scrollbar-thumb:hover {
             background: #475569;
         }
     </style>
-<script type="importmap">
+    <script type="importmap">
 {
   "imports": {
     "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
@@ -81,10 +85,12 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+    <link rel="stylesheet" href="/index.css">
 </head>
+
 <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
     <div id="root"></div>
-<script type="module" src="/index.tsx"></script>
+    <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>
