@@ -10,6 +10,7 @@ import ContractDetail from './components/ContractDetail';
 import ContractForm from './components/ContractForm';
 import PersonnelList from './components/PersonnelList';
 import PersonnelDetail from './components/PersonnelDetail';
+import UnitList from './components/UnitList';
 import CustomerList from './components/CustomerList';
 import CustomerDetail from './components/CustomerDetail';
 import ProductList from './components/ProductList';
@@ -236,6 +237,8 @@ const App: React.FC = () => {
             </div>
           </div>
         );
+      case 'units':
+        return <UnitList />;
       default:
         return <Dashboard selectedUnit={selectedUnit} onSelectContract={handleViewContract} />;
     }

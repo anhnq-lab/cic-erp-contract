@@ -264,6 +264,36 @@ export const UnitsAPI = {
         if (error) throw error;
         return data.map(mapUnit);
     },
+
+    create: async (data: Omit<Unit, 'id'>): Promise<Unit> => {
+        const payload = {
+            name: data.name,
+            type: data.type,
+            code: data.code,
+            target: data.target
+        };
+        const { data: res, error } = await supabase.from('units').insert(payload).select().single();
+        if (error) throw error;
+        return mapUnit(res);
+    },
+
+    update: async (id: string, data: Partial<Unit>): Promise<Unit | undefined> => {
+        const payload: any = {};
+        if (data.name) payload.name = data.name;
+        if (data.type) payload.type = data.type;
+        if (data.code) payload.code = data.code;
+        if (data.target) payload.target = data.target;
+
+        const { data: res, error } = await supabase.from('units').update(payload).eq('id', id).select().single();
+        if (error) throw error;
+        return mapUnit(res);
+    },
+
+    delete: async (id: string): Promise<boolean> => {
+        const { error } = await supabase.from('units').delete().eq('id', id);
+        if (error) throw error;
+        return true;
+    },
 };
 
 // ============================================

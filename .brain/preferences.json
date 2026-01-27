@@ -1,0 +1,8 @@
+{
+    "language": "vi",
+    "auto_push": true,
+    "custom_rules": [
+        "Mỗi lần cập nhật code thì phải push github luôn",
+        "Giao tiếp bằng ngôn ngữ tiếng việt"
+    ]
+}
