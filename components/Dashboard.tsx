@@ -590,6 +590,20 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
           </table>
         </div>
       </div>
+
+      {/* AI Chat Widget */}
+      <ChatWidget contextData={{
+        stats: stats,
+        selectedUnit: selectedUnit?.name || 'All',
+        year: yearFilter,
+        insights: aiInsights,
+        topContracts: filteredContracts.slice(0, 10).map(c => ({
+          name: c.contractNumber,
+          customer: c.partyA,
+          value: c.value,
+          status: c.status
+        }))
+      }} />
     </div>
   );
 };
