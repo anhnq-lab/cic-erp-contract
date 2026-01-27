@@ -8,7 +8,44 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class'
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        // REPLACEMENT: 'slate' now maps to a Premium Deep Blue palette
+                        slate: {
+                            50: '#f0f4f9',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb', // Standard Blue
+                            700: '#1d4ed8',
+                            800: '#0f2c59', // Card/Surface Dark
+                            900: '#051630', // Deep Background
+                            950: '#020b18', // Darkest (Main Bg)
+                        },
+                        // REPLACEMENT: 'indigo' now maps to a Premium Gold/Orange palette
+                        indigo: {
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            200: '#fed7aa',
+                            300: '#fdba74',
+                            400: '#fb923c',
+                            500: '#f97316', // Orange-500
+                            600: '#ea580c', // Main Interactive (Gold/Orange)
+                            700: '#c2410c',
+                            800: '#9a3412',
+                            900: '#7c2d12',
+                            950: '#431407',
+                        }
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                    }
+                }
+            }
         }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
