@@ -3,7 +3,10 @@ import { GoogleGenAI, Type } from "@google/genai";
 
 export async function analyzeContract(text: string) {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+    if (!apiKey) throw new Error("Missing VITE_GOOGLE_API_KEY");
+
+    const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Hãy phân tích nội dung hợp đồng sau đây và tóm tắt các điểm quan quan trọng (Bên A, Bên B, Giá trị, Thời hạn, Rủi ro tiềm ẩn). Định dạng bằng tiếng Việt, súc tích, chuyên nghiệp: \n\n ${text}`,
@@ -20,7 +23,10 @@ export async function analyzeContract(text: string) {
 
 export async function querySystemData(query: string, data: any) {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+    if (!apiKey) throw new Error("Missing VITE_GOOGLE_API_KEY");
+
+    const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Bạn là trợ lý quản trị cấp cao của ContractPro. Dựa trên dữ liệu hệ thống dưới đây, hãy trả lời câu hỏi của người dùng một cách chính xác, ngắn gọn và có phân tích chuyên môn.
@@ -39,23 +45,36 @@ export async function querySystemData(query: string, data: any) {
 
 export async function getSmartInsights(contracts: any[]) {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+    if (!apiKey) return [{ title: "Chưa cấu hình AI", content: "Vui lòng thêm VITE_GOOGLE_API_KEY vào file .env", type: "warning" }];
+
+    const ai = new GoogleGenAI({ apiKey });
     const simplifiedData = contracts.map(c => ({
       id: c.id,
       val: c.value,
       client: c.partyA,
       status: c.status,
       revenue: c.actualRevenue,
-      date: c.endDate
+      date: c.endDate,
+      unit: c.unitId // Added unit for context
     }));
 
+    // Randomize sample if too large to get variety
+    const sample = simplifiedData.sort(() => 0.5 - Math.random()).slice(0, 40);
+
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: `Dựa trên dữ liệu 400 hợp đồng này, hãy đưa ra 3 nhận xét thông minh (Insights) về tình hình kinh doanh (ví dụ rủi ro tập trung khách hàng, dự báo doanh thu, hoặc các hợp đồng cần chú ý). Trả lời dưới dạng JSON array: [{"title": "...", "content": "...", "type": "warning|info|success"}] 
+      model: "gemini-2.0-flash", // Updated to latest stable flash if available, or keep preview
+      contents: `Bạn là chuyên gia phân tích dữ liệu doanh nghiệp. Dựa trên danh sách ${contracts.length} hợp đồng (dưới đây là mẫu ${sample.length} bản ghi), hãy đưa ra 3 nhận xét quan trọng (Insights) giúp quản lý ra quyết định.
       
-      Dữ liệu: ${JSON.stringify(simplifiedData.slice(0, 50))}`, // Gửi sample để tiết kiệm token
+      Yêu cầu:
+      1. Tập trung vào: Tiến độ doanh thu, Rủi ro khách hàng (nếu có), hoặc Hiệu suất đơn vị.
+      2. Ngắn gọn, súc tích (dưới 30 từ/insight).
+      3. Output JSON format: [{"title": "Tiêu đề ngắn", "content": "Nội dung chi tiết", "type": "warning|info|success"}]
+      
+      Dữ liệu mẫu: ${JSON.stringify(sample)}`,
       config: {
         responseMimeType: "application/json",
+        temperature: 0.3,
       },
     });
     return JSON.parse(response.text);

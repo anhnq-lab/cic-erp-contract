@@ -78,8 +78,8 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
         setAllSalespeople(people);
         setAllPayments(payments);
 
-        // Only fetch AI after data is ready
-        fetchAI(contracts);
+        // Only fetch AI after data is ready (initial load)
+        // fetchAI(contracts); // Moved to useEffect depending on filteredContracts
       } catch (error) {
         console.error("Dashboard Fetch Error", error);
         toast.error("Không thể tải dữ liệu Dashboard. Vui lòng thử lại.");
@@ -98,6 +98,9 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
     } catch (e) { console.error(e) }
     setIsLoadingAI(false);
   };
+
+  // Re-fetch AI when filters change (debounced slightly to avoid spamming)
+  // Implementation moved to after filteredContracts definition
 
   // Extract available years
   const availableYears = useMemo(() => {
@@ -124,6 +127,16 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
 
     return result;
   }, [selectedUnit, allContracts, yearFilter]);
+
+  // AI Effect
+  useEffect(() => {
+    if (filteredContracts.length > 0) {
+      const timer = setTimeout(() => {
+        fetchAI(filteredContracts);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [filteredContracts]);
 
   const unitSales = useMemo(() => {
     if (!selectedUnit || selectedUnit.id === 'all') return allSalespeople;
