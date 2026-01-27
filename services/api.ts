@@ -373,12 +373,12 @@ export const PersonnelAPI = {
         const payload = {
             name: data.name,
             unit_id: data.unitId,
-            employee_code: data.employeeCode,
-            email: data.email,
-            phone: data.phone,
-            position: data.position,
-            date_joined: data.dateJoined,
-            avatar: data.avatar,
+            employee_code: data.employeeCode || null,
+            email: data.email || null,
+            phone: data.phone || null,
+            position: data.position || null,
+            date_joined: data.dateJoined || null,
+            avatar: data.avatar || null,
             target: data.target
         };
         const { data: res, error } = await supabase.from('sales_people').insert(payload).select().single();
@@ -390,12 +390,12 @@ export const PersonnelAPI = {
         const payload: any = {};
         if (data.name) payload.name = data.name;
         if (data.unitId) payload.unit_id = data.unitId;
-        if (data.employeeCode) payload.employee_code = data.employeeCode;
-        if (data.email) payload.email = data.email;
-        if (data.phone) payload.phone = data.phone;
-        if (data.position) payload.position = data.position;
-        if (data.dateJoined) payload.date_joined = data.dateJoined;
-        if (data.avatar) payload.avatar = data.avatar;
+        if (data.employeeCode !== undefined) payload.employee_code = data.employeeCode || null;
+        if (data.email !== undefined) payload.email = data.email || null;
+        if (data.phone !== undefined) payload.phone = data.phone || null;
+        if (data.position !== undefined) payload.position = data.position || null;
+        if (data.dateJoined !== undefined) payload.date_joined = data.dateJoined || null;
+        if (data.avatar !== undefined) payload.avatar = data.avatar || null;
         if (data.target) payload.target = data.target;
 
         const { data: res, error } = await supabase.from('sales_people').update(payload).eq('id', id).select().single();
@@ -450,12 +450,13 @@ export const CustomersAPI = {
             phone: data.phone,
             email: data.email,
             address: data.address,
-            tax_code: data.taxCode,
-            website: data.website,
-            notes: data.notes,
-            bank_name: data.bankName,
-            bank_branch: data.bankBranch,
-            bank_account: data.bankAccount,
+            tax_code: data.taxCode || null,
+            website: data.website || null,
+            notes: data.notes || null,
+            bank_name: data.bankName || null,
+            bank_branch: data.bankBranch || null,
+            bank_account: data.bankAccount || null,
+            founded_date: data.foundedDate || null,
             type: data.type || 'Customer'
         };
         const { data: res, error } = await supabase.from('customers').insert(payload).select().single();
@@ -472,12 +473,13 @@ export const CustomersAPI = {
         if (data.phone) payload.phone = data.phone;
         if (data.email) payload.email = data.email;
         if (data.address) payload.address = data.address;
-        if (data.taxCode) payload.tax_code = data.taxCode;
-        if (data.website) payload.website = data.website;
-        if (data.notes) payload.notes = data.notes;
-        if (data.bankName) payload.bank_name = data.bankName;
-        if (data.bankBranch) payload.bank_branch = data.bankBranch;
-        if (data.bankAccount) payload.bank_account = data.bankAccount;
+        if (data.taxCode !== undefined) payload.tax_code = data.taxCode || null;
+        if (data.website !== undefined) payload.website = data.website || null;
+        if (data.notes !== undefined) payload.notes = data.notes || null;
+        if (data.bankName !== undefined) payload.bank_name = data.bankName || null;
+        if (data.bankBranch !== undefined) payload.bank_branch = data.bankBranch || null;
+        if (data.bankAccount !== undefined) payload.bank_account = data.bankAccount || null;
+        if (data.foundedDate !== undefined) payload.founded_date = data.foundedDate || null;
         if (data.type) payload.type = data.type;
 
         const { data: res, error } = await supabase.from('customers').update(payload).eq('id', id).select().single();
