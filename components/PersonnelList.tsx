@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Search, User, Target, TrendingUp, Building, ChevronRight, Award, ChevronDown, Loader2, Plus, Pencil, Trash2, MoreVertical } from 'lucide-react';
-import { PersonnelAPI } from '../services/api';
+import { PersonnelAPI, UnitsAPI } from '../services/api'; // Added UnitsAPI
 import { Unit, SalesPerson } from '../types';
-import { MOCK_UNITS } from '../constants';
+// Removed MOCK_UNITS import
 import PersonnelForm from './PersonnelForm';
 
 interface PersonnelListProps {
@@ -24,6 +24,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
     const [isUnitDropdownOpen, setIsUnitDropdownOpen] = useState(false);
 
     // Data state
+    const [units, setUnits] = useState<Unit[]>([]);
     const [personnel, setPersonnel] = useState<SalesPerson[]>([]);
     const [personnelStats, setPersonnelStats] = useState<Record<string, PersonnelStats>>({});
     const [isLoading, setIsLoading] = useState(true);
@@ -35,14 +36,19 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
 
     // Filter units
     const filterUnits = useMemo(() => {
-        return [{ id: 'all', name: 'Tất cả đơn vị', code: 'ALL' }, ...MOCK_UNITS.filter(u => u.id !== 'all')];
-    }, []);
+        return [{ id: 'all', name: 'Tất cả đơn vị', code: 'ALL', target: {}, lastYearActual: {} } as Unit, ...units];
+    }, [units]);
 
-    // Fetch personnel data
+    // Fetch data
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
             try {
+                // Fetch Units first
+                const unitsData = await UnitsAPI.getAll();
+                setUnits(unitsData.filter(u => u.id !== 'all'));
+
+                // Fetch Personnel
                 const data = await PersonnelAPI.getByUnitId(unitFilter);
                 setPersonnel(data);
 
@@ -59,7 +65,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                 });
                 setPersonnelStats(statsMap);
             } catch (error) {
-                console.error('Error fetching personnel:', error);
+                console.error('Error fetching data:', error);
             } finally {
                 setIsLoading(false);
             }
@@ -77,7 +83,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
     }, [personnel, searchQuery]);
 
     const getUnitCode = (unitId: string) => {
-        return MOCK_UNITS.find(u => u.id === unitId)?.code || 'N/A';
+        return units.find(u => u.id === unitId)?.code || 'N/A';
     };
 
     const formatCurrency = (val: number) => {

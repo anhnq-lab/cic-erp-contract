@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     Search,
     Building2,
@@ -12,9 +12,8 @@ import {
     Trash2,
     MoreVertical
 } from 'lucide-react';
-import { MOCK_CUSTOMERS, MOCK_CONTRACTS } from '../constants';
-import { CustomersAPI } from '../services/api';
-import { Customer } from '../types';
+import { Customer, Contract } from '../types';
+import { CustomersAPI, ContractsAPI } from '../services/api';
 import CustomerForm from './CustomerForm';
 
 interface CustomerListProps {
@@ -24,16 +23,38 @@ interface CustomerListProps {
 const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [industryFilter, setIndustryFilter] = useState<string>('all');
-    const [typeFilter, setTypeFilter] = useState<'all' | 'Customer' | 'Supplier'>('all'); // Default to All view
-    const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
+    const [typeFilter, setTypeFilter] = useState<'all' | 'Customer' | 'Supplier'>('all');
+    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [contracts, setContracts] = useState<Contract[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     // CRUD state
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>(undefined);
     const [actionMenuId, setActionMenuId] = useState<string | null>(null);
 
+    // Fetch Data
+    useEffect(() => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                const [custData, contData] = await Promise.all([
+                    CustomersAPI.getAll(),
+                    ContractsAPI.getAll()
+                ]);
+                setCustomers(custData);
+                setContracts(contData);
+            } catch (error) {
+                console.error("Error loading data", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
     const industries = useMemo(() => {
-        const set = new Set(customers.map(c => c.industry));
+        const set = new Set(customers.map(c => c.industry || 'Khác'));
         return ['all', ...Array.from(set)];
     }, [customers]);
 
@@ -41,32 +62,32 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
         let result = customers;
 
         if (typeFilter !== 'all') {
-            result = result.filter(c => c.type === typeFilter || c.type === 'Both' || (!c.type && typeFilter === 'Customer')); // Backward compat
+            result = result.filter(c => c.type === typeFilter || c.type === 'Both' || (!c.type && typeFilter === 'Customer'));
         }
 
         if (industryFilter !== 'all') {
-            result = result.filter(c => c.industry === industryFilter);
+            result = result.filter(c => (c.industry || 'Khác') === industryFilter);
         }
 
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             result = result.filter(c =>
                 c.name.toLowerCase().includes(query) ||
-                c.shortName.toLowerCase().includes(query) ||
+                (c.shortName || '').toLowerCase().includes(query) ||
                 (c.contactPerson || '').toLowerCase().includes(query)
             );
         }
         return result;
-    }, [customers, industryFilter, searchQuery]);
+    }, [customers, industryFilter, searchQuery, typeFilter]);
 
     const getCustomerStats = (customer: Customer) => {
-        const contracts = MOCK_CONTRACTS.filter(c =>
-            c.partyA.includes(customer.shortName) || c.clientInitials === customer.shortName
-        );
-        const totalValue = contracts.reduce((sum, c) => sum + c.value, 0);
-        const totalRevenue = contracts.reduce((sum, c) => sum + c.actualRevenue, 0);
-        const activeContracts = contracts.filter(c => c.status === 'Active').length;
-        return { contractCount: contracts.length, totalValue, totalRevenue, activeContracts };
+        const custContracts = contracts.filter(c => c.customerId === customer.id || c.partyA === customer.name);
+        // Note: Using customerId is better, falling back to name match for backward compatibility
+
+        const totalValue = custContracts.reduce((sum, c) => sum + (c.value || 0), 0);
+        const totalRevenue = custContracts.reduce((sum, c) => sum + (c.actualRevenue || 0), 0);
+        const activeContracts = custContracts.filter(c => c.status === 'Active').length;
+        return { contractCount: custContracts.length, totalValue, totalRevenue, activeContracts };
     };
 
     const formatCurrency = (val: number) => {
@@ -177,8 +198,8 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                         key={type}
                         onClick={() => setTypeFilter(type)}
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${typeFilter === type
-                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none'
-                                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none'
+                            : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                             }`}
                     >
                         {type === 'all' ? 'Tất cả' : type === 'Customer' ? 'Khách hàng' : 'Nhà cung cấp'}

@@ -14,9 +14,8 @@ import {
     Pencil,
     Trash2
 } from 'lucide-react';
-import { ProductsAPI } from '../services/api';
-import { Product, ProductCategory } from '../types';
-import { MOCK_UNITS } from '../constants';
+import { ProductsAPI, UnitsAPI } from '../services/api';
+import { Product, ProductCategory, Unit } from '../types';
 import ProductForm from './ProductForm';
 
 interface ProductListProps {
@@ -30,6 +29,7 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
 
     // Data state
     const [products, setProducts] = useState<Product[]>([]);
+    const [units, setUnits] = useState<Unit[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     // CRUD state
@@ -39,15 +39,19 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
 
     const categories: ProductCategory[] = ['Phần mềm', 'Tư vấn', 'Thiết kế', 'Thi công', 'Bảo trì', 'Đào tạo'];
 
-    // Fetch products
+    // Fetch data
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                const data = await ProductsAPI.getAll();
-                setProducts(data);
+                const [productsData, unitsData] = await Promise.all([
+                    ProductsAPI.getAll(),
+                    UnitsAPI.getAll()
+                ]);
+                setProducts(productsData);
+                setUnits(unitsData);
             } catch (error) {
-                console.error('Error fetching products:', error);
+                console.error('Error fetching data:', error);
             } finally {
                 setIsLoading(false);
             }
@@ -77,7 +81,7 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
 
     const getUnitName = (unitId?: string) => {
         if (!unitId) return 'N/A';
-        return MOCK_UNITS.find(u => u.id === unitId)?.name || 'N/A';
+        return units.find(u => u.id === unitId)?.name || 'N/A';
     };
 
     const formatCurrency = (val: number) => {

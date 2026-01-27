@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Loader2, Upload, X } from 'lucide-react';
 import Modal from './ui/Modal';
-import { SalesPerson, KPIPlan } from '../types';
-import { MOCK_UNITS } from '../constants';
+import { SalesPerson, KPIPlan, Unit } from '../types';
+import { UnitsAPI } from '../services/api';
 import { supabase } from '../lib/supabase';
 
 interface PersonnelFormProps {
@@ -147,7 +147,10 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, onSave, 
         }));
     };
 
-    const units = MOCK_UNITS.filter(u => u.id !== 'all');
+    const [units, setUnits] = useState<Unit[]>([]);
+    useEffect(() => {
+        UnitsAPI.getActive().then(setUnits).catch(console.error);
+    }, []);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={person ? 'Chỉnh sửa Nhân viên' : 'Thêm Nhân viên mới'} size="lg">

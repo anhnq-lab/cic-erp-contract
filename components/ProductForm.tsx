@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Save, X, Loader2 } from 'lucide-react';
 import Modal from './ui/Modal';
-import { Product, ProductCategory } from '../types';
-import { MOCK_UNITS } from '../constants';
+import { Product, ProductCategory, Unit } from '../types';
+import { UnitsAPI } from '../services/api';
 
 interface ProductFormProps {
     isOpen: boolean;
@@ -81,7 +81,10 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
         return parseInt(value.replace(/[^\d]/g, '')) || 0;
     };
 
-    const units = MOCK_UNITS.filter(u => u.id !== 'all');
+    const [units, setUnits] = useState<Unit[]>([]);
+    useEffect(() => {
+        UnitsAPI.getActive().then(setUnits).catch(console.error);
+    }, []);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={product ? 'Chỉnh sửa Sản phẩm' : 'Thêm Sản phẩm mới'} size="lg">
