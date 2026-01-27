@@ -159,8 +159,12 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
                 <div className="px-6 py-5">
                     <div className="flex flex-col sm:flex-row gap-4">
                         {/* Avatar - positioned to overlap header */}
-                        <div className="w-20 h-20 -mt-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-2xl shadow-xl border-4 border-white dark:border-slate-900 flex-shrink-0">
-                            {person.name.split(' ').pop()?.charAt(0) || '?'}
+                        <div className="w-20 h-20 -mt-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-2xl shadow-xl border-4 border-white dark:border-slate-900 flex-shrink-0 overflow-hidden">
+                            {person.avatar_url ? (
+                                <img src={person.avatar_url} alt={person.name} className="w-full h-full object-cover" />
+                            ) : (
+                                person.name.split(' ').pop()?.charAt(0) || '?'
+                            )}
                         </div>
 
                         {/* Info */}

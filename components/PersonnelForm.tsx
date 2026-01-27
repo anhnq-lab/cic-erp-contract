@@ -16,6 +16,7 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, onSave, 
     const [formData, setFormData] = useState({
         name: '',
         unitId: '',
+        avatar_url: '',
         employeeCode: '',
         position: '',
         email: '',
@@ -35,6 +36,7 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, onSave, 
             setFormData({
                 name: person.name,
                 unitId: person.unitId,
+                avatar_url: person.avatar_url || '',
                 employeeCode: person.employeeCode || '',
                 position: person.position || '',
                 email: person.email || '',
@@ -46,6 +48,7 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, onSave, 
             setFormData({
                 name: '',
                 unitId: '',
+                avatar_url: '',
                 employeeCode: '',
                 position: '',
                 email: '',
@@ -120,6 +123,16 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, onSave, 
                                 <option key={unit.id} value={unit.id}>{unit.name}</option>
                             ))}
                         </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Link Ảnh đại diện</label>
+                        <input
+                            type="text"
+                            value={formData.avatar_url}
+                            onChange={e => setFormData(prev => ({ ...prev, avatar_url: e.target.value }))}
+                            placeholder="https://..."
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                        />
                     </div>
                 </div>
 
