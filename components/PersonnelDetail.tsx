@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+
 import {
     ArrowLeft,
     User,
@@ -13,9 +14,11 @@ import {
     Phone,
     Briefcase,
     Calendar,
-    Hash
+    Hash,
+    Pencil
 } from 'lucide-react';
 import { PersonnelAPI, ContractsAPI, UnitsAPI } from '../services/api';
+import PersonnelForm from './PersonnelForm';
 import { SalesPerson, Contract, Unit } from '../types';
 
 interface PersonnelDetailProps {
@@ -41,34 +44,48 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
     const [contracts, setContracts] = useState<Contract[]>([]);
     const [stats, setStats] = useState<PersonnelStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
 
     // Fetch data on mount
-    useEffect(() => {
-        const fetchData = async () => {
-            setIsLoading(true);
-            try {
-                const [personData, statsData, contractsData] = await Promise.all([
-                    PersonnelAPI.getById(personnelId),
-                    PersonnelAPI.getStats(personnelId),
-                    ContractsAPI.getBySalespersonId(personnelId),
-                ]);
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const [personData, statsData, contractsData] = await Promise.all([
+                PersonnelAPI.getById(personnelId),
+                PersonnelAPI.getStats(personnelId),
+                ContractsAPI.getBySalespersonId(personnelId),
+            ]);
 
-                if (personData) {
-                    setPerson(personData);
-                    const unitData = await UnitsAPI.getById(personData.unitId);
-                    setUnit(unitData || null);
-                }
-                setStats(statsData);
-                setContracts(contractsData);
-            } catch (error) {
-                console.error('Error fetching personnel data:', error);
-            } finally {
-                setIsLoading(false);
+            if (personData) {
+                setPerson(personData);
+                const unitData = await UnitsAPI.getById(personData.unitId);
+                setUnit(unitData || null);
             }
-        };
+            setStats(statsData);
+            setContracts(contractsData);
+        } catch (error) {
+            console.error('Error fetching personnel data:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchData();
     }, [personnelId]);
+
+    const handleEditSave = async (data: Omit<SalesPerson, 'id'> | SalesPerson) => {
+        try {
+            if (person) {
+                await PersonnelAPI.update(person.id, data);
+            }
+            setIsEditing(false);
+            fetchData(); // Reload data
+        } catch (error) {
+            console.error('Error updating personnel:', error);
+            alert('Có lỗi xảy ra khi cập nhật thông tin.');
+        }
+    };
 
     const formatCurrency = (val: number) => {
         if (val >= 1e9) return `${(val / 1e9).toFixed(2)} tỷ`;
@@ -147,21 +164,30 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
             <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                 {/* Header gradient */}
                 <div className="h-20 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 relative">
-                    {stats && stats.signingProgress >= 100 && (
-                        <div className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-xl text-white">
-                            <Award size={16} />
-                            <span className="font-bold text-sm">Đạt KPI</span>
-                        </div>
-                    )}
+                    <div className="absolute top-4 right-4 flex items-center gap-2">
+                        {stats && stats.signingProgress >= 100 && (
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-xl text-white">
+                                <Award size={14} />
+                                <span className="font-bold text-xs">Đạt KPI</span>
+                            </div>
+                        )}
+                        <button
+                            onClick={() => setIsEditing(true)}
+                            className="p-2 bg-white/20 backdrop-blur-sm text-white rounded-xl hover:bg-white/30 transition-colors"
+                            title="Chỉnh sửa thông tin"
+                        >
+                            <Pencil size={18} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Profile content */}
                 <div className="px-6 py-5">
                     <div className="flex flex-col sm:flex-row gap-4">
                         {/* Avatar - positioned to overlap header */}
-                        <div className="w-20 h-20 -mt-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-2xl shadow-xl border-4 border-white dark:border-slate-900 flex-shrink-0 overflow-hidden">
-                            {person.avatar_url ? (
-                                <img src={person.avatar_url} alt={person.name} className="w-full h-full object-cover" />
+                        <div className="relative z-10 w-20 h-20 -mt-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-2xl shadow-xl border-4 border-white dark:border-slate-900 flex-shrink-0 overflow-hidden">
+                            {person.avatar ? (
+                                <img src={person.avatar} alt={person.name} className="w-full h-full object-cover" />
                             ) : (
                                 person.name.split(' ').pop()?.charAt(0) || '?'
                             )}
@@ -411,6 +437,13 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
                     </div>
                 )}
             </div>
+            {/* Edit Modal */}
+            <PersonnelForm
+                isOpen={isEditing}
+                onClose={() => setIsEditing(false)}
+                onSave={handleEditSave}
+                person={person}
+            />
         </div>
     );
 };
