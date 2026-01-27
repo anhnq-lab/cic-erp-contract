@@ -344,8 +344,12 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                                             {/* Name & Avatar */}
                                             <td className="py-4 px-6">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-indigo-200/50 dark:shadow-none">
-                                                        {person.name.split(' ').pop()?.charAt(0) || '?'}
+                                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-indigo-200/50 dark:shadow-none overflow-hidden">
+                                                        {person.avatar ? (
+                                                            <img src={person.avatar} alt={person.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            person.name.split(' ').pop()?.charAt(0) || '?'
+                                                        )}
                                                     </div>
                                                     <div>
                                                         <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm flex items-center gap-2">
