@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     ArrowLeft,
     Building2,
@@ -10,12 +10,14 @@ import {
     MapPin,
     Globe,
     Hash,
-    Calendar,
     User,
-    DollarSign
+    Edit3,
+    Trash2,
+    Loader2
 } from 'lucide-react';
-import { MOCK_CUSTOMERS, MOCK_CONTRACTS } from '../constants';
 import { Customer, Contract } from '../types';
+import { CustomersAPI, ContractsAPI } from '../services/api';
+import CustomerForm from './CustomerForm';
 
 interface CustomerDetailProps {
     customerId: string;
@@ -24,23 +26,38 @@ interface CustomerDetailProps {
 }
 
 const CustomerDetail: React.FC<CustomerDetailProps> = ({ customerId, onBack, onViewContract }) => {
-    // Find customer
-    const customer = useMemo(() => {
-        return MOCK_CUSTOMERS.find(c => c.id === customerId);
-    }, [customerId]);
+    const [customer, setCustomer] = useState<Customer | null>(null);
+    const [contracts, setContracts] = useState<Contract[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
 
-    // Get contracts for this customer
-    const contracts = useMemo(() => {
-        if (!customer) return [];
-        return MOCK_CONTRACTS.filter(c =>
-            c.partyA.includes(customer.shortName) || c.clientInitials === customer.shortName
-        );
-    }, [customer]);
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const [custData, contData] = await Promise.all([
+                CustomersAPI.getById(customerId),
+                ContractsAPI.getByCustomerId(customerId)
+            ]);
+            setCustomer(custData || null);
+            setContracts(contData || []);
+        } catch (error) {
+            console.error("Error fetching customer details", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, [customerId]);
 
     // Calculate stats
     const stats = useMemo(() => {
-        const totalValue = contracts.reduce((sum, c) => sum + c.value, 0);
-        const totalRevenue = contracts.reduce((sum, c) => sum + c.actualRevenue, 0);
+        if (!contracts.length) return {
+            contractCount: 0, totalValue: 0, totalRevenue: 0, activeContracts: 0, completedContracts: 0, avgContractValue: 0
+        };
+        const totalValue = contracts.reduce((sum, c) => sum + (c.value || 0), 0);
+        const totalRevenue = contracts.reduce((sum, c) => sum + (c.actualRevenue || 0), 0);
         const activeContracts = contracts.filter(c => c.status === 'Active').length;
         const completedContracts = contracts.filter(c => c.status === 'Completed').length;
         const avgContractValue = contracts.length > 0 ? totalValue / contracts.length : 0;
@@ -82,6 +99,34 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ customerId, onBack, onV
         }
     };
 
+    const handleDelete = async () => {
+        if (confirm('Bạn có chắc chắn muốn xóa khách hàng này? Hành động này không thể hoàn tác.')) {
+            try {
+                await CustomersAPI.delete(customerId);
+                onBack();
+            } catch (error) {
+                console.error("Error deleting customer", error);
+                alert("Có lỗi xảy ra khi xóa khách hàng");
+            }
+        }
+    };
+
+    const handleSave = async (data: Customer | Omit<Customer, 'id'>) => {
+        if ('id' in data) {
+            await CustomersAPI.update(data.id, data);
+            setCustomer(data as Customer);
+            setIsEditing(false);
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+            </div>
+        );
+    }
+
     // Not found state
     if (!customer) {
         return (
@@ -103,20 +148,38 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ customerId, onBack, onV
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-8">
             {/* Header with Back Button */}
-            <div className="flex items-center gap-4">
-                <button
-                    onClick={onBack}
-                    className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                >
-                    <ArrowLeft size={20} className="text-slate-600 dark:text-slate-400" />
-                </button>
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100">
-                        Chi tiết Khách hàng
-                    </h1>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
-                        Thông tin và lịch sử hợp đồng
-                    </p>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={onBack}
+                        className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    >
+                        <ArrowLeft size={20} className="text-slate-600 dark:text-slate-400" />
+                    </button>
+                    <div>
+                        <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100">
+                            Chi tiết Khách hàng
+                        </h1>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
+                            Thông tin và lịch sử hợp đồng
+                        </p>
+                    </div>
+                </div>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setIsEditing(true)}
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+                    >
+                        <Edit3 size={16} />
+                        Chỉnh sửa
+                    </button>
+                    <button
+                        onClick={handleDelete}
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-900/30 rounded-xl text-sm font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all"
+                    >
+                        <Trash2 size={16} />
+                        Xóa
+                    </button>
                 </div>
             </div>
 
@@ -354,6 +417,14 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ customerId, onBack, onV
                     <p className="text-sm text-slate-600 dark:text-slate-400">{customer.notes}</p>
                 </div>
             )}
+
+            {/* Edit Modal */}
+            <CustomerForm
+                isOpen={isEditing}
+                onClose={() => setIsEditing(false)}
+                onSave={handleSave}
+                customer={customer}
+            />
         </div>
     );
 };

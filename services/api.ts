@@ -168,6 +168,12 @@ export const ContractsAPI = {
         return data.map(mapContract);
     },
 
+    getByCustomerId: async (customerId: string): Promise<Contract[]> => {
+        const { data, error } = await supabase.from('contracts').select('*').eq('customer_id', customerId);
+        if (error) throw error;
+        return data.map(mapContract);
+    },
+
     getBySalespersonId: async (salespersonId: string): Promise<Contract[]> => {
         const { data, error } = await supabase.from('contracts').select('*').eq('salesperson_id', salespersonId);
         if (error) throw error;
