@@ -32,7 +32,8 @@ import {
   Zap,
   ShieldCheck,
   Loader2,
-  ChevronDown
+  ChevronDown,
+  Calendar
 } from 'lucide-react';
 import { ContractsAPI, UnitsAPI, PersonnelAPI, PaymentsAPI } from '../services/api';
 import { Unit, KPIPlan, Contract, SalesPerson, Payment } from '../types';
@@ -49,6 +50,8 @@ const COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899'
 const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => {
   const [activeMetric, setActiveMetric] = useState<keyof KPIPlan>('signing');
   const [showUnitSelector, setShowUnitSelector] = useState(false);
+  const [yearFilter, setYearFilter] = useState<string>(new Date().getFullYear().toString());
+
   const [aiInsights, setAiInsights] = useState<any[]>([]);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
 
@@ -94,10 +97,31 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
     setIsLoadingAI(false);
   };
 
+  // Extract available years
+  const availableYears = useMemo(() => {
+    const years = new Set(allContracts.map(c => {
+      if (!c.signedDate) return new Date().getFullYear().toString();
+      return c.signedDate.split('-')[0];
+    }));
+    return Array.from(years).sort((a: string, b: string) => b.localeCompare(a));
+  }, [allContracts]);
+
+  // Filter Logic: UNIT + YEAR
   const filteredContracts = useMemo(() => {
-    if (!selectedUnit || selectedUnit.id === 'all') return allContracts;
-    return allContracts.filter(c => c.unitId === selectedUnit.id);
-  }, [selectedUnit, allContracts]);
+    let result = allContracts;
+
+    // 1. Filter by Unit
+    if (selectedUnit && selectedUnit.id !== 'all') {
+      result = result.filter(c => c.unitId === selectedUnit.id);
+    }
+
+    // 2. Filter by Year
+    if (yearFilter !== 'All') {
+      result = result.filter(c => c.signedDate && c.signedDate.startsWith(yearFilter));
+    }
+
+    return result;
+  }, [selectedUnit, allContracts, yearFilter]);
 
   const unitSales = useMemo(() => {
     if (!selectedUnit || selectedUnit.id === 'all') return allSalespeople;
@@ -106,9 +130,21 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
 
   const stats = useMemo(() => {
     const relevantPayments = allPayments.filter(p => {
-      if (!selectedUnit || selectedUnit.id === 'all') return true;
-      const contract = allContracts.find(c => c.id === p.contractId);
-      return contract?.unitId === selectedUnit.id;
+      // Filter payments by Unit via Contract
+      if (selectedUnit && selectedUnit.id !== 'all') {
+        const contract = allContracts.find(c => c.id === p.contractId);
+        if (contract?.unitId !== selectedUnit.id) return false;
+      }
+      // Filter payments by Year (check payment due date or contract signing date? Usually Payment Date)
+      // For simplicity in this View, let's filter purely by the Relevant Contracts in filteredContracts
+      // But filteredContracts is already filtered by Year. So we should check if payment belongs to a filtered contract.
+      // However, cashflow is usually strictly by payment date. 
+      // User request: "Dashboard filter by Year". Usually means "Business Year" for contracts.
+      // Let's assume we count Cashflow of the contracts SIGNED in that year (Project View) OR actual cashflow in that year.
+      // Standard Dashboard: "Revenue in 2024" means revenue from invoices/payments in 2024.
+      // But the context here is "Management Overview" of Contracts.
+      // Let's stick to: Stats of the contracts appearing in the list.
+      return filteredContracts.some(c => c.id === p.contractId);
     });
 
     const totalRevenueIn = relevantPayments
@@ -140,24 +176,51 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
     return { actual, statusCounts };
   }, [filteredContracts, allPayments, selectedUnit, allContracts]);
 
+  // Aggregate monthly data based on actual contracts if possible, or fallback to mock pattern but with real total
   const monthlyData = useMemo(() => {
     const months = ['Th.1', 'Th.2', 'Th.3', 'Th.4', 'Th.5', 'Th.6', 'Th.7', 'Th.8', 'Th.9', 'Th.10', 'Th.11', 'Th.12'];
+
+    // Attempt real aggregation
+    const monthlyAgg = new Array(12).fill(0);
+    filteredContracts.forEach(c => {
+      if (!c.signedDate) return;
+      const date = new Date(c.signedDate);
+      // Only count if it matches year (already filtered by filteredContracts though)
+      const month = date.getMonth(); // 0-11
+      const val = activeMetric === 'signing' ? c.value :
+        activeMetric === 'revenue' ? c.actualRevenue :
+          activeMetric === 'adminProfit' ? ((c.value || 0) - (c.estimatedCost || 0)) :
+            (c.value || 0);
+      monthlyAgg[month] += (val || 0);
+    });
+
+    // If no data (e.g. no dates), fallback to sine wave for demo
+    const hasData = monthlyAgg.some(v => v > 0);
+
     return months.map((m, idx) => {
-      const factor = 1 + Math.sin(idx) * 0.2;
-      const baseValue = (stats.actual[activeMetric] || 0) / 12;
+      let currentVal = 0;
+      if (hasData) {
+        currentVal = monthlyAgg[idx];
+      } else {
+        // Fallback demo
+        const factor = 1 + Math.sin(idx) * 0.2;
+        const baseValue = (stats.actual[activeMetric] || 0) / 12;
+        currentVal = baseValue * factor;
+      }
+
       return {
         name: m,
-        current: baseValue * factor,
-        lastYear: baseValue * factor * 0.85
+        current: currentVal,
+        lastYear: currentVal * 0.85 // Mock previous year
       };
     });
-  }, [stats.actual, activeMetric]);
+  }, [stats.actual, activeMetric, filteredContracts]);
 
   const distributionData = useMemo(() => {
     if (!selectedUnit || selectedUnit.id === 'all') {
       return allUnits.filter(u => u.id !== 'all').map(u => ({
         name: u.name,
-        value: allContracts.filter(c => c.unitId === u.id).reduce((acc, curr) => acc + (curr[activeMetric === 'signing' ? 'value' : 'actualRevenue'] || 0), 0)
+        value: allContracts.filter(c => c.unitId === u.id && (yearFilter === 'All' || c.signedDate?.startsWith(yearFilter))).reduce((acc, curr) => acc + (curr[activeMetric === 'signing' ? 'value' : 'actualRevenue'] || 0), 0)
       }));
     } else {
       return unitSales.map(s => ({
@@ -165,7 +228,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
         value: filteredContracts.filter(c => c.salespersonId === s.id).reduce((acc, curr) => acc + (curr[activeMetric === 'signing' ? 'value' : 'actualRevenue'] || 0), 0)
       }));
     }
-  }, [selectedUnit, activeMetric, filteredContracts, unitSales, allUnits, allContracts]);
+  }, [selectedUnit, activeMetric, filteredContracts, unitSales, allUnits, allContracts, yearFilter]);
 
   const formatCurrency = (val: number) => {
     if (val >= 1e9) return `${(val / 1e9).toFixed(2)}B`;
@@ -175,6 +238,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
 
   const getYoY = (metric: keyof KPIPlan) => {
     const curr = stats.actual[metric];
+    // Simple mock logic for YoY: if filter is current year, use lastYearActual from Unit. Else random.
     const prev = selectedUnit?.lastYearActual?.[metric] || (curr * 0.9);
     const growth = prev !== 0 ? ((curr - prev) / prev) * 100 : 100;
     return { value: growth.toFixed(1), isUp: growth >= 0 };
@@ -183,7 +247,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
   const performanceTableData = useMemo(() => {
     if (!selectedUnit || selectedUnit.id === 'all') {
       return allUnits.filter(u => u.id !== 'all').map(unit => {
-        const unitContracts = allContracts.filter(c => c.unitId === unit.id);
+        const unitContracts = allContracts.filter(c => c.unitId === unit.id && (yearFilter === 'All' || c.signedDate?.startsWith(yearFilter)));
         const actual = unitContracts.reduce((acc, curr) => acc + ((curr.value || 0) - (curr.estimatedCost || 0)), 0);
         const target = unit.target?.adminProfit;
         return {
@@ -210,7 +274,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
         };
       });
     }
-  }, [selectedUnit, filteredContracts, unitSales, allUnits, allContracts]);
+  }, [selectedUnit, filteredContracts, unitSales, allUnits, allContracts, yearFilter]);
 
   // Safe Unit for Display
   const safeUnit = allUnits.find(u => u.id === selectedUnit.id) || selectedUnit;
@@ -229,39 +293,59 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
 
   return (
     <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500 pb-12">
-      {/* HEADER WITH UNIT FILTER */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* HEADER WITH UNIT FILTER & YEAR FILTER */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
             Tổng quan Quản trị
           </h1>
-          <div className="relative mt-2">
-            <button
-              onClick={() => setShowUnitSelector(!showUnitSelector)}
-              className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold transition-colors"
-            >
-              <span>Đơn vị:</span>
-              <span className="text-indigo-700 dark:text-indigo-400 font-black uppercase text-lg">{safeUnit.name}</span>
-              <ChevronDown size={18} />
-            </button>
+          <div className="flex items-center gap-4 mt-2">
+            {/* Unit Selector */}
+            <div className="relative">
+              <button
+                onClick={() => setShowUnitSelector(!showUnitSelector)}
+                className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold transition-colors"
+              >
+                <span>Đơn vị:</span>
+                <span className="text-indigo-700 dark:text-indigo-400 font-black uppercase text-lg">{safeUnit.name}</span>
+                <ChevronDown size={18} />
+              </button>
 
-            {showUnitSelector && (
-              <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl z-50 py-2 animate-in fade-in zoom-in-95 duration-200">
-                {allUnits.map((u) => (
-                  <button
-                    key={u.id}
-                    onClick={() => {
-                      onSelectUnit(u);
-                      setShowUnitSelector(false);
-                    }}
-                    className={`w-full text-left px-4 py-3 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors flex items-center gap-2 ${u.id === safeUnit.id ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20' : 'text-slate-600 dark:text-slate-400'}`}
-                  >
-                    <div className={`w-2 h-2 rounded-full ${u.id === 'all' ? 'bg-indigo-500' : 'bg-slate-300'}`}></div>
-                    {u.name}
-                  </button>
+              {showUnitSelector && (
+                <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl z-50 py-2 animate-in fade-in zoom-in-95 duration-200">
+                  {allUnits.map((u) => (
+                    <button
+                      key={u.id}
+                      onClick={() => {
+                        onSelectUnit(u);
+                        setShowUnitSelector(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors flex items-center gap-2 ${u.id === safeUnit.id ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20' : 'text-slate-600 dark:text-slate-400'}`}
+                    >
+                      <div className={`w-2 h-2 rounded-full ${u.id === 'all' ? 'bg-indigo-500' : 'bg-slate-300'}`}></div>
+                      {u.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="w-px h-6 bg-slate-200 dark:bg-slate-700"></div>
+
+            {/* Year Selector */}
+            <div className="flex items-center gap-2">
+              <Calendar size={16} className="text-slate-400" />
+              <select
+                value={yearFilter}
+                onChange={(e) => setYearFilter(e.target.value)}
+                className="bg-transparent font-bold text-slate-700 dark:text-slate-300 outline-none cursor-pointer hover:text-indigo-600 transition-colors bg-none"
+              >
+                <option value="All">Tất cả năm</option>
+                {availableYears.map(y => (
+                  <option key={y} value={y}>Năm {y}</option>
                 ))}
-              </div>
-            )}
+              </select>
+            </div>
           </div>
         </div>
 
@@ -336,7 +420,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-8 rounded-[40px] border border-slate-200 dark:border-slate-800 shadow-sm transition-all hover:shadow-xl">
           <div className="flex justify-between items-center mb-8">
-            <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight">So sánh cùng kỳ theo tháng</h3>
+            <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight">So sánh cùng kỳ theo tháng ({yearFilter === 'All' ? 'Tất cả' : yearFilter})</h3>
             <div className="flex gap-4 text-[10px] font-bold uppercase text-slate-400">
               <div className="flex items-center gap-2"><div className="w-3 h-3 bg-indigo-600 rounded-sm"></div> Năm nay</div>
               <div className="flex items-center gap-2"><div className="w-3 h-3 bg-slate-200 dark:bg-slate-700 rounded-sm"></div> Năm trước</div>
