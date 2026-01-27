@@ -495,7 +495,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                                 const newList = [...lineItems];
                                 if (prod) {
                                   newList[index].name = prod.name;
-                                  newList[index].inputPrice = prod.costPrice;
+                                  newList[index].inputPrice = prod.costPrice || 0;
                                   newList[index].outputPrice = prod.basePrice;
                                   // Optional: Set supplier if product has default supplier? Not in schema.
                                 } else {
@@ -542,11 +542,13 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                           </td>
                           <td className="px-4 py-3 text-right">
                             <input
-                              type="number"
-                              value={item.inputPrice}
+                              type="text"
+                              value={item.inputPrice ? formatVND(item.inputPrice) : '0'}
                               onChange={(e) => {
+                                const raw = e.target.value.replace(/\./g, '');
+                                if (!/^\d*$/.test(raw)) return;
                                 const newList = [...lineItems];
-                                newList[index].inputPrice = Number(e.target.value);
+                                newList[index].inputPrice = Number(raw);
                                 setLineItems(newList);
                               }}
                               className="w-full bg-transparent font-bold text-slate-500 text-right outline-none"
@@ -554,11 +556,13 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                           </td>
                           <td className="px-4 py-3 text-right">
                             <input
-                              type="number"
-                              value={item.outputPrice}
+                              type="text"
+                              value={item.outputPrice ? formatVND(item.outputPrice) : '0'}
                               onChange={(e) => {
+                                const raw = e.target.value.replace(/\./g, '');
+                                if (!/^\d*$/.test(raw)) return;
                                 const newList = [...lineItems];
-                                newList[index].outputPrice = Number(e.target.value);
+                                newList[index].outputPrice = Number(raw);
                                 setLineItems(newList);
                               }}
                               className="w-full bg-transparent font-bold text-indigo-600 text-right outline-none"
@@ -566,11 +570,13 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                           </td>
                           <td className="px-4 py-3 text-right">
                             <input
-                              type="number"
-                              value={item.directCosts}
+                              type="text"
+                              value={item.directCosts ? formatVND(item.directCosts) : '0'}
                               onChange={(e) => {
+                                const raw = e.target.value.replace(/\./g, '');
+                                if (!/^\d*$/.test(raw)) return;
                                 const newList = [...lineItems];
-                                newList[index].directCosts = Number(e.target.value);
+                                newList[index].directCosts = Number(raw);
                                 setLineItems(newList);
                               }}
                               className="w-full bg-transparent font-bold text-rose-500 text-right outline-none"
@@ -593,6 +599,29 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                       );
                     })}
                   </tbody>
+                  {/* TOTALS FOOTER */}
+                  <tfoot className="bg-slate-100 dark:bg-slate-800/80 font-black text-slate-700 dark:text-slate-200 border-t-2 border-slate-200 dark:border-slate-700">
+                    <tr>
+                      <td colSpan={3} className="px-4 py-4 text-left uppercase text-xs tracking-widest text-slate-500">
+                        Tổng cộng
+                      </td>
+                      <td className="px-4 py-4 text-right text-slate-600 dark:text-slate-400">
+                        {formatVND(totals.totalInput)}
+                      </td>
+                      <td className="px-4 py-4 text-right text-indigo-600">
+                        {formatVND(totals.signingValue)}
+                      </td>
+                      <td className="px-4 py-4 text-right text-rose-500">
+                        {formatVND(totals.totalDirectCosts)}
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        <span className={totals.signingValue - totals.totalInput - totals.totalDirectCosts >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
+                          {formatVND(totals.signingValue - totals.totalInput - totals.totalDirectCosts)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4"></td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             </section>
