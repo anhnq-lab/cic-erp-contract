@@ -141,6 +141,8 @@ export interface Contract {
   unitId: string;
   coordinatingUnitId?: string; // Đơn vị phối hợp
   salespersonId: string;
+  lineItems?: LineItem[];
+  adminCosts?: AdministrativeCosts;
   milestones?: Milestone[];
   paymentPhases?: PaymentPhase[];
 }
