@@ -11,6 +11,7 @@ import ContractForm from './components/ContractForm';
 import PersonnelList from './components/PersonnelList';
 import PersonnelDetail from './components/PersonnelDetail';
 import UnitList from './components/UnitList';
+import UnitDetail from './components/UnitDetail';
 import CustomerList from './components/CustomerList';
 import CustomerDetail from './components/CustomerDetail';
 import ProductList from './components/ProductList';
@@ -37,6 +38,7 @@ const App: React.FC = () => {
   const [selectedUnit, setSelectedUnit] = useState<Unit>(ALL_UNIT);
   const [viewingContractId, setViewingContractId] = useState<string | null>(null);
   const [viewingPersonnelId, setViewingPersonnelId] = useState<string | null>(null);
+  const [viewingUnitId, setViewingUnitId] = useState<string | null>(null);
   const [viewingCustomerId, setViewingCustomerId] = useState<string | null>(null);
   const [viewingProductId, setViewingProductId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -110,6 +112,17 @@ const App: React.FC = () => {
     setViewingProductId(null);
     setActiveTab('products');
   };
+
+  const handleViewUnit = (id: string) => {
+    setViewingUnitId(id);
+    setActiveTab('unit-detail');
+  };
+
+  const handleBackToUnitList = () => {
+    setViewingUnitId(null);
+    setActiveTab('units');
+  };
+
   const renderContent = () => {
     // Create new contract
     if (isCreating) {
@@ -241,7 +254,17 @@ const App: React.FC = () => {
           </div>
         );
       case 'units':
-        return <UnitList />;
+        return <UnitList onSelectUnit={handleViewUnit} />;
+      case 'unit-detail':
+        if (viewingUnitId) {
+          return <UnitDetail
+            unitId={viewingUnitId}
+            onBack={handleBackToUnitList}
+            onViewContract={handleViewContract}
+            onViewPersonnel={handleViewPersonnel}
+          />;
+        }
+        return <UnitList onSelectUnit={handleViewUnit} />;
       default:
         return <Dashboard selectedUnit={selectedUnit} onSelectUnit={setSelectedUnit} onSelectContract={handleViewContract} />;
     }

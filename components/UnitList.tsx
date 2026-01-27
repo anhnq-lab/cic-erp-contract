@@ -1,11 +1,15 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Building, Plus, Pencil, Trash2, Target, TrendingUp, Users } from 'lucide-react';
+import { Search, Building, Plus, Pencil, Trash2, Target, TrendingUp, Users, Eye } from 'lucide-react';
 import { UnitsAPI } from '../services/api';
 import { Unit } from '../types';
 import UnitForm from './UnitForm';
 
-const UnitList: React.FC = () => {
+interface UnitListProps {
+    onSelectUnit?: (id: string) => void;
+}
+
+const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
     const [units, setUnits] = useState<Unit[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -74,12 +78,13 @@ const UnitList: React.FC = () => {
     const handleDelete = async (id: string) => {
         if (confirm('Bạn có chắc chắn muốn xóa đơn vị này? Hành động này không thể hoàn tác.')) {
             try {
-                // Note: Implement delete logic in API if not exists, or soft delete
-                // For now assuming delete API exists or we simulate it
-                // await UnitsAPI.delete(id); 
-                alert("Chức năng xóa đang được phát triển (Soft Delete recommended)");
+                await UnitsAPI.delete(id);
+                // Refresh list
+                await fetchUnits();
+                alert("Đã xóa đơn vị thành công.");
             } catch (error) {
                 console.error("Failed to delete unit", error);
+                alert("Không thể xóa đơn vị. Có thể đơn vị đang có dữ liệu liên kết.");
             }
         }
     };
@@ -143,6 +148,21 @@ const UnitList: React.FC = () => {
                                     >
                                         <Pencil size={18} />
                                     </button>
+                                    <button
+                                        onClick={() => handleDelete(unit.id)}
+                                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-colors"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                    {onSelectUnit && (
+                                        <button
+                                            onClick={() => onSelectUnit(unit.id)}
+                                            className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-colors"
+                                            title="Xem chi tiết"
+                                        >
+                                            <Eye size={18} />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 
