@@ -140,6 +140,24 @@ export const ContractsAPI = {
         return mapContract(data);
     },
 
+    getNextContractNumber: async (unitId: string, year: number): Promise<number> => {
+        const startDate = `${year}-01-01`;
+        const endDate = `${year}-12-31`;
+
+        const { count, error } = await supabase
+            .from('contracts')
+            .select('*', { count: 'exact', head: true })
+            .eq('unit_id', unitId)
+            .gte('signed_date', startDate)
+            .lte('signed_date', endDate);
+
+        if (error) {
+            console.error("Error getting contract count:", error);
+            return 1;
+        }
+        return (count || 0) + 1;
+    },
+
     getByUnitId: async (unitId: string): Promise<Contract[]> => {
         let query = supabase.from('contracts').select('*');
         if (unitId !== 'all') {
