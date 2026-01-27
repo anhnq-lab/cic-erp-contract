@@ -41,7 +41,7 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, onSave, 
             setFormData({
                 name: person.name,
                 unitId: person.unitId,
-                avatar_url: person.avatar_url || '',
+                avatar_url: person.avatar || '',
                 employeeCode: person.employeeCode || '',
                 position: person.position || '',
                 email: person.email || '',
@@ -49,7 +49,7 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, onSave, 
                 dateJoined: person.dateJoined || '',
                 target: { ...person.target },
             });
-            setPreviewUrl(person.avatar_url || '');
+            setPreviewUrl(person.avatar || '');
             setAvatarFile(null);
         } else {
             setFormData({
@@ -122,12 +122,16 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, onSave, 
                 }
             }
 
-            const dataToSave = { ...formData, avatar_url: finalAvatarUrl };
+            const dataToSave = { ...formData, avatar: finalAvatarUrl };
 
             if (person) {
-                await onSave({ ...dataToSave, id: person.id });
+                // Remove avatar_url from the object passed to onSave to avoid confusion, 
+                // though api.ts ignores it. Important to pass 'avatar'.
+                const { avatar_url, ...rest } = dataToSave;
+                await onSave({ ...rest, avatar: finalAvatarUrl, id: person.id });
             } else {
-                await onSave(dataToSave);
+                const { avatar_url, ...rest } = dataToSave;
+                await onSave({ ...rest, avatar: finalAvatarUrl });
             }
             onClose();
         } catch (error) {
