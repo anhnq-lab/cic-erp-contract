@@ -80,6 +80,7 @@ const mapContract = (c: any): Contract => ({
     clientInitials: c.client_initials,
     customerId: c.customer_id,
     unitId: c.unit_id,
+    coordinatingUnitId: c.coordinating_unit_id,
     salespersonId: c.salesperson_id,
     value: c.value,
     estimatedCost: c.estimated_cost,
@@ -162,6 +163,7 @@ export const ContractsAPI = {
             client_initials: data.clientInitials,
             customer_id: data.customerId,
             unit_id: data.unitId,
+            coordinating_unit_id: data.coordinatingUnitId,
             salesperson_id: data.salespersonId,
             value: data.value,
             estimated_cost: data.estimatedCost,
@@ -192,6 +194,7 @@ export const ContractsAPI = {
         if (data.clientInitials !== undefined) payload.client_initials = data.clientInitials;
         if (data.customerId !== undefined) payload.customer_id = data.customerId;
         if (data.unitId !== undefined) payload.unit_id = data.unitId;
+        if (data.coordinatingUnitId !== undefined) payload.coordinating_unit_id = data.coordinatingUnitId;
         if (data.salespersonId !== undefined) payload.salesperson_id = data.salespersonId;
         if (data.value !== undefined) payload.value = data.value;
         if (data.estimatedCost !== undefined) payload.estimated_cost = data.estimatedCost;

@@ -132,6 +132,7 @@ export interface Contract {
   stage: ImplementationStage;
   category: string;
   unitId: string;
+  coordinatingUnitId?: string; // Đơn vị phối hợp
   salespersonId: string;
   milestones?: Milestone[];
   paymentPhases?: PaymentPhase[];

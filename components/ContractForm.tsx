@@ -58,6 +58,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
   // 1. Identification & Responsibility
   const [contractType, setContractType] = useState<ContractType>(contract?.contractType || 'HĐ');
   const [unitId, setUnitId] = useState(contract?.unitId || '');
+  const [coordinatingUnitId, setCoordinatingUnitId] = useState(contract?.coordinatingUnitId || '');
   const [salespersonId, setSalespersonId] = useState(contract?.salespersonId || '');
   const [customerId, setCustomerId] = useState(contract?.customerId || null);
   const [title, setTitle] = useState(contract?.title || '');
@@ -188,6 +189,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
       clientInitials: clientName ? clientName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 5) : 'KH',
       customerId: customerId,
       unitId,
+      coordinatingUnitId,
       salespersonId,
       value: totals.signingValue,
       estimatedCost: totals.totalCosts,
@@ -318,18 +320,35 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                     {units.filter(u => u.id !== 'all').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                   </select>
                 </div>
+
+                {/* Coordinating Unit */}
                 <div className="space-y-2">
                   <label className="text-[11px] font-bold text-slate-500 uppercase ml-1 flex items-center gap-1">
-                    <User size={10} /> Sale thực hiện (Chịu trách nhiệm KPI)
+                    <Users size={10} /> Đơn vị phối hợp
                   </label>
                   <select
-                    value={salespersonId}
-                    onChange={(e) => setSalespersonId(e.target.value)}
-                    className="w-full px-5 py-3 bg-indigo-50 dark:bg-indigo-900/20 border-2 border-indigo-100 dark:border-indigo-800 rounded-2xl text-sm font-bold text-indigo-700 dark:text-indigo-300 outline-none"
+                    value={coordinatingUnitId}
+                    onChange={(e) => setCoordinatingUnitId(e.target.value)}
+                    className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:border-indigo-500 transition-all"
                   >
-                    <option value="" className="text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900">-- Chọn nhân viên phụ trách --</option>
-                    {filteredSales.map(s => <option key={s.id} value={s.id} className="text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900">{s.name}</option>)}
+                    <option value="">-- Chọn đơn vị phối hợp (nếu có) --</option>
+                    {units.filter(u => u.id !== 'all' && u.id !== unitId).map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                   </select>
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase ml-1 flex items-center gap-1">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase ml-1 flex items-center gap-1">
+                      <User size={10} /> Sale thực hiện (Chịu trách nhiệm KPI)
+                    </label>
+                    <select
+                      value={salespersonId}
+                      onChange={(e) => setSalespersonId(e.target.value)}
+                      className="w-full px-5 py-3 bg-indigo-50 dark:bg-indigo-900/20 border-2 border-indigo-100 dark:border-indigo-800 rounded-2xl text-sm font-bold text-indigo-700 dark:text-indigo-300 outline-none"
+                    >
+                      <option value="" className="text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900">-- Chọn nhân viên phụ trách --</option>
+                      {filteredSales.map(s => <option key={s.id} value={s.id} className="text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900">{s.name}</option>)}
+                    </select>
                 </div>
               </div>
             </section>
