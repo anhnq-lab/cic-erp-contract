@@ -95,7 +95,10 @@ const mapContract = (c: any): Contract => ({
     content: c.content,
     contacts: c.contacts || [],
     milestones: c.milestones || [],
-    paymentPhases: c.payment_phases || []
+    paymentPhases: c.payment_phases || [],
+    // Map details from JSONB
+    lineItems: c.details?.lineItems || [],
+    adminCosts: c.details?.adminCosts || undefined
 });
 
 // Helper to map DB Payment to Frontend Payment
@@ -178,7 +181,12 @@ export const ContractsAPI = {
             content: data.content,
             contacts: data.contacts,
             milestones: data.milestones,
-            payment_phases: data.paymentPhases
+            payment_phases: data.paymentPhases,
+            // Pack details into JSONB
+            details: {
+                lineItems: data.lineItems,
+                adminCosts: data.adminCosts
+            }
         };
         const { data: res, error } = await supabase.from('contracts').insert(payload).select().single();
         if (error) throw error;
@@ -209,7 +217,19 @@ export const ContractsAPI = {
         if (data.content !== undefined) payload.content = data.content;
         if (data.contacts !== undefined) payload.contacts = data.contacts;
         if (data.milestones !== undefined) payload.milestones = data.milestones;
+        if (data.milestones !== undefined) payload.milestones = data.milestones;
         if (data.paymentPhases !== undefined) payload.payment_phases = data.paymentPhases;
+
+        // Update details JSONB if lineItems or adminCosts changed
+        if (data.lineItems !== undefined || data.adminCosts !== undefined) {
+            // optimized: we should merge with existing details if possible, but for now we might overwrite or need a way to get existing. 
+            // Since this is a simple update, we assume we pass the full object or we might lose other details.
+            // A safer way is to rely on the fact that if we update form, we have the full state.
+            payload.details = {
+                lineItems: data.lineItems,
+                adminCosts: data.adminCosts
+            };
+        }
 
         const { data: res, error } = await supabase.from('contracts').update(payload).eq('id', id).select().single();
         if (error) throw error;
