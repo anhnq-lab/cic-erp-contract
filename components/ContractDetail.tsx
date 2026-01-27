@@ -24,11 +24,15 @@ import {
   Package,
   Briefcase,
   Percent,
-  Wallet
+  Wallet,
+  Building2,
+  Users,
+  Trash2,
+  Plus
 } from 'lucide-react';
 import { Contract, Unit, Milestone, PaymentPhase, AdministrativeCosts } from '../types';
 import { MOCK_UNITS } from '../constants';
-import { ContractsAPI } from '../services/api';
+import { ContractsAPI, UnitsAPI, PersonnelAPI, CustomersAPI } from '../services/api';
 
 interface ContractDetailProps {
   contract?: Contract;
@@ -46,6 +50,11 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
   const [contract, setContract] = useState<Contract | null>(initialContract || null);
   const [loading, setLoading] = useState(!initialContract);
   const [error, setError] = useState('');
+
+  // Reference Names State
+  const [unitName, setUnitName] = useState('...');
+  const [salesName, setSalesName] = useState('...');
+  const [customerName, setCustomerName] = useState('...');
 
   useEffect(() => {
     if (initialContract) {
@@ -65,6 +74,42 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
         .finally(() => setLoading(false));
     }
   }, [contractId, initialContract]);
+
+  // Fetch References
+  useEffect(() => {
+    const fetchRefs = async () => {
+      if (!contract) return;
+
+      try {
+        // Unit
+        if (contract.unitId) {
+          if (contract.unitId === 'all') setUnitName('Tất cả');
+          else {
+            const u = await UnitsAPI.getAll().then(res => res.find(i => i.id === contract.unitId));
+            setUnitName(u?.name || 'Unknown');
+          }
+        }
+
+        // Salesperson
+        if (contract.salespersonId) {
+          const s = await PersonnelAPI.getAll().then(res => res.find(i => i.id === contract.salespersonId));
+          setSalesName(s?.name || 'Unknown');
+        }
+
+        // Customer
+        if (contract.customerId) {
+          const c = await CustomersAPI.getAll().then(res => res.find(i => i.id === contract.customerId));
+          setCustomerName(c?.name || 'Unknown');
+        } else if (contract.partyA) {
+          setCustomerName(contract.partyA);
+        }
+
+      } catch (e) {
+        console.error("Error fetching refs", e);
+      }
+    };
+    fetchRefs();
+  }, [contract]);
 
   // Business Logic Calculations
   const financials = useMemo(() => {
@@ -141,6 +186,22 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
               </span>
             </div>
             <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 leading-tight">{contract.title}</h1>
+
+            {/* General Info Badges */}
+            <div className="flex flex-wrap gap-4 mt-3">
+              <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs font-medium">
+                <Building2 size={14} />
+                <span>Đơn vị: <b className="text-slate-700 dark:text-slate-200">{unitName}</b></span>
+              </div>
+              <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs font-medium">
+                <User size={14} />
+                <span>PIC: <b className="text-slate-700 dark:text-slate-200">{salesName}</b></span>
+              </div>
+              <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs font-medium">
+                <Users size={14} />
+                <span>Khách hàng: <b className="text-slate-700 dark:text-slate-200">{customerName}</b></span>
+              </div>
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
