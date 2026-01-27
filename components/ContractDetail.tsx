@@ -362,19 +362,16 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                         <td className="px-2 py-3 text-center">{item.quantity}</td>
                         <td className="px-4 py-3 text-right text-slate-500">{formatVND(item.inputPrice)}</td>
                         <td className="px-4 py-3 text-right font-bold text-indigo-600">{formatVND(item.outputPrice)}</td>
-                        <td className="px-4 py-3 text-right text-rose-500 relative group/tooltip font-bold cursor-help">
-                          {formatVND(item.directCosts || 0)}
-                          {/* Tooltip for Details */}
+                        <td className="px-4 py-3 text-right text-rose-500 font-bold align-top">
+                          <div>{formatVND(item.directCosts || 0)}</div>
                           {item.directCostDetails && item.directCostDetails.length > 0 && (
-                            <div className="absolute top-full right-0 mt-2 w-56 p-3 bg-slate-900 text-white text-[10px] rounded-xl shadow-xl z-50 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none hidden group-hover/tooltip:block">
-                              <div className="space-y-1">
-                                {item.directCostDetails.map((d, i) => (
-                                  <div key={i} className="flex justify-between border-b border-slate-700 pb-1 last:border-0 last:pb-0">
-                                    <span>{d.name}</span>
-                                    <span className="font-bold">{formatVND(d.amount)}</span>
-                                  </div>
-                                ))}
-                              </div>
+                            <div className="mt-1 space-y-0.5">
+                              {item.directCostDetails.map((d, i) => (
+                                <div key={i} className="flex justify-end gap-2 text-[10px] text-slate-400 font-normal">
+                                  <span>{d.name}:</span>
+                                  <span>{formatVND(d.amount)}</span>
+                                </div>
+                              ))}
                             </div>
                           )}
                         </td>
