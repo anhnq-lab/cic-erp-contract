@@ -268,6 +268,7 @@ const generateMockPayments = (): Payment[] => {
         amount: paymentAmount,
         paidAmount: isCashReceived ? paymentAmount : (status === 'Quá hạn' ? paymentAmount * 0.5 : 0),
         status,
+        paymentType: 'Revenue',
         method: methods[i % methods.length],
         reference: isCashReceived ? `UNC${Date.now()}${i}${j}` : undefined,
         invoiceNumber: `HĐ${contract.id.split('_')[1]?.split('/')[0] || i}-${j + 1}`,
