@@ -175,7 +175,7 @@ const App: React.FC = () => {
 
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard selectedUnit={selectedUnit} onSelectContract={handleViewContract} />;
+        return <Dashboard selectedUnit={selectedUnit} onSelectUnit={setSelectedUnit} onSelectContract={handleViewContract} />;
       case 'contracts':
         return <ContractList selectedUnit={selectedUnit} onSelectContract={handleViewContract} onAdd={() => setIsCreating(true)} />;
       case 'ai-assistant':
@@ -240,7 +240,7 @@ const App: React.FC = () => {
       case 'units':
         return <UnitList />;
       default:
-        return <Dashboard selectedUnit={selectedUnit} onSelectContract={handleViewContract} />;
+        return <Dashboard selectedUnit={selectedUnit} onSelectUnit={setSelectedUnit} onSelectContract={handleViewContract} />;
     }
   };
 
