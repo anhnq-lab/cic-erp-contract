@@ -16,7 +16,7 @@ import CustomerDetail from './components/CustomerDetail';
 import ProductList from './components/ProductList';
 import ProductDetail from './components/ProductDetail';
 import PaymentList from './components/PaymentList';
-import { MOCK_UNITS, MOCK_CONTRACTS, MOCK_PRODUCTS } from './constants';
+import { MOCK_CONTRACTS, MOCK_PRODUCTS } from './constants';
 import { Unit, Contract, Product } from './types';
 import { ContractsAPI } from './services/api';
 import { Moon, Sun } from 'lucide-react';
@@ -25,7 +25,16 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [selectedUnit, setSelectedUnit] = useState<Unit>(MOCK_UNITS[0]);
+  // Default "All Units" selection
+  const ALL_UNIT: Unit = {
+    id: 'all',
+    name: 'Tất cả đơn vị',
+    code: 'ALL',
+    type: 'Company',
+    target: { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 },
+    lastYearActual: { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 }
+  };
+  const [selectedUnit, setSelectedUnit] = useState<Unit>(ALL_UNIT);
   const [viewingContractId, setViewingContractId] = useState<string | null>(null);
   const [viewingPersonnelId, setViewingPersonnelId] = useState<string | null>(null);
   const [viewingCustomerId, setViewingCustomerId] = useState<string | null>(null);
