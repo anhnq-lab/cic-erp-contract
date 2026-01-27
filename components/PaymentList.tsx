@@ -17,7 +17,7 @@ import {
     Trash2,
     MoreVertical
 } from 'lucide-react';
-import { Payment, PaymentStatus } from '../types';
+import { Payment, PaymentStatus, Customer } from '../types';
 import { PaymentsAPI, ContractsAPI, CustomersAPI } from '../services/api';
 import PaymentForm from './PaymentForm';
 
@@ -30,6 +30,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [typeFilter, setTypeFilter] = useState<'Revenue' | 'Expense'>('Revenue');
     const [payments, setPayments] = useState<Payment[]>([]);
+    const [customers, setCustomers] = useState<Customer[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [stats, setStats] = useState<any>(null);
 
@@ -42,10 +43,14 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            const data = await PaymentsAPI.getAll();
-            setPayments(data);
+            const [paymentsData, customersData] = await Promise.all([
+                PaymentsAPI.getAll(),
+                CustomersAPI.getAll()
+            ]);
+            setPayments(paymentsData);
+            setCustomers(customersData);
         } catch (error) {
-            console.error("Failed to fetch payments:", error);
+            console.error("Failed to fetch data:", error);
         } finally {
             setIsLoading(false);
         }
@@ -122,8 +127,8 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
     };
 
     const getCustomerName = (customerId: string) => {
-        // Placeholder until we implement a proper lookup or include customerName in payment data
-        return customerId;
+        const customer = customers.find(c => c.id === customerId);
+        return customer ? customer.name : customerId;
     };
 
     // CRUD handlers

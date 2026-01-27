@@ -130,6 +130,51 @@ export const ContractsAPI = {
         return data.map(mapContract);
     },
 
+    list: async (params: {
+        page: number;
+        limit: number;
+        search?: string;
+        status?: string;
+        unitId?: string;
+        year?: string;
+    }): Promise<{ data: Contract[]; count: number }> => {
+        const { page, limit, search, status, unitId, year } = params;
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
+
+        let query = supabase
+            .from('contracts')
+            .select('*', { count: 'exact' });
+
+        // Apply filters
+        if (search) {
+            query = query.or(`title.ilike.%${search}%,id.ilike.%${search}%,party_a.ilike.%${search}%`);
+        }
+        if (status && status !== 'All') {
+            query = query.eq('status', status);
+        }
+        if (unitId && unitId !== 'All' && unitId !== 'all') {
+            query = query.eq('unit_id', unitId);
+        }
+        if (year && year !== 'All') {
+            const startDate = `${year}-01-01`;
+            const endDate = `${year}-12-31`;
+            query = query.gte('signed_date', startDate).lte('signed_date', endDate);
+        }
+
+        // Apply pagination
+        query = query.order('created_at', { ascending: false }).range(from, to);
+
+        const { data, error, count } = await query;
+
+        if (error) throw error;
+
+        return {
+            data: data.map(mapContract),
+            count: count || 0
+        };
+    },
+
     getById: async (id: string): Promise<Contract | undefined> => {
         console.log("API: getById called for", id);
         const { data, error } = await supabase.from('contracts').select('*').eq('id', id).single();
@@ -166,6 +211,50 @@ export const ContractsAPI = {
         const { data, error } = await query;
         if (error) throw error;
         return data.map(mapContract);
+    },
+
+    getStats: async (params: {
+        search?: string;
+        status?: string;
+        unitId?: string;
+        year?: string;
+    }): Promise<{ totalContracts: number, totalValue: number, totalRevenue: number, totalProfit: number }> => {
+        const { search, status, unitId, year } = params;
+        let query = supabase.from('contracts').select('id, value, actual_revenue, estimated_cost, actual_cost, status, title, party_a, signed_date, unit_id');
+
+        // Apply filters (Duplicated logic for now, ideally refactor to shared helper)
+        if (search) {
+            query = query.or(`title.ilike.%${search}%,id.ilike.%${search}%,party_a.ilike.%${search}%`);
+        }
+        if (status && status !== 'All') {
+            query = query.eq('status', status);
+        }
+        if (unitId && unitId !== 'All' && unitId !== 'all') {
+            query = query.eq('unit_id', unitId);
+        }
+        if (year && year !== 'All') {
+            const startDate = `${year}-01-01`;
+            const endDate = `${year}-12-31`;
+            query = query.gte('signed_date', startDate).lte('signed_date', endDate);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        // Calculate aggregates in JS (Still fetching all columns for filtered set, but much lighter than full join)
+        // Optimization: In real prod, use .rpc() for server-side sum. 
+        // For < 10k records, JS reduce is fine and simpler than SQL RPC migration right now.
+        return data.reduce((acc, curr: any) => {
+            const val = curr.value || 0;
+            const rev = curr.actual_revenue || 0;
+            const cost = curr.estimated_cost || 0;
+            return {
+                totalContracts: acc.totalContracts + 1,
+                totalValue: acc.totalValue + val,
+                totalRevenue: acc.totalRevenue + rev,
+                totalProfit: acc.totalProfit + (val - cost)
+            };
+        }, { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0 });
     },
 
     getByCustomerId: async (customerId: string): Promise<Contract[]> => {

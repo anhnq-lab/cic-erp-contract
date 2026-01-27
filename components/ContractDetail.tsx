@@ -32,7 +32,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { Contract, Unit, Milestone, PaymentPhase, AdministrativeCosts, ContractDocument } from '../types';
-import { MOCK_UNITS } from '../constants';
+// import { MOCK_UNITS } from '../constants'; // Removed
 import { ContractsAPI, UnitsAPI, PersonnelAPI, CustomersAPI, DocumentsAPI } from '../services/api';
 
 interface ContractDetailProps {
@@ -198,10 +198,12 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
     };
   }, [contract]);
 
+  /* 
   const unit = useMemo(() => {
-    if (!contract) return null;
-    return MOCK_UNITS.find(u => u.id === contract.unitId);
-  }, [contract]);
+    // Deprecated MOCK usage
+    return null; 
+  }, [contract]); 
+  */
 
   const getStatusColor = (status: string) => {
     switch (status) {

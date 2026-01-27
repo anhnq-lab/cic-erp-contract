@@ -1,7 +1,11 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Filter, Plus, MoreVertical, ExternalLink, User, Loader2, DollarSign, Briefcase, TrendingUp, Calendar, Building2 } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { Search, Filter, Plus, MoreVertical, ExternalLink, User, Loader2, DollarSign, Briefcase, TrendingUp, Calendar, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ContractsAPI, PersonnelAPI, UnitsAPI } from '../services/api';
 import { ContractStatus, Unit, Contract, SalesPerson } from '../types';
+// import { useDebounce } from '../hooks/useDebounce'; // Inline implementation used instead
+
+// Inline debounce hook if not exists, but better to check. 
+// For now, I'll use a simple useEffect debounce logic.
 
 interface ContractListProps {
   selectedUnit: Unit;
@@ -10,98 +14,93 @@ interface ContractListProps {
 }
 
 const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContract, onAdd }) => {
+  // Params state
   const [statusFilter, setStatusFilter] = useState<ContractStatus | 'All'>('All');
   const [yearFilter, setYearFilter] = useState<string>('All');
   const [unitFilter, setUnitFilter] = useState<string>('All');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+  const [totalCount, setTotalCount] = useState(0);
+
+  // Data state
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [salespeople, setSalespeople] = useState<SalesPerson[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [metrics, setMetrics] = useState({ totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0 });
 
-  // Fetch data
+  // Debounce search
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setPage(1); // Reset to page 1 on search change
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Initial lookup data fetch (Run once)
+  useEffect(() => {
+    const fetchLookups = async () => {
       try {
-        const [contractsData, personnelData, unitsData] = await Promise.all([
-          ContractsAPI.getAll(),
+        const [personnelData, unitsData] = await Promise.all([
           PersonnelAPI.getAll(),
           UnitsAPI.getAll()
         ]);
-        setContracts(contractsData);
         setSalespeople(personnelData);
         setUnits(unitsData);
+      } catch (e) {
+        console.error("Fetch lookups failed", e);
+      }
+    };
+    fetchLookups();
+  }, []);
+
+  // Fetch Contracts & Stats when params change
+  useEffect(() => {
+    const fetchContracts = async () => {
+      setLoading(true);
+      try {
+        // Resolve effective unit ID (Global > Local > All)
+        let effectiveUnitId = 'All';
+        if (selectedUnit && selectedUnit.id !== 'all') {
+          effectiveUnitId = selectedUnit.id;
+        } else if (unitFilter !== 'All') {
+          effectiveUnitId = unitFilter;
+        }
+
+        const params = {
+          page,
+          limit,
+          search: debouncedSearch,
+          status: statusFilter,
+          unitId: effectiveUnitId,
+          year: yearFilter
+        };
+
+        const [listRes, statsRes] = await Promise.all([
+          ContractsAPI.list(params),
+          ContractsAPI.getStats(params) // Reuse same filters for stats
+        ]);
+
+        setContracts(listRes.data);
+        setTotalCount(listRes.count);
+        setMetrics(statsRes);
       } catch (error) {
-        console.error("Failed to fetch data:", error);
+        console.error("Failed to fetch contracts:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
-  }, []);
+    fetchContracts();
+  }, [page, limit, debouncedSearch, statusFilter, yearFilter, unitFilter, selectedUnit]);
 
-  // Extract unique years from contracts
-  const availableYears = useMemo(() => {
-    const years = new Set(contracts.map(c => {
-      if (!c.signedDate) return new Date().getFullYear().toString();
-      return c.signedDate.split('-')[0];
-    }));
-    return Array.from(years).sort((a: string, b: string) => b.localeCompare(a));
-  }, [contracts]);
-
-  const filteredContracts = useMemo(() => {
-    let result = contracts;
-
-    // 1. Filter by Prop Unit (Global Context)
-    if (selectedUnit && selectedUnit.id !== 'all') {
-      result = result.filter(c => c.unitId === selectedUnit.id);
-    }
-
-    // 2. Filter by Local Unit Dropdown (if Global is 'all')
-    if (selectedUnit?.id === 'all' && unitFilter !== 'All') {
-      result = result.filter(c => c.unitId === unitFilter);
-    }
-
-    // 3. Filter by Year
-    if (yearFilter !== 'All') {
-      result = result.filter(c => c.signedDate && c.signedDate.startsWith(yearFilter));
-    }
-
-    // 4. Filter by Status
-    if (statusFilter !== 'All') {
-      result = result.filter(c => c.status === statusFilter);
-    }
-
-    // 5. Filter by Search
-    if (searchTerm) {
-      const lowerTerm = searchTerm.toLowerCase();
-      result = result.filter(c =>
-        c.id.toLowerCase().includes(lowerTerm) ||
-        c.partyA.toLowerCase().includes(lowerTerm) ||
-        c.title.toLowerCase().includes(lowerTerm)
-      );
-    }
-
-    return result;
-  }, [contracts, selectedUnit, statusFilter, yearFilter, unitFilter, searchTerm]);
-
-  // Calculate Metrics
-  const metrics = useMemo(() => {
-    return filteredContracts.reduce((acc, curr) => {
-      const value = curr.value || 0;
-      const revenue = curr.actualRevenue || 0;
-      const cost = curr.estimatedCost || 0; // Or actualCost if available
-      const profit = value - cost;
-
-      acc.totalContracts += 1;
-      acc.totalValue += value;
-      acc.totalRevenue += revenue;
-      acc.totalProfit += profit;
-      return acc;
-    }, { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0 });
-  }, [filteredContracts]);
+  // Extract unique years (We can keep this separate or hardcode for now since we don't have all data to derive from)
+  // For server-side, it's better to verify available years from API, but for now fallback to static range or keeping simple
+  const availableYears = ['2026', '2025', '2024', '2023'];
 
   const getStatusColor = (status: ContractStatus) => {
     switch (status) {
@@ -121,14 +120,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
     return new Intl.NumberFormat('vi-VN', { notation: "compact", maximumFractionDigits: 1 }).format(number);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin text-indigo-600" size={32} />
-        <span className="ml-2 text-slate-500 font-bold">Đang tải dữ liệu...</span>
-      </div>
-    )
-  }
+  const totalPages = Math.ceil(totalCount / limit);
 
   return (
     <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500 pb-12">
@@ -219,7 +211,10 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
           <select
             className="bg-transparent py-3 text-sm font-black text-slate-900 dark:text-slate-100 outline-none w-[100px]"
             value={yearFilter}
-            onChange={(e) => setYearFilter(e.target.value)}
+            onChange={(e) => {
+              setYearFilter(e.target.value);
+              setPage(1);
+            }}
           >
             <option value="All">Tất cả năm</option>
             {availableYears.map(year => (
@@ -235,7 +230,10 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
             <select
               className="bg-transparent py-3 text-sm font-black text-slate-900 dark:text-slate-100 outline-none max-w-[150px]"
               value={unitFilter}
-              onChange={(e) => setUnitFilter(e.target.value)}
+              onChange={(e) => {
+                setUnitFilter(e.target.value);
+                setPage(1);
+              }}
             >
               <option value="All">Tất cả đơn vị</option>
               {units.map(u => (
@@ -251,7 +249,10 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
           <select
             className="bg-transparent py-3 text-sm font-black text-slate-900 dark:text-slate-100 outline-none"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value as any);
+              setPage(1);
+            }}
           >
             <option value="All">Tất cả trạng thái</option>
             <option value="Active">Đang hiệu lực</option>
@@ -292,10 +293,25 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-            {filteredContracts.map((contract, index) => {
+            {loading ? (
+              <tr>
+                <td colSpan={10} className="p-8 text-center text-slate-500">
+                  <Loader2 className="animate-spin inline-block mr-2" /> Đang tải dữ liệu...
+                </td>
+              </tr>
+            ) : contracts.length === 0 ? (
+              <tr>
+                <td colSpan={10} className="p-8 text-center text-slate-500">
+                  Không tìm thấy hợp đồng nào
+                </td>
+              </tr>
+            ) : contracts.map((contract, index) => {
               const profit = (contract.value || 0) - (contract.estimatedCost || 0);
               const margin = (contract.value || 0) > 0 ? (profit / contract.value) * 100 : 0;
               const salesperson = salespeople.find(s => s.id === contract.salespersonId);
+
+              // STT calculate based on page
+              const stt = ((page - 1) * limit) + index + 1;
 
               return (
                 <tr
@@ -304,7 +320,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                   className="group hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-all cursor-pointer"
                 >
                   <td className="px-4 py-5 text-center text-xs font-bold text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900">
-                    {(index + 1).toString().padStart(2, '0')}
+                    {stt.toString().padStart(2, '0')}
                   </td>
                   <td className="px-4 py-5 bg-white dark:bg-slate-900">
                     <div className="flex items-center gap-3">
@@ -366,6 +382,53 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* PAGINATION */}
+      <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="text-sm font-bold text-slate-500">
+          Hiển thị {contracts.length} / {totalCount} kết quả
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <div className="flex items-center gap-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              // Logic to show sliding window or just simple first 5
+              // Simplified: show current surround or just basic 
+              let p = i + 1;
+              if (totalPages > 5 && page > 3) {
+                p = page - 2 + i;
+              }
+              if (p > totalPages) return null;
+
+              return (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`w-10 h-10 rounded-xl text-sm font-black transition-all ${page === p
+                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none'
+                    : 'bg-transparent text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                >
+                  {p}
+                </button>
+              );
+            })}
+          </div>
+          <button
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages || totalPages === 0}
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
       </div>
     </div>
   );
