@@ -94,6 +94,10 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
     transferFee: 0, contractorTax: 0, importFee: 0, expertHiring: 0, documentProcessing: 0
   });
 
+  const [adminCostPercentages, setAdminCostPercentages] = useState<AdministrativeCosts>({
+    transferFee: 0, contractorTax: 0, importFee: 0, expertHiring: 0, documentProcessing: 0
+  });
+
   // Filter sales based on selected unit
   // Show all sales people, regardless of unit (User request)
   const filteredSales = useMemo(() => {
@@ -648,18 +652,45 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                     ].map((cost) => (
                       <div key={cost.key} className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">{cost.label}</label>
-                        <div className="relative">
-                          <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
-                          <input
-                            type="text"
-                            value={(adminCosts as any)[cost.key] ? formatVND((adminCosts as any)[cost.key]) : '0'}
-                            onChange={(e) => {
-                              const raw = e.target.value.replace(/\./g, '');
-                              if (!/^\d*$/.test(raw)) return;
-                              setAdminCosts({ ...adminCosts, [cost.key]: Number(raw) });
-                            }}
-                            className="w-full pl-8 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black focus:ring-2 focus:ring-rose-500 outline-none transition-all"
-                          />
+                        <div className="grid grid-cols-12 gap-2">
+                          <div className="col-span-4 relative group">
+                            <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
+                              <Percent size={10} className="text-slate-400" />
+                            </div>
+                            <input
+                              type="number"
+                              placeholder="%"
+                              value={(adminCostPercentages as any)[cost.key] || ''}
+                              onChange={(e) => {
+                                const pct = Number(e.target.value);
+                                setAdminCostPercentages({ ...adminCostPercentages, [cost.key]: pct });
+                                // Auto-calc amount based on Signing Value (Total Output)
+                                const amount = Math.round((pct / 100) * totals.signingValue);
+                                setAdminCosts({ ...adminCosts, [cost.key]: amount });
+                              }}
+                              className="w-full pl-6 pr-1 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold focus:ring-2 focus:ring-indigo-500 outline-none text-center"
+                            />
+                          </div>
+                          <div className="col-span-8 relative">
+                            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
+                            <input
+                              type="text"
+                              value={(adminCosts as any)[cost.key] ? formatVND((adminCosts as any)[cost.key]) : '0'}
+                              onChange={(e) => {
+                                const raw = e.target.value.replace(/\./g, '');
+                                if (!/^\d*$/.test(raw)) return;
+                                const val = Number(raw);
+                                setAdminCosts({ ...adminCosts, [cost.key]: val });
+
+                                // Reverse calc percentage
+                                if (totals.signingValue > 0) {
+                                  const pct = (val / totals.signingValue) * 100;
+                                  setAdminCostPercentages({ ...adminCostPercentages, [cost.key]: Number(pct.toFixed(2)) });
+                                }
+                              }}
+                              className="w-full pl-8 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black focus:ring-2 focus:ring-rose-500 outline-none transition-all text-right"
+                            />
+                          </div>
                         </div>
                       </div>
                     ))}
