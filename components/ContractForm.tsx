@@ -5,7 +5,7 @@ import {
   Plus, Trash2, Users, Briefcase,
   TrendingUp, CreditCard, Receipt,
   Info, Package, ShieldCheck, Wallet,
-  MapPin, UserCheck, Hash
+  MapPin, UserCheck, Hash, Percent
 } from 'lucide-react';
 import {
   Unit, ContractType, LineItem,
