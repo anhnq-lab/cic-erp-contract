@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState, useEffect } from 'react';
 import {
   XAxis,
@@ -30,8 +31,8 @@ import {
   Sparkles,
   Zap,
   ShieldCheck,
-  Info,
-  Loader2
+  Loader2,
+  ChevronDown
 } from 'lucide-react';
 import { ContractsAPI, UnitsAPI, PersonnelAPI, PaymentsAPI } from '../services/api';
 import { Unit, KPIPlan, Contract, SalesPerson, Payment } from '../types';
@@ -39,13 +40,15 @@ import { getSmartInsights } from '../services/geminiService';
 
 interface DashboardProps {
   selectedUnit: Unit;
+  onSelectUnit: (unit: Unit) => void;
   onSelectContract: (id: string) => void;
 }
 
 const COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899'];
 
-const Dashboard: React.FC<DashboardProps> = ({ selectedUnit }) => {
+const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => {
   const [activeMetric, setActiveMetric] = useState<keyof KPIPlan>('signing');
+  const [showUnitSelector, setShowUnitSelector] = useState(false);
   const [aiInsights, setAiInsights] = useState<any[]>([]);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
 
@@ -123,7 +126,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit }) => {
       revenue: filteredContracts.reduce((acc, curr) => acc + (curr.actualRevenue || 0), 0),
       adminProfit: filteredContracts.reduce((acc, curr) => acc + ((curr.value || 0) - (curr.estimatedCost || 0)), 0),
       revProfit: filteredContracts.reduce((acc, curr) => acc + ((curr.actualRevenue || 0) - (curr.actualCost || 0)), 0),
-      cash: totalRevenueIn, // Should be total collected revenue
+      cash: totalRevenueIn,
       netCashflow: netCashflow
     };
 
@@ -135,7 +138,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit }) => {
     };
 
     return { actual, statusCounts };
-  }, [filteredContracts]);
+  }, [filteredContracts, allPayments, selectedUnit, allContracts]);
 
   const monthlyData = useMemo(() => {
     const months = ['Th.1', 'Th.2', 'Th.3', 'Th.4', 'Th.5', 'Th.6', 'Th.7', 'Th.8', 'Th.9', 'Th.10', 'Th.11', 'Th.12'];
@@ -209,6 +212,9 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit }) => {
     }
   }, [selectedUnit, filteredContracts, unitSales, allUnits, allContracts]);
 
+  // Safe Unit for Display
+  const safeUnit = allUnits.find(u => u.id === selectedUnit.id) || selectedUnit;
+
   if (loadingConfig) {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4">
@@ -220,24 +226,62 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit }) => {
       </div>
     )
   }
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-16">
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+    <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500 pb-12">
+      {/* HEADER WITH UNIT FILTER */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Tổng quan Quản trị</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm font-bold mt-1">
-            Đơn vị: <span className="text-indigo-600 dark:text-indigo-400 uppercase font-black">{selectedUnit.name}</span>
-          </p>
-        </div>
-        <div className="bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 flex shadow-sm overflow-x-auto no-scrollbar">
-          {['signing', 'revenue', 'adminProfit', 'revProfit', 'cash'].map((m) => (
+          <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
+            Tổng quan Quản trị
+          </h1>
+          <div className="relative mt-2">
             <button
-              key={m}
-              onClick={() => setActiveMetric(m as any)}
-              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all whitespace-nowrap ${activeMetric === m ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+              onClick={() => setShowUnitSelector(!showUnitSelector)}
+              className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold transition-colors"
             >
-              {m === 'signing' ? 'Ký kết' : m === 'revenue' ? 'Doanh thu' : m === 'adminProfit' ? 'LNG QT' : m === 'revProfit' ? 'LNG DT' : 'Dòng tiền ròng'}
+              <span>Đơn vị:</span>
+              <span className="text-indigo-700 dark:text-indigo-400 font-black uppercase text-lg">{safeUnit.name}</span>
+              <ChevronDown size={18} />
+            </button>
+
+            {showUnitSelector && (
+              <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl z-50 py-2 animate-in fade-in zoom-in-95 duration-200">
+                {allUnits.map((u) => (
+                  <button
+                    key={u.id}
+                    onClick={() => {
+                      onSelectUnit(u);
+                      setShowUnitSelector(false);
+                    }}
+                    className={`w-full text-left px-4 py-3 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors flex items-center gap-2 ${u.id === safeUnit.id ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20' : 'text-slate-600 dark:text-slate-400'}`}
+                  >
+                    <div className={`w-2 h-2 rounded-full ${u.id === 'all' ? 'bg-indigo-500' : 'bg-slate-300'}`}></div>
+                    {u.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl overflow-x-auto no-scrollbar">
+          {[
+            { id: 'signing', label: 'Ký kết' },
+            { id: 'revenue', label: 'Doanh thu' },
+            { id: 'adminProfit', label: 'LNG QT' },
+            { id: 'revProfit', label: 'LNG ĐT' },
+            { id: 'cash', label: 'Dòng tiền' }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveMetric(tab.id as keyof KPIPlan)}
+              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${activeMetric === tab.id
+                ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-400 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                }`}
+            >
+              {tab.label}
             </button>
           ))}
         </div>

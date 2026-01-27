@@ -253,8 +253,6 @@ const App: React.FC = () => {
         isCollapsed={isSidebarCollapsed}
         setIsCollapsed={setIsSidebarCollapsed}
         onClose={() => setIsSidebarOpen(false)}
-        selectedUnit={selectedUnit}
-        onUnitChange={setSelectedUnit}
       />
       <Header
         onMenuClick={() => setIsSidebarOpen(true)}

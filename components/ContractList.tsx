@@ -48,7 +48,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
       if (!c.signedDate) return new Date().getFullYear().toString();
       return c.signedDate.split('-')[0];
     }));
-    return Array.from(years).sort((a, b) => b.localeCompare(a));
+    return Array.from(years).sort((a: string, b: string) => b.localeCompare(a));
   }, [contracts]);
 
   const filteredContracts = useMemo(() => {
