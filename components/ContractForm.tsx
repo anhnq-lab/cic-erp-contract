@@ -166,7 +166,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
   };
 
   // Auto-generate Contract ID: HĐ_STT/Đơn vị_Khách hàng_Năm
-  const contractId = useMemo(() => {
+  const autoId = useMemo(() => {
     const unit = units.find(u => u.id === unitId);
     if (!unit) return 'HĐ_NEW'; // Fallback
 
@@ -175,6 +175,15 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
     const year = signedDate.split('-')[0];
     return `${contractType}_001/${unitCode}_${clientInitial}_${year}`;
   }, [contractType, unitId, clientName, signedDate, units]);
+
+  const [formContractId, setFormContractId] = useState(contract?.id || '');
+  const [isIdTouched, setIsIdTouched] = useState(!!contract?.id);
+
+  useEffect(() => {
+    if (!isEditing && !isIdTouched) {
+      setFormContractId(autoId);
+    }
+  }, [autoId, isIdTouched, isEditing]);
 
   // Logic tính toán chuyên sâu
   const totals = useMemo(() => {
@@ -210,7 +219,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
     }
 
     const payload = {
-      id: contract?.id || contractId, // Use temp ID if new
+      id: formContractId, // Use form ID
       title: title || 'Hợp đồng chưa đặt tên',
       contractType,
       partyA: clientName,
@@ -254,7 +263,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                 {isEditing ? 'Chỉnh sửa hợp đồng' : 'Khai báo hồ sơ hợp đồng'}
               </h2>
               <div className="flex items-center gap-1.5 px-3 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-[10px] font-black rounded-lg uppercase tracking-wider">
-                <Hash size={10} /> {isEditing ? contract?.id : contractId}
+                <Hash size={10} /> {formContractId}
               </div>
             </div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Nghiệp vụ Quản trị & Theo dõi KPI mục tiêu</p>
@@ -389,6 +398,18 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
                 </h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase ml-1">Số hợp đồng (ID)</label>
+                  <input
+                    value={formContractId}
+                    onChange={(e) => {
+                      setFormContractId(e.target.value);
+                      setIsIdTouched(true);
+                    }}
+                    placeholder="Nhập số hợp đồng..."
+                    className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none"
+                  />
+                </div>
                 <div className="space-y-2">
                   <label className="text-[11px] font-bold text-slate-500 uppercase ml-1">Tên khách hàng</label>
                   <select

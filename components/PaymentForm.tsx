@@ -9,8 +9,8 @@ import {
     Building2,
     Hash
 } from 'lucide-react';
-import { Payment, PaymentStatus, PaymentMethod } from '../types';
-import { MOCK_CONTRACTS, MOCK_CUSTOMERS } from '../constants';
+import { Payment, PaymentStatus, PaymentMethod, Contract, Customer } from '../types';
+import { ContractsAPI, CustomersAPI } from '../services/api';
 
 interface PaymentFormProps {
     payment?: Payment;
@@ -31,10 +31,30 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, onSave, onCancel }) 
     const [reference, setReference] = useState(payment?.reference || '');
     const [notes, setNotes] = useState(payment?.notes || '');
 
+    // Options
+    const [contracts, setContracts] = useState<Contract[]>([]);
+    const [customers, setCustomers] = useState<Customer[]>([]);
+
+    useEffect(() => {
+        const fetchOptions = async () => {
+            try {
+                const [contractsData, customersData] = await Promise.all([
+                    ContractsAPI.getAll(),
+                    CustomersAPI.getAll()
+                ]);
+                setContracts(contractsData);
+                setCustomers(customersData);
+            } catch (error) {
+                console.error("Failed to fetch options:", error);
+            }
+        };
+        fetchOptions();
+    }, []);
+
     // Update customerId when contractId changes
     useEffect(() => {
         if (contractId) {
-            const contract = MOCK_CONTRACTS.find(c => c.id === contractId);
+            const contract = contracts.find(c => c.id === contractId);
             if (contract) {
                 setCustomerId(contract.customerId);
             }
@@ -99,7 +119,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, onSave, onCancel }) 
                                 className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             >
                                 <option value="">-- Chọn hợp đồng --</option>
-                                {MOCK_CONTRACTS.slice(0, 50).map(c => (
+                                {contracts.map(c => (
                                     <option key={c.id} value={c.id}>{c.id} - {c.title.substring(0, 40)}...</option>
                                 ))}
                             </select>
@@ -115,7 +135,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, onSave, onCancel }) 
                                 disabled
                             >
                                 <option value="">Tự động theo HĐ</option>
-                                {MOCK_CUSTOMERS.map(c => (
+                                {customers.map(c => (
                                     <option key={c.id} value={c.id}>{c.shortName} - {c.name}</option>
                                 ))}
                             </select>
@@ -202,11 +222,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, onSave, onCancel }) 
                                         type="button"
                                         onClick={() => setStatus(s)}
                                         className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${status === s
-                                                ? s === 'Tiền về' ? 'bg-emerald-600 text-white'
-                                                    : s === 'Đã xuất HĐ' ? 'bg-blue-600 text-white'
-                                                        : s === 'Quá hạn' ? 'bg-rose-600 text-white'
-                                                            : 'bg-amber-600 text-white'
-                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                            ? s === 'Tiền về' ? 'bg-emerald-600 text-white'
+                                                : s === 'Đã xuất HĐ' ? 'bg-blue-600 text-white'
+                                                    : s === 'Quá hạn' ? 'bg-rose-600 text-white'
+                                                        : 'bg-amber-600 text-white'
+                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                                             }`}
                                     >
                                         {s}
@@ -223,8 +243,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, onSave, onCancel }) 
                                         type="button"
                                         onClick={() => setMethod(m)}
                                         className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${method === m
-                                                ? 'bg-indigo-600 text-white'
-                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                            ? 'bg-indigo-600 text-white'
+                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                                             }`}
                                     >
                                         {m}

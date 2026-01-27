@@ -17,9 +17,8 @@ import {
     Trash2,
     MoreVertical
 } from 'lucide-react';
-import { MOCK_PAYMENTS, MOCK_CONTRACTS, MOCK_CUSTOMERS } from '../constants';
 import { Payment, PaymentStatus } from '../types';
-import { PaymentsAPI } from '../services/api';
+import { PaymentsAPI, ContractsAPI, CustomersAPI } from '../services/api';
 import PaymentForm from './PaymentForm';
 
 interface PaymentListProps {
@@ -30,13 +29,31 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [typeFilter, setTypeFilter] = useState<'Revenue' | 'Expense'>('Revenue');
-    const [payments, setPayments] = useState<Payment[]>(MOCK_PAYMENTS);
+    const [payments, setPayments] = useState<Payment[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [stats, setStats] = useState<any>(null);
 
     // CRUD state
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingPayment, setEditingPayment] = useState<Payment | undefined>(undefined);
     const [actionMenuId, setActionMenuId] = useState<string | null>(null);
+
+    // Fetch data
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const data = await PaymentsAPI.getAll();
+            setPayments(data);
+        } catch (error) {
+            console.error("Failed to fetch payments:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
 
     useEffect(() => {
         // Calculate stats based on current type filter
@@ -62,15 +79,17 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
             const isTypeMatch = (p.paymentType || 'Revenue') === typeFilter;
             if (!isTypeMatch) return false;
 
-            const contract = MOCK_CONTRACTS.find(c => c.id === p.contractId);
-            const customer = MOCK_CUSTOMERS.find(c => c.id === p.customerId);
+            if (!isTypeMatch) return false;
+
+            // Note: We might want to fetch contract/customer names if not available in payment
+            // For now assuming we rely on IDs or previously fetched lookups if we added them.
+            // Since we removed MOCK_CONTRACTS, we can't search by contract title easily without fetching all contracts.
+            // Let's stick to searching by ID/Invoice for now or fetch lookup maps.
 
             const matchSearch = searchQuery === '' ||
                 p.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 p.contractId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                p.invoiceNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                customer?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                contract?.title.toLowerCase().includes(searchQuery.toLowerCase());
+                p.invoiceNumber?.toLowerCase().includes(searchQuery.toLowerCase());
 
             const matchStatus = statusFilter === 'all' || p.status === statusFilter;
 
@@ -103,7 +122,8 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
     };
 
     const getCustomerName = (customerId: string) => {
-        return MOCK_CUSTOMERS.find(c => c.id === customerId)?.shortName || 'N/A';
+        // Placeholder until we implement a proper lookup or include customerName in payment data
+        return customerId;
     };
 
     // CRUD handlers
@@ -118,28 +138,43 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
         setActionMenuId(null);
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (window.confirm('Bạn có chắc muốn xóa khoản thanh toán này?')) {
-            setPayments(payments.filter(p => p.id !== id));
+            try {
+                await PaymentsAPI.delete(id);
+                setPayments(payments.filter(p => p.id !== id));
+            } catch (error) {
+                console.error("Failed to delete payment:", error);
+                alert("Xóa thất bại");
+            }
         }
         setActionMenuId(null);
     };
 
-    const handleSave = (paymentData: any) => {
-        if (paymentData.id) {
-            // Update
-            setPayments(payments.map(p => p.id === paymentData.id ? { ...p, ...paymentData } : p));
-        } else {
-            // Create
-            const newPayment: Payment = {
-                id: `PAY_${Date.now()}`,
-                ...paymentData,
-                paymentType: typeFilter // Default to current filter
-            };
-            setPayments([newPayment, ...payments]);
+    const handleSave = async (paymentData: any) => {
+        try {
+            if (paymentData.id) {
+                // Update
+                const updated = await PaymentsAPI.update(paymentData.id, paymentData);
+                if (updated) {
+                    setPayments(payments.map(p => p.id === paymentData.id ? updated : p));
+                }
+            } else {
+                // Create
+                const newPaymentData = {
+                    ...paymentData,
+                    paymentType: typeFilter // Default to current filter
+                };
+                const created = await PaymentsAPI.create(newPaymentData);
+                setPayments([created, ...payments]);
+            }
+            setIsFormOpen(false);
+            setEditingPayment(undefined);
+            fetchData(); // Refresh to ensure data consistency
+        } catch (error) {
+            console.error("Failed to save payment:", error);
+            alert("Lưu thất bại");
         }
-        setIsFormOpen(false);
-        setEditingPayment(undefined);
     };
 
     return (

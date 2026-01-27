@@ -33,8 +33,8 @@ import {
   Info,
   Loader2
 } from 'lucide-react';
-import { ContractsAPI, UnitsAPI, PersonnelAPI } from '../services/api';
-import { Unit, KPIPlan, Contract, SalesPerson } from '../types';
+import { ContractsAPI, UnitsAPI, PersonnelAPI, PaymentsAPI } from '../services/api';
+import { Unit, KPIPlan, Contract, SalesPerson, Payment } from '../types';
 import { getSmartInsights } from '../services/geminiService';
 
 interface DashboardProps {
@@ -54,19 +54,22 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit }) => {
   const [allContracts, setAllContracts] = useState<Contract[]>([]);
   const [allUnits, setAllUnits] = useState<Unit[]>([]);
   const [allSalespeople, setAllSalespeople] = useState<SalesPerson[]>([]);
+  const [allPayments, setAllPayments] = useState<Payment[]>([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoadingConfig(true);
       try {
-        const [contracts, units, people] = await Promise.all([
+        const [contracts, units, people, payments] = await Promise.all([
           ContractsAPI.getAll(),
           UnitsAPI.getAll(),
-          PersonnelAPI.getAll()
+          PersonnelAPI.getAll(),
+          PaymentsAPI.getAll()
         ]);
         setAllContracts(contracts);
         setAllUnits(units);
         setAllSalespeople(people);
+        setAllPayments(payments);
 
         // Only fetch AI after data is ready
         fetchAI(contracts);
@@ -99,12 +102,29 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit }) => {
   }, [selectedUnit, allSalespeople]);
 
   const stats = useMemo(() => {
-    const actual: KPIPlan = {
+    const relevantPayments = allPayments.filter(p => {
+      if (!selectedUnit || selectedUnit.id === 'all') return true;
+      const contract = allContracts.find(c => c.id === p.contractId);
+      return contract?.unitId === selectedUnit.id;
+    });
+
+    const totalRevenueIn = relevantPayments
+      .filter(p => (p.paymentType === 'Revenue' || !p.paymentType) && (p.status === 'Paid' || p.status === 'Tiền về'))
+      .reduce((sum, p) => sum + p.paidAmount, 0);
+
+    const totalExpenseOut = relevantPayments
+      .filter(p => p.paymentType === 'Expense' && (p.status === 'Paid' || p.status === 'Tiền về'))
+      .reduce((sum, p) => sum + p.paidAmount, 0);
+
+    const netCashflow = totalRevenueIn - totalExpenseOut;
+
+    const actual: KPIPlan & { netCashflow: number } = {
       signing: filteredContracts.reduce((acc, curr) => acc + (curr.value || 0), 0),
       revenue: filteredContracts.reduce((acc, curr) => acc + (curr.actualRevenue || 0), 0),
       adminProfit: filteredContracts.reduce((acc, curr) => acc + ((curr.value || 0) - (curr.estimatedCost || 0)), 0),
       revProfit: filteredContracts.reduce((acc, curr) => acc + ((curr.actualRevenue || 0) - (curr.actualCost || 0)), 0),
-      cash: filteredContracts.reduce((acc, curr) => acc + (curr.actualRevenue || 0), 0),
+      cash: totalRevenueIn, // Should be total collected revenue
+      netCashflow: netCashflow
     };
 
     const statusCounts = {
@@ -217,7 +237,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit }) => {
               onClick={() => setActiveMetric(m as any)}
               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all whitespace-nowrap ${activeMetric === m ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
             >
-              {m === 'signing' ? 'Ký kết' : m === 'revenue' ? 'Doanh thu' : m === 'adminProfit' ? 'LNG QT' : m === 'revProfit' ? 'LNG DT' : 'Tiền về'}
+              {m === 'signing' ? 'Ký kết' : m === 'revenue' ? 'Doanh thu' : m === 'adminProfit' ? 'LNG QT' : m === 'revProfit' ? 'LNG DT' : 'Dòng tiền ròng'}
             </button>
           ))}
         </div>
@@ -232,12 +252,12 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit }) => {
         ) : (
           aiInsights.map((insight, idx) => (
             <div key={idx} className={`p-6 rounded-[28px] border-2 shadow-sm transition-all hover:scale-[1.02] flex items-start gap-4 ${insight.type === 'warning' ? 'bg-rose-50/50 dark:bg-rose-900/10 border-rose-100 dark:border-rose-900/20' :
-                insight.type === 'success' ? 'bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/20' :
-                  'bg-indigo-50/50 dark:bg-indigo-900/10 border-indigo-100 dark:border-indigo-900/20'
+              insight.type === 'success' ? 'bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/20' :
+                'bg-indigo-50/50 dark:bg-indigo-900/10 border-indigo-100 dark:border-indigo-900/20'
               }`}>
               <div className={`p-2.5 rounded-2xl ${insight.type === 'warning' ? 'bg-rose-500 text-white' :
-                  insight.type === 'success' ? 'bg-emerald-500 text-white' :
-                    'bg-indigo-600 text-white'
+                insight.type === 'success' ? 'bg-emerald-500 text-white' :
+                  'bg-indigo-600 text-white'
                 }`}>
                 {insight.type === 'warning' ? <AlertCircle size={20} /> : insight.type === 'success' ? <ShieldCheck size={20} /> : <Zap size={20} />}
               </div>
@@ -257,7 +277,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit }) => {
         <KPIItem title="Doanh thu (Revenue)" metric="revenue" stats={stats.actual} target={selectedUnit.target} yoy={getYoY('revenue')} color="emerald" icon={<CreditCard size={18} />} />
         <KPIItem title="LNG Quản trị" metric="adminProfit" stats={stats.actual} target={selectedUnit.target} yoy={getYoY('adminProfit')} color="purple" icon={<TrendingUp size={18} />} />
         <KPIItem title="LNG theo DT" metric="revProfit" stats={stats.actual} target={selectedUnit.target} yoy={getYoY('revProfit')} color="amber" icon={<Target size={18} />} />
-        <KPIItem title="Tiền về (Cash)" metric="cash" stats={stats.actual} target={selectedUnit.target} yoy={getYoY('cash')} color="cyan" icon={<Wallet size={18} />} />
+        <KPIItem title="Dòng tiền ròng (Net CF)" metric="netCashflow" stats={stats.actual} target={{ netCashflow: 0 }} yoy={{ value: '0', isUp: true }} color="cyan" icon={<Wallet size={18} />} />
       </div>
 
       {/* Status Highlights */}
