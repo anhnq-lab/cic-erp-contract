@@ -1,38 +1,81 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     ArrowLeft,
     Package,
-    DollarSign,
     Tag,
     FileText,
-    Building2,
-    Edit3,
     TrendingUp,
     CheckCircle,
     XCircle,
-    Calendar,
-    Hash
+    Hash,
+    Loader2,
+    Edit3,
+    Trash2
 } from 'lucide-react';
-import { Product } from '../types';
-import { MOCK_UNITS, MOCK_CONTRACTS, MOCK_CUSTOMERS } from '../constants';
+import { Product, Unit, Contract, Customer } from '../types';
+import { UnitsAPI, ContractsAPI, CustomersAPI, ProductsAPI } from '../services/api';
 
 interface ProductDetailProps {
-    product: Product;
+    productId: string;
     onBack: () => void;
     onEdit: () => void;
     onViewContract?: (id: string) => void;
 }
 
-const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onEdit, onViewContract }) => {
-    const unit = MOCK_UNITS.find(u => u.id === product.unitId);
+const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack, onEdit, onViewContract }) => {
+    const [product, setProduct] = useState<Product | null>(null);
+    const [unit, setUnit] = useState<Unit | null>(null);
+    const [relatedContracts, setRelatedContracts] = useState<Contract[]>([]);
+    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Find contracts using this product (by name/category match for demo)
-    const relatedContracts = useMemo(() => {
-        return MOCK_CONTRACTS.filter(c =>
-            c.title.toLowerCase().includes(product.category.toLowerCase()) ||
-            c.title.toLowerCase().includes(product.name.toLowerCase().split(' ')[0])
-        ).slice(0, 10);
-    }, [product]);
+    useEffect(() => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                // Fetch Product
+                const productData = await ProductsAPI.getById(productId);
+                if (!productData) {
+                    setIsLoading(false);
+                    return;
+                }
+                setProduct(productData);
+
+                // Fetch Unit
+                if (productData.unitId) {
+                    const unitData = await UnitsAPI.getById(productData.unitId);
+                    setUnit(unitData || null);
+                }
+
+                // Fetch Contracts and Customers
+                const [allContracts, allCustomers] = await Promise.all([
+                    ContractsAPI.getAll(),
+                    CustomersAPI.getAll()
+                ]);
+
+                setCustomers(allCustomers);
+
+                // Filter related contracts
+                const related = allContracts.filter(c =>
+                    (c.category && c.category === productData.category) ||
+                    (c.lineItems?.some(item => item.name === productData.name)) ||
+                    c.title.toLowerCase().includes(productData.name.toLowerCase()) ||
+                    c.title.toLowerCase().includes(productData.name.split(' ')[0].toLowerCase())
+                );
+
+                setRelatedContracts(related.sort((a, b) =>
+                    new Date(b.signedDate).getTime() - new Date(a.signedDate).getTime()
+                ).slice(0, 20));
+
+            } catch (error) {
+                console.error("Error fetching product details:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [productId]);
 
     const formatCurrency = (val: number) => {
         if (val >= 1e9) return `${(val / 1e9).toFixed(2)} tỷ`;
@@ -40,9 +83,33 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onEdit, 
         return new Intl.NumberFormat('vi-VN').format(val) + ' đ';
     };
 
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-full min-h-[400px]">
+                <Loader2 size={32} className="animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
+    if (!product) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full py-12">
+                <p className="text-slate-500 mb-4">Không tìm thấy sản phẩm</p>
+                <button onClick={onBack} className="text-indigo-600 font-bold hover:underline">Quay lại</button>
+            </div>
+        );
+    }
+
     const margin = product.basePrice && product.costPrice
         ? ((product.basePrice - product.costPrice) / product.basePrice * 100).toFixed(0)
         : 0;
+
+    const stats = {
+        contractCount: relatedContracts.length,
+        totalValue: relatedContracts.reduce((sum, c) => sum + c.value, 0),
+        totalRevenue: relatedContracts.reduce((sum, c) => sum + c.actualRevenue, 0),
+        activeContracts: relatedContracts.filter(c => c.status === 'Active').length
+    };
 
     return (
         <div className="space-y-6 animate-in slide-in-from-right-4 duration-500 pb-12">
@@ -61,8 +128,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onEdit, 
                                 {product.code}
                             </span>
                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase ${product.isActive
-                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200'
-                                    : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200'
+                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200'
+                                : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200'
                                 }`}>
                                 {product.isActive ? 'Đang kinh doanh' : 'Ngừng kinh doanh'}
                             </span>
@@ -70,13 +137,32 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onEdit, 
                         <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 leading-tight">{product.name}</h1>
                     </div>
                 </div>
-                <button
-                    onClick={onEdit}
-                    className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
-                >
-                    <Edit3 size={16} />
-                    Chỉnh sửa
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={onEdit}
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+                    >
+                        <Edit3 size={16} />
+                        Chỉnh sửa
+                    </button>
+                    <button
+                        onClick={async () => {
+                            if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này? hành động này không thể hoàn tác.')) {
+                                try {
+                                    await ProductsAPI.delete(productId);
+                                    onBack();
+                                } catch (error) {
+                                    console.error('Failed to delete product', error);
+                                    alert('Có lỗi xảy ra khi xóa sản phẩm');
+                                }
+                            }
+                        }}
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-900/30 rounded-xl text-sm font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all"
+                    >
+                        <Trash2 size={16} />
+                        Xóa
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -86,14 +172,14 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onEdit, 
                     <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                             <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Giá bán</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Giá bán (Dự kiến)</p>
                                 <p className="text-2xl font-black text-slate-900 dark:text-slate-100">
                                     {formatCurrency(product.basePrice)}
                                 </p>
                                 <p className="text-[10px] text-slate-400">/{product.unit}</p>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Giá vốn</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Giá vốn (Ước tính)</p>
                                 <p className="text-2xl font-black text-slate-600 dark:text-slate-300">
                                     {formatCurrency(product.costPrice || 0)}
                                 </p>
@@ -121,7 +207,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onEdit, 
                             Mô tả sản phẩm/dịch vụ
                         </h3>
                         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                            {product.description}
+                            {product.description || 'Chưa có mô tả.'}
                         </p>
                     </div>
 
@@ -130,13 +216,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onEdit, 
                         <div className="p-6 border-b border-slate-100 dark:border-slate-800">
                             <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                 <TrendingUp size={20} className="text-indigo-600 dark:text-indigo-400" />
-                                Hợp đồng liên quan ({relatedContracts.length})
+                                Hợp đồng liên quan ({stats.contractCount})
                             </h3>
                         </div>
                         {relatedContracts.length > 0 ? (
                             <div className="divide-y divide-slate-100 dark:divide-slate-800">
                                 {relatedContracts.map(contract => {
-                                    const customer = MOCK_CUSTOMERS.find(c => c.id === contract.customerId);
+                                    const customer = customers.find(c => c.id === contract.customerId);
                                     return (
                                         <div
                                             key={contract.id}
@@ -144,20 +230,23 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onEdit, 
                                             className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
                                         >
                                             <div className="flex justify-between items-start">
-                                                <div>
+                                                <div className="min-w-0 pr-4">
                                                     <div className="flex items-center gap-2 mb-1">
-                                                        <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">{contract.id}</span>
+                                                        <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">{contract.id.slice(0, 8)}...</span>
                                                         <span className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase ${contract.status === 'Active'
-                                                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                                                                : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                                                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                                                            : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                                                             }`}>
                                                             {contract.status}
                                                         </span>
                                                     </div>
-                                                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate max-w-md">{contract.title}</p>
-                                                    <p className="text-xs text-slate-400">{customer?.shortName || contract.partyA}</p>
+                                                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{contract.title}</p>
+                                                    <p className="text-xs text-slate-400 mt-0.5">{customer?.shortName || contract.partyA}</p>
                                                 </div>
-                                                <p className="text-sm font-black text-slate-900 dark:text-slate-100">{formatCurrency(contract.value)}</p>
+                                                <div className="text-right shrink-0">
+                                                    <p className="text-xs text-slate-400 mb-0.5">{contract.signedDate}</p>
+                                                    <p className="text-sm font-black text-slate-900 dark:text-slate-100">{formatCurrency(contract.value)}</p>
+                                                </div>
                                             </div>
                                         </div>
                                     );
@@ -165,7 +254,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onEdit, 
                             </div>
                         ) : (
                             <div className="p-8 text-center text-sm text-slate-500 dark:text-slate-400">
-                                Chưa có hợp đồng nào sử dụng sản phẩm này
+                                Chưa tìm thấy hợp đồng nào liên quan đến sản phẩm này.
                             </div>
                         )}
                     </div>
@@ -199,23 +288,29 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onEdit, 
                     <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
                         <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
                             <TrendingUp size={18} className="text-slate-400" />
-                            Thống kê nhanh
+                            Thống kê (từ HĐ liên quan)
                         </h4>
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
                                 <span className="text-xs text-slate-500">Số hợp đồng</span>
-                                <span className="text-sm font-black text-slate-900 dark:text-slate-100">{relatedContracts.length}</span>
+                                <span className="text-sm font-black text-slate-900 dark:text-slate-100">{stats.contractCount}</span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <span className="text-xs text-slate-500">Tổng doanh thu</span>
+                                <span className="text-xs text-slate-500">Tổng giá trị HĐ</span>
+                                <span className="text-sm font-black text-indigo-600">
+                                    {formatCurrency(stats.totalValue)}
+                                </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-xs text-slate-500">Doanh thu thực tế</span>
                                 <span className="text-sm font-black text-emerald-600">
-                                    {formatCurrency(relatedContracts.reduce((sum, c) => sum + c.value, 0))}
+                                    {formatCurrency(stats.totalRevenue)}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-xs text-slate-500">HĐ đang thực hiện</span>
                                 <span className="text-sm font-black text-indigo-600">
-                                    {relatedContracts.filter(c => c.status === 'Active').length}
+                                    {stats.activeContracts}
                                 </span>
                             </div>
                         </div>

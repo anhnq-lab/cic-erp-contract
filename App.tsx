@@ -17,7 +17,7 @@ import CustomerDetail from './components/CustomerDetail';
 import ProductList from './components/ProductList';
 import ProductDetail from './components/ProductDetail';
 import PaymentList from './components/PaymentList';
-import { MOCK_CONTRACTS, MOCK_PRODUCTS } from './constants';
+import { MOCK_CONTRACTS } from './constants';
 import { Unit, Contract, Product } from './types';
 import { ContractsAPI } from './services/api';
 import { Moon, Sun } from 'lucide-react';
@@ -214,8 +214,7 @@ const App: React.FC = () => {
         return <ProductList onSelectProduct={handleViewProduct} />;
       case 'product-detail':
         if (viewingProductId) {
-          const product = MOCK_PRODUCTS.find(p => p.id === viewingProductId);
-          if (product) return <ProductDetail product={product} onBack={handleBackToProductList} onEdit={() => setEditingProductId(viewingProductId)} onViewContract={handleViewContract} />;
+          return <ProductDetail productId={viewingProductId} onBack={handleBackToProductList} onEdit={() => setEditingProductId(viewingProductId)} onViewContract={handleViewContract} />;
         }
         return <ProductList onSelectProduct={handleViewProduct} />;
       case 'payments':

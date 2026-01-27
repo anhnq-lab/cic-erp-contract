@@ -388,7 +388,7 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
                                             {/* Action */}
                                             <td className="py-4 px-6 relative">
                                                 <button
-                                                    onClick={() => setActionMenuId(actionMenuId === product.id ? null : product.id)}
+                                                    onClick={(e) => { e.stopPropagation(); setActionMenuId(actionMenuId === product.id ? null : product.id); }}
                                                     className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-all"
                                                 >
                                                     <MoreVertical size={16} />
@@ -397,17 +397,17 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
                                                 {/* Action Menu */}
                                                 {actionMenuId === product.id && (
                                                     <>
-                                                        <div className="fixed inset-0 z-10" onClick={() => setActionMenuId(null)} />
+                                                        <div className="fixed inset-0 z-10" onClick={(e) => { e.stopPropagation(); setActionMenuId(null); }} />
                                                         <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-20 overflow-hidden">
                                                             <button
-                                                                onClick={() => handleEdit(product)}
+                                                                onClick={(e) => { e.stopPropagation(); handleEdit(product); }}
                                                                 className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                                             >
                                                                 <Pencil size={14} />
                                                                 Chỉnh sửa
                                                             </button>
                                                             <button
-                                                                onClick={() => handleDelete(product.id)}
+                                                                onClick={(e) => { e.stopPropagation(); handleDelete(product.id); }}
                                                                 className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
                                                             >
                                                                 <Trash2 size={14} />
