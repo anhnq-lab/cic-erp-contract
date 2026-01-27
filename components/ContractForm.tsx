@@ -990,10 +990,10 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
               ))}
             </div>
           </div>
-        </section>
-      </div>
-    </div>
+        </section >
       </div >
+    </div >
+  </div >
 
   {/* Direct Costs Modal */ }
   < Modal
