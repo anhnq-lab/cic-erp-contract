@@ -341,7 +341,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
                   <div className="fixed inset-0 z-10" onClick={() => setShowUnitSelector(false)} />
                   <div className="absolute top-full left-0 mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-20 py-2 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
                     <div className="max-h-[320px] overflow-y-auto">
-                      {[{ id: 'all', name: 'Tất cả đơn vị', type: 'Company' } as Unit, ...allUnits].map((u) => (
+                      {[{ id: 'all', name: 'Toàn công ty', type: 'Company' } as Unit, ...allUnits.filter(u => u.name !== 'Toàn công ty')].map((u) => (
                         <button
                           key={u.id}
                           onClick={() => {

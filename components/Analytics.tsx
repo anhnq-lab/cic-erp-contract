@@ -198,8 +198,8 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                             <>
                                 <div className="fixed inset-0 z-10" onClick={() => setShowUnitSelector(false)} />
                                 <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-slate-900 border border-slate-200 shadow-xl rounded-xl z-20 overflow-hidden">
-                                    <button onClick={() => { onSelectUnit({ id: 'all', name: 'Tất cả đơn vị', type: 'Company' } as Unit); setShowUnitSelector(false); }} className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold text-sm">Tất cả đơn vị</button>
-                                    {units.map(u => (
+                                    <button onClick={() => { onSelectUnit({ id: 'all', name: 'Toàn công ty', type: 'Company' } as Unit); setShowUnitSelector(false); }} className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold text-sm">Toàn công ty</button>
+                                    {units.filter(u => u.name !== 'Toàn công ty').map(u => (
                                         <button key={u.id} onClick={() => { onSelectUnit(u); setShowUnitSelector(false); }} className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold text-sm">{u.name}</button>
                                     ))}
                                 </div>

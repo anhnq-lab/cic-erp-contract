@@ -34,7 +34,7 @@ const App: React.FC = () => {
   // Default "All Units" selection
   const ALL_UNIT: Unit = {
     id: 'all',
-    name: 'Tất cả đơn vị',
+    name: 'Toàn công ty',
     code: 'ALL',
     type: 'Company',
     target: { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 },
