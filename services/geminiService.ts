@@ -99,14 +99,26 @@ export async function getSmartInsights(contracts: any[]) {
 
 // Enterprise AI: Chat Streaming
 // Enterprise AI: Chat Streaming
-export async function* streamGeminiChat(history: { role: 'user' | 'model', content: string }[], newMessage: string, systemInstruction?: string) {
+// Enterprise AI: Chat Streaming
+export async function* streamGeminiChat(
+  history: { role: 'user' | 'model', content: string }[],
+  newMessage: string,
+  modelId: string = 'gemini-1.5-flash',
+  systemInstruction?: string
+) {
   try {
     const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
     if (!apiKey) throw new Error("Missing API Key");
 
     const genAI = new GoogleGenerativeAI(apiKey);
+
+    // Model Mapping to Valid API Strings
+    const validModelId = modelId === 'gemini-2.0-flash' ? 'gemini-2.0-flash-exp'
+      : modelId === 'gemini-1.5-pro' ? 'gemini-1.5-pro'
+        : 'gemini-1.5-flash'; // Fallback / Default
+
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: validModelId,
       systemInstruction: systemInstruction || "Bạn là Trợ lý AI Enterprise của hệ thống ContractPro. Trả lời chuyên nghiệp, ngắn gọn, Format dạng Markdown đẹp mắt (dùng Bold cho ý chính, Table cho dữ liệu).",
     });
 
@@ -139,6 +151,11 @@ export async function* streamGeminiChat(history: { role: 'user' | 'model', conte
 
   } catch (error) {
     console.error("Stream Error:", error);
-    yield "⚠️ Lỗi kết nối AI. Vui lòng kiểm tra API Key (.env) hoặc mạng.\n\nChi tiết lỗi: " + (error instanceof Error ? error.message : String(error));
+    // Fallback error handling
+    if (String(error).includes("404")) {
+      yield "⚠️ Model chưa khả dụng hoặc đang bảo trì. Vui lòng thử đổi sang Model khác (Ví dụ: Gemini 1.5 Pro).";
+    } else {
+      yield "⚠️ Lỗi kết nối AI. Vui lòng kiểm tra API Key (.env) hoặc mạng.\n\nChi tiết lỗi: " + (error instanceof Error ? error.message : String(error));
+    }
   }
 }
