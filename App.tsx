@@ -9,6 +9,7 @@ import ContractList from './components/ContractList';
 import AIAssistant from './components/AIAssistant';
 import ContractDetail from './components/ContractDetail';
 import ContractForm from './components/ContractForm';
+import Analytics from './components/Analytics';
 import PersonnelList from './components/PersonnelList';
 import PersonnelDetail from './components/PersonnelDetail';
 import UnitList from './components/UnitList';
@@ -244,15 +245,7 @@ const App: React.FC = () => {
       case 'payments':
         return <PaymentList onSelectContract={handleViewContract} />;
       case 'analytics':
-        return (
-          <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
-            <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center text-indigo-400 mb-6">
-              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18" /><path d="M18 17V9" /><path d="M13 17V5" /><path d="M8 17v-3" /></svg>
-            </div>
-            <h2 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100">Mô-đun Thống kê chuyên sâu</h2>
-            <p className="text-slate-500 dark:text-slate-400 max-w-md mt-2 text-sm md:text-base">Đang tải dữ liệu báo cáo cho {selectedUnit.name}...</p>
-          </div>
-        );
+        return <Analytics selectedUnit={selectedUnit} onSelectUnit={setSelectedUnit} />;
       case 'settings':
         return (
           <div className="max-w-2xl mx-auto bg-white dark:bg-slate-900 p-6 md:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all">
