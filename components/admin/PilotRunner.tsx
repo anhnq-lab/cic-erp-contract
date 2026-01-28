@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { ContractsAPI, PaymentsAPI, UnitsAPI, CustomersAPI, ProductsAPI } from '../../services/api';
-import { Contract, Payment } from '../../types';
+import { ContractsAPI, PaymentsAPI, UnitsAPI, CustomersAPI, ProductsAPI, PersonnelAPI } from '../../services/api';
+import { Contract, Payment, SalesPerson } from '../../types';
 
 const PilotRunner = () => {
     const [logs, setLogs] = useState<string[]>([]);
@@ -45,6 +45,26 @@ const PilotRunner = () => {
             }
             const customer = customers[0];
             log(`- Khách hàng: ${customer.name}`);
+
+            // Get or Create Sales Person
+            let personnel = await PersonnelAPI.getAll();
+            if (personnel.length === 0) {
+                log("- Chưa có nhân viên kinh doanh. Đang tạo mới...");
+                await PersonnelAPI.create({
+                    name: "Nguyễn Văn Sale",
+                    unitId: unit.id,
+                    email: "sale@cic.com.vn",
+                    phone: "0900123456",
+                    position: "Sale Executive",
+                    dateJoined: new Date().toISOString(),
+                    employeeCode: "SALE01",
+                    target: { signing: 1000000000, revenue: 800000000, adminProfit: 200000000, revProfit: 150000000, cash: 700000000 }
+                });
+                personnel = await PersonnelAPI.getAll();
+            }
+            const sale = personnel[0];
+            log(`- Phụ trách kinh doanh: ${sale.name}`);
+
             setProgress(20);
 
             // STEP 2: CREATE CONTRACT (WIZARD SIMULATION)
@@ -64,6 +84,7 @@ const PilotRunner = () => {
                 contractType: 'Software',
                 customerId: customer.id,
                 unitId: unit.id,
+                salespersonId: sale.id, // Assigned Sales Person
                 value: 50000000,
                 status: 'New', // Initially New
                 signedDate: new Date().toISOString().split('T')[0],
