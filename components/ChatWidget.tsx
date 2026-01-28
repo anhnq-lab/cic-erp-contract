@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { querySystemDataWithDeepSeek } from '../services/openaiService';
 
 interface ChatWidgetProps {
@@ -104,12 +106,33 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ contextData }) => {
                                 className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
                                 <div
-                                    className={`max-w-[80%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.sender === 'user'
+                                    className={`max-w-[85%] p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.sender === 'user'
                                         ? 'bg-indigo-600 text-white rounded-tr-sm'
-                                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-tl-sm'
+                                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-tl-sm prose dark:prose-invert prose-sm max-w-none'
                                         }`}
                                 >
-                                    {msg.text}
+                                    {msg.sender === 'user' ? (
+                                        msg.text
+                                    ) : (
+                                        <div className="prose dark:prose-invert prose-sm max-w-none">
+                                            <ReactMarkdown
+                                                remarkPlugins={[remarkGfm]}
+                                                components={{
+                                                    ul: ({ node, ...props }) => <ul className="list-disc pl-4 my-2 space-y-1" {...props} />,
+                                                    ol: ({ node, ...props }) => <ol className="list-decimal pl-4 my-2 space-y-1" {...props} />,
+                                                    li: ({ node, ...props }) => <li className="my-0.5" {...props} />,
+                                                    p: ({ node, ...props }) => <p className="mb-2 last:mb-0 block" {...props} />,
+                                                    strong: ({ node, ...props }) => <strong className="font-black text-indigo-700 dark:text-indigo-400" {...props} />,
+                                                    table: ({ node, ...props }) => <div className="overflow-x-auto my-2 rounded-lg border border-slate-200 dark:border-slate-700"><table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-xs" {...props} /></div>,
+                                                    thead: ({ node, ...props }) => <thead className="bg-slate-50 dark:bg-slate-800" {...props} />,
+                                                    th: ({ node, ...props }) => <th className="px-3 py-2 text-left font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider" {...props} />,
+                                                    td: ({ node, ...props }) => <td className="px-3 py-2 whitespace-nowrap border-t border-slate-100 dark:border-slate-800" {...props} />,
+                                                }}
+                                            >
+                                                {msg.text}
+                                            </ReactMarkdown>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
