@@ -31,8 +31,8 @@ const Auth = () => {
                     </div>
                 </div>
 
-                <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white mb-3">Welcome Back!</h1>
-                <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium">Hệ thống Quản lý Hợp đồng & Doanh nghiệp</p>
+                <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white mb-3">CIC ERP System</h1>
+                <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium">Hệ thống Quản trị Doanh nghiệp Tổng thể</p>
 
                 <button
                     onClick={handleGoogleLogin}
