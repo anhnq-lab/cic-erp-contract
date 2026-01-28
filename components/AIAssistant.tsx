@@ -126,7 +126,7 @@ const AIAssistant: React.FC = () => {
       }));
 
       // Pass the selected agent's prompt as system instruction AND selected model
-      const stream = streamGeminiChat(history, userMsg.content, currentModel, AGENTS[currentAgent].prompt);
+      const stream = streamEnterpriseAI(history, userMsg.content, currentModel, AGENTS[currentAgent].prompt);
 
       let fullContent = '';
 
