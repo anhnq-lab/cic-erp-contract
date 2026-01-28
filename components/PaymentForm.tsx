@@ -14,11 +14,12 @@ import { ContractsAPI, CustomersAPI } from '../services/api';
 
 interface PaymentFormProps {
     payment?: Payment;
+    initialPaymentType?: 'Revenue' | 'Expense'; // Default for new payments
     onSave: (payment: Omit<Payment, 'id'> | Payment) => void;
     onCancel: () => void;
 }
 
-const PaymentForm: React.FC<PaymentFormProps> = ({ payment, onSave, onCancel }) => {
+const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType = 'Revenue', onSave, onCancel }) => {
     const [contractId, setContractId] = useState(payment?.contractId || '');
     const [customerId, setCustomerId] = useState(payment?.customerId || '');
     const [dueDate, setDueDate] = useState(payment?.dueDate || '');
@@ -27,6 +28,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, onSave, onCancel }) 
     const [paidAmount, setPaidAmount] = useState(payment?.paidAmount || 0);
     const [status, setStatus] = useState<PaymentStatus>(payment?.status || 'Chờ xuất HĐ');
     const [method, setMethod] = useState<PaymentMethod>(payment?.method || 'Chuyển khoản');
+    const [paymentType, setPaymentType] = useState<'Revenue' | 'Expense'>(payment?.paymentType || initialPaymentType);
     const [invoiceNumber, setInvoiceNumber] = useState(payment?.invoiceNumber || '');
     const [reference, setReference] = useState(payment?.reference || '');
     const [notes, setNotes] = useState(payment?.notes || '');
@@ -75,6 +77,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, onSave, onCancel }) 
             invoiceNumber,
             reference,
             notes,
+            paymentType,
         };
         onSave(paymentData as any);
     };
@@ -139,6 +142,27 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, onSave, onCancel }) 
                                     <option key={c.id} value={c.id}>{c.shortName} - {c.name}</option>
                                 ))}
                             </select>
+                        </div>
+                    </div>
+
+                    {/* Payment Type */}
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-500 uppercase">Loại thanh toán</label>
+                        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-fit">
+                            <button
+                                type="button"
+                                onClick={() => setPaymentType('Revenue')}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${paymentType === 'Revenue' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                Khoản Thu
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setPaymentType('Expense')}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${paymentType === 'Expense' ? 'bg-white dark:bg-slate-700 text-rose-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                Khoản Chi
+                            </button>
                         </div>
                     </div>
 

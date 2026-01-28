@@ -460,6 +460,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
             {isFormOpen && (
                 <PaymentForm
                     payment={editingPayment}
+                    initialPaymentType={typeFilter}
                     onSave={handleSave}
                     onCancel={() => { setIsFormOpen(false); setEditingPayment(undefined); }}
                 />
