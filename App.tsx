@@ -48,6 +48,7 @@ const App: React.FC = () => {
   const [viewingProductId, setViewingProductId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [editingContract, setEditingContract] = useState<Contract | null>(null);
+  const [cloningContract, setCloningContract] = useState<Contract | null>(null);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoadingSession, setIsLoadingSession] = useState(true);
@@ -146,6 +147,23 @@ const App: React.FC = () => {
     setActiveTab('units');
   };
 
+  const handleCloneContract = async (contract: Contract) => {
+    try {
+      // Fetch full details if needed (though list usually has most info, but detailed items might be missing if pagination optimization was aggressive)
+      // For now trust the contract object passed, or fetch specifically 
+      // Safe bet: fetch by ID to ensure we have lineItems and phases if lazy loaded
+      const fullContract = await ContractsAPI.getById(contract.id);
+      if (fullContract) {
+        setCloningContract(fullContract);
+      } else {
+        setCloningContract(contract); // Fallback
+      }
+    } catch (e) {
+      console.error("Clone error", e);
+      setCloningContract(contract);
+    }
+  };
+
   const renderContent = () => {
     // Create new contract
     if (isCreating) {
@@ -185,6 +203,29 @@ const App: React.FC = () => {
               }
             }}
             onCancel={() => setEditingContract(null)}
+          />
+        </div>
+      );
+    }
+
+    // Clone existing contract
+    if (cloningContract) {
+      return (
+        <div className="fixed inset-0 z-[100] bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4">
+          <ContractForm
+            contract={cloningContract}
+            isCloning={true}
+            onSave={async (data) => {
+              try {
+                // Ensure ID is new (handled by form but double check here if needed)
+                await ContractsAPI.create(data);
+                setCloningContract(null);
+                toast.success("Nhân bản hợp đồng thành công!");
+              } catch (e: any) {
+                toast.error("Lỗi nhân bản: " + (e.message || e));
+              }
+            }}
+            onCancel={() => setCloningContract(null)}
           />
         </div>
       );

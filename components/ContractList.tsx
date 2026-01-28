@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { Search, Filter, Plus, MoreVertical, ExternalLink, User, Loader2, DollarSign, Briefcase, TrendingUp, Calendar, Building2, ChevronLeft, ChevronRight, Download, Upload } from 'lucide-react';
+import { Search, Filter, Plus, MoreVertical, ExternalLink, User, Loader2, DollarSign, Briefcase, TrendingUp, Calendar, Building2, ChevronLeft, ChevronRight, Download, Upload, Copy } from 'lucide-react';
 import { ContractsAPI, PersonnelAPI, UnitsAPI } from '../services/api';
 import { ContractStatus, Unit, Contract, SalesPerson } from '../types';
 // import { useDebounce } from '../hooks/useDebounce'; // Inline implementation used instead
@@ -13,6 +13,7 @@ interface ContractListProps {
   selectedUnit: Unit;
   onSelectContract: (id: string) => void;
   onAdd: () => void;
+  onClone?: (contract: Contract) => void;
 }
 
 const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContract, onAdd }) => {
@@ -508,9 +509,23 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                     </span>
                   </td>
                   <td className="px-4 py-5 text-right bg-white dark:bg-slate-900">
-                    <button className="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-700 dark:hover:text-indigo-400">
-                      <MoreVertical size={20} />
-                    </button>
+                    <div className="flex items-center justify-end gap-1">
+                      {onClone && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onClone(contract);
+                          }}
+                          className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                          title="Nhân bản hợp đồng"
+                        >
+                          <Copy size={18} />
+                        </button>
+                      )}
+                      <button className="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-700 dark:hover:text-indigo-400">
+                        <MoreVertical size={20} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );

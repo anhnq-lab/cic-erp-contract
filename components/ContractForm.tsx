@@ -19,12 +19,13 @@ import Modal from './ui/Modal';
 
 interface ContractFormProps {
   contract?: Contract; // For edit mode
+  isCloning?: boolean; // For clone mode
   onSave: (contract: any) => void;
   onCancel: () => void;
 }
 
-const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel }) => {
-  const isEditing = !!contract;
+const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false, onSave, onCancel }) => {
+  const isEditing = !!contract && !isCloning;
 
   // Data Options State
   const [units, setUnits] = useState<Unit[]>([]);
@@ -168,8 +169,8 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
   };
 
   // Auto-generate Contract ID: HĐ_STT/Đơn vị_Khách hàng_Năm
-  const [formContractId, setFormContractId] = useState(contract?.id || '');
-  const [isIdTouched, setIsIdTouched] = useState(!!contract?.id);
+  const [formContractId, setFormContractId] = useState(isCloning ? '' : (contract?.id || ''));
+  const [isIdTouched, setIsIdTouched] = useState(isCloning ? false : !!contract?.id);
 
   useEffect(() => {
     const generateId = async () => {
@@ -271,7 +272,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
           <div>
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
-                {isEditing ? 'Chỉnh sửa hợp đồng' : 'Khai báo hồ sơ hợp đồng'}
+                {isEditing ? 'Chỉnh sửa hợp đồng' : isCloning ? 'Nhân bản hợp đồng' : 'Khai báo hồ sơ hợp đồng'}
               </h2>
               <div className="flex items-center gap-1.5 px-3 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-[10px] font-black rounded-lg uppercase tracking-wider">
                 <Hash size={10} /> {formContractId}
