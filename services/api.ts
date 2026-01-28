@@ -794,6 +794,7 @@ export const PaymentsAPI = {
 
     create: async (data: Omit<Payment, 'id'>): Promise<Payment> => {
         const payload = {
+            id: crypto.randomUUID(), // Hotfix: DB missing default gen_random_uuid()
             contract_id: data.contractId,
             customer_id: data.customerId,
             phase_id: data.phaseId,
