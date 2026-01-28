@@ -27,7 +27,7 @@ const Auth = () => {
             <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 p-8 md:p-12 text-center">
                 <div className="mb-8 flex justify-center">
                     <div className="w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none rotate-3 hover:rotate-6 transition-transform">
-                        <span className="text-3xl font-black text-white">CP</span>
+                        <span className="text-3xl font-black text-white">CIC</span>
                     </div>
                 </div>
 
