@@ -98,6 +98,7 @@ export async function getSmartInsights(contracts: any[]) {
 }
 
 // Enterprise AI: Chat Streaming
+// Enterprise AI: Chat Streaming
 export async function* streamGeminiChat(history: { role: 'user' | 'model', content: string }[], newMessage: string, systemInstruction?: string) {
   try {
     const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
@@ -109,9 +110,15 @@ export async function* streamGeminiChat(history: { role: 'user' | 'model', conte
       systemInstruction: systemInstruction || "Bạn là Trợ lý AI Enterprise của hệ thống ContractPro. Trả lời chuyên nghiệp, ngắn gọn, Format dạng Markdown đẹp mắt (dùng Bold cho ý chính, Table cho dữ liệu).",
     });
 
-    // Convert history to Gemini format
-    // Note: Gemini SDK expects 'user' and 'model' roles.
-    const chatHistory = history.map(msg => ({
+    // Sanitizing History for Gemini API (Must start with 'user')
+    let validHistory = history.filter(msg => msg.content.trim() !== '');
+
+    // Remove leading 'model' messages (e.g. welcome messages)
+    while (validHistory.length > 0 && validHistory[0].role !== 'user') {
+      validHistory.shift();
+    }
+
+    const chatHistory = validHistory.map(msg => ({
       role: msg.role,
       parts: [{ text: msg.content }]
     }));
