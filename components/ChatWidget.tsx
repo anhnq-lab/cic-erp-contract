@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
-import { querySystemData } from '../services/geminiService';
+import { querySystemDataWithDeepSeek } from '../services/openaiService';
 
 interface ChatWidgetProps {
     contextData: any; // Data to be passed to AI for context
@@ -16,7 +16,7 @@ interface Message {
 const ChatWidget: React.FC<ChatWidgetProps> = ({ contextData }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
-        { id: 'welcome', text: 'Xin chào! Tôi có thể giúp gì cho bạn về dữ liệu hiện tại?', sender: 'ai', timestamp: new Date() }
+        { id: 'welcome', text: 'Xin chào! Tôi có thể giúp gì cho bạn về dữ liệu hiện tại (DeepSeek Powered)?', sender: 'ai', timestamp: new Date() }
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +47,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ contextData }) => {
         try {
             // Simplify context data to reduce token usage if needed
             // For now, passing exactly what is provided, but typically you'd want to aggregate sensitive or large lists
-            const response = await querySystemData(input, contextData);
+            const response = await querySystemDataWithDeepSeek(input, contextData);
 
             const aiMsg: Message = {
                 id: (Date.now() + 1).toString(),
@@ -105,8 +105,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ contextData }) => {
                             >
                                 <div
                                     className={`max-w-[80%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.sender === 'user'
-                                            ? 'bg-indigo-600 text-white rounded-tr-sm'
-                                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-tl-sm'
+                                        ? 'bg-indigo-600 text-white rounded-tr-sm'
+                                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-tl-sm'
                                         }`}
                                 >
                                     {msg.text}
@@ -153,8 +153,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ contextData }) => {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={`p-4 rounded-full shadow-xl transition-all duration-300 pointer-events-auto hover:scale-105 active:scale-95 flex items-center justify-center ${isOpen
-                        ? 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rotate-90 scale-0 opacity-0 absolute'
-                        : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/30'
+                    ? 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rotate-90 scale-0 opacity-0 absolute'
+                    : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/30'
                     }`}
             >
                 <MessageCircle size={28} />

@@ -39,7 +39,7 @@ import {
 } from 'lucide-react';
 import { ContractsAPI, UnitsAPI, PersonnelAPI, PaymentsAPI } from '../services/api';
 import { Unit, KPIPlan, Contract, SalesPerson, Payment } from '../types';
-import { getSmartInsights } from '../services/geminiService';
+import { getSmartInsightsWithDeepSeek } from '../services/openaiService';
 
 interface DashboardProps {
   selectedUnit: Unit;
@@ -94,9 +94,14 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
   const fetchAI = async (contracts: Contract[]) => {
     setIsLoadingAI(true);
     try {
-      const res = await getSmartInsights(contracts);
-      setAiInsights(res);
-    } catch (e) { console.error(e) }
+      const res = await getSmartInsightsWithDeepSeek(contracts);
+      // Ensure res is array
+      if (Array.isArray(res)) {
+        setAiInsights(res);
+      } else {
+        setAiInsights([]);
+      }
+    } catch (e) { console.error(e); setAiInsights([]); }
     setIsLoadingAI(false);
   };
 

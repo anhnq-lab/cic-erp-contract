@@ -94,3 +94,76 @@ export async function analyzeContractWithDeepSeek(text: string): Promise<string>
         return "Không thể phân tích hợp đồng bằng DeepSeek lúc này.";
     }
 }
+
+export async function querySystemDataWithDeepSeek(query: string, data: any): Promise<string> {
+    try {
+        const client = createClient('deepseek');
+
+        const response = await client.chat.completions.create({
+            model: 'deepseek-chat',
+            messages: [
+                {
+                    role: "system",
+                    content: "Bạn là trợ lý quản trị cấp cao của ContractPro. Dựa trên dữ liệu hệ thống được cung cấp, hãy trả lời câu hỏi của người dùng một cách chính xác, ngắn gọn và có phân tích chuyên môn. Định dạng Markdown."
+                },
+                {
+                    role: "user",
+                    content: `Dữ liệu hệ thống: ${JSON.stringify(data)}\n\nCâu hỏi: ${query}`
+                }
+            ],
+            temperature: 0.1,
+        });
+
+        return response.choices[0]?.message?.content || "Không có phản hồi từ DeepSeek.";
+    } catch (error) {
+        console.error("DeepSeek Query Error:", error);
+        return "Tôi đang gặp khó khăn khi kết nối với DeepSeek. Vui lòng kiểm tra API Key.";
+    }
+}
+
+export async function getSmartInsightsWithDeepSeek(contracts: any[]): Promise<any[]> {
+    try {
+        const client = createClient('deepseek');
+
+        // Simplify data to reduce token usage
+        const simplifiedData = contracts.map(c => ({
+            id: c.id,
+            val: c.value,
+            client: c.partyA,
+            status: c.status,
+            revenue: c.actualRevenue,
+            date: c.endDate,
+            unit: c.unitId
+        }));
+
+        const sample = simplifiedData.sort(() => 0.5 - Math.random()).slice(0, 40);
+
+        const response = await client.chat.completions.create({
+            model: 'deepseek-chat',
+            messages: [
+                {
+                    role: "system",
+                    content: `Bạn là chuyên gia phân tích dữ liệu doanh nghiệp. Nhiệm vụ của nhận xét về tình hình kinh doanh ngắn gọn.
+                    Output JSON format STRICTLY: [{"title": "Title", "content": "Content", "type": "warning|info|success"}]`
+                },
+                {
+                    role: "user",
+                    content: `Dựa trên danh sách ${contracts.length} hợp đồng (mẫu dưới đây), đưa ra 3 nhận xét quan trọng (Insights).
+                    Dữ liệu mẫu: ${JSON.stringify(sample)}`
+                }
+            ],
+            response_format: { type: 'json_object' }, // DeepSeek might support json_object or text. Better to be safe with text but prompt for JSON.
+            // Note: OpenAI SDK 'json_object' works if model supports it. DeepSeek V3 typically does.
+            temperature: 0.3,
+        });
+
+        const content = response.choices[0]?.message?.content || "[]";
+        // Clean markdown code blocks if present
+        const jsonStr = content.replace(/```json\n?|\n?```/g, '').trim();
+        return JSON.parse(jsonStr);
+
+    } catch (error) {
+        console.error("DeepSeek Insight Error:", error);
+        return [{ title: "Lỗi kết nối AI", content: "Không thể lấy Smart Insights từ DeepSeek.", type: "warning" }];
+    }
+}
