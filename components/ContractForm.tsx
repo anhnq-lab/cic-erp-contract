@@ -338,9 +338,9 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
       partyA: clientName,
       partyB: 'CIC', // Default
       clientInitials: clientName ? clientName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 5) : 'KH',
-      customerId: customerId,
+      customerId: customerId || null,
       unitId,
-      coordinatingUnitId,
+      coordinatingUnitId: coordinatingUnitId || null,
       salespersonId,
       value: totals.signingValue,
       estimatedCost: totals.totalCosts,
