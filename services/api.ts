@@ -85,6 +85,7 @@ const mapContract = (c: any): Contract => ({
     value: c.value,
     estimatedCost: c.estimated_cost,
     actualRevenue: c.actual_revenue,
+    invoicedAmount: c.invoiced_amount,
     actualCost: c.actual_cost,
     status: c.status,
     stage: c.stage,

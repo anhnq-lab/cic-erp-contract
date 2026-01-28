@@ -339,34 +339,75 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
               <Wallet size={20} className="text-indigo-600 dark:text-indigo-400" />
               Tổng quan Tài chính
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Giá trị Ký kết</p>
-                <p className="text-xl font-black text-slate-900 dark:text-slate-100">
-                  {formatVND(financials.totalOutput)} <span className="text-xs font-medium text-slate-400">đ</span>
-                </p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Doanh thu (Trừ VAT)</p>
-                <p className="text-xl font-black text-indigo-600 dark:text-indigo-400">
-                  {formatVND(Math.round(financials.totalOutput / 1.1))}
-                </p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tổng chi phí</p>
-                <p className="text-xl font-black text-rose-600 dark:text-rose-400">
-                  {formatVND(financials.totalCosts)}
-                </p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Lợi nhuận gộp</p>
-                <div className="flex items-center gap-2">
-                  <p className={`text-xl font-black ${financials.grossProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                    {formatVND(financials.grossProfit)}
+
+            <div className="space-y-6">
+              {/* Row 1: Plan */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-6 border-b border-slate-100 dark:border-slate-800">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Giá trị Ký kết</p>
+                  <p className="text-2xl font-black text-slate-900 dark:text-slate-100">
+                    {formatVND(contract.value || financials.totalOutput)} <span className="text-xs font-medium text-slate-400">đ</span>
                   </p>
-                  <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${financials.grossProfit >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                    {financials.margin.toFixed(1)}%
-                  </span>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tổng chi phí dự kiến</p>
+                  <p className="text-2xl font-black text-rose-600 dark:text-rose-400">
+                    {formatVND(financials.totalCosts)}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Lợi nhuận gộp</p>
+                  <div className="flex items-center gap-2">
+                    <p className={`text-2xl font-black ${financials.grossProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      {formatVND(financials.grossProfit)}
+                    </p>
+                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${financials.grossProfit >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                      {financials.margin.toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Row 2: Actual Cashflow */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest flex items-center gap-1">
+                    <FileText size={12} /> Đã xuất Hóa đơn
+                  </p>
+                  <p className="text-xl font-black text-blue-600 dark:text-blue-400">
+                    {formatVND(contract.invoicedAmount || 0)}
+                  </p>
+                  <p className="text-[10px] text-slate-400">
+                    {((contract.invoicedAmount || 0) / (contract.value || 1) * 100).toFixed(1)}% giá trị HĐ
+                  </p>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-1">
+                    <DollarSign size={12} /> Tiền về (Đã thu)
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">
+                      {formatVND(contract.actualRevenue || 0)}
+                    </p>
+                    {contract.actualRevenue > 0 && (
+                      <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">
+                        {((contract.actualRevenue || 0) / (contract.value || 1) * 100).toFixed(1)}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest flex items-center gap-1">
+                    <AlertCircle size={12} /> Công nợ phải thu
+                  </p>
+                  <p className="text-xl font-black text-amber-600 dark:text-amber-400">
+                    {formatVND((contract.invoicedAmount || 0) - (contract.actualRevenue || 0))}
+                  </p>
+                  <p className="text-[10px] text-slate-400">
+                    Chưa thu / Đã xuất
+                  </p>
                 </div>
               </div>
             </div>

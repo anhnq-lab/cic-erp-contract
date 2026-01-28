@@ -137,6 +137,7 @@ export interface Contract {
   value: number;
   estimatedCost: number;
   actualRevenue: number;
+  invoicedAmount?: number; // Đã xuất hóa đơn
   actualCost: number;
   status: ContractStatus;
   stage: ImplementationStage;
