@@ -69,6 +69,7 @@ const AGENTS: Record<AgentType, { name: string; role: string; color: string; ico
 
 const AIAssistant: React.FC = () => {
   const [currentAgent, setCurrentAgent] = useState<AgentType>('general');
+  const [currentModel, setCurrentModel] = useState<string>('gemini-1.5-flash');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -224,6 +225,32 @@ const AIAssistant: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Model Selector */}
+          <div className="hidden lg:flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mr-2">
+            {[
+              { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash' },
+              { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro' },
+              { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash (Exp)' },
+              { id: 'gpt-4o', name: 'GPT-4o', disabled: true },
+              { id: 'deepseek-r1', name: 'DeepSeek R1', disabled: true }
+            ].map((model) => (
+              <button
+                key={model.id}
+                onClick={() => !model.disabled && setCurrentModel(model.id)}
+                disabled={model.disabled}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap",
+                  model.id === currentModel
+                    ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400"
+                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50",
+                  model.disabled && "opacity-50 cursor-not-allowed hidden xl:block"
+                )}
+              >
+                {model.name} {model.disabled && "(Sắp ra mắt)"}
+              </button>
+            ))}
+          </div>
+
           <button
             onClick={clearChat}
             className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all"
