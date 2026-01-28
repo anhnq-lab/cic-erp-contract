@@ -185,12 +185,41 @@ export const ContractsAPI = {
 
     getById: async (id: string): Promise<Contract | undefined> => {
         console.log("API: getById called for", id);
-        const { data, error } = await supabase.from('contracts').select('*').eq('id', id).single();
-        if (error) {
-            console.error("API: getById error", error);
+
+        // 1. Fetch Contract
+        const { data: contractData, error: contractError } = await supabase.from('contracts').select('*').eq('id', id).single();
+        if (contractError) {
+            console.error("API: getById error", contractError);
             return undefined;
         }
-        return mapContract(data);
+
+        const contract = mapContract(contractData);
+
+        // 2. Fetch Payments to sync status
+        const { data: paymentsData } = await supabase.from('payments').select('phase_id, status, paid_amount').eq('contract_id', id);
+
+        // 3. Merge: Update PaymentPhase status based on actual Payments
+        if (paymentsData && paymentsData.length > 0 && contract.paymentPhases) {
+            contract.paymentPhases = contract.paymentPhases.map(phase => {
+                const linkedPayment = paymentsData.find((p: any) => p.phase_id === phase.id);
+                if (linkedPayment) {
+                    // Map Payment Status to Phase Status
+                    // Payment: 'Tiền về'/'Paid' -> Phase: 'Paid'
+                    // Payment: 'Quá hạn'/'Overdue' -> Phase: 'Overdue'
+                    // Else -> Keep original or 'Pending'
+                    let newStatus = phase.status;
+                    if (linkedPayment.status === 'Tiền về' || linkedPayment.status === 'Paid') {
+                        newStatus = 'Paid';
+                    } else if (linkedPayment.status === 'Quá hạn' || linkedPayment.status === 'Overdue') {
+                        newStatus = 'Overdue';
+                    }
+                    return { ...phase, status: newStatus as any };
+                }
+                return phase;
+            });
+        }
+
+        return contract;
     },
 
     getNextContractNumber: async (unitId: string, year: number): Promise<number> => {
