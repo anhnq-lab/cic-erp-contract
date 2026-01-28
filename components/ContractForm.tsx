@@ -126,6 +126,71 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
     setActiveCostModalIndex(null);
   };
 
+  // Auto-save Logic
+  useEffect(() => {
+    if (isEditing) return; // Only auto-save for new contracts
+
+    const timer = setTimeout(() => {
+      const draft = {
+        contractType, unitId, coordinatingUnitId, salespersonId, customerId, title, clientName,
+        signedDate, contacts, lineItems, revenueSchedules, paymentSchedules, supplierSchedules,
+        adminCosts, adminCostPercentages
+      };
+
+      // Only save if there's some data
+      if (title || clientName || lineItems.length > 0) {
+        localStorage.setItem('contract_form_draft', JSON.stringify(draft));
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [
+    isEditing,
+    contractType, unitId, coordinatingUnitId, salespersonId, customerId, title, clientName,
+    signedDate, contacts, lineItems, revenueSchedules, paymentSchedules, supplierSchedules,
+    adminCosts, adminCostPercentages
+  ]);
+
+  // Restore Draft Hook
+  useEffect(() => {
+    if (!isEditing && !isCloning) {
+      const saved = localStorage.getItem('contract_form_draft');
+      if (saved) {
+        try {
+          const draft = JSON.parse(saved);
+          if (draft.title || draft.clientName) {
+            toast("Tìm thấy bản nháp chưa lưu!", {
+              description: "Bạn có muốn khôi phục dữ liệu đang nhập dở không?",
+              action: {
+                label: "Khôi phục",
+                onClick: () => {
+                  if (draft.contractType) setContractType(draft.contractType);
+                  if (draft.unitId) setUnitId(draft.unitId);
+                  if (draft.coordinatingUnitId) setCoordinatingUnitId(draft.coordinatingUnitId);
+                  if (draft.salespersonId) setSalespersonId(draft.salespersonId);
+                  if (draft.customerId) setCustomerId(draft.customerId);
+                  if (draft.title) setTitle(draft.title);
+                  if (draft.clientName) setClientName(draft.clientName);
+                  if (draft.signedDate) setSignedDate(draft.signedDate);
+                  if (draft.contacts) setContacts(draft.contacts);
+                  if (draft.lineItems) setLineItems(draft.lineItems);
+                  if (draft.revenueSchedules) setRevenueSchedules(draft.revenueSchedules);
+                  if (draft.paymentSchedules) setPaymentSchedules(draft.paymentSchedules);
+                  if (draft.supplierSchedules) setSupplierSchedules(draft.supplierSchedules);
+                  if (draft.adminCosts) setAdminCosts(draft.adminCosts);
+                  if (draft.adminCostPercentages) setAdminCostPercentages(draft.adminCostPercentages);
+                  toast.success("Đã khôi phục bản nháp!");
+                }
+              }
+            });
+          }
+        } catch (e) {
+          console.error("Failed to parse draft", e);
+        }
+      }
+    }
+  }, []);
+
   // Filter sales based on selected unit
   const filteredSales = useMemo(() => {
     if (!unitId) return salespeople;
@@ -1097,8 +1162,8 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
           <p className="text-[11px] font-bold text-slate-400">Dữ liệu sẽ được lưu vào hệ thống Quản trị trung tâm.</p>
         </div>
         <div className="flex gap-4">
-          <button onClick={onCancel} className="px-8 py-3 text-slate-500 hover:text-slate-800 font-black text-xs uppercase tracking-widest transition-all">Hủy bỏ</button>
-          <button onClick={handleSave} className="px-12 py-4 bg-indigo-600 text-white rounded-[24px] font-black text-sm flex items-center gap-3 hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-200 dark:shadow-none">
+          <button onClick={() => { localStorage.removeItem('contract_form_draft'); onCancel(); }} className="px-8 py-3 text-slate-500 hover:text-slate-800 font-black text-xs uppercase tracking-widest transition-all">Hủy bỏ</button>
+          <button onClick={() => { localStorage.removeItem('contract_form_draft'); handleSave(); }} className="px-12 py-4 bg-indigo-600 text-white rounded-[24px] font-black text-sm flex items-center gap-3 hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-200 dark:shadow-none">
             <Save size={20} strokeWidth={2.5} />
             Hoàn tất & Lưu hồ sơ
           </button>
