@@ -1,9 +1,9 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Search, Building, Plus, Pencil, Trash2, Target, TrendingUp, Users, Eye } from 'lucide-react';
-import { UnitsAPI } from '../services/api';
-import { Unit } from '../types';
+import { Search, Building, Plus, Pencil, Trash2, Target, TrendingUp, Users, Eye, FileText } from 'lucide-react';
+import { UnitsAPI, ContractsAPI } from '../services/api';
+import { Unit, Contract } from '../types';
 import UnitForm from './UnitForm';
 
 interface UnitListProps {
@@ -12,6 +12,7 @@ interface UnitListProps {
 
 const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
     const [units, setUnits] = useState<Unit[]>([]);
+    const [contracts, setContracts] = useState<Contract[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -21,21 +22,70 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
 
     // Fetch data
     useEffect(() => {
-        fetchUnits();
+        fetchData();
     }, []);
 
-    const fetchUnits = async () => {
+    const fetchData = async () => {
         setIsLoading(true);
         try {
-            const data = await UnitsAPI.getAll();
-            // Filter out the "All" mock unit if present, or handle it as needed
-            setUnits(data.filter(u => u.id !== 'all'));
+            const [unitsData, contractsData] = await Promise.all([
+                UnitsAPI.getAll(),
+                ContractsAPI.getAll()
+            ]);
+            // Filter out the "All" mock unit if present
+            setUnits(unitsData.filter(u => u.id !== 'all'));
+            setContracts(contractsData);
         } catch (error) {
-            console.error('Error fetching units:', error);
+            console.error('Error fetching data:', error);
+            toast.error('Không thể tải dữ liệu đơn vị');
         } finally {
             setIsLoading(false);
         }
     };
+
+    // Calculate Stats
+    const stats = useMemo(() => {
+        const unitStats = new Map<string, { signing: number, revenue: number, profit: number }>();
+
+        // Init map with 0
+        units.forEach(u => unitStats.set(u.id, { signing: 0, revenue: 0, profit: 0 }));
+
+        // Sum up actuals from contracts
+        contracts.forEach(c => {
+            if (!unitStats.has(c.unitId)) return;
+            const current = unitStats.get(c.unitId)!;
+            const profit = c.value - (c.estimatedCost || 0);
+
+            unitStats.set(c.unitId, {
+                signing: current.signing + c.value,
+                revenue: current.revenue + c.actualRevenue,
+                profit: current.profit + profit
+            });
+        });
+
+        // Global sums
+        let totalSigning = 0, totalRevenue = 0, totalProfit = 0;
+        let targetSigning = 0, targetRevenue = 0, targetProfit = 0;
+
+        units.forEach(u => {
+            const s = unitStats.get(u.id)!;
+            totalSigning += s.signing;
+            totalRevenue += s.revenue;
+            totalProfit += s.profit;
+
+            targetSigning += u.target?.signing || 0;
+            targetRevenue += u.target?.revenue || 0;
+            targetProfit += u.target?.adminProfit || 0;
+        });
+
+        return {
+            unitStats,
+            global: {
+                actual: { signing: totalSigning, revenue: totalRevenue, profit: totalProfit },
+                target: { signing: targetSigning, revenue: targetRevenue, profit: targetProfit }
+            }
+        };
+    }, [units, contracts]);
 
     const filteredUnits = useMemo(() => {
         if (!searchQuery) return units;
@@ -68,7 +118,7 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
             } else {
                 await UnitsAPI.create(data);
             }
-            await fetchUnits();
+            await fetchData();
             setIsFormOpen(false);
             toast.success("Lưu đơn vị thành công!");
         } catch (error) {
@@ -82,7 +132,7 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
             try {
                 await UnitsAPI.delete(id);
                 // Refresh list
-                await fetchUnits();
+                await fetchData();
                 toast.success("Đã xóa đơn vị thành công.");
             } catch (error) {
                 console.error("Failed to delete unit", error);
@@ -99,6 +149,64 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
                     <p className="text-slate-500 dark:text-slate-400 text-sm font-bold mt-1">
                         Danh sách các Trung tâm và Chi nhánh trực thuộc
                     </p>
+                </div>
+            </div>
+            {/* SCORE CARDS (GLOBAL) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                    {
+                        label: 'Tổng Ký kết',
+                        icon: FileText,
+                        color: 'text-indigo-600',
+                        bg: 'bg-indigo-50 dark:bg-indigo-900/20',
+                        actual: stats.global.actual.signing,
+                        target: stats.global.target.signing
+                    },
+                    {
+                        label: 'Tổng Doanh thu',
+                        icon: TrendingUp,
+                        color: 'text-emerald-600',
+                        bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+                        actual: stats.global.actual.revenue,
+                        target: stats.global.target.revenue
+                    },
+                    {
+                        label: 'Tổng LNG Quản trị',
+                        icon: Target,
+                        color: 'text-purple-600',
+                        bg: 'bg-purple-50 dark:bg-purple-900/20',
+                        actual: stats.global.actual.profit,
+                        target: stats.global.target.profit
+                    }
+                ].map((item, idx) => {
+                    const progress = item.target > 0 ? (item.actual / item.target) * 100 : 0;
+                    const Icon = item.icon;
+                    return (
+                        <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-[24px] border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                            <div className="flex justify-between items-start mb-4 relative z-10">
+                                <div className={`p-3 rounded-2xl ${item.bg} ${item.color}`}>
+                                    <Icon size={24} />
+                                </div>
+                                <span className={`text-lg font-black ${progress >= 100 ? 'text-emerald-600' : item.color}`}>
+                                    {progress.toFixed(1)}%
+                                </span>
+                            </div>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{item.label}</p>
+                            <p className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-2">
+                                {formatCurrency(item.actual)}
+                            </p>
+                            <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                <div className={`h-full rounded-full ${progress >= 100 ? 'bg-emerald-500' : item.color.replace('text-', 'bg-')}`} style={{ width: `${Math.min(progress, 100)}%` }}></div>
+                            </div>
+                            <p className="text-xs text-slate-500 mt-2 text-right">Mục tiêu: {formatCurrency(item.target)}</p>
+                        </div>
+                    );
+                })}
+            </div>
+
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <div>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Danh sách Đơn vị</h2>
                 </div>
                 <button
                     onClick={handleAdd}
@@ -169,31 +277,58 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
                             </div>
 
                             <div className="space-y-4">
-                                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                                            <Target size={14} /> Chỉ tiêu Ký kết
-                                        </div>
-                                        <span className="text-sm font-black text-slate-900 dark:text-slate-100">
-                                            {formatCurrency(unit.target.signing)}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                                            <TrendingUp size={14} /> Chỉ tiêu Doanh thu
-                                        </div>
-                                        <span className="text-sm font-black text-slate-900 dark:text-slate-100">
-                                            {formatCurrency(unit.target.revenue)}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                                            <Users size={14} /> Chỉ tiêu LNG Quản trị
-                                        </div>
-                                        <span className="text-sm font-black text-slate-900 dark:text-slate-100">
-                                            {formatCurrency(unit.target.adminProfit)}
-                                        </span>
-                                    </div>
+                                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-4">
+                                    {[
+                                        {
+                                            label: 'Ký kết',
+                                            icon: FileText,
+                                            val: stats.unitStats.get(unit.id)?.signing || 0,
+                                            target: unit.target.signing,
+                                            color: 'text-indigo-600',
+                                            barColor: 'bg-indigo-500'
+                                        },
+                                        {
+                                            label: 'Doanh thu',
+                                            icon: TrendingUp,
+                                            val: stats.unitStats.get(unit.id)?.revenue || 0,
+                                            target: unit.target.revenue,
+                                            color: 'text-emerald-600',
+                                            barColor: 'bg-emerald-500'
+                                        },
+                                        {
+                                            label: 'LNG Quản trị',
+                                            icon: Target,
+                                            val: stats.unitStats.get(unit.id)?.profit || 0,
+                                            target: unit.target.adminProfit,
+                                            color: 'text-purple-600',
+                                            barColor: 'bg-purple-500'
+                                        }
+                                    ].map((metric, idx) => {
+                                        const pct = metric.target > 0 ? (metric.val / metric.target) * 100 : 0;
+                                        return (
+                                            <div key={idx} className="space-y-1">
+                                                <div className="flex justify-between items-center text-xs">
+                                                    <span className="font-bold text-slate-500 flex items-center gap-1.5">
+                                                        <metric.icon size={12} /> {metric.label}
+                                                    </span>
+                                                    <span className={`font-black ${pct >= 100 ? 'text-emerald-600' : 'text-slate-700 dark:text-slate-300'}`}>
+                                                        {pct.toFixed(0)}%
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-end">
+                                                    <span className={`text-sm font-black ${metric.color}`}>
+                                                        {formatCurrency(metric.val)}
+                                                    </span>
+                                                    <span className="text-[10px] font-bold text-slate-400">
+                                                        / {formatCurrency(metric.target)}
+                                                    </span>
+                                                </div>
+                                                <div className="w-full bg-white dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                                                    <div className={`h-full rounded-full ${pct >= 100 ? 'bg-emerald-500' : metric.barColor}`} style={{ width: `${Math.min(pct, 100)}%` }}></div>
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
                                 </div>
                             </div>
                         </div>
@@ -207,7 +342,7 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
                 onSave={handleSave}
                 unit={editingUnit}
             />
-        </div>
+        </div >
     );
 };
 
