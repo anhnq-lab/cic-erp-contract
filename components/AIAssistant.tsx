@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { streamGeminiChat } from '../services/geminiService';
+import { streamEnterpriseAI } from '../services/aiService';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -238,8 +238,8 @@ const AIAssistant: React.FC = () => {
               <option value="gemini-1.5-pro">Gemini 1.5 Pro (Powerful)</option>
               <option value="gemini-2.0-flash">Gemini 2.0 Flash (Experimental)</option>
               <option value="gemini-pro">Gemini 1.0 Pro (Legacy)</option>
-              <option value="gpt-4o" disabled>GPT-4o (Sắp ra mắt)</option>
-              <option value="deepseek-r1" disabled>DeepSeek R1 (Sắp ra mắt)</option>
+              <option value="gpt-4o">GPT-4o (OpenAI)</option>
+              <option value="deepseek-r1">DeepSeek R1 (DeepReason)</option>
             </select>
           </div>
 
