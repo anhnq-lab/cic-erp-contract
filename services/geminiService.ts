@@ -113,9 +113,11 @@ export async function* streamGeminiChat(
     const genAI = new GoogleGenerativeAI(apiKey);
 
     // Model Mapping to Valid API Strings
+    // Using 'models/' prefix or specific versions can sometimes help with 404s
     const validModelId = modelId === 'gemini-2.0-flash' ? 'gemini-2.0-flash-exp'
-      : modelId === 'gemini-1.5-pro' ? 'gemini-1.5-pro'
-        : 'gemini-1.5-flash'; // Fallback / Default
+      : modelId === 'gemini-1.5-pro' ? 'gemini-1.5-pro-latest'
+        : modelId === 'gemini-pro' ? 'gemini-pro'
+          : 'gemini-1.5-flash-latest'; // Switch default to latest alias to avoid specific version deprecation
 
     const model = genAI.getGenerativeModel({
       model: validModelId,
