@@ -11,7 +11,10 @@ import {
   Minimize2,
   Copy,
   Check,
-  StopCircle
+  StopCircle,
+  Scale,
+  PenTool,
+  BarChart3
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -23,15 +26,46 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-interface Message {
-  id: string;
-  role: 'user' | 'model';
-  content: string;
-  isStreaming?: boolean;
-  timestamp: Date;
+content: string;
+isStreaming ?: boolean;
+timestamp: Date;
 }
 
+type AgentType = 'general' | 'legal' | 'drafter' | 'analyst';
+
+const AGENTS: Record<AgentType, { name: string; role: string; color: string; icon: any; prompt: string }> = {
+  general: {
+    name: 'Tổng quát',
+    role: 'Trợ lý ảo Enterprise',
+    color: 'bg-indigo-600',
+    icon: Sparkles,
+    prompt: 'Bạn là Trợ lý AI Enterprise. Trả lời ngắn gọn, chuyên nghiệp, hỗ trợ mọi tác vụ quản trị.'
+  },
+  legal: {
+    name: 'Pháp chế & Rủi ro',
+    role: 'Chuyên gia Pháp lý',
+    color: 'bg-rose-600',
+    icon: Scale,
+    prompt: 'Bạn là Chuyên gia Pháp chế cao cấp. Nhiệm vụ: Rà soát hợp đồng, cảnh báo rủi ro pháp lý, trích dẫn Luật Đấu thầu/Xây dựng/Dân sự Việt Nam. Phong cách: Nghiêm túc, chính xác, cảnh báo rõ ràng.'
+  },
+  drafter: {
+    name: 'Soạn thảo',
+    role: 'Thư ký Điều hành',
+    color: 'bg-emerald-600',
+    icon: PenTool,
+    prompt: 'Bạn là Thư ký Điều hành chuyên nghiệp. Nhiệm vụ: Soạn thảo email, công văn, tờ trình, phụ lục hợp đồng. Output: Format chuẩn văn bản hành chính, ngôn từ trang trọng, lịch sự.'
+  },
+  analyst: {
+    name: 'Phân tích số liệu',
+    role: 'Chuyên gia Dữ liệu',
+    color: 'bg-amber-600',
+    icon: BarChart3,
+    prompt: 'Bạn là Chuyên gia Phân tích Dữ liệu. Nhiệm vụ: Phân tích xu hướng tài chính, KPI, dòng tiền. Format: Dùng bảng (Table) để so sánh số liệu, đưa ra nhận định (Insights) dựa trên data.'
+  }
+};
+
 const AIAssistant: React.FC = () => {
+  const [currentAgent, setCurrentAgent] = useState<AgentType>('general');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -148,11 +182,44 @@ const AIAssistant: React.FC = () => {
               <span className="px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-wider">Beta 3.0</span>
             </h3>
             <p className="text-xs text-slate-500 font-medium flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Đang hoạt động • Gemini Flash 2.0
+              <span className={cn("w-2 h-2 rounded-full animate-pulse", AGENTS[currentAgent].color.replace('bg-', 'text-current bg-'))}></span>
+              {AGENTS[currentAgent].name} • {AGENTS[currentAgent].role}
             </p>
           </div>
         </div>
+
+        {/* Agent Selector */}
+        <div className="hidden md:flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+          {(Object.entries(AGENTS) as [AgentType, typeof AGENTS[AgentType]][]).map(([key, agent]) => {
+            const Icon = agent.icon;
+            const isActive = currentAgent === key;
+            return (
+              <button
+                key={key}
+                onClick={() => {
+                  setCurrentAgent(key);
+                  setMessages(prev => [...prev, {
+                    id: Date.now().toString(),
+                    role: 'model',
+                    content: `**Đã chuyển sang chế độ: ${agent.name}**\n${agent.prompt.split('.')[1] || ''}`, // Brief intro
+                    timestamp: new Date()
+                  }]);
+                }}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs font-bold transition-all",
+                  isActive
+                    ? "bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-slate-100"
+                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
+                )}
+                title={agent.role}
+              >
+                <Icon size={14} className={isActive ? agent.color.replace('bg-', 'text-') : ''} />
+                {agent.name}
+              </button>
+            );
+          })}
+        </div>
+
         <div className="flex items-center gap-2">
           <button
             onClick={clearChat}
