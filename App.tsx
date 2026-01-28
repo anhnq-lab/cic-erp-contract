@@ -22,6 +22,9 @@ import { MOCK_CONTRACTS } from './constants';
 import { Unit, Contract, Product } from './types';
 import { ContractsAPI } from './services/api';
 import { Moon, Sun } from 'lucide-react';
+import { supabase } from './lib/supabase';
+import { Session } from '@supabase/supabase-js';
+import Auth from './components/Auth';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -45,6 +48,24 @@ const App: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [editingContract, setEditingContract] = useState<Contract | null>(null);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoadingSession, setIsLoadingSession] = useState(true);
+
+  // Auth State Listener
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setIsLoadingSession(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Theme management
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -275,6 +296,19 @@ const App: React.FC = () => {
   const mainMarginClass = isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64';
   const contentMaxWidthClass = isSidebarCollapsed ? 'max-w-[1600px]' : 'max-w-[1400px]';
 
+  if (isLoadingSession) {
+    return <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-400">Loading...</div>;
+  }
+
+  if (!session) {
+    return (
+      <>
+        <Auth />
+        <Toaster richColors position="top-center" />
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col transition-colors duration-300">
       <Sidebar
@@ -288,6 +322,7 @@ const App: React.FC = () => {
       <Header
         onMenuClick={() => setIsSidebarOpen(true)}
         isSidebarCollapsed={isSidebarCollapsed}
+        user={session?.user}
       />
 
       {/* 
