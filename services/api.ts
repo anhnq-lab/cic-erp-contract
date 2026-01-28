@@ -846,6 +846,26 @@ export const PaymentsAPI = {
 // ============================================
 // DOCUMENTS API
 // ============================================
+// Helper to sanitize filename for S3 storage
+const sanitizeFileName = (fileName: string): string => {
+    // 1. Separate extension
+    const parts = fileName.split('.');
+    const ext = parts.length > 1 ? parts.pop() : '';
+    const name = parts.join('.');
+
+    // 2. Transliterate Vietnamese & Remove special chars
+    const safeName = name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove accents
+        .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+        .replace(/[^a-zA-Z0-9_-]/g, '_'); // Replace non-alphanumeric with underscore
+
+    // 3. Truncate to avoid "Invalid Key" (max 100 chars for name, plenty safely)
+    const truncatedName = safeName.slice(0, 100);
+
+    return ext ? `${truncatedName}.${ext}` : truncatedName;
+};
+
 export const DocumentsAPI = {
     getByContractId: async (contractId: string) => {
         const { data, error } = await supabase.from('contract_documents').select('*').eq('contract_id', contractId);
@@ -864,7 +884,9 @@ export const DocumentsAPI = {
 
     upload: async (contractId: string, file: File) => {
         // 1. Upload to Storage
-        const filePath = `${contractId}/${Date.now()}_${file.name}`;
+        const safeName = sanitizeFileName(file.name);
+        // Ensure unique path with timestamp
+        const filePath = `${contractId}/${Date.now()}_${safeName}`;
         const { data: storageData, error: storageError } = await supabase.storage
             .from('contract_docs')
             .upload(filePath, file);
