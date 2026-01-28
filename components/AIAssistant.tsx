@@ -352,9 +352,9 @@ const AIAssistant: React.FC = () => {
               className="bg-slate-200/50 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-300 py-1.5 px-2 rounded-lg cursor-pointer focus:outline-none border border-transparent hover:border-indigo-200 transition-all max-w-[110px]"
               title="Chọn Model AI"
             >
-              <option value="gemini-1.5-flash">⚡ Gemini Flash</option>
-              <option value="gemini-1.5-pro">🧠 Gemini Pro</option>
-              <option value="gemini-2.0-flash">🧪 2.0 Flash</option>
+              <option value="gemini-1.5-flash">⚡ Gemini 1.5 Flash</option>
+              <option value="gemini-1.5-pro">🧠 Gemini 1.5 Pro</option>
+              <option value="gemini-2.0-flash">🧪 2.0 Flash Exp</option>
               <option value="gpt-4o">🤖 GPT-4o</option>
               <option value="deepseek-r1">🤔 DeepSeek R1</option>
             </select>
