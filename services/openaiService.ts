@@ -66,3 +66,31 @@ export async function* streamOpenAIChat(
         yield `⚠️ Lỗi kết nối ${modelId}. Vui lòng kiểm tra API Key hoặc tín dụng.\n\nChi tiết: ${error instanceof Error ? error.message : String(error)}`;
     }
 }
+
+export async function analyzeContractWithDeepSeek(text: string): Promise<string> {
+    try {
+        const client = createClient('deepseek');
+
+        const response = await client.chat.completions.create({
+            model: 'deepseek-chat',
+            messages: [
+                {
+                    role: "system",
+                    content: "Bạn là chuyên gia pháp lý và quản trị hợp đồng. Nhiệm vụ của bạn là phân tích hợp đồng và đưa ra báo cáo rủi ro định dạng HTML (dùng thẻ <b>, <br>, <ul>, <li>, <span class='text-red-500'> cho rủi ro cao)."
+                },
+                {
+                    role: "user",
+                    content: `Hãy phân tích nội dung hợp đồng sau đây và tóm tắt các điểm quan quan trọng (Bên A, Bên B, Giá trị, Thời hạn, Rủi ro tiềm ẩn). Định dạng bằng tiếng Việt, súc tích, chuyên nghiệp. Nhấn mạnh vào rủi ro thanh toán và tiến độ: \n\n ${text}`
+                }
+            ],
+            temperature: 0.2,
+        });
+
+        return response.choices[0].message.content || "Không có phản hồi từ DeepSeek.";
+    } catch (error) {
+        console.error("DeepSeek Analysis Error:", error);
+        if (String(error).includes("401")) return "Lỗi: Sai hoặc thiếu DeepSeek API Key.";
+        if (String(error).includes("402")) return "Lỗi: Hết tín dụng DeepSeek.";
+        return "Không thể phân tích hợp đồng bằng DeepSeek lúc này.";
+    }
+}

@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import {
@@ -35,7 +34,7 @@ import {
 import { Contract, Unit, Milestone, PaymentPhase, AdministrativeCosts, ContractDocument } from '../types';
 // import { MOCK_UNITS } from '../constants'; // Removed
 import { ContractsAPI, UnitsAPI, PersonnelAPI, CustomersAPI, DocumentsAPI } from '../services/api';
-import { analyzeContract } from '../services/geminiService';
+import { analyzeContractWithDeepSeek } from '../services/openaiService';
 import Tooltip from './ui/Tooltip';
 
 interface ContractDetailProps {
@@ -199,7 +198,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
         ${contract.paymentPhases?.map(p => `- ${p.name}: ${formatVND(p.amount)} (${p.status}) - Hạn: ${p.dueDate}`).join('\n')}
         `;
 
-      const result = await analyzeContract(contractText);
+      const result = await analyzeContractWithDeepSeek(contractText);
       setAiAnalysisResult(result);
       toast.success("Phân tích AI hoàn tất!");
     } catch (error) {
@@ -565,7 +564,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
             {!aiAnalysisResult ? (
               <div className="space-y-3">
                 <p className="text-sm text-indigo-100 leading-relaxed">
-                  Sử dụng Gemini AI để phân tích rủi ro hợp đồng dựa trên các điều khoản tài chính và tiến độ.
+                  Sử dụng <b>DeepSeek AI</b> để phân tích rủi ro hợp đồng dựa trên các điều khoản tài chính và tiến độ.
                 </p>
                 <button
                   onClick={handleAnalyzeContract}
