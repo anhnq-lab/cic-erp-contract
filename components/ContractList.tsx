@@ -16,7 +16,7 @@ interface ContractListProps {
   onClone?: (contract: Contract) => void;
 }
 
-const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContract, onAdd }) => {
+const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContract, onAdd, onClone }) => {
   // Params state
   const [statusFilter, setStatusFilter] = useState<ContractStatus | 'All'>('All');
   const [yearFilter, setYearFilter] = useState<string>('All');

@@ -105,6 +105,9 @@ export interface PaymentSchedule {
   date: string;
   amount: number;
   description: string;
+  status?: 'Paid' | 'Overdue' | 'Pending';
+  percentage?: number;
+  type?: 'Revenue' | 'Expense';
 }
 
 /**

@@ -259,7 +259,7 @@ const App: React.FC = () => {
       case 'dashboard':
         return <Dashboard selectedUnit={selectedUnit} onSelectUnit={setSelectedUnit} onSelectContract={handleViewContract} />;
       case 'contracts':
-        return <ContractList selectedUnit={selectedUnit} onSelectContract={handleViewContract} onAdd={() => setIsCreating(true)} />;
+        return <ContractList selectedUnit={selectedUnit} onSelectContract={handleViewContract} onAdd={() => setIsCreating(true)} onClone={handleCloneContract} />;
       case 'ai-assistant':
         return <AIAssistant />;
       case 'personnel':
