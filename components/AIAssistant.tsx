@@ -226,30 +226,21 @@ const AIAssistant: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Model Selector */}
-          <div className="hidden lg:flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mr-2">
-            {[
-              { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash' },
-              { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro' },
-              { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash (Exp)' },
-              { id: 'gpt-4o', name: 'GPT-4o', disabled: true },
-              { id: 'deepseek-r1', name: 'DeepSeek R1', disabled: true }
-            ].map((model) => (
-              <button
-                key={model.id}
-                onClick={() => !model.disabled && setCurrentModel(model.id)}
-                disabled={model.disabled}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap",
-                  model.id === currentModel
-                    ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400"
-                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50",
-                  model.disabled && "opacity-50 cursor-not-allowed hidden xl:block"
-                )}
-              >
-                {model.name} {model.disabled && "(Sắp ra mắt)"}
-              </button>
-            ))}
+          {/* Model Selector - Dropdown Style */}
+          <div className="hidden lg:flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl mr-2 border border-slate-200 dark:border-slate-700">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Model:</span>
+            <select
+              value={currentModel}
+              onChange={(e) => setCurrentModel(e.target.value)}
+              className="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 disabled:opacity-50"
+            >
+              <option value="gemini-1.5-flash">Gemini 1.5 Flash (Recommended)</option>
+              <option value="gemini-1.5-pro">Gemini 1.5 Pro (Powerful)</option>
+              <option value="gemini-2.0-flash">Gemini 2.0 Flash (Experimental)</option>
+              <option value="gemini-pro">Gemini 1.0 Pro (Legacy)</option>
+              <option value="gpt-4o" disabled>GPT-4o (Sắp ra mắt)</option>
+              <option value="deepseek-r1" disabled>DeepSeek R1 (Sắp ra mắt)</option>
+            </select>
           </div>
 
           <button
