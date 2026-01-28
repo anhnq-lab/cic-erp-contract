@@ -184,7 +184,7 @@ const AIAssistant: React.FC = () => {
           <div>
             <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg flex items-center gap-2">
               Trợ lý AI Enterprise
-              <span className="px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-wider">Beta 3.0</span>
+              <span className="px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-wider">v3.0</span>
             </h3>
             <p className="text-xs text-slate-500 font-medium flex items-center gap-1">
               <span className={cn("w-2 h-2 rounded-full animate-pulse", AGENTS[currentAgent].color.replace('bg-', 'text-current bg-'))}></span>
@@ -226,22 +226,7 @@ const AIAssistant: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Model Selector - Dropdown Style */}
-          <div className="hidden lg:flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl mr-2 border border-slate-200 dark:border-slate-700">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Model:</span>
-            <select
-              value={currentModel}
-              onChange={(e) => setCurrentModel(e.target.value)}
-              className="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 disabled:opacity-50"
-            >
-              <option value="gemini-1.5-flash">Gemini 1.5 Flash (Recommended)</option>
-              <option value="gemini-1.5-pro">Gemini 1.5 Pro (Powerful)</option>
-              <option value="gemini-2.0-flash">Gemini 2.0 Flash (Experimental)</option>
-              <option value="gemini-pro">Gemini 1.0 Pro (Legacy)</option>
-              <option value="gpt-4o">GPT-4o (OpenAI)</option>
-              <option value="deepseek-r1">DeepSeek R1 (DeepReason)</option>
-            </select>
-          </div>
+
 
           <button
             onClick={clearChat}
@@ -341,13 +326,28 @@ const AIAssistant: React.FC = () => {
       {/* Input Area */}
       <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
         <div className="relative max-w-4xl mx-auto">
+          {/* Model Selector (Compact) */}
+          <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10">
+            <select
+              value={currentModel}
+              onChange={(e) => setCurrentModel(e.target.value)}
+              className="bg-slate-200/50 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-300 py-1.5 px-2 rounded-lg cursor-pointer focus:outline-none border border-transparent hover:border-indigo-200 transition-all max-w-[110px]"
+              title="Chọn Model AI"
+            >
+              <option value="gemini-1.5-flash">⚡ Gemini Flash</option>
+              <option value="gemini-1.5-pro">🧠 Gemini Pro</option>
+              <option value="gemini-2.0-flash">🧪 2.0 Flash</option>
+              <option value="gpt-4o">🤖 GPT-4o</option>
+              <option value="deepseek-r1">🤔 DeepSeek R1</option>
+            </select>
+          </div>
           <textarea
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Nhập câu hỏi của bạn (Shift+Enter để xuống dòng)..."
-            className="w-full pl-5 pr-14 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 rounded-[24px] resize-none max-h-40 min-h-[60px] shadow-sm text-sm font-medium focus:outline-none transition-all"
+            className="w-full pl-32 pr-14 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 rounded-[24px] resize-none max-h-40 min-h-[60px] shadow-sm text-sm font-medium focus:outline-none transition-all"
             rows={1}
             style={{ height: 'auto', minHeight: '60px' }}
             disabled={isTyping}
