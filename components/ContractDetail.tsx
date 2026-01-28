@@ -367,16 +367,29 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                         <td className="px-2 py-3 text-center">{item.quantity}</td>
                         <td className="px-4 py-3 text-right text-slate-500">{formatVND(item.inputPrice)}</td>
                         <td className="px-4 py-3 text-right font-bold text-indigo-600">{formatVND(item.outputPrice)}</td>
-                        <td className="px-4 py-3 text-right text-rose-500 font-bold align-top">
-                          <div>{formatVND(item.directCosts || 0)}</div>
+                        <td className="px-4 py-3 text-right text-rose-500 font-bold align-top relative group cursor-help">
+                          <div className="border-b border-dashed border-rose-300/50 w-fit ml-auto pb-0.5">
+                            {formatVND(item.directCosts || 0)}
+                          </div>
                           {item.directCostDetails && item.directCostDetails.length > 0 && (
-                            <div className="mt-1 space-y-0.5">
-                              {item.directCostDetails.map((d, i) => (
-                                <div key={i} className="flex justify-end gap-2 text-[10px] text-slate-400 font-normal">
-                                  <span>{d.name}:</span>
-                                  <span>{formatVND(d.amount)}</span>
-                                </div>
-                              ))}
+                            <div className="absolute bottom-full right-0 mb-2 w-max min-w-[180px] bg-slate-900 text-white text-xs rounded-2xl p-4 shadow-xl shadow-indigo-500/10 border border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[100] scale-95 group-hover:scale-100 origin-bottom-right">
+                              <div className="font-bold text-slate-400 mb-2 pb-2 border-b border-slate-800 flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Chi tiết phí trực tiếp
+                              </div>
+                              <div className="space-y-2">
+                                {item.directCostDetails.map((d, i) => (
+                                  <div key={i} className="flex justify-between gap-6">
+                                    <span className="text-slate-300 font-medium">{d.name}</span>
+                                    <span className="font-bold text-white whitespace-nowrap">{formatVND(d.amount)}</span>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="mt-3 pt-2 border-t border-slate-800 flex justify-between gap-6">
+                                <span className="font-bold text-rose-500">Tổng cộng</span>
+                                <span className="font-black text-rose-500">{formatVND(item.directCosts || 0)}</span>
+                              </div>
+                              {/* Arrow */}
+                              <div className="absolute top-full right-6 -mt-1.5 border-8 border-transparent border-t-slate-900"></div>
                             </div>
                           )}
                         </td>
