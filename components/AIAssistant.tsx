@@ -19,6 +19,7 @@ import {
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { streamEnterpriseAI } from '../services/aiService';
+import { getBusinessContext } from '../services/contextService';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -93,10 +94,7 @@ const AIAssistant: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-  import { getBusinessContext } from '../services/contextService';
-  // ... imports
 
-  // ... inside component
   const [systemContext, setSystemContext] = useState<string>('');
 
   useEffect(() => {
