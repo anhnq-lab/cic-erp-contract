@@ -149,13 +149,21 @@ export async function* streamGeminiChat(
       if (chunkText) yield chunkText;
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Stream Error:", error);
-    // Fallback error handling
+
+    let errorMsg = `⚠️ Lỗi kết nối AI (${modelId}).`;
+
     if (String(error).includes("404")) {
-      yield "⚠️ Model chưa khả dụng hoặc đang bảo trì. Vui lòng thử đổi sang Model khác (Ví dụ: Gemini 1.5 Pro).";
+      errorMsg = `⚠️ Model '${modelId}' không tìm thấy (404). Kiểm tra lại Model Name hoặc API Key của bạn.`;
+    } else if (String(error).includes("403")) {
+      errorMsg = "⚠️ Sai API Key hoặc chưa bật quyền truy cập (403). Vui lòng kiểm tra Google AI Studio.";
+    } else if (String(error).includes("429")) {
+      errorMsg = "⚠️ Đã vượt quá giới hạn request (Quota Exceeded). Vui lòng thử lại sau.";
     } else {
-      yield "⚠️ Lỗi kết nối AI. Vui lòng kiểm tra API Key (.env) hoặc mạng.\n\nChi tiết lỗi: " + (error instanceof Error ? error.message : String(error));
+      errorMsg += `\nChi tiết: ${error.message || String(error)}`;
     }
+
+    yield errorMsg;
   }
 }

@@ -191,7 +191,7 @@ const AIAssistant: React.FC = () => {
   return (
     <div className={cn(
       "flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden transition-all duration-300",
-      isFullScreen ? "fixed inset-0 z-50 rounded-none m-0" : "rounded-[32px] h-[600px] w-full max-w-5xl mx-auto my-8 relative"
+      isFullScreen ? "fixed inset-0 z-50 rounded-none m-0" : "rounded-[24px] h-[85vh] w-full max-w-6xl mx-auto my-4 relative"
     )}>
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10">
