@@ -126,11 +126,10 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, onSave, onCancel 
   };
 
   // Filter sales based on selected unit
-  // Show all sales people, regardless of unit (User request)
   const filteredSales = useMemo(() => {
-    // return salespeople.filter(s => s.unitId === unitId);
-    return salespeople;
-  }, [salespeople]);
+    if (!unitId) return salespeople;
+    return salespeople.filter(s => s.unitId === unitId);
+  }, [salespeople, unitId]);
 
   // Auto-generate Supplier Schedules from Line Items
   const generateSupplierSchedules = () => {
