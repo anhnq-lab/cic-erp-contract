@@ -49,7 +49,17 @@ const PilotRunner = () => {
 
             // STEP 2: CREATE CONTRACT (WIZARD SIMULATION)
             log("📝 Bước 2: Tạo Hợp đồng mới (Wizard Flow)...");
+
+            // Generate Proper ID
+            const year = new Date().getFullYear();
+            const unitCode = unit.code || 'UNIT';
+            const nextNum = await ContractsAPI.getNextContractNumber(unit.id, year);
+            const stt = nextNum.toString().padStart(3, '0');
+            const clientInitial = customer.shortName ? customer.shortName.toUpperCase().slice(0, 5) : 'TEST';
+            const contractId = `HĐ_${stt}/${unitCode}_${clientInitial}_${year}`;
+
             const contractPayload: any = {
+                id: contractId,
                 title: `Hợp đồng Kiểm thử ${new Date().getTime()}`,
                 contractType: 'Software',
                 customerId: customer.id,
@@ -75,8 +85,8 @@ const PilotRunner = () => {
             await ContractsAPI.update(createdContract.id, {
                 status: 'Active',
                 paymentPhases: [
-                    { id: 'p1', name: "Đợt 1: Tạm ứng", percentage: 50, amount: 25000000, date: new Date().toISOString(), status: 'Pending' },
-                    { id: 'p2', name: "Đợt 2: Nghiệm thu", percentage: 50, amount: 25000000, date: new Date().toISOString(), status: 'Pending' }
+                    { id: 'p1', name: "Đợt 1: Tạm ứng", percentage: 50, amount: 25000000, dueDate: new Date().toISOString(), status: 'Pending' },
+                    { id: 'p2', name: "Đợt 2: Nghiệm thu", percentage: 50, amount: 25000000, dueDate: new Date().toISOString(), status: 'Pending' }
                 ]
             });
             log("✅ Đã cập nhật Đợt thanh toán.");
