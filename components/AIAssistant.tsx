@@ -26,9 +26,12 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-content: string;
-isStreaming ?: boolean;
-timestamp: Date;
+interface Message {
+  id: string;
+  role: 'user' | 'model';
+  content: string;
+  isStreaming?: boolean;
+  timestamp: Date;
 }
 
 type AgentType = 'general' | 'legal' | 'drafter' | 'analyst';
