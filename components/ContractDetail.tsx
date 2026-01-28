@@ -35,6 +35,7 @@ import {
 import { Contract, Unit, Milestone, PaymentPhase, AdministrativeCosts, ContractDocument } from '../types';
 // import { MOCK_UNITS } from '../constants'; // Removed
 import { ContractsAPI, UnitsAPI, PersonnelAPI, CustomersAPI, DocumentsAPI } from '../services/api';
+import { analyzeContract } from '../services/geminiService';
 import Tooltip from './ui/Tooltip';
 
 interface ContractDetailProps {
@@ -105,7 +106,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
 
         // Customer
         if (contract.customerId) {
-          const c = await CustomersAPI.getAll().then(res => res.find(i => i.id === contract.customerId));
+          const c = await CustomersAPI.getAll().then(res => (res as any).data.find((i: any) => i.id === contract.customerId));
           setCustomerName(c?.name || 'Unknown');
         } else if (contract.partyA) {
           setCustomerName(contract.partyA);
@@ -170,6 +171,42 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
       document.body.removeChild(a);
     } catch (e: any) {
       toast.error("Download error: " + e.message);
+    }
+  };
+
+  // AI Analysis State
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiAnalysisResult, setAiAnalysisResult] = useState<string | null>(null);
+
+  const handleAnalyzeContract = async () => {
+    if (!contract || !financials) return;
+    setIsAnalyzing(true);
+    try {
+      const contractText = `
+        LOẠI HỢP ĐỒNG: ${contract.contractType}
+        TIÊU ĐỀ: ${contract.title}
+        MÃ: ${contract.id}
+        KHÁCH HÀNG: ${customerName} (ID: ${contract.customerId})
+        GIÁ TRỊ: ${formatVND(financials.totalOutput)}
+        LỢI NHUẬN GỘP: ${formatVND(financials.grossProfit)} (${financials.margin.toFixed(1)}%)
+        NGÀY KÝ: ${contract.signedDate}
+        TRẠNG THÁI: ${contract.status}
+        
+        CÁC HẠNG MỤC (${contract.lineItems?.length || 0}):
+        ${contract.lineItems?.map(i => `- ${i.name}: SL ${i.quantity}, Đơn giá ${formatVND(i.outputPrice)}`).join('\n')}
+
+        TIẾN ĐỘ THANH TOÁN:
+        ${contract.paymentPhases?.map(p => `- ${p.name}: ${formatVND(p.amount)} (${p.status}) - Hạn: ${p.dueDate}`).join('\n')}
+        `;
+
+      const result = await analyzeContract(contractText);
+      setAiAnalysisResult(result);
+      toast.success("Phân tích AI hoàn tất!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Không thể phân tích rủi ro lúc này.");
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -524,22 +561,34 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
               <ShieldCheck size={20} />
               <h4 className="font-bold">AI Risk Check</h4>
             </div>
-            <div className="space-y-3">
-              <p className="text-sm text-indigo-100 leading-relaxed">
-                Hợp đồng này có mức độ rủi ro <span className="font-bold text-white underline">THẤP</span>.
-              </p>
-              <div className="flex gap-2 items-start text-xs text-indigo-100">
-                <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
-                <span>Cần chú ý điều khoản tự động gia hạn vào 12/2024.</span>
+
+            {!aiAnalysisResult ? (
+              <div className="space-y-3">
+                <p className="text-sm text-indigo-100 leading-relaxed">
+                  Sử dụng Gemini AI để phân tích rủi ro hợp đồng dựa trên các điều khoản tài chính và tiến độ.
+                </p>
+                <button
+                  onClick={handleAnalyzeContract}
+                  disabled={isAnalyzing}
+                  className="w-full mt-2 py-2 bg-white/20 hover:bg-white/30 transition-colors rounded-xl text-xs font-bold backdrop-blur-md border border-white/10 flex items-center justify-center gap-2"
+                >
+                  {isAnalyzing ? <Loader2 size={14} className="animate-spin" /> : <ShieldAlert size={14} />}
+                  {isAnalyzing ? 'Đang phân tích...' : 'Qét rủi ro ngay'}
+                </button>
               </div>
-              <div className="flex gap-2 items-start text-xs text-indigo-100">
-                <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
-                <span>Đã quá hạn thanh toán Quý 2.</span>
+            ) : (
+              <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2">
+                <div className="p-3 bg-white/10 rounded-xl border border-white/10 text-xs text-indigo-50 leading-relaxed overflow-y-auto max-h-[300px]">
+                  <div dangerouslySetInnerHTML={{ __html: aiAnalysisResult.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') }} />
+                </div>
+                <button
+                  onClick={() => setAiAnalysisResult(null)}
+                  className="w-full py-2 text-xs font-bold text-indigo-200 hover:text-white transition-colors"
+                >
+                  Phân tích lại
+                </button>
               </div>
-            </div>
-            <button className="w-full mt-6 py-2 bg-white/20 hover:bg-white/30 transition-colors rounded-xl text-xs font-bold backdrop-blur-md border border-white/10">
-              Xem báo cáo AI chi tiết
-            </button>
+            )}
           </div>
 
           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">

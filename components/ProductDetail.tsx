@@ -54,7 +54,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack, onEdit
                     CustomersAPI.getAll()
                 ]);
 
-                setCustomers(allCustomers);
+                setCustomers((allCustomers as any).data || []);
 
                 // Filter related contracts
                 const related = allContracts.filter(c =>

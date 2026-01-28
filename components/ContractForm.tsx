@@ -44,7 +44,8 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
         ]);
         setUnits(unitsData);
         setSalespeople(peopleData);
-        setCustomers(customersData);
+        // CustomersAPI.getAll returns { data, total } now
+        setCustomers((customersData as any).data || []);
         setProducts(productsData);
 
         // Set default unit if creating new and no unit selected yet
@@ -85,25 +86,29 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
 
   // Load existing phases
   useEffect(() => {
-    if (contract?.paymentPhases) {
-      const revenue = contract.paymentPhases
-        .filter(p => !p.type || p.type === 'Revenue')
-        .map(p => ({
-          ...p,
-          date: p.dueDate || '',
-          description: p.name || ''
-        })) as PaymentSchedule[];
+    if (contract?.paymentPhases && Array.isArray(contract.paymentPhases)) {
+      try {
+        const revenue = contract.paymentPhases
+          .filter(p => p && (!p.type || p.type === 'Revenue'))
+          .map(p => ({
+            ...p,
+            date: p.dueDate || '',
+            description: p.name || ''
+          })) as PaymentSchedule[];
 
-      const expense = contract.paymentPhases
-        .filter(p => p.type === 'Expense')
-        .map(p => ({
-          ...p,
-          date: p.dueDate || '',
-          description: p.name || ''
-        })) as PaymentSchedule[];
+        const expense = contract.paymentPhases
+          .filter(p => p && p.type === 'Expense')
+          .map(p => ({
+            ...p,
+            date: p.dueDate || '',
+            description: p.name || ''
+          })) as PaymentSchedule[];
 
-      if (revenue.length > 0) setPaymentSchedules(revenue);
-      if (expense.length > 0) setSupplierSchedules(expense);
+        if (revenue.length > 0) setPaymentSchedules(revenue);
+        if (expense.length > 0) setSupplierSchedules(expense);
+      } catch (error) {
+        console.error("Error loading payment phases:", error);
+      }
     }
   }, [contract]);
 
@@ -277,21 +282,25 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
 
   useEffect(() => {
     const generateId = async () => {
-      // Only auto-generate if NOT editing, ID NOT touched, and we have enough info
-      if (isEditing || isIdTouched || !unitId) return;
+      try {
+        // Only auto-generate if NOT editing, ID NOT touched, and we have enough info
+        if (isEditing || isIdTouched || !unitId) return;
 
-      const unit = units.find(u => u.id === unitId);
-      const unitCode = unit?.code || 'UNIT';
-      const year = new Date(signedDate).getFullYear();
+        const unit = units.find(u => u.id === unitId);
+        const unitCode = unit?.code || 'UNIT';
+        const year = new Date(signedDate).getFullYear();
 
-      // Get next number from API
-      const nextNum = await ContractsAPI.getNextContractNumber(unitId, year);
-      const stt = nextNum.toString().padStart(3, '0');
+        // Get next number from API
+        const nextNum = await ContractsAPI.getNextContractNumber(unitId, year);
+        const stt = nextNum.toString().padStart(3, '0');
 
-      const clientInitial = clientName ? clientName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 5) : 'KH';
+        const clientInitial = clientName ? clientName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 5) : 'KH';
 
-      const newId = `HĐ_${stt}/${unitCode}_${clientInitial}_${year}`;
-      setFormContractId(newId);
+        const newId = `HĐ_${stt}/${unitCode}_${clientInitial}_${year}`;
+        setFormContractId(newId);
+      } catch (error) {
+        console.error("Error generating contract ID:", error);
+      }
     };
 
     const timer = setTimeout(generateId, 500); // Debounce

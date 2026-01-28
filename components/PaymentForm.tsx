@@ -45,7 +45,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                     CustomersAPI.getAll()
                 ]);
                 setContracts(contractsData);
-                setCustomers(customersData);
+                setCustomers((customersData as any).data || []);
             } catch (error) {
                 console.error("Failed to fetch options:", error);
             }

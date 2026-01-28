@@ -76,7 +76,10 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
             setPayments(listRes.data);
             setTotalCount(listRes.count);
             setStats(statsRes);
-            if (customers.length === 0) setCustomers(customersData as Customer[]);
+            if (customers.length === 0) {
+                const cData = (customersData as any).data || customersData;
+                setCustomers(cData as Customer[]);
+            }
 
         } catch (error) {
             console.error("Failed to fetch data:", error);
