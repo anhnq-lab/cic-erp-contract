@@ -70,10 +70,28 @@ const PilotRunner = () => {
                 startDate: new Date().toISOString().split('T')[0],
                 endDate: new Date().toISOString().split('T')[0],
                 lineItems: [
-                    { id: '1', name: "Dịch vụ Tư vấn Pilot", quantity: 1, inputPrice: 0, outputPrice: 50000000, vat: 10 }
+                    {
+                        id: '1',
+                        name: "Dịch vụ Tư vấn Pilot Full Option",
+                        quantity: 1,
+                        supplier: "NCC Nội bộ",
+                        inputPrice: 30000000,
+                        outputPrice: 50000000,
+                        directCosts: 15000000,
+                        directCostDetails: [
+                            { id: 'dc1', name: "Chi phí nhân sự", amount: 10000000 },
+                            { id: 'dc2', name: "Chi phí bản quyền tool", amount: 5000000 }
+                        ]
+                    }
                 ],
                 paymentPhases: [], // Will add later
-                adminCosts: { bankFee: 0, exchangeLoss: 0, loanInterest: 0, other: 0 }
+                adminCosts: {
+                    transferFee: 50000,
+                    contractorTax: 1000000,
+                    importFee: 0,
+                    expertHiring: 2000000,
+                    documentProcessing: 150000
+                }
             };
 
             const createdContract = await ContractsAPI.create(contractPayload);
