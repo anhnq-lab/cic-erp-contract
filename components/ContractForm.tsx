@@ -941,8 +941,9 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                   </div>
                 </div>
               </section >
+            )}
 
-  {/* 4. Financial Schedules (Hóa đơn & Tiền về & Chi trả NCC) */}
+            {/* 4. Financial Schedules (Hóa đơn & Tiền về & Chi trả NCC) */}
             {
               currentStep === 3 && (
                 <section className="space-y-6 animate-in slide-in-from-right-8 duration-500">
