@@ -77,9 +77,50 @@ export async function getSmartInsights(contracts: any[]) {
         temperature: 0.3,
       },
     });
-    return JSON.parse(response.text);
+    return JSON.parse(response.text || "[]");
   } catch (error) {
     console.error("Insight Error:", error);
     return [];
+  }
+}
+
+// Enterprise AI: Chat Streaming
+export async function* streamGeminiChat(history: { role: 'user' | 'model', content: string }[], newMessage: string, systemInstruction?: string) {
+  try {
+    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+    if (!apiKey) throw new Error("Missing API Key");
+
+    const ai = new GoogleGenAI({ apiKey });
+
+    // Convert history to Gemini format (if needed, or just pass as contents sequence)
+    // The new SDK handles chat via `generateContentStream` nicely if formatted right
+    // or we can use `chats.create`. Let's use `generateContentStream` for flexibility.
+
+    // Construct the full prompt context
+    const contents = [
+      ...history.map(msg => ({
+        role: msg.role,
+        parts: [{ text: msg.content }]
+      })),
+      { role: 'user', parts: [{ text: newMessage }] }
+    ];
+
+    const result = await ai.models.generateContentStream({
+      model: "gemini-2.0-flash",
+      contents: contents as any,
+      config: {
+        temperature: 0.3,
+        systemInstruction: systemInstruction || "Bạn là Trợ lý AI Enterprise của hệ thống ContractPro. Trả lời chuyên nghiệp, ngắn gọn, Format dạng Markdown đẹp mắt (dùng Bold cho ý chính, Table cho dữ liệu).",
+      }
+    });
+
+    for await (const chunk of result.stream) {
+      const chunkText = chunk.text();
+      if (chunkText) yield chunkText;
+    }
+
+  } catch (error) {
+    console.error("Stream Error:", error);
+    yield "⚠️ Lỗi kết nối AI. Vui lòng kiểm tra API Key hoặc mạng.";
   }
 }

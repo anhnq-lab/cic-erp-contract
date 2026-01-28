@@ -1,135 +1,284 @@
 
-import React, { useState } from 'react';
-import { BrainCircuit, Sparkles, Send, Copy, RefreshCw, AlertTriangle, Database, MessageSquare } from 'lucide-react';
-import { analyzeContract, querySystemData } from '../services/geminiService';
-import { MOCK_CONTRACTS } from '../constants';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  Send,
+  Bot,
+  User,
+  Sparkles,
+  RefreshCw,
+  Trash2,
+  Maximize2,
+  Minimize2,
+  Copy,
+  Check,
+  StopCircle
+} from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { streamGeminiChat } from '../services/geminiService';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+interface Message {
+  id: string;
+  role: 'user' | 'model';
+  content: string;
+  isStreaming?: boolean;
+  timestamp: Date;
+}
 
 const AIAssistant: React.FC = () => {
-  const [mode, setMode] = useState<'doc' | 'query'>('doc');
-  const [inputText, setInputText] = useState('');
-  const [analysis, setAnalysis] = useState<string | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-
-  const handleProcess = async () => {
-    if (!inputText.trim()) return;
-    setIsAnalyzing(true);
-    let result;
-    if (mode === 'doc') {
-      result = await analyzeContract(inputText);
-    } else {
-      result = await querySystemData(inputText, MOCK_CONTRACTS.slice(0, 30));
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: 'welcome',
+      role: 'model',
+      content: 'Xin chào! Tôi là Trợ lý AI Enterprise của bạn. \n\nTôi có thể giúp gì cho bạn hôm nay? (Ví dụ: Tra cứu hợp đồng, Phân tích rủi ro, hoặc Thống kê doanh thu)',
+      timestamp: new Date()
     }
-    setAnalysis(result || "Không có kết quả.");
-    setIsAnalyzing(false);
+  ]);
+  const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSend = async () => {
+    if (!input.trim() || isTyping) return;
+
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: input.trim(),
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
+    setIsTyping(true);
+
+    const botMsgId = (Date.now() + 1).toString();
+    const botMsg: Message = {
+      id: botMsgId,
+      role: 'model',
+      content: '',
+      isStreaming: true,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, botMsg]);
+
+    try {
+      // Prepare history for API
+      const history = messages.map(m => ({
+        role: m.role,
+        content: m.content
+      }));
+
+      const stream = streamGeminiChat(history, userMsg.content);
+
+      let fullContent = '';
+
+      for await (const chunk of stream) {
+        fullContent += chunk;
+        setMessages(prev => prev.map(m =>
+          m.id === botMsgId
+            ? { ...m, content: fullContent }
+            : m
+        ));
+      }
+
+      setMessages(prev => prev.map(m =>
+        m.id === botMsgId
+          ? { ...m, isStreaming: false }
+          : m
+      ));
+
+    } catch (error) {
+      console.error("Chat Error", error);
+      setMessages(prev => prev.map(m =>
+        m.id === botMsgId
+          ? { ...m, content: fullContent + "\n\n⚠️ Đã xảy ra lỗi kết nối.", isStreaming: false }
+          : m
+      ));
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const clearChat = () => {
+    if (window.confirm('Xóa toàn bộ lịch sử chat?')) {
+      setMessages([messages[0]]);
+    }
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-700 pb-12">
-      <div className="text-center">
-        <div className="inline-flex items-center justify-center p-4 bg-indigo-600 rounded-[24px] text-white mb-6 shadow-xl shadow-indigo-200 dark:shadow-none animate-pulse">
-          <BrainCircuit size={36} />
-        </div>
-        <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Trung tâm Trí tuệ AI</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Sử dụng sức mạnh của Gemini 3 để quản trị dữ liệu thông minh.</p>
-      </div>
-
-      <div className="flex justify-center gap-4">
-        <button 
-          onClick={() => {setMode('doc'); setAnalysis(null); setInputText('');}}
-          className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${mode === 'doc' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white dark:bg-slate-900 text-slate-500 border border-slate-200 dark:border-slate-800'}`}
-        >
-          <MessageSquare size={16} /> Phân tích văn bản
-        </button>
-        <button 
-          onClick={() => {setMode('query'); setAnalysis(null); setInputText('');}}
-          className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${mode === 'query' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white dark:bg-slate-900 text-slate-500 border border-slate-200 dark:border-slate-800'}`}
-        >
-          <Database size={16} /> Truy vấn hệ thống
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6">
-        <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none relative group">
-          <div className="absolute -top-3 -right-3">
-             <div className="px-4 py-1.5 bg-indigo-600 text-white text-[10px] font-black rounded-full shadow-lg flex items-center gap-2">
-                <Sparkles size={12} /> AI ACTIVE
-             </div>
+    <div className={cn(
+      "flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden transition-all duration-300",
+      isFullScreen ? "fixed inset-0 z-50 rounded-none m-0" : "rounded-[32px] h-[600px] w-full max-w-5xl mx-auto my-8 relative"
+    )}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-none animate-pulse">
+            <Sparkles size={20} />
           </div>
+          <div>
+            <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg flex items-center gap-2">
+              Trợ lý AI Enterprise
+              <span className="px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-wider">Beta 3.0</span>
+            </h3>
+            <p className="text-xs text-slate-500 font-medium flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Đang hoạt động • Gemini Flash 2.0
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={clearChat}
+            className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all"
+            title="Xóa lịch sử"
+          >
+            <Trash2 size={18} />
+          </button>
+          <button
+            onClick={() => setIsFullScreen(!isFullScreen)}
+            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-all"
+            title={isFullScreen ? "Thu nhỏ" : "Toàn màn hình"}
+          >
+            {isFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+          </button>
+        </div>
+      </div>
 
-          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-4">
-            {mode === 'doc' ? 'Nội dung hợp đồng (Raw Text)' : 'Đặt câu hỏi cho Trợ lý AI'}
-          </label>
-          
-          <textarea 
-            className="w-full h-40 p-5 bg-slate-50 dark:bg-slate-800/50 border-2 border-slate-100 dark:border-slate-700 rounded-3xl focus:border-indigo-500 focus:outline-none transition-all text-sm leading-relaxed text-slate-800 dark:text-slate-200 font-medium"
-            placeholder={mode === 'doc' ? "Dán nội dung điều khoản vào đây để tóm tắt..." : "Ví dụ: 'Thống kê các hợp đồng có giá trị trên 1 tỷ đồng của DCS'..."}
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-          ></textarea>
-          
-          <div className="mt-6 flex justify-between items-center">
-            <div className="flex gap-2">
-               <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black rounded-lg uppercase border border-indigo-100 dark:border-indigo-800">Model: Flash 3</span>
-               <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-lg uppercase border border-emerald-100 dark:border-emerald-800">Context: Live Data</span>
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth">
+        {messages.map((msg, idx) => (
+          <div
+            key={msg.id}
+            className={cn(
+              "flex gap-4 max-w-[90%] md:max-w-[85%]",
+              msg.role === 'user' ? "ml-auto flex-row-reverse" : ""
+            )}
+          >
+            <div className={cn(
+              "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border",
+              msg.role === 'user'
+                ? "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600"
+                : "bg-indigo-600 border-transparent text-white shadow-md shadow-indigo-200 dark:shadow-none"
+            )}>
+              {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
             </div>
-            <button 
-              onClick={handleProcess}
-              disabled={isAnalyzing || !inputText.trim()}
-              className="flex items-center gap-3 bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-indigo-700 transition-all disabled:opacity-50 shadow-xl shadow-indigo-100 dark:shadow-none group-hover:scale-105"
-            >
-              {isAnalyzing ? (
-                <>
-                  <RefreshCw size={20} className="animate-spin" />
-                  Đang xử lý...
-                </>
+
+            <div className={cn(
+              "group relative px-6 py-4 rounded-[24px] text-sm leading-relaxed shadow-sm",
+              msg.role === 'user'
+                ? "bg-indigo-600 text-white rounded-tr-none"
+                : "bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-tl-none"
+            )}>
+              {msg.role === 'model' ? (
+                <div className="markdown-body">
+                  {msg.content === '' && msg.isStreaming ? (
+                    <span className="flex gap-1 items-center h-5">
+                      <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></span>
+                      <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce delay-100"></span>
+                      <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce delay-200"></span>
+                    </span>
+                  ) : (
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      className="prose prose-sm prose-indigo dark:prose-invert max-w-none break-words"
+                      components={{
+                        table: ({ node, ...props }) => <div className="overflow-x-auto my-4"><table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg" {...props} /></div>,
+                        th: ({ node, ...props }) => <th className="px-4 py-2 bg-slate-50 dark:bg-slate-800/50 text-left text-xs font-bold uppercase tracking-wider text-slate-500" {...props} />,
+                        td: ({ node, ...props }) => <td className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 text-sm" {...props} />,
+                        ul: ({ node, ...props }) => <ul className="list-disc pl-5 space-y-1" {...props} />,
+                        ol: ({ node, ...props }) => <ol className="list-decimal pl-5 space-y-1" {...props} />,
+                        code: ({ node, ...props }) => <code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs font-mono text-rose-500" {...props} />,
+                        a: ({ node, ...props }) => <a className="text-indigo-600 hover:underline font-bold" target="_blank" rel="noopener noreferrer" {...props} />
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  )}
+                </div>
               ) : (
-                <>
-                  <Send size={20} />
-                  Thực hiện AI
-                </>
+                <p className="whitespace-pre-wrap">{msg.content}</p>
               )}
-            </button>
-          </div>
-        </div>
 
-        {analysis && (
-          <div className="bg-white dark:bg-slate-900 p-10 rounded-[40px] border-2 border-indigo-50 dark:border-indigo-900/20 shadow-2xl animate-in slide-in-from-top-8 duration-700 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-6">
-              <button 
-                onClick={() => navigator.clipboard.writeText(analysis)}
-                className="p-3 text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-2xl transition-all"
-              >
-                <Copy size={22} />
-              </button>
+              {msg.role === 'model' && !msg.isStreaming && (
+                <div className="absolute -bottom-6 right-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                  <button
+                    onClick={() => navigator.clipboard.writeText(msg.content)}
+                    className="p-1.5 text-slate-400 hover:text-indigo-600 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm"
+                    title="Copy"
+                  >
+                    <Copy size={12} />
+                  </button>
+                </div>
+              )}
             </div>
-            
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 rounded-[18px] bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-100 dark:shadow-none">
-                <BrainCircuit size={24} />
-              </div>
-              <div>
-                <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">Kết quả phân tích</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Thời gian phản hồi: 1.2s</p>
-              </div>
-            </div>
-            
-            <div className="prose prose-indigo dark:prose-invert max-w-none">
-              <div className="whitespace-pre-wrap text-slate-700 dark:text-slate-300 leading-relaxed text-base font-medium">
-                {analysis}
-              </div>
-            </div>
-            
-            <div className="mt-10 pt-8 border-t border-slate-100 dark:border-slate-800 flex items-start gap-4">
-              <div className="p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-2xl">
-                <AlertTriangle size={24} />
-              </div>
-              <div>
-                <p className="text-xs font-black text-amber-800 dark:text-amber-400 uppercase tracking-widest mb-1">Cảnh báo Trách nhiệm</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Kết quả được tối ưu bởi AI dựa trên dữ liệu hiện có. Vui lòng kiểm tra lại các mốc thời gian và giá trị quan trọng.</p>
-              </div>
-            </div>
+          </div>
+        ))}
+        {messages.length === 0 && (
+          <div className="h-full flex flex-col items-center justify-center opacity-50">
+            <Bot size={48} className="text-slate-300 mb-4" />
+            <p className="text-slate-400 font-medium">Bắt đầu cuộc trò chuyện với AI</p>
           </div>
         )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+        <div className="relative max-w-4xl mx-auto">
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Nhập câu hỏi của bạn (Shift+Enter để xuống dòng)..."
+            className="w-full pl-5 pr-14 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 rounded-[24px] resize-none max-h-40 min-h-[60px] shadow-sm text-sm font-medium focus:outline-none transition-all"
+            rows={1}
+            style={{ height: 'auto', minHeight: '60px' }}
+            disabled={isTyping}
+          />
+          <button
+            onClick={handleSend}
+            disabled={!input.trim() || isTyping}
+            className={cn(
+              "absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl flex items-center justify-center transition-all",
+              input.trim() && !isTyping
+                ? "bg-indigo-600 text-white shadow-lg hover:scale-105 active:scale-95"
+                : "bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed"
+            )}
+          >
+            {isTyping ? <StopCircle size={20} className="animate-spin" /> : <Send size={20} />}
+          </button>
+        </div>
+        <p className="text-center text-[10px] text-slate-400 mt-3 font-medium">
+          AI có thể mắc lỗi. Vui lòng kiểm tra lại các thông tin quan trọng.
+        </p>
       </div>
     </div>
   );
