@@ -130,6 +130,13 @@ export const ContractsAPI = {
         return data.map(mapContract);
     },
 
+    getByCustomerIds: async (customerIds: string[]): Promise<Contract[]> => {
+        if (customerIds.length === 0) return [];
+        const { data, error } = await supabase.from('contracts').select('*').in('customer_id', customerIds);
+        if (error) throw error;
+        return data.map(mapContract);
+    },
+
     list: async (params: {
         page: number;
         limit: number;
@@ -435,6 +442,27 @@ export const PersonnelAPI = {
         return data.map(mapSalesPerson);
     },
 
+    list: async (params: { page?: number; pageSize?: number; search?: string; unitId?: string }): Promise<{ data: SalesPerson[]; total: number }> => {
+        let query = supabase.from('sales_people').select('*', { count: 'exact' });
+
+        if (params.unitId && params.unitId !== 'all') {
+            query = query.eq('unit_id', params.unitId);
+        }
+        if (params.search) {
+            query = query.ilike('name', `%${params.search}%`);
+        }
+
+        if (params.page !== undefined && params.pageSize !== undefined) {
+            const from = (params.page - 1) * params.pageSize;
+            const to = from + params.pageSize - 1;
+            query = query.range(from, to);
+        }
+
+        const { data, error, count } = await query;
+        if (error) throw error;
+        return { data: data.map(mapSalesPerson), total: count || 0 };
+    },
+
     getStats: async (id: string) => {
         // Need to fetch contracts to calc stats
         const { data: contracts, error } = await supabase.from('contracts').select('*').eq('salesperson_id', id);
@@ -509,10 +537,41 @@ export const PersonnelAPI = {
 // CUSTOMERS API
 // ============================================
 export const CustomersAPI = {
-    getAll: async (): Promise<Customer[]> => {
-        const { data, error } = await supabase.from('customers').select('*');
+    getAll: async (params?: { page?: number; pageSize?: number; search?: string; type?: string; industry?: string }): Promise<{ data: Customer[]; total: number }> => {
+        let query = supabase.from('customers').select('*', { count: 'exact' });
+
+        if (params?.search) {
+            query = query.or(`name.ilike.%${params.search}%,short_name.ilike.%${params.search}%,contact_person.ilike.%${params.search}%`);
+        }
+
+        if (params?.type && params.type !== 'all') {
+            // Logic: type='Customer' matches 'Customer' or 'Both'. type='Supplier' matches 'Supplier' or 'Both'.
+            // Simple equality might miss 'Both'.
+            // Let's use OR logic: (type = X OR type = 'Both')
+            if (params.type === 'Customer') {
+                query = query.in('type', ['Customer', 'Both', 'Customer,Supplier']); // handling legacy
+            } else if (params.type === 'Supplier') {
+                query = query.in('type', ['Supplier', 'Both', 'Customer,Supplier']);
+            } else {
+                query = query.eq('type', params.type);
+            }
+        }
+
+        if (params?.industry && params.industry !== 'all') {
+            query = query.eq('industry', params.industry);
+        }
+
+        query = query.order('created_at', { ascending: false });
+
+        if (params?.page !== undefined && params?.pageSize !== undefined) {
+            const from = (params.page - 1) * params.pageSize;
+            const to = from + params.pageSize - 1;
+            query = query.range(from, to);
+        }
+
+        const { data, error, count } = await query;
         if (error) throw error;
-        return data.map(mapCustomer);
+        return { data: data.map(mapCustomer), total: count || 0 };
     },
 
     getById: async (id: string): Promise<Customer | undefined> => {
@@ -663,6 +722,29 @@ export const ProductsAPI = {
         const { data: res, error } = await supabase.from('products').update(payload).eq('id', id).select().single();
         if (error) throw error;
         return mapProduct(res);
+    },
+
+    list: async (params: { page?: number; pageSize?: number; search?: string; category?: string }): Promise<{ data: Product[]; total: number }> => {
+        let query = supabase.from('products').select('*', { count: 'exact' });
+
+        if (params.category && params.category !== 'all') {
+            query = query.eq('category', params.category);
+        }
+        if (params.search) {
+            query = query.or(`name.ilike.%${params.search}%,code.ilike.%${params.search}%`);
+        }
+
+        if (params.page !== undefined && params.pageSize !== undefined) {
+            const from = (params.page - 1) * params.pageSize;
+            const to = from + params.pageSize - 1;
+            query = query.range(from, to);
+        }
+
+        query = query.order('created_at', { ascending: false });
+
+        const { data, error, count } = await query;
+        if (error) throw error;
+        return { data: data.map(mapProduct), total: count || 0 };
     },
 
     delete: async (id: string): Promise<boolean> => {

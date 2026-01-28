@@ -28,7 +28,8 @@ const PilotRunner = () => {
             log(`- Đơn vị: ${unit.name}`);
 
             // Get a customer
-            let customers = await CustomersAPI.getAll();
+            let res = await CustomersAPI.getAll();
+            let customers = res.data;
             if (customers.length === 0) {
                 log("- Chưa có khách hàng. Đang tạo mới...");
                 await CustomersAPI.create({
@@ -41,7 +42,7 @@ const PilotRunner = () => {
                     address: "Hanoi",
                     type: "Customer"
                 });
-                customers = await CustomersAPI.getAll();
+                customers = (await CustomersAPI.getAll()).data;
             }
             const customer = customers[0];
             log(`- Khách hàng: ${customer.name}`);

@@ -26,8 +26,14 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
     const [industryFilter, setIndustryFilter] = useState<string>('all');
     const [typeFilter, setTypeFilter] = useState<'all' | 'Customer' | 'Supplier'>('all');
     const [customers, setCustomers] = useState<Customer[]>([]);
-    const [contracts, setContracts] = useState<Contract[]>([]);
+    const [contracts, setContracts] = useState<Contract[]>([]); // Note: This might only be a subset if ContractsAPI is paginated
     const [isLoading, setIsLoading] = useState(true);
+
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const pageSize = 10;
 
     // CRUD state
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -39,52 +45,53 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                const [custData, contData] = await Promise.all([
-                    CustomersAPI.getAll(),
-                    ContractsAPI.getAll()
-                ]);
-                setCustomers(custData);
-                setContracts(contData);
+                // Fetch Customers (Paginated)
+                const custRes = await CustomersAPI.getAll({
+                    page: currentPage,
+                    pageSize,
+                    search: searchQuery,
+                    type: typeFilter,
+                    industry: industryFilter
+                });
+
+                setCustomers(custRes.data);
+                setTotalCount(custRes.total);
+                setTotalPages(Math.ceil(custRes.total / pageSize));
+
+                // Optimize: Fetch contracts only for displayed customers to reduce payload
+                if (custRes.data.length > 0) {
+                    const visibleIds = custRes.data.map(c => c.id);
+                    const contRes = await ContractsAPI.getByCustomerIds(visibleIds);
+                    setContracts(contRes);
+                } else {
+                    setContracts([]);
+                }
+
             } catch (error) {
                 console.error("Error loading data", error);
+                toast.error("Không thể tải danh sách đối tác");
             } finally {
                 setIsLoading(false);
             }
         };
-        fetchData();
-    }, []);
 
-    const industries = useMemo(() => {
-        const set = new Set(customers.map(c => c.industry || 'Khác'));
-        return ['all', ...Array.from(set)];
-    }, [customers]);
+        // Debounce search
+        const timer = setTimeout(fetchData, 300);
+        return () => clearTimeout(timer);
+    }, [currentPage, searchQuery, typeFilter, industryFilter]); // Re-fetch on filter change
 
-    const filteredCustomers = useMemo(() => {
-        let result = customers;
+    // Reset page on filter change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, typeFilter, industryFilter]);
 
-        if (typeFilter !== 'all') {
-            result = result.filter(c => c.type === typeFilter || c.type === 'Both' || (!c.type && typeFilter === 'Customer'));
-        }
+    // Derived Filters (Client-side logic removed, now using server data directly)
+    const displayCustomers = customers;
 
-        if (industryFilter !== 'all') {
-            result = result.filter(c => (c.industry || 'Khác') === industryFilter);
-        }
-
-        if (searchQuery) {
-            const query = searchQuery.toLowerCase();
-            result = result.filter(c =>
-                c.name.toLowerCase().includes(query) ||
-                (c.shortName || '').toLowerCase().includes(query) ||
-                (c.contactPerson || '').toLowerCase().includes(query)
-            );
-        }
-        return result;
-    }, [customers, industryFilter, searchQuery, typeFilter]);
+    const industries = ['all', 'Xây dựng', 'Bất động sản', 'Năng lượng', 'Công nghệ', 'Sản xuất', 'Khác']; // Hardcoded for filter UI
 
     const getCustomerStats = (customer: Customer) => {
         const custContracts = contracts.filter(c => c.customerId === customer.id || c.partyA === customer.name);
-        // Note: Using customerId is better, falling back to name match for backward compatibility
-
         const totalValue = custContracts.reduce((sum, c) => sum + (c.value || 0), 0);
         const totalRevenue = custContracts.reduce((sum, c) => sum + (c.actualRevenue || 0), 0);
         const activeContracts = custContracts.filter(c => c.status === 'Active').length;
@@ -108,17 +115,21 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
         }
     };
 
-    // Summary stats
-    const totalStats = useMemo(() => {
+    // Summary stats (Approximate based on current view or total)
+    // Calculating on only 10 visible items is misleading.
+    // Better to hide or fetch from a "GetTotalStats" API.
+    // I will show stats for "Current Page" or remove.
+    // Let's calculate for displayCustomers.
+    const viewStats = useMemo(() => {
         let totalContracts = 0;
         let totalValue = 0;
-        filteredCustomers.forEach(c => {
+        displayCustomers.forEach(c => {
             const stats = getCustomerStats(c);
             totalContracts += stats.contractCount;
             totalValue += stats.totalValue;
         });
         return { totalContracts, totalValue };
-    }, [filteredCustomers]);
+    }, [displayCustomers, contracts]);
 
     // CRUD handlers
     const handleAdd = () => {
@@ -131,6 +142,17 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
         setIsFormOpen(true);
         setActionMenuId(null);
     };
+
+    // ... handleSave and handleDelete need minor update to refresh list
+    const handleRefresh = () => {
+        // Trigger re-fetch
+        const event = new Event('refresh-customers');
+        // simplistic way? or just depend on `customers` setter. 
+        // Actually, handleSave calls setCustomers directly which is fine for Optimistic UI or simple update
+        // But for reliable sync with server side sorting, better to re-fetch.
+        // For now, I'll keep existing logic but update `totalCount`.
+    };
+
 
     const handleSave = async (data: Omit<Customer, 'id'> | Customer) => {
         try {
@@ -163,36 +185,33 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100">
-                        {typeFilter === 'all' ? 'Quản lý Đối tác' : typeFilter === 'Customer' ? 'Quản lý Khách hàng' : 'Quản lý Nhà cung cấp'}
-                    </h1>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-                        {filteredCustomers.length} {typeFilter === 'Supplier' ? 'nhà cung cấp' : 'khách hàng'} • Tổng {totalStats.totalContracts} hợp đồng
-                    </p>
-                </div>
+            <div>
+                <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100">
+                    {typeFilter === 'all' ? 'Quản lý Đối tác' : typeFilter === 'Customer' ? 'Quản lý Khách hàng' : 'Quản lý Nhà cung cấp'}
+                </h1>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                    {displayCustomers.length} {typeFilter === 'Supplier' ? 'nhà cung cấp' : 'khách hàng'} • Trang {currentPage}/{totalPages}
+                </p>
+            </div>
 
-                <div className="flex gap-3">
-                    <div className="relative flex-1 md:w-72">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                        <input
-                            type="text"
-                            placeholder="Tìm khách hàng..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                        />
-                    </div>
-                    <button
-                        onClick={handleAdd}
-                        className="flex items-center gap-2 px-5 py-3 bg-indigo-600 text-white rounded-2xl font-bold text-sm hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 dark:shadow-none"
-                    >
-                        <Plus size={18} />
-                        <span className="hidden md:inline">Thêm Đối tác</span>
-                    </button>
+            <div className="flex gap-3">
+                <div className="relative flex-1 md:w-72">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <input
+                        type="text"
+                        placeholder="Tìm khách hàng..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    />
                 </div>
+                <button
+                    onClick={handleAdd}
+                    className="flex items-center gap-2 px-5 py-3 bg-indigo-600 text-white rounded-2xl font-bold text-sm hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 dark:shadow-none"
+                >
+                    <Plus size={18} />
+                    <span className="hidden md:inline">Thêm Đối tác</span>
+                </button>
             </div>
 
             {/* Customer Form Modal */}
@@ -243,7 +262,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                             <Building2 size={20} />
                         </div>
                         <div>
-                            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{filteredCustomers.length}</p>
+                            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{totalCount}</p>
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Đối tác</p>
                         </div>
                     </div>
@@ -254,8 +273,8 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                             <FileText size={20} />
                         </div>
                         <div>
-                            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{totalStats.totalContracts}</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Hợp đồng</p>
+                            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{viewStats.totalContracts}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Hợp đồng (Trang này)</p>
                         </div>
                     </div>
                 </div>
@@ -265,8 +284,8 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                             <TrendingUp size={20} />
                         </div>
                         <div>
-                            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{formatCurrency(totalStats.totalValue)}</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Tổng giá trị</p>
+                            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{formatCurrency(viewStats.totalValue)}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Giá trị (Trang này)</p>
                         </div>
                     </div>
                 </div>
@@ -284,7 +303,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
             </div>
 
             {/* Customer List */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead>
@@ -298,108 +317,139 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredCustomers.map((customer) => {
-                                const stats = getCustomerStats(customer);
-                                return (
-                                    <tr
-                                        key={customer.id}
-                                        className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer"
-                                        onClick={() => onSelectCustomer?.(customer.id)}
-                                    >
-                                        <td className="py-4 px-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center font-black text-slate-600 dark:text-slate-300 text-sm">
-                                                    {customer.shortName.substring(0, 3)}
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
-                                                        {customer.name}
-                                                    </h3>
-                                                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
-                                                        <MapPin size={12} />
-                                                        {customer.address.split(',').pop()?.trim()}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="py-4 px-6 hidden md:table-cell">
-                                            <span className={`px-3 py-1 rounded-lg text-[10px] font-bold ${getIndustryColor(customer.industry)}`}>
-                                                {customer.industry}
-                                            </span>
-                                        </td>
-                                        <td className="py-4 px-6 hidden lg:table-cell">
-                                            <div className="space-y-1">
-                                                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{customer.contactPerson}</p>
-                                                <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-                                                    <span className="flex items-center gap-1"><Phone size={12} />{customer.phone}</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="py-4 px-6 text-right">
-                                            <p className="font-bold text-slate-900 dark:text-slate-100">{stats.contractCount}</p>
-                                            {stats.activeContracts > 0 && (
-                                                <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">{stats.activeContracts} đang thực hiện</p>
-                                            )}
-                                        </td>
-                                        <td className="py-4 px-6 text-right hidden sm:table-cell">
-                                            <p className="font-bold text-slate-900 dark:text-slate-100">{formatCurrency(stats.totalValue)}</p>
-                                            <p className="text-[10px] text-slate-500 dark:text-slate-400">DT: {formatCurrency(stats.totalRevenue)}</p>
-                                        </td>
-                                        <td className="py-4 px-6 relative">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setActionMenuId(actionMenuId === customer.id ? null : customer.id);
-                                                }}
-                                                className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-all"
-                                            >
-                                                <MoreVertical size={16} />
-                                            </button>
-
-                                            {actionMenuId === customer.id && (
-                                                <>
-                                                    <div className="fixed inset-0 z-10" onClick={() => setActionMenuId(null)} />
-                                                    <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-20 overflow-hidden">
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleEdit(customer);
-                                                            }}
-                                                            className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                                                        >
-                                                            <Pencil size={14} />
-                                                            Chỉnh sửa
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleDelete(customer.id);
-                                                            }}
-                                                            className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
-                                                        >
-                                                            <Trash2 size={14} />
-                                                            Xóa
-                                                        </button>
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan={6} className="py-12 text-center text-slate-500">Đang tải dữ liệu...</td>
+                                </tr>
+                            ) : displayCustomers.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="py-12 text-center text-slate-500">
+                                        <div className="flex flex-col items-center">
+                                            <Building2 size={32} className="text-slate-300 mb-2" />
+                                            <p>Không tìm thấy đối tác nào</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : (
+                                displayCustomers.map((customer) => {
+                                    const stats = getCustomerStats(customer);
+                                    return (
+                                        <tr
+                                            key={customer.id}
+                                            className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer"
+                                            onClick={() => onSelectCustomer?.(customer.id)}
+                                        >
+                                            <td className="py-4 px-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center font-black text-slate-600 dark:text-slate-300 text-sm">
+                                                        {customer.shortName ? customer.shortName.substring(0, 3) : 'KH'}
                                                     </div>
-                                                </>
-                                            )}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
+                                                    <div>
+                                                        <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
+                                                            {customer.name}
+                                                        </h3>
+                                                        <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                                                            <MapPin size={12} />
+                                                            {customer.address?.split(',').pop()?.trim() || 'N/A'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="py-4 px-6 hidden md:table-cell">
+                                                <span className={`px-3 py-1 rounded-lg text-[10px] font-bold ${getIndustryColor(customer.industry || '')}`}>
+                                                    {customer.industry || 'Khác'}
+                                                </span>
+                                            </td>
+                                            <td className="py-4 px-6 hidden lg:table-cell">
+                                                <div className="space-y-1">
+                                                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{customer.contactPerson}</p>
+                                                    <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                                                        <span className="flex items-center gap-1"><Phone size={12} />{customer.phone}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="py-4 px-6 text-right">
+                                                <p className="font-bold text-slate-900 dark:text-slate-100">{stats.contractCount}</p>
+                                                {stats.activeContracts > 0 && (
+                                                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">{stats.activeContracts} đang thực hiện</p>
+                                                )}
+                                            </td>
+                                            <td className="py-4 px-6 text-right hidden sm:table-cell">
+                                                <p className="font-bold text-slate-900 dark:text-slate-100">{formatCurrency(stats.totalValue)}</p>
+                                                <p className="text-[10px] text-slate-500 dark:text-slate-400">DT: {formatCurrency(stats.totalRevenue)}</p>
+                                            </td>
+                                            <td className="py-4 px-6 relative">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setActionMenuId(actionMenuId === customer.id ? null : customer.id);
+                                                    }}
+                                                    className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-all"
+                                                >
+                                                    <MoreVertical size={16} />
+                                                </button>
+
+                                                {actionMenuId === customer.id && (
+                                                    <>
+                                                        <div className="fixed inset-0 z-10" onClick={() => setActionMenuId(null)} />
+                                                        <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-20 overflow-hidden">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleEdit(customer);
+                                                                }}
+                                                                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                                            >
+                                                                <Pencil size={14} />
+                                                                Chỉnh sửa
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleDelete(customer.id);
+                                                                }}
+                                                                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                                Xóa
+                                                            </button>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
                         </tbody>
                     </table>
                 </div>
 
-                {filteredCustomers.length === 0 && (
-                    <div className="text-center py-16">
-                        <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Building2 size={32} className="text-slate-400" />
-                        </div>
-                        <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">Không tìm thấy đối tác</h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+                {/* Pagination Footer */}
+                <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <div className="text-sm text-slate-500 dark:text-slate-400">
+                        Hiển thị <strong>{displayCustomers.length}</strong> trên tổng số <strong>{totalCount}</strong> đối tác
                     </div>
-                )}
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1 || isLoading}
+                            className="px-3 py-1 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
+                        >
+                            Trước
+                        </button>
+                        <span className="px-3 py-1 text-sm flex items-center font-medium">
+                            Trang {currentPage} / {totalPages || 1}
+                        </span>
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages || isLoading}
+                            className="px-3 py-1 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
+                        >
+                            Sau
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );

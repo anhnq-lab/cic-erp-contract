@@ -32,6 +32,12 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
     const [units, setUnits] = useState<Unit[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const pageSize = 12;
+
     // CRUD state
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
@@ -44,40 +50,38 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                const [productsData, unitsData] = await Promise.all([
-                    ProductsAPI.getAll(),
-                    UnitsAPI.getAll()
-                ]);
-                setProducts(productsData);
-                setUnits(unitsData);
+                if (units.length === 0) {
+                    const unitsData = await UnitsAPI.getAll();
+                    setUnits(unitsData);
+                }
+
+                const res = await ProductsAPI.list({
+                    page: currentPage,
+                    pageSize,
+                    search: searchQuery,
+                    category: categoryFilter
+                });
+                setProducts(res.data);
+                setTotalCount(res.total);
+                setTotalPages(Math.ceil(res.total / pageSize));
             } catch (error) {
                 console.error('Error fetching data:', error);
             } finally {
                 setIsLoading(false);
             }
         };
-        fetchData();
-    }, []);
 
-    // Filtered products
-    const filteredProducts = useMemo(() => {
-        let result = products;
+        const timer = setTimeout(fetchData, 300);
+        return () => clearTimeout(timer);
+    }, [currentPage, searchQuery, categoryFilter]);
 
-        if (categoryFilter !== 'all') {
-            result = result.filter(p => p.category === categoryFilter);
-        }
+    // Reset page on filter
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, categoryFilter]);
 
-        if (searchQuery) {
-            const query = searchQuery.toLowerCase();
-            result = result.filter(p =>
-                p.name.toLowerCase().includes(query) ||
-                p.code.toLowerCase().includes(query) ||
-                p.description.toLowerCase().includes(query)
-            );
-        }
-
-        return result;
-    }, [products, categoryFilter, searchQuery]);
+    // Use server result
+    const filteredProducts = products;
 
     const getUnitName = (unitId?: string) => {
         if (!unitId) return 'N/A';
@@ -103,7 +107,7 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
         }
     };
 
-    // Stats
+    // Stats (Current Page)
     const stats = useMemo(() => {
         const active = filteredProducts.filter(p => p.isActive).length;
         const totalBasePrice = filteredProducts.reduce((sum, p) => sum + p.basePrice, 0);
@@ -114,7 +118,7 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
             }, 0) / filteredProducts.length
             : 0;
 
-        return { total: filteredProducts.length, active, totalBasePrice, avgMargin };
+        return { active, totalBasePrice, avgMargin };
     }, [filteredProducts]);
 
     const selectedCategoryLabel = categoryFilter === 'all' ? 'Tất cả danh mục' : categoryFilter;
@@ -160,7 +164,7 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
                         Sản phẩm & Dịch vụ
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-                        {filteredProducts.length} sản phẩm/dịch vụ
+                        {totalCount} sản phẩm • Trang {currentPage}/{totalPages}
                     </p>
                 </div>
 
@@ -254,7 +258,7 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
                             <Package size={20} />
                         </div>
                         <div>
-                            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{stats.total}</p>
+                            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{totalCount}</p>
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Sản phẩm</p>
                         </div>
                     </div>
@@ -434,6 +438,31 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
                         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
                     </div>
                 )}
+                {/* Pagination Footer */}
+                <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <div className="text-sm text-slate-500 dark:text-slate-400">
+                        Hiển thị <strong>{filteredProducts.length}</strong> trên tổng số <strong>{totalCount}</strong> sản phẩm
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1 || isLoading}
+                            className="px-3 py-1 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
+                        >
+                            Trước
+                        </button>
+                        <span className="px-3 py-1 text-sm flex items-center font-medium">
+                            Trang {currentPage} / {totalPages || 1}
+                        </span>
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages || isLoading}
+                            className="px-3 py-1 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
+                        >
+                            Sau
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );

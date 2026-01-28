@@ -30,6 +30,12 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
     const [personnelStats, setPersonnelStats] = useState<Record<string, PersonnelStats>>({});
     const [isLoading, setIsLoading] = useState(true);
 
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const pageSize = 12;
+
     // CRUD state
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingPerson, setEditingPerson] = useState<SalesPerson | undefined>(undefined);
@@ -45,16 +51,26 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                // Fetch Units first
-                const unitsData = await UnitsAPI.getAll();
-                setUnits(unitsData.filter(u => u.id !== 'all'));
+                // Fetch Units (if empty)
+                if (units.length === 0) {
+                    const unitsData = await UnitsAPI.getAll();
+                    setUnits(unitsData.filter(u => u.id !== 'all'));
+                }
 
-                // Fetch Personnel
-                const data = await PersonnelAPI.getByUnitId(unitFilter);
-                setPersonnel(data);
+                // Fetch Personnel (Paginated)
+                const res = await PersonnelAPI.list({
+                    unitId: unitFilter,
+                    page: currentPage,
+                    pageSize,
+                    search: searchQuery
+                });
 
-                // Fetch stats for each person
-                const statsPromises = data.map(async p => {
+                setPersonnel(res.data);
+                setTotalCount(res.total);
+                setTotalPages(Math.ceil(res.total / pageSize));
+
+                // Fetch stats for visible personnel
+                const statsPromises = res.data.map(async p => {
                     const stats = await PersonnelAPI.getStats(p.id);
                     return { id: p.id, stats };
                 });
@@ -67,21 +83,23 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                 setPersonnelStats(statsMap);
             } catch (error) {
                 console.error('Error fetching data:', error);
+                toast.error('Lỗi tải dữ liệu');
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchData();
-    }, [unitFilter]);
+        const timer = setTimeout(fetchData, 300);
+        return () => clearTimeout(timer);
+    }, [unitFilter, currentPage, searchQuery]);
 
-    // Filtered by search
-    const filteredPersonnel = useMemo(() => {
-        if (!searchQuery) return personnel;
-        return personnel.filter(p =>
-            p.name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-    }, [personnel, searchQuery]);
+    // Reset page on filter change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [unitFilter, searchQuery]);
+
+    // Use direct personnel list
+    const filteredPersonnel = personnel;
 
     const getUnitCode = (unitId: string) => {
         return units.find(u => u.id === unitId)?.code || 'N/A';
@@ -174,7 +192,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                         Quản lý Nhân sự
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-                        {filteredPersonnel.length} nhân viên sales
+                        {totalCount} nhân viên sales • Trang {currentPage}/{totalPages}
                     </p>
                 </div>
 
@@ -482,6 +500,32 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
                     </div>
                 )}
+
+                {/* Pagination Footer */}
+                <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <div className="text-sm text-slate-500 dark:text-slate-400">
+                        Hiển thị <strong>{filteredPersonnel.length}</strong> trên tổng số <strong>{totalCount}</strong> nhân viên
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1 || isLoading}
+                            className="px-3 py-1 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
+                        >
+                            Trước
+                        </button>
+                        <span className="px-3 py-1 text-sm flex items-center font-medium">
+                            Trang {currentPage} / {totalPages || 1}
+                        </span>
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages || isLoading}
+                            className="px-3 py-1 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
+                        >
+                            Sau
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <PersonnelForm
