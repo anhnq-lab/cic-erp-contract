@@ -112,7 +112,18 @@ const AIAssistant: React.FC = () => {
       timestamp: new Date()
     };
 
-    // ... (rest of message setup)
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
+    setIsTyping(true);
+
+    const botMsgId = (Date.now() + 1).toString();
+    const botMsg: Message = {
+      id: botMsgId,
+      role: 'model',
+      content: '',
+      isStreaming: true,
+      timestamp: new Date()
+    };
 
     setMessages(prev => [...prev, botMsg]);
 
@@ -136,8 +147,6 @@ const AIAssistant: React.FC = () => {
       const stream = streamEnterpriseAI(history, userMsg.content, currentModel, finalPrompt);
 
       let fullContent = '';
-
-      // ... (rest of generic loop)
 
       for await (const chunk of stream) {
         fullContent += chunk;
