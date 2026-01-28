@@ -1,44 +1,95 @@
-import { ContractsAPI, UnitsAPI, PaymentsAPI } from './api';
+import { ContractsAPI, UnitsAPI, PersonnelAPI, PaymentsAPI } from './api';
+import { Contract, Unit, SalesPerson } from '../types';
 
 export const getBusinessContext = async (): Promise<string> => {
     try {
         // Parallel fetch for speed
-        const [stats, units, paymentsStats] = await Promise.all([
-            ContractsAPI.getStats({}),
+        const [allContracts, units, people, paymentsStats] = await Promise.all([
+            ContractsAPI.getAll(),
             UnitsAPI.getAll(),
+            PersonnelAPI.getAll(),
             PaymentsAPI.getStats({})
         ]);
 
-        const unitNames = units.map(u => `- ${u.name} (Code: ${u.code})`).join('\n');
+        // --- 1. Processing Unit Performance ---
+        const unitMap = new Map<string, string>();
+        units.forEach(u => unitMap.set(u.id, u.name));
 
-        // Format large numbers
-        const formatCurrency = (val: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
+        const unitStats: Record<string, { revenue: number; value: number; count: number }> = {};
 
-        return `
-=== DỮ LIỆU HỆ THỐNG THỜI GIAN THỰC (Cập nhật: ${new Date().toLocaleString('vi-VN')}) ===
+        allContracts.forEach(c => {
+            const uId = c.unitId;
+            if (uId && unitMap.has(uId)) {
+                if (!unitStats[uId]) unitStats[uId] = { revenue: 0, value: 0, count: 0 };
+                unitStats[uId].revenue += c.actualRevenue || 0;
+                unitStats[uId].value += c.value || 0;
+                unitStats[uId].count += 1;
+            }
+        });
 
-1. TỔNG QUAN HỢP ĐỒNG:
-- Tổng số lượng: ${stats.totalContracts}
-- Tổng giá trị ký kết: ${formatCurrency(stats.totalValue)}
-- Tổng doanh thu thực tế ghi nhận: ${formatCurrency(stats.totalRevenue)}
-- Lợi nhuận tạm tính: ${formatCurrency(stats.totalProfit)}
+        const topUnits = Object.entries(unitStats)
+            .map(([id, stat]) => ({ name: unitMap.get(id) || id, ...stat }))
+            .sort((a, b) => b.revenue - a.revenue)
+            .slice(0, 5); // Top 5 Units
 
-2. TÌNH HÌNH THANH TOÁN (CASHFLOW):
-- Tổng tiền đã về (Paid): ${formatCurrency(paymentsStats.paidAmount)}
-- Công nợ/Chờ thanh toán (Pending): ${formatCurrency(paymentsStats.pendingAmount)}
-- Nợ quá hạn (Overdue): ${formatCurrency(paymentsStats.overdueAmount)}
+        // --- 2. Processing Sales Performance ---
+        const personMap = new Map<string, string>();
+        people.forEach(p => personMap.set(p.id, p.name));
 
-3. DANH SÁCH ĐƠN VỊ TRỰC THUỘC:
-${unitNames}
+        const personStats: Record<string, { revenue: number; value: number; count: number }> = {};
 
-LƯU Ý QUAN TRỌNG:
-- Đây là dữ liệu tổng hợp toàn công ty.
-- Nếu người dùng hỏi về đơn vị cụ thể, hãy giả định dựa trên tên đơn vị trong danh sách trên.
-- Nếu cần số liệu chi tiết của từng đơn vị (VD: Doanh thu của Xưởng 1), hãy trả lời dựa trên các báo cáo chi tiết mà người dùng cung cấp hoặc hướng dẫn họ vào Dashboard lọc theo đơn vị đó.
-==================================================
-`;
+        allContracts.forEach(c => {
+            const pId = c.salespersonId;
+            if (pId && personMap.has(pId)) {
+                if (!personStats[pId]) personStats[pId] = { revenue: 0, value: 0, count: 0 };
+                personStats[pId].revenue += c.actualRevenue || 0;
+                personStats[pId].value += c.value || 0;
+                personStats[pId].count += 1;
+            }
+        });
+
+        const topSales = Object.entries(personStats)
+            .map(([id, stat]) => ({ name: personMap.get(id) || id, ...stat }))
+            .sort((a, b) => b.revenue - a.revenue)
+            .slice(0, 5); // Top 5 Salespeople
+
+        // Formatters
+        const formatCurrency = (val: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(val);
+        const totalRevenue = allContracts.reduce((sum, c) => sum + (c.actualRevenue || 0), 0);
+        const totalValue = allContracts.reduce((sum, c) => sum + (c.value || 0), 0);
+
+        // --- Construct Text ---
+        let report = `=== BÁO CÁO QUẢN TRỊ THÔNG MINH (Cập nhật: ${new Date().toLocaleString('vi-VN')}) ===\n\n`;
+
+        report += `1. TỔNG QUAN TOÀN CÔNG TY:\n`;
+        report += `- Tổng doanh thu thực tế: ${formatCurrency(totalRevenue)}\n`;
+        report += `- Tổng giá trị ký kết: ${formatCurrency(totalValue)}\n`;
+        report += `- Tổng số hợp đồng: ${allContracts.length}\n`;
+        report += `- Dòng tiền đã về: ${formatCurrency(paymentsStats.paidAmount)}\n`;
+        report += `- Công nợ hiện tại: ${formatCurrency(paymentsStats.pendingAmount)}\n\n`;
+
+        report += `2. TOP 5 ĐƠN VỊ XUẤT SẮC NHẤT (DOANH THU):\n`;
+        topUnits.forEach((u, idx) => {
+            report += `   ${idx + 1}. ${u.name}: ${formatCurrency(u.revenue)} (SL: ${u.count} HĐ)\n`;
+        });
+        report += `\n`;
+
+        report += `3. TOP 5 NHÂN SỰ XUẤT SẮC NHẤT:\n`;
+        topSales.forEach((p, idx) => {
+            report += `   ${idx + 1}. ${p.name}: ${formatCurrency(p.revenue)}\n`;
+        });
+        report += `\n`;
+
+        report += `4. HƯỚNG DẪN TRẢ LỜI:\n`;
+        report += `- Khi người dùng hỏi "Ai làm việc hiệu quả nhất?", hãy dùng dữ liệu Top Nhân Sự.\n`;
+        report += `- Khi người dùng hỏi "Phòng ban nào doanh thu cao nhất?", hãy dùng dữ liệu Top Đơn Vị.\n`;
+        report += `- Dữ liệu trên LÀ CHÍNH XÁC VÀ TUYỆT ĐỐI. Không được tự bịa đặt số liệu.\n`;
+        report += `- Nếu hỏi về đơn vị không có trong Top 5, hãy nói "Hiện tại đơn vị này chưa lọt vào Top 5 doanh thu, vui lòng xem chi tiết trên Dashboard".\n`;
+
+        return report;
+
     } catch (error) {
-        console.error("Context Fetch Error", error);
-        return "⚠️ (Không thể tải dữ liệu hệ thống lúc này)";
+        console.error("Context Advanced Fetch Error", error);
+        return "⚠️ (Hệ thống dữ liệu đang cập nhật, vui lòng hỏi lại sau ít phút)";
     }
 };
