@@ -328,7 +328,7 @@ const App: React.FC = () => {
   };
 
   const mainMarginClass = isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64';
-  const contentMaxWidthClass = isSidebarCollapsed ? 'max-w-[1600px]' : 'max-w-[1400px]';
+  const contentMaxWidthClass = isSidebarCollapsed ? 'max-w-[1920px]' : 'max-w-[1600px]';
 
   if (isLoadingSession) {
     return <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-400">Loading...</div>;
