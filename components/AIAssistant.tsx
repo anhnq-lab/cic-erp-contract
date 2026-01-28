@@ -93,6 +93,17 @@ const AIAssistant: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
+  import { getBusinessContext } from '../services/contextService';
+  // ... imports
+
+  // ... inside component
+  const [systemContext, setSystemContext] = useState<string>('');
+
+  useEffect(() => {
+    // Pre-fetch business context specifically for AI
+    getBusinessContext().then(ctx => setSystemContext(ctx));
+  }, []);
+
   const handleSend = async () => {
     if (!input.trim() || isTyping) return;
 
@@ -103,32 +114,32 @@ const AIAssistant: React.FC = () => {
       timestamp: new Date()
     };
 
-    setMessages(prev => [...prev, userMsg]);
-    setInput('');
-    setIsTyping(true);
-
-    const botMsgId = (Date.now() + 1).toString();
-    const botMsg: Message = {
-      id: botMsgId,
-      role: 'model',
-      content: '',
-      isStreaming: true,
-      timestamp: new Date()
-    };
+    // ... (rest of message setup)
 
     setMessages(prev => [...prev, botMsg]);
 
     try {
-      // Prepare history for API
+      // Prepare history
       const history = messages.map(m => ({
         role: m.role,
         content: m.content
       }));
 
+      // COMPOSE SYSTEM PROMPT WITH CONTEXT
+      // If the agent is 'general' or 'analyst', we inject the financial data.
+      // Other agents might not need it as much, but 'general' definitely does.
+      let finalPrompt = AGENTS[currentAgent].prompt;
+
+      if (['general', 'analyst', 'legal'].includes(currentAgent)) {
+        finalPrompt = `${systemContext}\n\n${finalPrompt}`;
+      }
+
       // Pass the selected agent's prompt as system instruction AND selected model
-      const stream = streamEnterpriseAI(history, userMsg.content, currentModel, AGENTS[currentAgent].prompt);
+      const stream = streamEnterpriseAI(history, userMsg.content, currentModel, finalPrompt);
 
       let fullContent = '';
+
+      // ... (rest of generic loop)
 
       for await (const chunk of stream) {
         fullContent += chunk;
