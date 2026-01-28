@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Toaster, toast } from 'sonner';
 import DataSeeder from './components/admin/DataSeeder';
+import PilotRunner from './components/admin/PilotRunner';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
@@ -306,6 +307,11 @@ const App: React.FC = () => {
               <div className="pb-6 border-b border-slate-100 dark:border-slate-800">
                 <p className="font-bold text-slate-800 dark:text-slate-200 text-sm mb-4">Dữ liệu & Hệ thống</p>
                 <DataSeeder />
+              </div>
+
+              <div className="pb-6 border-b border-slate-100 dark:border-slate-800">
+                <p className="font-bold text-slate-800 dark:text-slate-200 text-sm mb-4">Kiểm thử Hệ thống (Testing)</p>
+                <PilotRunner />
               </div>
             </div>
           </div>
