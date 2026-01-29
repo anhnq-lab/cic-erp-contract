@@ -70,4 +70,44 @@ export const UnitService = {
         if (error) throw error;
         return true;
     },
+
+    getStats: async (id: string): Promise<any> => {
+        try {
+            const { data, error } = await supabase.rpc('get_kpi_stats', {
+                p_entity_id: id,
+                p_type: 'unit',
+                p_year: new Date().getFullYear()
+            });
+
+            if (error) {
+                console.error('Error fetching unit KPI:', error);
+                return {
+                    contractCount: 0,
+                    totalSigning: 0,
+                    totalRevenue: 0,
+                    signingProgress: 0,
+                    revenueProgress: 0
+                };
+            }
+
+            return {
+                contractCount: data.contractCount || 0,
+                totalSigning: data.totalSigning || 0,
+                totalRevenue: data.totalRevenue || 0,
+                // Progress handled by UI or calculated here if we fetch target too. 
+                // For consistency with EmployeeService, we return raw values.
+                signingProgress: 0,
+                revenueProgress: 0
+            };
+        } catch (error) {
+            console.error('Error in getStats:', error);
+            return {
+                contractCount: 0,
+                totalSigning: 0,
+                totalRevenue: 0,
+                signingProgress: 0,
+                revenueProgress: 0
+            };
+        }
+    }
 };
