@@ -250,58 +250,81 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                 </div>
             </div>
 
-            {/* Financial Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-slate-50 dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700">
-                    <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Doanh thu dự kiến</p>
-                    {isEditing ? (
-                        <input
-                            type="number"
-                            className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-lg font-bold"
-                            value={financials.revenue}
-                            onChange={e => setFinancials({ ...financials, revenue: Number(e.target.value) })}
-                        />
-                    ) : (
-                        <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                            {financials.revenue.toLocaleString('vi-VN')} ₫
-                        </p>
-                    )}
+            {/* 2. BUSINESS PLAN DETAILS (Moved from Overview) */}
+            <div className="mb-8">
+                {/* 2.1 Products Table */}
+                <div className="mb-8 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+                    <table className="w-full text-left text-xs min-w-[800px]">
+                        <thead className="bg-slate-50 dark:bg-slate-800/50">
+                            <tr>
+                                <th className="px-4 py-3 font-black text-slate-400 uppercase tracking-tighter">Sản phẩm/Dịch vụ</th>
+                                <th className="px-2 py-3 font-black text-slate-400 uppercase tracking-tighter text-center">SL</th>
+                                <th className="px-4 py-3 font-black text-slate-400 uppercase tracking-tighter text-right">Giá Đầu vào</th>
+                                <th className="px-4 py-3 font-black text-slate-400 uppercase tracking-tighter text-right">Giá Đầu ra</th>
+                                <th className="px-4 py-3 font-black text-slate-400 uppercase tracking-tighter text-right">CP Trực tiếp</th>
+                                <th className="px-4 py-3 font-black text-slate-400 uppercase tracking-tighter text-right">Chênh lệch</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                            {contract.lineItems?.map((item, idx) => {
+                                const inputTotal = item.quantity * item.inputPrice;
+                                const outputTotal = item.quantity * item.outputPrice;
+                                const margin = outputTotal - inputTotal - (item.directCosts || 0);
+
+                                return (
+                                    <tr key={idx} className="group hover:bg-slate-50 dark:hover:bg-slate-800/20">
+                                        <td className="px-4 py-3 font-bold text-slate-700 dark:text-slate-200">{item.name}</td>
+                                        <td className="px-2 py-3 text-center">{item.quantity}</td>
+                                        <td className="px-4 py-3 text-right text-slate-500">{new Intl.NumberFormat('vi-VN').format(item.inputPrice)}</td>
+                                        <td className="px-4 py-3 text-right font-bold text-indigo-600">{new Intl.NumberFormat('vi-VN').format(item.outputPrice)}</td>
+                                        <td className="px-4 py-3 text-right text-rose-500 font-bold align-top">
+                                            <div className={`border-b border-dashed ${item.directCostDetails?.length ? 'border-rose-300/50 cursor-help' : 'border-transparent'} w-fit ml-auto pb-0.5`} title="Chi tiết phí trực tiếp">
+                                                {new Intl.NumberFormat('vi-VN').format(item.directCosts || 0)}
+                                            </div>
+                                        </td>
+                                        <td className={`px-4 py-3 text-right font-black ${margin >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                            {new Intl.NumberFormat('vi-VN').format(margin)}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                            {/* Totals Row */}
+                            <tr className="bg-slate-50 dark:bg-slate-800/50 font-black text-slate-800 dark:text-slate-200 border-t-2 border-slate-100 dark:border-slate-700">
+                                <td className="px-4 py-3" colSpan={2}>TỔNG CỘNG</td>
+                                <td className="px-4 py-3 text-right text-slate-500">{new Intl.NumberFormat('vi-VN').format(financials.costs - (contract.adminCosts ? Object.values(contract.adminCosts).reduce((a: any, b: any) => a + b, 0) : 0))}</td>
+                                {/* Note: approximate logic for input total, relying on passed financials or contract details in full impl */}
+                                <td className="px-4 py-3 text-right text-indigo-600">{new Intl.NumberFormat('vi-VN').format(financials.revenue)}</td>
+                                <td className="px-4 py-3 text-right text-rose-500">
+                                    {/* Calculated Direct Costs from items */}
+                                    {new Intl.NumberFormat('vi-VN').format(contract.lineItems?.reduce((acc, item) => acc + (item.directCosts || 0), 0) || 0)}
+                                </td>
+                                <td className={`px-4 py-3 text-right ${financials.grossProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                    {new Intl.NumberFormat('vi-VN').format(financials.grossProfit)}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                <div className="bg-slate-50 dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700">
-                    <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Tổng chi phí</p>
-                    {isEditing ? (
-                        <input
-                            type="number"
-                            className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-lg font-bold"
-                            value={financials.costs}
-                            onChange={e => setFinancials({ ...financials, costs: Number(e.target.value) })}
-                        />
-                    ) : (
-                        <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                            {financials.costs.toLocaleString('vi-VN')} ₫
-                        </p>
-                    )}
-                </div>
-
-                <div className={`p-5 rounded-2xl border ${financials.margin >= 30
-                    ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'
-                    : 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800'
-                    }`}>
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${financials.margin >= 30 ? 'text-green-600' : 'text-amber-600'
-                                }`}>Lợi nhuận gộp</p>
-                            <p className={`text-2xl font-bold ${financials.margin >= 30 ? 'text-green-700' : 'text-amber-700'
-                                }`}>
-                                {financials.grossProfit.toLocaleString('vi-VN')} ₫
+                {/* 2.2 Admin Costs */}
+                <h4 className="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    Chi phí Quản lý Hợp đồng
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    {[
+                        { key: 'transferFee', label: 'Phí chuyển tiền' },
+                        { key: 'contractorTax', label: 'Thuế nhà thầu' },
+                        { key: 'importFee', label: 'Logistics/NK' },
+                        { key: 'expertHiring', label: 'Thuê chuyên gia' },
+                        { key: 'documentProcessing', label: 'Xử lý chứng từ' }
+                    ].map(item => (
+                        <div key={item.key} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                            <p className="text-[10px] text-slate-400 font-bold uppercase truncate" title={item.label}>{item.label}</p>
+                            <p className="text-sm font-black text-rose-500 mt-1">
+                                {new Intl.NumberFormat('vi-VN').format((contract.adminCosts as any)?.[item.key] || 0)}
                             </p>
                         </div>
-                        <div className={`text-lg font-bold px-3 py-1 rounded-lg ${financials.margin >= 30 ? 'bg-green-200 text-green-800' : 'bg-amber-200 text-amber-800'
-                            }`}>
-                            {financials.margin.toFixed(1)}%
-                        </div>
-                    </div>
+                    ))}
                 </div>
             </div>
 
