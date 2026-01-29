@@ -219,6 +219,18 @@ export const ContractService = {
         return data.map(mapContract);
     },
 
+    getByEmployeeId: async (employeeId: string): Promise<Contract[]> => {
+        // Handle migration period where column might be salesperson_id or employee_id
+        // Try precise match first
+        const { data, error } = await supabase
+            .from('contracts')
+            .select('*')
+            .or(`salesperson_id.eq.${employeeId},employee_id.eq.${employeeId}`);
+
+        if (error) throw error;
+        return data.map(mapContract);
+    },
+
     create: async (data: Contract): Promise<Contract> => {
         const payload = {
             id: data.id,

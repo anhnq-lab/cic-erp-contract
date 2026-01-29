@@ -79,7 +79,7 @@ export const EmployeeService = {
         // Map frontend back to DB
         const dbPayload = {
             name: payload.name,
-            unit_id: payload.unitId,
+            unit_id: payload.unitId || null,
             email: payload.email,
             phone: payload.phone,
             position: payload.position,
@@ -97,7 +97,7 @@ export const EmployeeService = {
     update: async (id: string, payload: Partial<Employee>): Promise<Employee> => {
         const dbPayload: any = { ...payload };
         // Map keys if necessary, simplistic mapping for now
-        if (payload.unitId) dbPayload.unit_id = payload.unitId;
+        if (payload.unitId !== undefined) dbPayload.unit_id = payload.unitId || null;
         if (payload.roleCode) dbPayload.role_code = payload.roleCode;
         if (payload.dateJoined) dbPayload.date_joined = payload.dateJoined;
 

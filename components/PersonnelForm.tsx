@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Save, Loader2, Upload, X } from 'lucide-react';
+import { Save, Loader2, Upload, X, User, Target } from 'lucide-react';
 import { EmployeeService, UnitService } from '../services';
 import { Employee, KPIPlan, Unit } from '../types';
 import { supabase } from '../lib/supabase';
@@ -333,5 +333,3 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, initialD
 };
 
 export default PersonnelForm;
-// Check for User import from lucide-react if missed
-import { User } from 'lucide-react';
