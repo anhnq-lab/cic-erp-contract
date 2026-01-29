@@ -104,13 +104,14 @@ export const EmployeeService = {
     },
 
     getStats: async (id: string): Promise<any> => {
-        // Implement actual stats calculation from contracts/payments if needed.
-        // For now returning mock/placeholder to match previous interface expectation.
+        // Mock stats matching PersonnelStats interface
+        // REAL IMPLEMENTATION: Fetch calc from contracts
         return {
-            totalContracts: 0,
-            totalValue: 0,
+            contractCount: 0,
+            totalSigning: 0,
             totalRevenue: 0,
-            activeContracts: 0
+            signingProgress: 0,
+            revenueProgress: 0
         };
     }
 };
