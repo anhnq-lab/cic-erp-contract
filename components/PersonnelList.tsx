@@ -70,8 +70,13 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
 
                 // Fetch stats for visible personnel
                 const statsPromises = res.data.map(async p => {
-                    const stats = await EmployeeService.getStats(p.id);
-                    return { id: p.id, stats };
+                    try {
+                        const stats = await EmployeeService.getStats(p.id);
+                        return { id: p.id, stats };
+                    } catch (e) {
+                        console.warn(`Failed to fetch stats for ${p.id}`, e);
+                        return { id: p.id, stats: { contractCount: 0, totalSigning: 0, totalRevenue: 0, signingProgress: 0, revenueProgress: 0 } };
+                    }
                 });
                 const statsResults = await Promise.all(statsPromises);
 
