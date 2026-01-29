@@ -139,8 +139,8 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
         if (action === 'Submit') nextStatus = 'Pending_Unit';
         if (action === 'Approve') {
             if (plan.status === 'Pending_Unit') nextStatus = 'Pending_Finance';
-            else if (plan.status === 'Pending_Finance') nextStatus = 'Approved';
-            // Simplified workflow for demo
+            else if (plan.status === 'Pending_Finance') nextStatus = 'Pending_Board';
+            else if (plan.status === 'Pending_Board') nextStatus = 'Approved';
         }
         if (action === 'Reject') nextStatus = 'Rejected';
 
@@ -157,9 +157,21 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
 
     if (isLoading) return <div className="p-8 text-center text-slate-500">Đang tải phương án kinh doanh...</div>;
 
-    const canEdit = !plan || plan.status === 'Draft' || plan.status === 'Rejected';
-    const canApprove = (profile?.role === 'UnitLeader' && plan?.status === 'Pending_Unit') ||
-        (profile?.role === 'Leadership' && plan?.status !== 'Draft'); // simplified
+    // RBAC Logic
+    const canEdit = (!plan || plan.status === 'Draft' || plan.status === 'Rejected') &&
+        (profile?.role === 'NVKD' || profile?.role === 'UnitLeader' || profile?.role === 'Leadership');
+
+    const canSubmit = plan?.status === 'Draft' &&
+        (profile?.role === 'NVKD' || profile?.role === 'UnitLeader' || profile?.role === 'Leadership');
+
+    const canApproveUnit = plan?.status === 'Pending_Unit' &&
+        (profile?.role === 'UnitLeader' || profile?.role === 'Leadership');
+
+    const canApproveFinance = plan?.status === 'Pending_Finance' &&
+        (profile?.role === 'Accountant' || profile?.role === 'ChiefAccountant' || profile?.role === 'Leadership');
+
+    const canApproveBoard = plan?.status === 'Pending_Board' &&
+        (profile?.role === 'Leadership');
 
     return (
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -181,11 +193,14 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                 </div>
 
                 <div className="flex gap-2">
+                    {/* EDIT ACTION */}
                     {canEdit && !isEditing && (
                         <button onClick={() => setIsEditing(true)} className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-100 font-medium text-sm">
                             {plan ? 'Chỉnh sửa' : 'Lập PAKD'}
                         </button>
                     )}
+
+                    {/* EDIT MODE ACTIONS */}
                     {isEditing && (
                         <div className="flex gap-2">
                             <button onClick={() => setIsEditing(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-xl text-sm font-medium">Hủy</button>
@@ -193,17 +208,42 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                         </div>
                     )}
 
-                    {!isEditing && plan?.status === 'Draft' && (
+                    {/* SUBMIT ACTION (Draft -> Pending_Unit) */}
+                    {!isEditing && canSubmit && (
                         <button onClick={() => handleAction('Submit')} className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-medium text-sm flex items-center gap-2">
                             <Send size={16} /> Gửi duyệt
                         </button>
                     )}
 
-                    {canApprove && (
-                        <div className="flex gap-2">
-                            <button onClick={() => handleAction('Reject')} className="px-4 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 font-medium text-sm">Từ chối</button>
-                            <button onClick={() => handleAction('Approve')} className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 font-medium text-sm flex items-center gap-2">
-                                <Check size={16} /> Phê duyệt
+                    {/* UNIT APPROVAL (Pending_Unit -> Pending_Finance) */}
+                    {canApproveUnit && (
+                        <div className="flex gap-2 items-center bg-amber-50 rounded-xl p-1 pr-2">
+                            <span className="text-[10px] font-bold text-amber-600 uppercase ml-2 mr-2">Duyệt Đơn vị</span>
+                            <button onClick={() => handleAction('Reject')} className="px-3 py-1.5 bg-white text-rose-600 rounded-lg hover:bg-rose-50 font-bold text-xs shadow-sm border border-slate-200">Từ chối</button>
+                            <button onClick={() => handleAction('Approve')} className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold text-xs shadow-sm flex items-center gap-1">
+                                <Check size={12} /> Duyệt
+                            </button>
+                        </div>
+                    )}
+
+                    {/* FINANCE APPROVAL (Pending_Finance -> Pending_Board/Approved) */}
+                    {canApproveFinance && (
+                        <div className="flex gap-2 items-center bg-indigo-50 rounded-xl p-1 pr-2">
+                            <span className="text-[10px] font-bold text-indigo-600 uppercase ml-2 mr-2">Duyệt Tài chính</span>
+                            <button onClick={() => handleAction('Reject')} className="px-3 py-1.5 bg-white text-rose-600 rounded-lg hover:bg-rose-50 font-bold text-xs shadow-sm border border-slate-200">Từ chối</button>
+                            <button onClick={() => handleAction('Approve')} className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold text-xs shadow-sm flex items-center gap-1">
+                                <Check size={12} /> Duyệt
+                            </button>
+                        </div>
+                    )}
+
+                    {/* BOARD APPROVAL (Pending_Board -> Approved) */}
+                    {canApproveBoard && (
+                        <div className="flex gap-2 items-center bg-purple-50 rounded-xl p-1 pr-2">
+                            <span className="text-[10px] font-bold text-purple-600 uppercase ml-2 mr-2">Duyệt Lãnh đạo</span>
+                            <button onClick={() => handleAction('Reject')} className="px-3 py-1.5 bg-white text-rose-600 rounded-lg hover:bg-rose-50 font-bold text-xs shadow-sm border border-slate-200">Từ chối</button>
+                            <button onClick={() => handleAction('Approve')} className="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold text-xs shadow-sm flex items-center gap-1">
+                                <Check size={12} /> Phê duyệt
                             </button>
                         </div>
                     )}
