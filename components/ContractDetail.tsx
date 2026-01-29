@@ -33,7 +33,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { Contract, Unit, Milestone, PaymentPhase, AdministrativeCosts, ContractDocument } from '../types';
-import { ContractService, UnitService, SalesPersonService, CustomerService, DocumentService, WorkflowService } from '../services';
+import { ContractService, UnitService, EmployeeService, CustomerService, DocumentService, WorkflowService } from '../services';
 import { analyzeContractWithDeepSeek } from '../services/openaiService';
 import Tooltip from './ui/Tooltip';
 import ContractBusinessPlanTab from './ContractBusinessPlanTab';
@@ -101,10 +101,10 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
           }
         }
 
-        // Salesperson
-        if (contract.salespersonId) {
-          const s = await SalesPersonService.getById(contract.salespersonId);
-          setSalesName(s?.name || 'Unknown');
+        // Employee
+        if (contract.employeeId) {
+          const emp = await EmployeeService.getById(contract.employeeId);
+          setSalesName(emp?.name || 'Unknown');
         }
 
         // Customer

@@ -55,7 +55,7 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
             const [personData, statsData, contractsData] = await Promise.all([
                 EmployeeService.getById(personnelId),
                 EmployeeService.getStats(personnelId),
-                ContractService.getBySalespersonId(personnelId),
+                ContractService.getByEmployeeId(personnelId),
             ]);
 
             if (personData) {
@@ -76,10 +76,10 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
         fetchData();
     }, [personnelId]);
 
-    const handleEditSave = async (data: Omit<SalesPerson, 'id'> | SalesPerson) => {
+    const handleEditSave = async (data: Omit<Employee, 'id'> | Employee) => {
         try {
             if (person) {
-                await SalesPersonService.update(person.id, data);
+                await EmployeeService.update(person.id, data);
             }
             setIsEditing(false);
             fetchData(); // Reload data

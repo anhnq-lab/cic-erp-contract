@@ -1,12 +1,12 @@
 import { supabase } from '../lib/supabase';
-import { UnitService, SalesPersonService, PaymentService } from './index';
+import { UnitService, EmployeeService, PaymentService } from './index';
 
 export const getBusinessContext = async (): Promise<string> => {
     try {
         // Parallel fetch: Units, People, Payments Stats, and Lightweight Contracts
         const [units, people, paymentsStats, contractRes] = await Promise.all([
             UnitService.getAll(),
-            SalesPersonService.getAll(),
+            EmployeeService.getAll(),
             PaymentService.getStats({}),
             supabase.from('contracts').select('id, unit_id, salesperson_id, value, actual_revenue, status')
         ]);
@@ -41,7 +41,7 @@ export const getBusinessContext = async (): Promise<string> => {
         const personStats: Record<string, { revenue: number; value: number; count: number }> = {};
 
         allContracts.forEach((c: any) => {
-            const pId = c.salesperson_id; // DB column name
+            const pId = c.employee_id; // DB column name
             if (pId && personMap.has(pId)) {
                 if (!personStats[pId]) personStats[pId] = { revenue: 0, value: 0, count: 0 };
                 personStats[pId].revenue += c.actual_revenue || 0;

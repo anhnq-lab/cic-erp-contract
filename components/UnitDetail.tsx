@@ -43,7 +43,7 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
                 // Parallel fetch related data with server-side filtering
                 const [contractsData, staffData] = await Promise.all([
                     ContractService.list({ unitId: unitId, limit: 1000, page: 1 }), // Ensure we get enough
-                    SalesPersonService.list({ unitId: unitId }) // Assuming list supports filtering or we use getAll and filter if list not robust yet.
+                    EmployeeService.list({ unitId: unitId }) // Assuming list supports filtering or we use getAll and filter if list not robust yet.
                     // Checking SalesPersonService: created in step 85. It has list method.
                 ]);
 

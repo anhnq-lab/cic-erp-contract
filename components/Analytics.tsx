@@ -6,8 +6,8 @@ import {
     AreaChart, Area, ComposedChart, Line
 } from 'recharts';
 import { Calendar, ChevronDown, Building2, Filter, Download, PieChart as PieChartIcon } from 'lucide-react';
-import { ContractService, UnitService, SalesPersonService, PaymentService } from '../services';
-import { Unit, Contract, Payment, SalesPerson } from '../types';
+import { ContractService, UnitService, EmployeeService, PaymentService } from '../services';
+import { Unit, Contract, Payment, Employee } from '../types';
 import { toast } from 'sonner';
 
 interface AnalyticsProps {
@@ -24,22 +24,22 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
 
     const [contracts, setContracts] = useState<Contract[]>([]);
     const [units, setUnits] = useState<Unit[]>([]);
-    const [salespeople, setSalespeople] = useState<SalesPerson[]>([]);
+    const [employees, setEmployees] = useState<Employee[]>([]);
     const [payments, setPayments] = useState<Payment[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                const [c, u, p, payRes] = await Promise.all([
+                const [c, u, e, payRes] = await Promise.all([
                     ContractService.getAll(),
                     UnitService.getAll(),
-                    SalesPersonService.getAll(),
+                    EmployeeService.getAll(),
                     PaymentService.list({ page: 1, limit: 10000 })
                 ]);
                 setContracts(c);
                 setUnits(u);
-                setSalespeople(p);
+                setEmployees(e);
                 setPayments(payRes.data);
             } catch (error) {
                 toast.error("Lỗi tải dữ liệu thống kê");
@@ -75,19 +75,19 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                     .reduce((sum, c) => sum + (c.actualRevenue || 0), 0)
             })).filter(d => d.value > 0);
         } else {
-            // If unit selected, break down by Salesperson
-            return salespeople
-                .filter(s => s.unitId === selectedUnit.id)
-                .map(s => ({
-                    name: s.name,
+            // If unit selected, break down by Employee
+            return employees
+                .filter(e => e.unitId === selectedUnit.id)
+                .map(e => ({
+                    name: e.name,
                     value: filteredContracts
-                        .filter(c => c.salespersonId === s.id)
+                        .filter(c => c.employeeId === e.id)
                         .reduce((sum, c) => sum + (c.actualRevenue || 0), 0)
                 }))
                 .filter(d => d.value > 0)
                 .sort((a, b) => b.value - a.value);
         }
-    }, [units, contracts, selectedUnit, yearFilter, salespeople, filteredContracts]);
+    }, [units, contracts, selectedUnit, yearFilter, employees, filteredContracts]);
 
     // 2. Plan vs Actual Bar Chart
     const planVsActualData = useMemo(() => {
