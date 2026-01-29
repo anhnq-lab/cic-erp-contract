@@ -2,20 +2,29 @@ import { supabase } from '../lib/supabase';
 import { Employee } from '../types';
 
 // Helper to map DB Employee to Frontend Employee
-const mapEmployee = (s: any): Employee => ({
-    id: s.id,
-    name: s.name,
-    unitId: s.unit_id,
-    employeeCode: s.employee_code,
-    email: s.email,
-    phone: s.phone,
-    position: s.position,
-    department: s.department,
-    roleCode: s.role_code,
-    dateJoined: s.date_joined,
-    avatar: s.avatar,
-    target: s.target || { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 }
-});
+const mapEmployee = (s: any): Employee => {
+    if (!s) return {
+        id: 'unknown',
+        name: 'Unknown',
+        unitId: '',
+        target: { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 }
+    } as Employee;
+
+    return {
+        id: s.id || 'unknown',
+        name: s.name || 'Unknown',
+        unitId: s.unit_id || '',
+        employeeCode: s.employee_code || '',
+        email: s.email || '',
+        phone: s.phone || '',
+        position: s.position || '',
+        department: s.department || '',
+        roleCode: s.role_code || '',
+        dateJoined: s.date_joined || '',
+        avatar: s.avatar || '',
+        target: s.target || { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 }
+    };
+};
 
 export const EmployeeService = {
     getAll: async (): Promise<Employee[]> => {

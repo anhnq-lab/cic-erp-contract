@@ -2,37 +2,48 @@ import { supabase } from '../lib/supabase';
 import { Contract } from '../types';
 
 // Helper to map DB Contract to Frontend Contract
-const mapContract = (c: any): Contract => ({
-    id: c.id,
-    title: c.title,
-    contractType: c.contract_type,
-    partyA: c.party_a,
-    partyB: c.party_b,
-    clientInitials: c.client_initials,
-    customerId: c.customer_id,
-    unitId: c.unit_id,
-    coordinatingUnitId: c.coordinating_unit_id,
-    salespersonId: c.salesperson_id,
-    value: c.value || 0,
-    estimatedCost: c.estimated_cost || 0,
-    actualRevenue: c.actual_revenue || 0,
-    invoicedAmount: c.invoiced_amount || 0,
-    actualCost: c.actual_cost || 0,
-    status: c.status || 'Pending',
-    stage: c.stage || 'Signed',
-    category: c.category || 'Mới',
-    signedDate: c.signed_date,
-    startDate: c.start_date,
-    endDate: c.end_date,
-    content: c.content,
-    contacts: c.contacts || [],
-    milestones: c.milestones || [],
-    paymentPhases: c.payment_phases || [],
-    // Map details from JSONB
-    lineItems: c.details?.lineItems || [],
-    adminCosts: c.details?.adminCosts || undefined,
-    documents: c.documents || [] // Explicit map if needed, or joined
-});
+const mapContract = (c: any): Contract => {
+    if (!c) return {
+        id: 'unknown',
+        title: 'Unknown Contract',
+        contractType: 'HĐ',
+        status: 'Pending',
+        stage: 'Signed',
+        value: 0
+    } as any; // Partial fallback
+
+    return {
+        id: c.id || 'unknown',
+        title: c.title || 'Untitled',
+        contractType: c.contract_type || 'HĐ',
+        partyA: c.party_a || '',
+        partyB: c.party_b || '',
+        clientInitials: c.client_initials || '',
+        customerId: c.customer_id || '',
+        unitId: c.unit_id || '',
+        coordinatingUnitId: c.coordinating_unit_id || undefined,
+        salespersonId: c.salesperson_id || undefined,
+        value: c.value || 0,
+        estimatedCost: c.estimated_cost || 0,
+        actualRevenue: c.actual_revenue || 0,
+        invoicedAmount: c.invoiced_amount || 0,
+        actualCost: c.actual_cost || 0,
+        status: c.status || 'Pending',
+        stage: c.stage || 'Signed',
+        category: c.category || 'Mới',
+        signedDate: c.signed_date || '',
+        startDate: c.start_date || '',
+        endDate: c.end_date || '',
+        content: c.content || '',
+        contacts: c.contacts || [],
+        milestones: c.milestones || [],
+        paymentPhases: c.payment_phases || [],
+        // Map details from JSONB
+        lineItems: c.details?.lineItems || [],
+        adminCosts: c.details?.adminCosts || undefined,
+        documents: c.documents || []
+    };
+};
 
 export const ContractService = {
     getAll: async (): Promise<Contract[]> => {

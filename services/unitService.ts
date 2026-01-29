@@ -2,14 +2,25 @@ import { supabase } from '../lib/supabase';
 import { Unit } from '../types';
 
 // Helper to map DB Unit to Frontend Unit
-const mapUnit = (u: any): Unit => ({
-    id: u.id,
-    name: u.name,
-    type: u.type,
-    code: u.code,
-    target: u.target || { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 },
-    lastYearActual: u.last_year_actual || { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 }
-});
+const mapUnit = (u: any): Unit => {
+    if (!u) return {
+        id: 'unknown',
+        name: 'Unknown',
+        type: 'Center',
+        code: 'UNK',
+        target: { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 },
+        lastYearActual: { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 }
+    } as Unit;
+
+    return {
+        id: u.id || 'unknown',
+        name: u.name || 'Unknown Unit',
+        type: u.type || 'Center',
+        code: u.code || 'UNK',
+        target: u.target || { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 },
+        lastYearActual: u.last_year_actual || { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 }
+    };
+};
 
 export const UnitService = {
     getAll: async (): Promise<Unit[]> => {
