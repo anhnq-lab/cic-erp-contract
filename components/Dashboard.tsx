@@ -280,7 +280,13 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
   };
 
   // Safe Unit for Display
-  const safeUnit = allUnits.find(u => u.id === selectedUnit?.id) || selectedUnit || { id: 'all', name: 'Công ty', type: 'Company' };
+  const safeUnit: Unit = allUnits.find(u => u.id === selectedUnit?.id) || selectedUnit || {
+    id: 'all',
+    name: 'Công ty',
+    type: 'Company',
+    code: 'CIC',
+    target: { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 }
+  };
 
   if (loadingConfig || !selectedUnit) {
     return (
