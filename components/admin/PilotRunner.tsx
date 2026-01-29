@@ -5,9 +5,9 @@ import {
     PaymentService,
     UnitService,
     CustomerService,
-    SalesPersonService
+    EmployeeService
 } from '../../services';
-import { Contract, Payment, SalesPerson } from '../../types';
+import { Contract, Payment, Employee } from '../../types';
 
 const PilotRunner = () => {
     const [logs, setLogs] = useState<string[]>([]);
@@ -53,11 +53,12 @@ const PilotRunner = () => {
             const customer = customers[0];
             log(`- Khách hàng: ${customer.name}`);
 
-            // Get or Create Sales Person
-            let personnel = await SalesPersonService.getAll();
-            if (personnel.length === 0) {
+            // Get or Create Sales Person (Employee)
+            log(`- Đang kiểm tra nhân viên kinh doanh...`);
+            let employees = await EmployeeService.getAll();
+            if (employees.length === 0) {
                 log("- Chưa có nhân viên kinh doanh. Đang tạo mới...");
-                await SalesPersonService.create({
+                await EmployeeService.create({
                     name: "Nguyễn Văn Sale",
                     unitId: unit.id,
                     email: "sale@cic.com.vn",
