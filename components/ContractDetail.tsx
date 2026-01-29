@@ -613,111 +613,114 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                   </div>
                 </div>
               </div>
-
-              {/* SIDEBAR RIGHT */}
-              <div className="space-y-6">
-                <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-6 text-white shadow-xl shadow-indigo-200 dark:shadow-none relative overflow-hidden transition-all">
-                  <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <ShieldCheck size={20} />
-                    <h4 className="font-bold">AI Risk Check</h4>
-                  </div>
-
-                  {!aiAnalysisResult ? (
-                    <div className="space-y-3">
-                      <p className="text-sm text-indigo-100 leading-relaxed">
-                        Sử dụng <b>DeepSeek AI</b> để phân tích rủi ro hợp đồng dựa trên các điều khoản tài chính và tiến độ.
-                      </p>
-                      <button
-                        onClick={handleAnalyzeContract}
-                        disabled={isAnalyzing}
-                        className="w-full mt-2 py-2 bg-white/20 hover:bg-white/30 transition-colors rounded-xl text-xs font-bold backdrop-blur-md border border-white/10 flex items-center justify-center gap-2"
-                      >
-                        {isAnalyzing ? <Loader2 size={14} className="animate-spin" /> : <ShieldAlert size={14} />}
-                        {isAnalyzing ? 'Đang phân tích...' : 'Qét rủi ro ngay'}
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2">
-                      <div className="p-3 bg-white/10 rounded-xl border border-white/10 text-xs text-indigo-50 leading-relaxed overflow-y-auto max-h-[300px]">
-                        <div dangerouslySetInnerHTML={{ __html: aiAnalysisResult.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') }} />
-                      </div>
-                      <button
-                        onClick={() => setAiAnalysisResult(null)}
-                        className="w-full py-2 text-xs font-bold text-indigo-200 hover:text-white transition-colors"
-                      >
-                        Phân tích lại
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h4 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                      <Paperclip size={18} className="text-slate-400" />
-                      Tài liệu hồ sơ
-                    </h4>
-                    <label className="cursor-pointer bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 p-2 rounded-lg transition-colors flex items-center justify-center">
-                      {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-                      <input type="file" className="hidden" onChange={handleUpload} disabled={isUploading} />
-                    </label>
-                  </div>
-                  <div className="space-y-2">
-                    {documents.length === 0 && <p className="text-xs text-slate-400 italic text-center py-4">Chưa có tài liệu nào</p>}
-                    {documents.map((file) => (
-                      <div key={file.id} className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-all cursor-pointer group" onClick={() => handleDownloadDoc(file)}>
-                        <div className="flex items-center gap-3 overflow-hidden">
-                          <div className="p-2 bg-rose-50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 rounded-lg group-hover:bg-rose-100 transition-colors">
-                            <FileText size={16} />
-                          </div>
-                          <div className="overflow-hidden">
-                            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{file.name}</p>
-                            <p className="text-[10px] text-slate-400 dark:text-slate-500">{((file.size || 0) / 1024).toFixed(0)} KB • {new Date(file.uploadedAt).toLocaleDateString('vi-VN')}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button onClick={(e) => handleDeleteDoc(file, e)} className="p-1.5 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100">
-                            <Trash2 size={14} />
-                          </button>
-                          <button className="p-1.5 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg text-slate-300 hover:text-indigo-600 transition-colors">
-                            <Download size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-                  <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-6 flex items-center gap-2">
-                    <HistoryIcon size={18} className="text-slate-400" />
-                    Lịch sử tác động
-                  </h4>
-                  <div className="space-y-6 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100 dark:before:bg-slate-800">
-                    {[
-                      { date: '15/01/2024', event: 'Hợp đồng bắt đầu hiệu lực', status: 'done' },
-                      { date: '10/01/2024', event: 'Đã ký kết (Bên A & Bên B)', status: 'done' },
-                      { date: '05/01/2024', event: 'Phê duyệt nội dung bởi Ban Pháp chế', status: 'done' }
-                    ].map((item, i) => (
-                      <div key={i} className="flex gap-4 relative">
-                        <div className={`w-6 h-6 rounded-full border-4 border-white dark:border-slate-900 z-10 flex-shrink-0 flex items-center justify-center shadow-sm ${item.status === 'done' ? 'bg-indigo-600' : 'bg-slate-200'}`}>
-                          {item.status === 'done' && <ShieldCheck size={10} className="text-white" />}
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-400">{item.date}</p>
-                          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">{item.event}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
+            </>
           )}
-            </div>
         </div>
-      </div >
-      );
+
+        {/* SIDEBAR RIGHT */}
+        {activeTab === 'overview' && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-6 text-white shadow-xl shadow-indigo-200 dark:shadow-none relative overflow-hidden transition-all">
+              <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
+              <div className="flex items-center gap-2 mb-4">
+                <ShieldCheck size={20} />
+                <h4 className="font-bold">AI Risk Check</h4>
+              </div>
+
+              {!aiAnalysisResult ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-indigo-100 leading-relaxed">
+                    Sử dụng <b>DeepSeek AI</b> để phân tích rủi ro hợp đồng dựa trên các điều khoản tài chính và tiến độ.
+                  </p>
+                  <button
+                    onClick={handleAnalyzeContract}
+                    disabled={isAnalyzing}
+                    className="w-full mt-2 py-2 bg-white/20 hover:bg-white/30 transition-colors rounded-xl text-xs font-bold backdrop-blur-md border border-white/10 flex items-center justify-center gap-2"
+                  >
+                    {isAnalyzing ? <Loader2 size={14} className="animate-spin" /> : <ShieldAlert size={14} />}
+                    {isAnalyzing ? 'Đang phân tích...' : 'Qét rủi ro ngay'}
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2">
+                  <div className="p-3 bg-white/10 rounded-xl border border-white/10 text-xs text-indigo-50 leading-relaxed overflow-y-auto max-h-[300px]">
+                    <div dangerouslySetInnerHTML={{ __html: aiAnalysisResult.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') }} />
+                  </div>
+                  <button
+                    onClick={() => setAiAnalysisResult(null)}
+                    className="w-full py-2 text-xs font-bold text-indigo-200 hover:text-white transition-colors"
+                  >
+                    Phân tích lại
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                  <Paperclip size={18} className="text-slate-400" />
+                  Tài liệu hồ sơ
+                </h4>
+                <label className="cursor-pointer bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 p-2 rounded-lg transition-colors flex items-center justify-center">
+                  {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                  <input type="file" className="hidden" onChange={handleUpload} disabled={isUploading} />
+                </label>
+              </div>
+              <div className="space-y-2">
+                {documents.length === 0 && <p className="text-xs text-slate-400 italic text-center py-4">Chưa có tài liệu nào</p>}
+                {documents.map((file) => (
+                  <div key={file.id} className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-all cursor-pointer group" onClick={() => handleDownloadDoc(file)}>
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <div className="p-2 bg-rose-50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 rounded-lg group-hover:bg-rose-100 transition-colors">
+                        <FileText size={16} />
+                      </div>
+                      <div className="overflow-hidden">
+                        <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{file.name}</p>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500">{((file.size || 0) / 1024).toFixed(0)} KB • {new Date(file.uploadedAt).toLocaleDateString('vi-VN')}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button onClick={(e) => handleDeleteDoc(file, e)} className="p-1.5 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100">
+                        <Trash2 size={14} />
+                      </button>
+                      <button className="p-1.5 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg text-slate-300 hover:text-indigo-600 transition-colors">
+                        <Download size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+              <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-6 flex items-center gap-2">
+                <HistoryIcon size={18} className="text-slate-400" />
+                Lịch sử tác động
+              </h4>
+              <div className="space-y-6 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100 dark:before:bg-slate-800">
+                {[
+                  { date: '15/01/2024', event: 'Hợp đồng bắt đầu hiệu lực', status: 'done' },
+                  { date: '10/01/2024', event: 'Đã ký kết (Bên A & Bên B)', status: 'done' },
+                  { date: '05/01/2024', event: 'Phê duyệt nội dung bởi Ban Pháp chế', status: 'done' }
+                ].map((item, i) => (
+                  <div key={i} className="flex gap-4 relative">
+                    <div className={`w-6 h-6 rounded-full border-4 border-white dark:border-slate-900 z-10 flex-shrink-0 flex items-center justify-center shadow-sm ${item.status === 'done' ? 'bg-indigo-600' : 'bg-slate-200'}`}>
+                      {item.status === 'done' && <ShieldCheck size={10} className="text-white" />}
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400">{item.date}</p>
+                      <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">{item.event}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div >
+  );
 };
 
-      export default ContractDetail;
+export default ContractDetail;
