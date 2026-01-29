@@ -68,16 +68,12 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
     const fetchDashboardData = async () => {
       setLoadingConfig(true);
       try {
+        // Safe individual fetching to prevent one failure from crashing everything
         const [contracts, units, people, paymentsRes] = await Promise.all([
-          ContractService.getAll(),
-          UnitService.getAll(),
-          EmployeeService.getAll(),
-          // PaymentService.getAll returns { data, total } usually, let's assume it returns [] or I verify.
-          // In previous steps I used PaymentService.list({}). PaymentService.getAll might not exist or be deprecated.
-          // Let me check PaymentService quickly. Assuming it has getAll based on previous file reviews or similar patterns.
-          // Wait, in PaymentList.tsx I used PaymentService.list. 
-          // I will use list({ page: 1, limit: 10000 }).
-          PaymentService.list({ page: 1, limit: 10000 })
+          ContractService.getAll().catch(e => { console.error('Contracts sync failed', e); return []; }),
+          UnitService.getAll().catch(e => { console.error('Units sync failed', e); return []; }),
+          EmployeeService.getAll().catch(e => { console.error('Employees sync failed', e); return []; }),
+          PaymentService.list({ page: 1, limit: 10000 }).catch(e => { console.error('Payments sync failed', e); return { data: [], total: 0 }; })
         ]);
 
         setAllContracts(contracts);

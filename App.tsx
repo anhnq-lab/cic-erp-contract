@@ -29,6 +29,7 @@ import { Moon, Sun } from 'lucide-react';
 import { Session } from '@supabase/supabase-js';
 import Auth from './components/Auth';
 import { useAuth } from './contexts/AuthContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
