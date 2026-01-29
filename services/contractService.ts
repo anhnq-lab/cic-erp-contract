@@ -197,6 +197,83 @@ export const ContractService = {
         }, { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0 });
     },
 
+    // OPTIMIZED RPC-BASED STATS
+    getStatsRPC: async (unitId: string = 'all', year: string = 'all'): Promise<{
+        totalContracts: number,
+        totalValue: number,
+        totalRevenue: number,
+        totalProfit: number,
+        activeCount: number,
+        pendingCount: number
+    }> => {
+        const { data, error } = await supabase.rpc('get_contract_stats', {
+            p_unit_id: unitId,
+            p_year: year
+        });
+
+        if (error) {
+            console.error('get_contract_stats RPC error:', error);
+            return { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0, activeCount: 0, pendingCount: 0 };
+        }
+
+        if (data && data.length > 0) {
+            return {
+                totalContracts: Number(data[0].total_contracts),
+                totalValue: Number(data[0].total_value),
+                totalRevenue: Number(data[0].total_revenue),
+                totalProfit: Number(data[0].total_profit),
+                activeCount: Number(data[0].active_count),
+                pendingCount: Number(data[0].pending_count)
+            };
+        }
+        return { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0, activeCount: 0, pendingCount: 0 };
+    },
+
+    getPaymentStatsRPC: async (contractId: string): Promise<{
+        totalAmount: number,
+        paidAmount: number,
+        remainingAmount: number,
+        overdueAmount: number
+    }> => {
+        const { data, error } = await supabase.rpc('get_payment_stats', {
+            p_contract_id: contractId
+        });
+
+        if (error) {
+            console.error('get_payment_stats RPC error:', error);
+            return { totalAmount: 0, paidAmount: 0, remainingAmount: 0, overdueAmount: 0 };
+        }
+
+        if (data && data.length > 0) {
+            return {
+                totalAmount: Number(data[0].total_amount),
+                paidAmount: Number(data[0].paid_amount),
+                remainingAmount: Number(data[0].remaining_amount),
+                overdueAmount: Number(data[0].overdue_amount)
+            };
+        }
+        return { totalAmount: 0, paidAmount: 0, remainingAmount: 0, overdueAmount: 0 };
+    },
+
+    getChartDataRPC: async (unitId: string = 'all', year: string = 'all'): Promise<Array<{ month: number, revenue: number, profit: number, signing: number }>> => {
+        const { data, error } = await supabase.rpc('get_dashboard_chart_data', {
+            p_unit_id: unitId,
+            p_year: year
+        });
+
+        if (error) {
+            console.error('get_dashboard_chart_data RPC error:', error);
+            return [];
+        }
+
+        return (data || []).map((d: any) => ({
+            month: Number(d.month),
+            revenue: Number(d.revenue),
+            profit: Number(d.profit),
+            signing: Number(d.signing)
+        }));
+    },
+
     getByUnitId: async (unitId: string): Promise<Contract[]> => {
         let query = supabase.from('contracts').select('*');
         if (unitId !== 'all') {
