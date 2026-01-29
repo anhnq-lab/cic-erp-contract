@@ -328,8 +328,8 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
     { id: 'signing', label: 'Ký kết' },
     { id: 'revenue', label: 'Doanh thu' },
     { id: 'adminProfit', label: 'LNG QT' },
-    { id: 'revProfit', label: 'LNG ĐT' },
-    // { id: 'cash', label: 'Dòng tiền' } // Hidden until RPC fixed
+    { id: 'revProfit', label: 'LNG DT' }, // Lợi nhuận gộp Đầu tư/Điều tiết (theo Doanh thu)
+    { id: 'cash', label: 'Dòng tiền' }
   ];
 
   return (
