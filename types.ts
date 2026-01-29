@@ -11,7 +11,7 @@ export interface KPIPlan {
   cash: number;        // Tiền về thực tế
 }
 
-export interface SalesPerson {
+export interface Employee {
   id: string;
   name: string;
   unitId: string;
@@ -21,6 +21,8 @@ export interface SalesPerson {
   email?: string;
   phone?: string;
   position?: string; // Chức vụ
+  department?: string; // Phòng ban / Khối
+  roleCode?: string; // Mã role hệ thống
   dateJoined?: string; // Ngày vào công ty
   employeeCode?: string; // Mã nhân viên
 }

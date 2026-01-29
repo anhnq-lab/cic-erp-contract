@@ -2,8 +2,8 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 import { Search, Filter, Plus, MoreVertical, ExternalLink, User, Loader2, DollarSign, Briefcase, TrendingUp, Calendar, Building2, ChevronLeft, ChevronRight, Download, Upload, Copy } from 'lucide-react';
-import { ContractService, SalesPersonService, UnitService } from '../services';
-import { ContractStatus, Unit, Contract, SalesPerson } from '../types';
+import { ContractService, EmployeeService, UnitService } from '../services';
+import { ContractStatus, Unit, Contract, Employee } from '../types';
 // import { useDebounce } from '../hooks/useDebounce'; // Inline implementation used instead
 
 // Inline debounce hook if not exists, but better to check. 
@@ -31,7 +31,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
 
   // Data state
   const [contracts, setContracts] = useState<Contract[]>([]);
-  const [salespeople, setSalespeople] = useState<SalesPerson[]>([]);
+  const [salespeople, setSalespeople] = useState<Employee[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState({ totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0 });
@@ -50,7 +50,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
     const fetchLookups = async () => {
       try {
         const [personnelData, unitsData] = await Promise.all([
-          SalesPersonService.getAll(),
+          EmployeeService.getAll(),
           UnitService.getAll()
         ]);
         setSalespeople(personnelData);

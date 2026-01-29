@@ -12,9 +12,9 @@ import {
   Unit, ContractType, LineItem,
   ContractContact, PaymentSchedule,
   RevenueSchedule, AdministrativeCosts,
-  Contract, SalesPerson, Customer, Product, DirectCostDetail
+  Contract, Employee, Customer, Product, DirectCostDetail
 } from '../types';
-import { UnitService, SalesPersonService, CustomerService, ProductService, ContractService } from '../services';
+import { UnitService, CustomerService, ProductService, ContractService, EmployeeService } from '../services';
 import Modal from './ui/Modal';
 
 interface ContractFormProps {
@@ -29,7 +29,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
 
   // Data Options State
   const [units, setUnits] = useState<Unit[]>([]);
-  const [salespeople, setSalespeople] = useState<SalesPerson[]>([]);
+  const [salespeople, setSalespeople] = useState<Employee[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
 
@@ -38,7 +38,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
       try {
         const [unitsData, peopleData, customersRes, productsData] = await Promise.all([
           UnitService.getAll(),
-          SalesPersonService.getAll(),
+          EmployeeService.getAll(),
           CustomerService.getAll({ pageSize: 1000 }), // Ensure we get enough for dropdown
           ProductService.getAll()
         ]);

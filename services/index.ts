@@ -2,7 +2,7 @@ export * from './contractService';
 export * from './productService';
 export * from './unitService';
 export * from './customerService';
-export * from './salesPersonService';
+export * from './employeeService';
 export * from './paymentService';
 export * from './documentService';
 export * from './workflowService';

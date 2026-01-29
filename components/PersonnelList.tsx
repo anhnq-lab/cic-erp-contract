@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Search, User, Target, TrendingUp, Building, ChevronRight, Award, ChevronDown, Loader2, Plus, Pencil, Trash2, MoreVertical } from 'lucide-react';
-import { SalesPersonService, UnitService } from '../services';
-import { Unit, SalesPerson } from '../types';
+import { EmployeeService, UnitService } from '../services';
+import { Employee, Unit } from '../types';
 import PersonnelForm from './PersonnelForm';
 
 interface PersonnelListProps {
@@ -25,7 +25,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
 
     // Data state
     const [units, setUnits] = useState<Unit[]>([]);
-    const [personnel, setPersonnel] = useState<SalesPerson[]>([]);
+    const [personnel, setPersonnel] = useState<Employee[]>([]);
     const [personnelStats, setPersonnelStats] = useState<Record<string, PersonnelStats>>({});
     const [isLoading, setIsLoading] = useState(true);
 
@@ -37,7 +37,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
 
     // CRUD state
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [editingPerson, setEditingPerson] = useState<SalesPerson | undefined>(undefined);
+    const [editingPerson, setEditingPerson] = useState<Employee | undefined>(undefined);
     const [actionMenuId, setActionMenuId] = useState<string | null>(null);
 
     // Filter units
@@ -57,7 +57,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                 }
 
                 // Fetch Personnel (Paginated)
-                const res = await SalesPersonService.list({
+                const res = await EmployeeService.list({
                     unitId: unitFilter,
                     page: currentPage,
                     pageSize,
@@ -70,7 +70,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
 
                 // Fetch stats for visible personnel
                 const statsPromises = res.data.map(async p => {
-                    const stats = await SalesPersonService.getStats(p.id);
+                    const stats = await EmployeeService.getStats(p.id);
                     return { id: p.id, stats };
                 });
                 const statsResults = await Promise.all(statsPromises);
@@ -158,21 +158,21 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
         setIsFormOpen(true);
     };
 
-    const handleEdit = (person: SalesPerson) => {
+    const handleEdit = (person: Employee) => {
         setEditingPerson(person);
         setIsFormOpen(true);
         setActionMenuId(null);
     };
 
-    const handleSave = async (data: Omit<SalesPerson, 'id'> | SalesPerson) => {
+    const handleSave = async (data: Omit<Employee, 'id'> | Employee) => {
         try {
             if ('id' in data) {
-                await SalesPersonService.update(data.id, data);
+                await EmployeeService.update(data.id, data);
             } else {
-                await SalesPersonService.create(data);
+                await EmployeeService.create(data);
             }
             // Refresh List
-            const res = await SalesPersonService.list({
+            const res = await EmployeeService.list({
                 unitId: unitFilter,
                 page: currentPage,
                 pageSize,
@@ -191,9 +191,9 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
     };
 
     const handleDelete = async (id: string) => {
-        if (confirm('Bạn có chắc chắn muốn xóa nhân viên này?')) {
+        if (window.confirm('Bạn có chắc chắn muốn xóa nhân sự này?')) {
             try {
-                await SalesPersonService.delete(id);
+                await EmployeeService.delete(id);
                 setPersonnel(prev => prev.filter(p => p.id !== id));
                 toast.success("Đã xóa nhân viên");
             } catch (error) {

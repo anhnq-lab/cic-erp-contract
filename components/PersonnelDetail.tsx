@@ -19,9 +19,9 @@ import {
     Hash,
     Pencil
 } from 'lucide-react';
-import { SalesPersonService, ContractService, UnitService } from '../services'; // Updated imports
+import { EmployeeService, ContractService, UnitService } from '../services'; // Updated imports
 import PersonnelForm from './PersonnelForm';
-import { SalesPerson, Contract, Unit, UserRole } from '../types';
+import { Employee, Contract, Unit, UserRole } from '../types';
 
 interface PersonnelDetailProps {
     personnelId: string;
@@ -41,7 +41,7 @@ interface PersonnelStats {
 
 const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, onViewContract }) => {
     // State for data
-    const [person, setPerson] = useState<SalesPerson | null>(null);
+    const [person, setPerson] = useState<Employee | null>(null);
     const [unit, setUnit] = useState<Unit | null>(null);
     const [contracts, setContracts] = useState<Contract[]>([]);
     const [stats, setStats] = useState<PersonnelStats | null>(null);
@@ -53,8 +53,8 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
         setIsLoading(true);
         try {
             const [personData, statsData, contractsData] = await Promise.all([
-                SalesPersonService.getById(personnelId),
-                SalesPersonService.getStats(personnelId),
+                EmployeeService.getById(personnelId),
+                EmployeeService.getStats(personnelId),
                 ContractService.getBySalespersonId(personnelId),
             ]);
 

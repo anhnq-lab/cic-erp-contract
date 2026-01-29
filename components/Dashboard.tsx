@@ -37,8 +37,8 @@ import {
   ChevronDown,
   Calendar
 } from 'lucide-react';
-import { ContractService, UnitService, SalesPersonService, PaymentService } from '../services';
-import { Unit, KPIPlan, Contract, SalesPerson, Payment } from '../types';
+import { ContractService, UnitService, EmployeeService, PaymentService } from '../services';
+import { Unit, KPIPlan, Contract, Employee, Payment } from '../types';
 import { getSmartInsightsWithDeepSeek } from '../services/openaiService';
 
 interface DashboardProps {
@@ -61,7 +61,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
   const [loadingConfig, setLoadingConfig] = useState(true);
   const [allContracts, setAllContracts] = useState<Contract[]>([]);
   const [allUnits, setAllUnits] = useState<Unit[]>([]);
-  const [allSalespeople, setAllSalespeople] = useState<SalesPerson[]>([]);
+  const [allSalespeople, setAllSalespeople] = useState<Employee[]>([]);
   const [allPayments, setAllPayments] = useState<Payment[]>([]);
 
   useEffect(() => {
@@ -71,7 +71,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
         const [contracts, units, people, paymentsRes] = await Promise.all([
           ContractService.getAll(),
           UnitService.getAll(),
-          SalesPersonService.getAll(),
+          EmployeeService.getAll(),
           // PaymentService.getAll returns { data, total } usually, let's assume it returns [] or I verify.
           // In previous steps I used PaymentService.list({}). PaymentService.getAll might not exist or be deprecated.
           // Let me check PaymentService quickly. Assuming it has getAll based on previous file reviews or similar patterns.

@@ -9,7 +9,7 @@ import {
   Building2,
   Package
 } from 'lucide-react';
-import { Contract, Unit, ImplementationStage, ContractType, SalesPerson, Customer, Product, ProductCategory, Payment, PaymentStatus, PaymentMethod, UserRole, PlanStatus } from './types';
+import { Contract, Unit, ImplementationStage, ContractType, Employee, Customer, Product, ProductCategory, Payment, PaymentStatus, PaymentMethod, UserRole, PlanStatus } from './types';
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   'NVKD': 'Nhân viên Kinh doanh',
@@ -114,7 +114,7 @@ export const MOCK_UNITS: Unit[] = [
   },
 ];
 
-export const MOCK_SALESPEOPLE: SalesPerson[] = [
+export const MOCK_SALESPEOPLE: Employee[] = [
   // DCS
   { id: 's1', name: 'Nguyễn Văn A', unitId: 'dcs', employeeCode: 'NV001', position: 'Trưởng phòng Kinh doanh', email: 'a.nguyen@cic.com.vn', phone: '0912 345 678', dateJoined: '2020-03-15', target: { signing: 15e9, revenue: 12e9, adminProfit: 4.5e9, revProfit: 3.8e9, cash: 11e9 } },
   { id: 's2', name: 'Trần Thị B', unitId: 'dcs', employeeCode: 'NV002', position: 'Chuyên viên Sales', email: 'b.tran@cic.com.vn', phone: '0923 456 789', dateJoined: '2021-06-01', target: { signing: 12e9, revenue: 10e9, adminProfit: 3.5e9, revProfit: 3e9, cash: 9e9 } },

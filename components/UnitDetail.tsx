@@ -14,8 +14,8 @@ import {
     MapPin,
     Hash
 } from 'lucide-react';
-import { UnitService, ContractService, SalesPersonService } from '../services';
-import { Unit, Contract, SalesPerson } from '../types';
+import { UnitService, EmployeeService, ContractService } from '../services';
+import { Unit, KPIPlan, Employee, Contract } from '../types';
 import UnitForm from './UnitForm';
 
 interface UnitDetailProps {
@@ -28,7 +28,7 @@ interface UnitDetailProps {
 const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract, onViewPersonnel }) => {
     const [unit, setUnit] = useState<Unit | null>(null);
     const [contracts, setContracts] = useState<Contract[]>([]);
-    const [personnel, setPersonnel] = useState<SalesPerson[]>([]);
+    const [staff, setStaff] = useState<Employee[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
 
@@ -41,7 +41,7 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
 
             if (unitData) {
                 // Parallel fetch related data with server-side filtering
-                const [contractsData, personnelData] = await Promise.all([
+                const [contractsData, staffData] = await Promise.all([
                     ContractService.list({ unitId: unitId, limit: 1000, page: 1 }), // Ensure we get enough
                     SalesPersonService.list({ unitId: unitId }) // Assuming list supports filtering or we use getAll and filter if list not robust yet.
                     // Checking SalesPersonService: created in step 85. It has list method.
@@ -53,8 +53,8 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
                 // SalesPersonService.list returns { data, count } usually? Or array?
                 // Let's assume list returns { data } structure based on other services, or check. 
                 // Creating safe fallback if it returns array.
-                const people = Array.isArray(personnelData) ? personnelData : personnelData.data || [];
-                setPersonnel(people);
+                const people = Array.isArray(staffData) ? staffData : staffData.data || [];
+                setStaff(people);
             }
         } catch (error) {
             console.error('Error fetching unit details:', error);
