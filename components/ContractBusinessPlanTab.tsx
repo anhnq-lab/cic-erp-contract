@@ -134,24 +134,72 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
     const handleAction = async (action: 'Submit' | 'Approve' | 'Reject') => {
         if (!plan) return;
 
-        // Simple State Machine
         let nextStatus = plan.status;
-        if (action === 'Submit') nextStatus = 'Pending_Unit';
-        if (action === 'Approve') {
-            if (plan.status === 'Pending_Unit') nextStatus = 'Pending_Finance';
-            else if (plan.status === 'Pending_Finance') nextStatus = 'Pending_Board';
-            else if (plan.status === 'Pending_Board') nextStatus = 'Approved';
+        let reviewRole: 'Unit' | 'Finance' | 'Board' | null = null;
+
+        // 1. Determine Next Status & Review Role
+        if (action === 'Submit') {
+            nextStatus = 'Pending_Unit';
         }
-        if (action === 'Reject') nextStatus = 'Rejected';
+        else if (action === 'Approve') {
+            if (plan.status === 'Pending_Unit') {
+                nextStatus = 'Pending_Finance';
+                reviewRole = 'Unit';
+            }
+            else if (plan.status === 'Pending_Finance') {
+                // AUTO-APPROVE LOGIC
+                // If Margin >= 30%, skip Board and go straight to Approved
+                if (financials.margin >= 30) {
+                    nextStatus = 'Approved';
+                    toast.info("Margin >= 30%: Tự động bỏ qua duyệt Lãnh đạo.");
+                } else {
+                    nextStatus = 'Pending_Board';
+                }
+                reviewRole = 'Finance';
+            }
+            else if (plan.status === 'Pending_Board') {
+                nextStatus = 'Approved';
+                reviewRole = 'Board';
+            }
+        }
+        else if (action === 'Reject') {
+            nextStatus = 'Rejected';
+            // Determine who rejected based on current status
+            if (plan.status === 'Pending_Unit') reviewRole = 'Unit';
+            else if (plan.status === 'Pending_Finance') reviewRole = 'Finance';
+            else if (plan.status === 'Pending_Board') reviewRole = 'Board';
+        }
 
-        const { error } = await supabase.from('contract_business_plans')
-            .update({ status: nextStatus })
-            .eq('id', plan.id);
+        try {
+            // 2. Update Plan Status
+            const { error: updateError } = await supabase.from('contract_business_plans')
+                .update({
+                    status: nextStatus,
+                    approved_by: nextStatus === 'Approved' ? profile?.id : plan.approvedBy,
+                    approved_at: nextStatus === 'Approved' ? new Date().toISOString() : plan.approvedAt
+                })
+                .eq('id', plan.id);
 
-        if (error) toast.error(error.message);
-        else {
+            if (updateError) throw updateError;
+
+            // 3. Insert Audit Log (Review)
+            if (reviewRole) {
+                const { error: reviewError } = await supabase.from('contract_reviews').insert({
+                    contract_id: contract.id,
+                    plan_id: plan.id,
+                    reviewer_id: profile?.id,
+                    role: reviewRole,
+                    action: action,
+                    comment: `${action} at ${new Date().toLocaleTimeString()}` // Placeholder for real comment input
+                });
+                if (reviewError) console.error("Error logging review:", reviewError);
+            }
+
             toast.success(`Đã thực hiện: ${action}`);
             fetchPlan();
+
+        } catch (err: any) {
+            toast.error("Lỗi cập nhật trạng thái: " + err.message);
         }
     };
 
@@ -244,6 +292,18 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                             <button onClick={() => handleAction('Reject')} className="px-3 py-1.5 bg-white text-rose-600 rounded-lg hover:bg-rose-50 font-bold text-xs shadow-sm border border-slate-200">Từ chối</button>
                             <button onClick={() => handleAction('Approve')} className="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold text-xs shadow-sm flex items-center gap-1">
                                 <Check size={12} /> Phê duyệt
+                            </button>
+                        </div>
+                    )}
+
+                    {/* 4. ADJUST ACTUAL COSTS (Allowed for Confirmed Roles even if Approved) */}
+                    {(profile?.role === 'Accountant' || profile?.role === 'ChiefAccountant' || profile?.role === 'Leadership') && (
+                        <div className="ml-2 pl-2 border-l border-slate-200">
+                            <button
+                                onClick={() => toast.info("Tính năng đang phát triển: Mở dialog nhập chi phí thực tế (Cost Adjustments)")}
+                                className="px-3 py-2 bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 font-medium text-xs flex items-center gap-1 border border-emerald-200"
+                            >
+                                <FileText size={14} /> Cập nhật Chi phí
                             </button>
                         </div>
                     )}
