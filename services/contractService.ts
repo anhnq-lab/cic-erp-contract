@@ -22,7 +22,8 @@ const mapContract = (c: any): Contract => {
         customerId: c.customer_id || '',
         unitId: c.unit_id || '',
         coordinatingUnitId: c.coordinating_unit_id || undefined,
-        salespersonId: c.salesperson_id || undefined,
+        // Map from DB 'employee_id' (new) or 'salesperson_id' (legacy)
+        salespersonId: c.employee_id || c.salesperson_id || undefined,
         value: c.value || 0,
         estimatedCost: c.estimated_cost || 0,
         actualRevenue: c.actual_revenue || 0,
