@@ -33,10 +33,11 @@ import {
   Loader2
 } from 'lucide-react';
 import { Contract, Unit, Milestone, PaymentPhase, AdministrativeCosts, ContractDocument } from '../types';
-import { ContractService, UnitService, SalesPersonService, CustomerService, DocumentService } from '../services';
+import { ContractService, UnitService, SalesPersonService, CustomerService, DocumentService, WorkflowService } from '../services';
 import { analyzeContractWithDeepSeek } from '../services/openaiService';
 import Tooltip from './ui/Tooltip';
 import ContractBusinessPlanTab from './ContractBusinessPlanTab';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ContractDetailProps {
   contract?: Contract;
@@ -55,6 +56,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
   const [loading, setLoading] = useState(!initialContract);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'overview' | 'pakd'>('overview');
+  const { canEdit, profile } = useAuth();
 
   // Reference Names State
   const [unitName, setUnitName] = useState('...');
@@ -313,25 +315,29 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
         </div>
         <div className="flex items-center gap-2">
           {/* ... (Keep Action Buttons) ... */}
-          <button
-            onClick={() => {
-              if (window.confirm("Bạn có chắc chắn muốn xóa hợp đồng này không? hành động này không thể hoàn tác.")) {
-                onDelete();
-              }
-            }}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all"
-          >
-            <div className="w-4 h-4"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></svg></div>
-            Xóa
-          </button>
+          {canEdit('contract', contract?.unitId) && (
+            <button
+              onClick={() => {
+                if (window.confirm("Bạn có chắc chắn muốn xóa hợp đồng này không? hành động này không thể hoàn tác.")) {
+                  onDelete();
+                }
+              }}
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all"
+            >
+              <div className="w-4 h-4"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></svg></div>
+              Xóa
+            </button>
+          )}
 
-          <button
-            onClick={() => contract && onEdit(contract)}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
-          >
-            <Edit3 size={16} />
-            Chỉnh sửa
-          </button>
+          {canEdit('contract', contract?.unitId) && (
+            <button
+              onClick={() => contract && onEdit(contract)}
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+            >
+              <Edit3 size={16} />
+              Chỉnh sửa
+            </button>
+          )}
           <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 dark:shadow-none text-sm">
             <Download size={16} />
             Xuất PDF

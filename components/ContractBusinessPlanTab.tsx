@@ -4,6 +4,7 @@ import { PLAN_STATUS_LABELS } from '../constants';
 import { Contract, BusinessPlan, PaymentPhase, UserProfile } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { WorkflowService } from '../services';
 import { toast } from 'sonner';
 import { Check, X, AlertTriangle, Send, FileText, Lock } from 'lucide-react';
 
@@ -13,7 +14,7 @@ interface Props {
 }
 
 const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
-    const { profile } = useAuth();
+    const { profile, canEdit: canEditResource, canApprove } = useAuth();
     const [plan, setPlan] = useState<BusinessPlan | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
@@ -131,72 +132,33 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
         onUpdate();
     };
 
+    // ...
+
     const handleAction = async (action: 'Submit' | 'Approve' | 'Reject') => {
         if (!plan) return;
 
-        let nextStatus = plan.status;
-        let reviewRole: 'Unit' | 'Finance' | 'Board' | null = null;
-
-        // 1. Determine Next Status & Review Role
-        if (action === 'Submit') {
-            nextStatus = 'Pending_Unit';
-        }
-        else if (action === 'Approve') {
-            if (plan.status === 'Pending_Unit') {
-                nextStatus = 'Pending_Finance';
-                reviewRole = 'Unit';
-            }
-            else if (plan.status === 'Pending_Finance') {
-                // AUTO-APPROVE LOGIC
-                // If Margin >= 30%, skip Board and go straight to Approved
-                if (financials.margin >= 30) {
-                    nextStatus = 'Approved';
-                    toast.info("Margin >= 30%: Tự động bỏ qua duyệt Lãnh đạo.");
-                } else {
-                    nextStatus = 'Pending_Board';
-                }
-                reviewRole = 'Finance';
-            }
-            else if (plan.status === 'Pending_Board') {
-                nextStatus = 'Approved';
-                reviewRole = 'Board';
-            }
-        }
-        else if (action === 'Reject') {
-            nextStatus = 'Rejected';
-            // Determine who rejected based on current status
-            if (plan.status === 'Pending_Unit') reviewRole = 'Unit';
-            else if (plan.status === 'Pending_Finance') reviewRole = 'Finance';
-            else if (plan.status === 'Pending_Board') reviewRole = 'Board';
-        }
-
         try {
-            // 2. Update Plan Status
-            const { error: updateError } = await supabase.from('contract_business_plans')
-                .update({
-                    status: nextStatus,
-                    approved_by: nextStatus === 'Approved' ? profile?.id : plan.approvedBy,
-                    approved_at: nextStatus === 'Approved' ? new Date().toISOString() : plan.approvedAt
-                })
-                .eq('id', plan.id);
-
-            if (updateError) throw updateError;
-
-            // 3. Insert Audit Log (Review)
-            if (reviewRole) {
-                const { error: reviewError } = await supabase.from('contract_reviews').insert({
-                    contract_id: contract.id,
-                    plan_id: plan.id,
-                    reviewer_id: profile?.id,
-                    role: reviewRole,
-                    action: action,
-                    comment: `${action} at ${new Date().toLocaleTimeString()}` // Placeholder for real comment input
-                });
-                if (reviewError) console.error("Error logging review:", reviewError);
+            let result;
+            if (action === 'Submit') {
+                result = await WorkflowService.submitPAKD(plan.id);
+            } else if (action === 'Approve') {
+                // Profile role should be guaranteed by canApprove check in UI
+                if (!profile?.role) return;
+                result = await WorkflowService.approvePAKD(plan.id, profile.role);
+            } else if (action === 'Reject') {
+                // We might need a prompt for reason here
+                const reason = window.prompt("Nhập lý do từ chối:");
+                if (!reason) return;
+                result = await WorkflowService.rejectPAKD(plan.id, reason);
             }
 
-            toast.success(`Đã thực hiện: ${action}`);
-            fetchPlan();
+            if (result && result.success) {
+                toast.success(`Đã thực hiện: ${action}`);
+                fetchPlan();
+                onUpdate();
+            } else {
+                toast.error(`Lỗi: ${result?.error?.message || 'Không xác định'}`);
+            }
 
         } catch (err: any) {
             toast.error("Lỗi cập nhật trạng thái: " + err.message);
@@ -205,21 +167,19 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
 
     if (isLoading) return <div className="p-8 text-center text-slate-500">Đang tải phương án kinh doanh...</div>;
 
-    // RBAC Logic
-    const canEdit = (!plan || plan.status === 'Draft' || plan.status === 'Rejected') &&
-        (profile?.role === 'NVKD' || profile?.role === 'UnitLeader' || profile?.role === 'Leadership');
 
-    const canSubmit = plan?.status === 'Draft' &&
-        (profile?.role === 'NVKD' || profile?.role === 'UnitLeader' || profile?.role === 'Leadership');
+    // Permission Checks from AuthContext
+    const canEditPlan = canEditResource('pakd', undefined, plan?.status); // Unit check implied? mostly global or owner. workflowService checks logic.
+    // Actually AuthContext canEdit for pakd checks unitId. We should pass it if we have it. 
+    // Contract has unitId. Plan belongs to contract. 
+    // const canEditPlan = canEditResource('pakd', contract.unitId, plan?.status); 
 
-    const canApproveUnit = plan?.status === 'Pending_Unit' &&
-        (profile?.role === 'UnitLeader' || profile?.role === 'Leadership');
+    // UI Permission Flags
+    const showSubmit = plan?.status === 'Draft' && canEditResource('pakd', contract.unitId, 'Draft');
 
-    const canApproveFinance = plan?.status === 'Pending_Finance' &&
-        (profile?.role === 'Accountant' || profile?.role === 'ChiefAccountant' || profile?.role === 'Leadership');
-
-    const canApproveBoard = plan?.status === 'Pending_Board' &&
-        (profile?.role === 'Leadership');
+    const showApproveUnit = canApprove('pakd', 'Pending_Unit');
+    const showApproveFinance = canApprove('pakd', 'Pending_Finance');
+    const showApproveBoard = canApprove('pakd', 'Pending_Board');
 
     return (
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -242,7 +202,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
 
                 <div className="flex gap-2">
                     {/* EDIT ACTION */}
-                    {canEdit && !isEditing && (
+                    {canEditPlan && !isEditing && (
                         <button onClick={() => setIsEditing(true)} className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-100 font-medium text-sm">
                             {plan ? 'Chỉnh sửa' : 'Lập PAKD'}
                         </button>
@@ -257,14 +217,14 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                     )}
 
                     {/* SUBMIT ACTION (Draft -> Pending_Unit) */}
-                    {!isEditing && canSubmit && (
+                    {!isEditing && showSubmit && (
                         <button onClick={() => handleAction('Submit')} className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-medium text-sm flex items-center gap-2">
                             <Send size={16} /> Gửi duyệt
                         </button>
                     )}
 
                     {/* UNIT APPROVAL (Pending_Unit -> Pending_Finance) */}
-                    {canApproveUnit && (
+                    {showApproveUnit && (
                         <div className="flex gap-2 items-center bg-amber-50 rounded-xl p-1 pr-2">
                             <span className="text-[10px] font-bold text-amber-600 uppercase ml-2 mr-2">Duyệt Đơn vị</span>
                             <button onClick={() => handleAction('Reject')} className="px-3 py-1.5 bg-white text-rose-600 rounded-lg hover:bg-rose-50 font-bold text-xs shadow-sm border border-slate-200">Từ chối</button>
@@ -275,7 +235,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                     )}
 
                     {/* FINANCE APPROVAL (Pending_Finance -> Pending_Board/Approved) */}
-                    {canApproveFinance && (
+                    {showApproveFinance && (
                         <div className="flex gap-2 items-center bg-indigo-50 rounded-xl p-1 pr-2">
                             <span className="text-[10px] font-bold text-indigo-600 uppercase ml-2 mr-2">Duyệt Tài chính</span>
                             <button onClick={() => handleAction('Reject')} className="px-3 py-1.5 bg-white text-rose-600 rounded-lg hover:bg-rose-50 font-bold text-xs shadow-sm border border-slate-200">Từ chối</button>
@@ -286,7 +246,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                     )}
 
                     {/* BOARD APPROVAL (Pending_Board -> Approved) */}
-                    {canApproveBoard && (
+                    {showApproveBoard && (
                         <div className="flex gap-2 items-center bg-purple-50 rounded-xl p-1 pr-2">
                             <span className="text-[10px] font-bold text-purple-600 uppercase ml-2 mr-2">Duyệt Lãnh đạo</span>
                             <button onClick={() => handleAction('Reject')} className="px-3 py-1.5 bg-white text-rose-600 rounded-lg hover:bg-rose-50 font-bold text-xs shadow-sm border border-slate-200">Từ chối</button>

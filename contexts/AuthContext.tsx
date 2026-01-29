@@ -9,7 +9,11 @@ interface AuthContextType {
     profile: UserProfile | null;
     isLoading: boolean;
     signOut: () => Promise<void>;
-    hasRole: (roles: UserRole[]) => boolean;
+
+    // Permission helpers
+    hasRole: (role: UserRole | UserRole[]) => boolean;
+    canEdit: (resource: 'contract' | 'pakd', resourceUnitId?: string, status?: string) => boolean;
+    canApprove: (resource: 'pakd', curStatus: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -115,11 +119,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     // Helper to check permissions
-    const hasRole = (allowedRoles: UserRole[]) => {
+    const hasRole = (role: UserRole | UserRole[]) => {
         if (!profile) return false;
-        // Leadership has all access essentially, but specific checks might apply
-        if (profile.role === 'Leadership') return true;
-        return allowedRoles.includes(profile.role);
+        const roles = Array.isArray(role) ? role : [role];
+        return roles.includes(profile.role);
+    };
+
+    const canEdit = (resource: 'contract' | 'pakd', resourceUnitId?: string, status?: string) => {
+        if (!profile) return false;
+        // Global admins
+        if (['Leadership', 'AdminUnit', 'Legal', 'ChiefAccountant'].includes(profile.role)) return true; // Expanded global roles for now due to strict RLS
+
+        // Unit Scope Check
+        if (resourceUnitId && resourceUnitId !== profile.unitId && profile.role !== 'Leadership') return false;
+
+        // Status Check for PAKD
+        if (resource === 'pakd' && status === 'Approved' && profile.role !== 'Leadership') {
+            return false;
+        }
+
+        return true;
+    };
+
+    const canApprove = (resource: 'pakd', curStatus: string) => {
+        if (!profile) return false;
+        const role = profile.role;
+
+        if (resource === 'pakd') {
+            if (curStatus === 'Draft' && (role === 'NVKD' || role === 'AdminUnit')) return true; // Submit
+            if (curStatus === 'Pending_Unit' && role === 'UnitLeader') return true;
+            if (curStatus === 'Pending_Finance' && (role === 'Accountant' || role === 'ChiefAccountant')) return true;
+            if (curStatus === 'Pending_Board' && role === 'Leadership') return true;
+        }
+        return false;
     };
 
     const value = {
@@ -128,7 +160,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         profile,
         isLoading,
         signOut,
-        hasRole
+        hasRole,
+        canEdit,
+        canApprove
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
