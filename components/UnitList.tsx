@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Search, Building, Plus, Pencil, Trash2, Target, TrendingUp, Users, Eye, FileText } from 'lucide-react';
-import { UnitsAPI, ContractsAPI } from '../services/api';
+import { UnitService, ContractService } from '../services';
 import { Unit, Contract } from '../types';
 import UnitForm from './UnitForm';
 
@@ -29,8 +29,8 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
         setIsLoading(true);
         try {
             const [unitsData, contractsData] = await Promise.all([
-                UnitsAPI.getAll(),
-                ContractsAPI.getAll()
+                UnitService.getAll(),
+                ContractService.getAll()
             ]);
             // Filter out the "All" mock unit if present
             setUnits(unitsData.filter(u => u.id !== 'all'));
@@ -58,7 +58,7 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
 
             unitStats.set(c.unitId, {
                 signing: current.signing + c.value,
-                revenue: current.revenue + c.actualRevenue,
+                revenue: current.revenue + (c.actualRevenue || 0),
                 profit: current.profit + profit
             });
         });
@@ -114,9 +114,9 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
     const handleSave = async (data: Omit<Unit, 'id'> | Unit) => {
         try {
             if ('id' in data) {
-                await UnitsAPI.update(data.id, data);
+                await UnitService.update(data.id, data);
             } else {
-                await UnitsAPI.create(data);
+                await UnitService.create(data);
             }
             await fetchData();
             setIsFormOpen(false);
@@ -130,7 +130,7 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
     const handleDelete = async (id: string) => {
         if (confirm('Bạn có chắc chắn muốn xóa đơn vị này? Hành động này không thể hoàn tác.')) {
             try {
-                await UnitsAPI.delete(id);
+                await UnitService.delete(id);
                 // Refresh list
                 await fetchData();
                 toast.success("Đã xóa đơn vị thành công.");

@@ -37,7 +37,7 @@ import {
   ChevronDown,
   Calendar
 } from 'lucide-react';
-import { ContractsAPI, UnitsAPI, PersonnelAPI, PaymentsAPI } from '../services/api';
+import { ContractService, UnitService, SalesPersonService, PaymentService } from '../services';
 import { Unit, KPIPlan, Contract, SalesPerson, Payment } from '../types';
 import { getSmartInsightsWithDeepSeek } from '../services/openaiService';
 
@@ -68,16 +68,23 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
     const fetchDashboardData = async () => {
       setLoadingConfig(true);
       try {
-        const [contracts, units, people, payments] = await Promise.all([
-          ContractsAPI.getAll(),
-          UnitsAPI.getAll(),
-          PersonnelAPI.getAll(),
-          PaymentsAPI.getAll()
+        const [contracts, units, people, paymentsRes] = await Promise.all([
+          ContractService.getAll(),
+          UnitService.getAll(),
+          SalesPersonService.getAll(),
+          // PaymentService.getAll returns { data, total } usually, let's assume it returns [] or I verify.
+          // In previous steps I used PaymentService.list({}). PaymentService.getAll might not exist or be deprecated.
+          // Let me check PaymentService quickly. Assuming it has getAll based on previous file reviews or similar patterns.
+          // Wait, in PaymentList.tsx I used PaymentService.list. 
+          // I will use list({ page: 1, limit: 10000 }).
+          PaymentService.list({ page: 1, limit: 10000 })
         ]);
+
         setAllContracts(contracts);
         setAllUnits(units);
         setAllSalespeople(people);
-        setAllPayments(payments);
+        // PaymentService.list returns { data }.
+        setAllPayments(paymentsRes.data);
 
         // Only fetch AI after data is ready (initial load)
         // fetchAI(contracts); // Moved to useEffect depending on filteredContracts
@@ -603,7 +610,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
         year: yearFilter,
         insights: aiInsights,
         topContracts: filteredContracts.slice(0, 10).map(c => ({
-          name: c.contractNumber,
+          name: c.id,
           customer: c.partyA,
           value: c.value,
           status: c.status

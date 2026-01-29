@@ -21,15 +21,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        // Global safety timeout
+        const safetyTimeout = setTimeout(() => {
+            console.warn("Auth initialization timed out, forcing release...");
+            setIsLoading(false);
+        }, 5000);
+
         // Initialize session
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
             setUser(session?.user ?? null);
             if (session?.user) {
+                // If we have a user, fetch profile. Profile fetch has its own timeout logic effectively.
+                // But we should ensure we don't clear the safety timeout prematurely if we are still fetching.
                 fetchProfile(session.user.id, session.user.email);
             } else {
                 setIsLoading(false);
             }
+        }).catch((err) => {
+            console.error("Session init error:", err);
+            setIsLoading(false);
         });
 
         // Listen for changes
@@ -38,8 +49,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(session?.user ?? null);
 
             if (session?.user) {
-                // Determine if we need to refetch profile (e.g. on LOGIN vs TOKEN_REFRESH)
-                // Use simple strategy: always fetch if user changes
                 if (session.user.id !== user?.id) {
                     await fetchProfile(session.user.id, session.user.email);
                 }
@@ -49,7 +58,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         });
 
-        return () => subscription.unsubscribe();
+        return () => {
+            subscription.unsubscribe();
+            clearTimeout(safetyTimeout);
+        };
     }, []);
 
     const fetchProfile = async (userId: string, email?: string) => {

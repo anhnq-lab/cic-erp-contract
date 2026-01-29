@@ -14,7 +14,7 @@ import {
     Pencil,
     Trash2
 } from 'lucide-react';
-import { ProductsAPI, UnitsAPI } from '../services/api';
+import { ProductService, UnitService } from '../services';
 import { Product, ProductCategory, Unit } from '../types';
 import ProductForm from './ProductForm';
 
@@ -51,11 +51,11 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
             setIsLoading(true);
             try {
                 if (units.length === 0) {
-                    const unitsData = await UnitsAPI.getAll();
+                    const unitsData = await UnitService.getAll();
                     setUnits(unitsData);
                 }
 
-                const res = await ProductsAPI.list({
+                const res = await ProductService.list({
                     page: currentPage,
                     pageSize,
                     search: searchQuery,
@@ -138,18 +138,18 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
     const handleSave = async (data: Omit<Product, 'id'> | Product) => {
         if ('id' in data) {
             // Update existing
-            await ProductsAPI.update(data.id, data);
+            await ProductService.update(data.id, data);
             setProducts(prev => prev.map(p => p.id === data.id ? data as Product : p));
         } else {
             // Create new
-            const newProduct = await ProductsAPI.create(data);
+            const newProduct = await ProductService.create(data);
             setProducts(prev => [newProduct, ...prev]);
         }
     };
 
     const handleDelete = async (id: string) => {
         if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
-            await ProductsAPI.delete(id);
+            await ProductService.delete(id);
             setProducts(prev => prev.filter(p => p.id !== id));
         }
         setActionMenuId(null);

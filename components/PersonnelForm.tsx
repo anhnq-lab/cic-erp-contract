@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { Save, Loader2, Upload, X } from 'lucide-react';
 import Modal from './ui/Modal';
 import { SalesPerson, KPIPlan, Unit } from '../types';
-import { UnitsAPI } from '../services/api';
+import { UnitService } from '../services'; // Updated import
 import { supabase } from '../lib/supabase';
 
 interface PersonnelFormProps {
@@ -36,6 +36,12 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, onSave, 
             cash: 0,
         } as KPIPlan,
     });
+
+    const [units, setUnits] = useState<Unit[]>([]);
+
+    useEffect(() => {
+        UnitService.getActive().then(setUnits).catch(console.error); // Updated API call
+    }, []);
 
     useEffect(() => {
         if (person) {
@@ -152,11 +158,6 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, onSave, 
             target: { ...prev.target, [field]: value }
         }));
     };
-
-    const [units, setUnits] = useState<Unit[]>([]);
-    useEffect(() => {
-        UnitsAPI.getActive().then(setUnits).catch(console.error);
-    }, []);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={person ? 'Chỉnh sửa Nhân viên' : 'Thêm Nhân viên mới'} size="lg">

@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { Save, X, Loader2 } from 'lucide-react';
 import Modal from './ui/Modal';
 import { Product, ProductCategory, Unit } from '../types';
-import { UnitsAPI } from '../services/api';
+import { UnitService } from '../services';
 
 interface ProductFormProps {
     isOpen: boolean;
@@ -85,7 +85,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
 
     const [units, setUnits] = useState<Unit[]>([]);
     useEffect(() => {
-        UnitsAPI.getActive().then(setUnits).catch(console.error);
+        UnitService.getActive().then(setUnits).catch(console.error);
     }, []);
 
     return (

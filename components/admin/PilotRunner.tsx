@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { ContractsAPI, PaymentsAPI, UnitsAPI, CustomersAPI, ProductsAPI, PersonnelAPI } from '../../services/api';
+import {
+    ContractService,
+    PaymentService,
+    UnitService,
+    CustomerService,
+    SalesPersonService
+} from '../../services';
 import { Contract, Payment, SalesPerson } from '../../types';
 
 const PilotRunner = () => {
@@ -22,17 +28,17 @@ const PilotRunner = () => {
             // STEP 1: PREPARE DATA
             log("📦 Bước 1: Chuẩn bị dữ liệu...");
             // Get a unit
-            const units = await UnitsAPI.getAll();
+            const units = await UnitService.getAll();
             const unit = units.find(u => u.id !== 'all') || units[0];
             if (!unit) throw new Error("Không tìm thấy Đơn vị nào.");
             log(`- Đơn vị: ${unit.name}`);
 
             // Get a customer
-            let res = await CustomersAPI.getAll();
+            let res = await CustomerService.getAll();
             let customers = res.data;
             if (customers.length === 0) {
                 log("- Chưa có khách hàng. Đang tạo mới...");
-                await CustomersAPI.create({
+                await CustomerService.create({
                     name: "Khách hàng Pilot Test",
                     shortName: "Client Pilot",
                     industry: "Công nghệ",
@@ -41,17 +47,17 @@ const PilotRunner = () => {
                     email: "test@pilot.com",
                     address: "Hanoi",
                     type: "Customer"
-                });
-                customers = (await CustomersAPI.getAll()).data;
+                } as any); // Type assertion for optional fields during create if strictness varies
+                customers = (await CustomerService.getAll()).data;
             }
             const customer = customers[0];
             log(`- Khách hàng: ${customer.name}`);
 
             // Get or Create Sales Person
-            let personnel = await PersonnelAPI.getAll();
+            let personnel = await SalesPersonService.getAll();
             if (personnel.length === 0) {
                 log("- Chưa có nhân viên kinh doanh. Đang tạo mới...");
-                await PersonnelAPI.create({
+                await SalesPersonService.create({
                     name: "Nguyễn Văn Sale",
                     unitId: unit.id,
                     email: "sale@cic.com.vn",
@@ -61,7 +67,7 @@ const PilotRunner = () => {
                     employeeCode: "SALE01",
                     target: { signing: 1000000000, revenue: 800000000, adminProfit: 200000000, revProfit: 150000000, cash: 700000000 }
                 });
-                personnel = await PersonnelAPI.getAll();
+                personnel = await SalesPersonService.getAll();
             }
             const sale = personnel[0];
             log(`- Phụ trách kinh doanh: ${sale.name}`);
@@ -74,7 +80,7 @@ const PilotRunner = () => {
             // Generate Proper ID
             const year = new Date().getFullYear();
             const unitCode = unit.code || 'UNIT';
-            const nextNum = await ContractsAPI.getNextContractNumber(unit.id, year);
+            const nextNum = await ContractService.getNextContractNumber(unit.id, year);
             const stt = nextNum.toString().padStart(3, '0');
             const clientInitial = customer.shortName ? customer.shortName.toUpperCase().slice(0, 5) : 'TEST';
             const contractId = `HĐ_${stt}/${unitCode}_${clientInitial}_${year}`;
@@ -116,13 +122,13 @@ const PilotRunner = () => {
                 }
             };
 
-            const createdContract = await ContractsAPI.create(contractPayload);
+            const createdContract = await ContractService.create(contractPayload);
             log(`✅ Đã tạo Hợp đồng: ${createdContract.title} (ID: ${createdContract.id})`);
             setProgress(40);
 
             // Simulate Wizard Step 2 & 3: Updating details
             log("🔄 Cập nhật chi tiết Hợp đồng...");
-            await ContractsAPI.update(createdContract.id, {
+            await ContractService.update(createdContract.id, {
                 status: 'Active',
                 paymentPhases: [
                     { id: 'p1', name: "Đợt 1: Tạm ứng", percentage: 50, amount: 25000000, dueDate: new Date().toISOString(), status: 'Pending' },
@@ -135,8 +141,7 @@ const PilotRunner = () => {
             // STEP 3: FINANCIAL TRANSACTION
             log("💰 Bước 3: Ghi nhận Doanh thu (Phiếu thu)...");
             // Fetch updated contract to get phase ID properly if we were strict, but here we construct payment
-            // We assume backend or reliable store.
-            // Actually, we inserted phases above as JSON. We should create a Payment record.
+
             const paymentPayload = {
                 contractId: createdContract.id,
                 customerId: customer.id,
@@ -147,19 +152,14 @@ const PilotRunner = () => {
                 paymentType: 'Revenue',
                 notes: 'Thanh toán đợt 1 Pilot'
             };
-            // Note: In real app, we link to phaseId. Since phaseId 'p1' is in JSON, we can use it.
-            // But Payments table link to Phase? 
-            // Let's verify Payment Phase interaction. In ContractDetail, status is derived from Payment records linked to contract?
-            // Or Contract.paymentPhases.status is updated manually?
-            // The system logic currently updates contract phase status when Payment is confirmed? 
-            // Or simple linking. Let's just create the payment.
-            await PaymentsAPI.create({ ...paymentPayload, phaseId: 'p1' } as any);
+
+            await PaymentService.create({ ...paymentPayload, phaseId: 'p1' } as any);
             log(`✅ Đã tạo Phiếu thu: 25,000,000 VND`);
             setProgress(80);
 
             // STEP 4: VERIFICATION
             log("📊 Bước 4: Kiểm tra Thống kê...");
-            const stats = await ContractsAPI.getStats({ unitId: unit.id });
+            const stats = await ContractService.getStats({ unitId: unit.id });
             log(`- Tổng Hợp đồng của đơn vị: ${stats.totalContracts}`);
             log(`- Tổng Giá trị: ${new Intl.NumberFormat('vi-VN').format(stats.totalValue)} VND`);
 

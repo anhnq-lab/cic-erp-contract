@@ -22,7 +22,7 @@ import ProductDetail from './components/ProductDetail';
 import PaymentList from './components/PaymentList';
 import { MOCK_CONTRACTS } from './constants';
 import { Unit, Contract, Product } from './types';
-import { ContractsAPI } from './services/api';
+import { ContractService } from './services';
 import { Moon, Sun } from 'lucide-react';
 // import { supabase } from './lib/supabase'; // logic moved to context
 import { Session } from '@supabase/supabase-js';
@@ -139,7 +139,7 @@ const App: React.FC = () => {
       // Fetch full details if needed (though list usually has most info, but detailed items might be missing if pagination optimization was aggressive)
       // For now trust the contract object passed, or fetch specifically 
       // Safe bet: fetch by ID to ensure we have lineItems and phases if lazy loaded
-      const fullContract = await ContractsAPI.getById(contract.id);
+      const fullContract = await ContractService.getById(contract.id);
       if (fullContract) {
         setCloningContract(fullContract);
       } else {
@@ -159,7 +159,7 @@ const App: React.FC = () => {
           <ContractForm
             onSave={async (data) => {
               try {
-                await ContractsAPI.create(data);
+                await ContractService.create(data);
                 setIsCreating(false);
                 toast.success("Tạo hợp đồng thành công!");
                 // Refresh is handled by component mount or we can force it if needed
@@ -182,7 +182,7 @@ const App: React.FC = () => {
             contract={editingContract}
             onSave={async (data) => {
               try {
-                await ContractsAPI.update(editingContract.id, data);
+                await ContractService.update(editingContract.id, data);
                 setEditingContract(null);
                 toast.success("Cập nhật hợp đồng thành công!");
               } catch (e: any) {
@@ -205,7 +205,7 @@ const App: React.FC = () => {
             onSave={async (data) => {
               try {
                 // Ensure ID is new (handled by form but double check here if needed)
-                await ContractsAPI.create(data);
+                await ContractService.create(data);
                 setCloningContract(null);
                 toast.success("Nhân bản hợp đồng thành công!");
               } catch (e: any) {
@@ -226,7 +226,7 @@ const App: React.FC = () => {
           onEdit={(contract) => setEditingContract(contract)}
           onDelete={async () => {
             try {
-              await ContractsAPI.delete(viewingContractId);
+              await ContractService.delete(viewingContractId);
               setViewingContractId(null);
               // Force refresh list logic? 
               // ContractList re-fetches on mount. When we back to list (setViewing(null)), activeTab actually needs to change?

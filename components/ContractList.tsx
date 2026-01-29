@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 import { Search, Filter, Plus, MoreVertical, ExternalLink, User, Loader2, DollarSign, Briefcase, TrendingUp, Calendar, Building2, ChevronLeft, ChevronRight, Download, Upload, Copy } from 'lucide-react';
-import { ContractsAPI, PersonnelAPI, UnitsAPI } from '../services/api';
+import { ContractService, SalesPersonService, UnitService } from '../services';
 import { ContractStatus, Unit, Contract, SalesPerson } from '../types';
 // import { useDebounce } from '../hooks/useDebounce'; // Inline implementation used instead
 
@@ -50,8 +50,8 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
     const fetchLookups = async () => {
       try {
         const [personnelData, unitsData] = await Promise.all([
-          PersonnelAPI.getAll(),
-          UnitsAPI.getAll()
+          SalesPersonService.getAll(),
+          UnitService.getAll()
         ]);
         setSalespeople(personnelData);
         setUnits(unitsData);
@@ -86,8 +86,8 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         };
 
         const [listRes, statsRes] = await Promise.all([
-          ContractsAPI.list(params),
-          ContractsAPI.getStats(params) // Reuse same filters for stats
+          ContractService.list(params),
+          ContractService.getStats(params) // Reuse same filters for stats
         ]);
 
         setContracts(listRes.data);
@@ -169,7 +169,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
             // Try create
             // Note: ID must be unique. If 'Mã HĐ' exists, it might fail or we should use update?
             // For now, assume create new items
-            await ContractsAPI.create(contractData);
+            await ContractService.create(contractData);
             successCount++;
           } catch (err) {
             console.error("Row error", err);
@@ -231,7 +231,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                   effectiveUnitId = unitFilter;
                 }
 
-                const { data } = await ContractsAPI.list({
+                const { data } = await ContractService.list({
                   page: 1, limit: 10000,
                   search: debouncedSearch,
                   status: statusFilter,

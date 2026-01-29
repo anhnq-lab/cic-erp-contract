@@ -1,9 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Search, User, Target, TrendingUp, Building, ChevronRight, Award, ChevronDown, Loader2, Plus, Pencil, Trash2, MoreVertical } from 'lucide-react';
-import { PersonnelAPI, UnitsAPI } from '../services/api'; // Added UnitsAPI
+import { SalesPersonService, UnitService } from '../services';
 import { Unit, SalesPerson } from '../types';
-// Removed MOCK_UNITS import
 import PersonnelForm from './PersonnelForm';
 
 interface PersonnelListProps {
@@ -53,12 +52,12 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
             try {
                 // Fetch Units (if empty)
                 if (units.length === 0) {
-                    const unitsData = await UnitsAPI.getAll();
+                    const unitsData = await UnitService.getAll();
                     setUnits(unitsData.filter(u => u.id !== 'all'));
                 }
 
                 // Fetch Personnel (Paginated)
-                const res = await PersonnelAPI.list({
+                const res = await SalesPersonService.list({
                     unitId: unitFilter,
                     page: currentPage,
                     pageSize,
@@ -71,7 +70,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
 
                 // Fetch stats for visible personnel
                 const statsPromises = res.data.map(async p => {
-                    const stats = await PersonnelAPI.getStats(p.id);
+                    const stats = await SalesPersonService.getStats(p.id);
                     return { id: p.id, stats };
                 });
                 const statsResults = await Promise.all(statsPromises);
@@ -166,19 +165,41 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
     };
 
     const handleSave = async (data: Omit<SalesPerson, 'id'> | SalesPerson) => {
-        if ('id' in data) {
-            await PersonnelAPI.update(data.id, data);
-            setPersonnel(prev => prev.map(p => p.id === data.id ? data as SalesPerson : p));
-        } else {
-            const newPerson = await PersonnelAPI.create(data);
-            setPersonnel(prev => [newPerson, ...prev]);
+        try {
+            if ('id' in data) {
+                await SalesPersonService.update(data.id, data);
+            } else {
+                await SalesPersonService.create(data);
+            }
+            // Refresh List
+            const res = await SalesPersonService.list({
+                unitId: unitFilter,
+                page: currentPage,
+                pageSize,
+                search: searchQuery
+            });
+            setPersonnel(res.data);
+            setTotalCount(res.total);
+
+            toast.success("Lưu thông tin nhân viên thành công!");
+            setIsFormOpen(false);
+            setEditingPerson(undefined);
+        } catch (error) {
+            console.error('Failed to save', error);
+            toast.error('Lỗi lưu dữ liệu');
         }
     };
 
     const handleDelete = async (id: string) => {
         if (confirm('Bạn có chắc chắn muốn xóa nhân viên này?')) {
-            await PersonnelAPI.delete(id);
-            setPersonnel(prev => prev.filter(p => p.id !== id));
+            try {
+                await SalesPersonService.delete(id);
+                setPersonnel(prev => prev.filter(p => p.id !== id));
+                toast.success("Đã xóa nhân viên");
+            } catch (error) {
+                console.error('Lỗi khi xóa nhân viên:', error);
+                toast.error('Không thể xóa nhân viên này (có thể do đang phụ trách hợp đồng).');
+            }
         }
         setActionMenuId(null);
     };
@@ -465,16 +486,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                                                     <button
                                                         onClick={async (e) => {
                                                             e.stopPropagation();
-                                                            if (window.confirm('Bạn có chắc chắn muốn xóa nhân viên này?')) {
-                                                                try {
-                                                                    await PersonnelAPI.delete(person.id);
-                                                                    setPersonnel(prev => prev.filter(p => p.id !== person.id));
-                                                                    toast.success("Đã xóa nhân viên");
-                                                                } catch (error) {
-                                                                    console.error('Lỗi khi xóa nhân viên:', error);
-                                                                    toast.error('Không thể xóa nhân viên này (có thể do đang phụ trách hợp đồng).');
-                                                                }
-                                                            }
+                                                            handleDelete(person.id);
                                                         }}
                                                         className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all"
                                                         title="Xóa"
@@ -527,38 +539,6 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                     </div>
                 </div>
             </div>
-
-            <PersonnelForm
-                isOpen={isFormOpen}
-                onClose={() => {
-                    setIsFormOpen(false);
-                    setEditingPerson(undefined);
-                }}
-                onSave={async (data) => {
-                    try {
-                        if (editingPerson) {
-                            // Update
-                            await PersonnelAPI.update(editingPerson.id, data);
-                            // Refresh logic
-                            const updatedList = await PersonnelAPI.getByUnitId(unitFilter);
-                            setPersonnel(updatedList);
-                        } else {
-                            // Create
-                            await PersonnelAPI.create(data);
-                            // Refresh logic
-                            const updatedList = await PersonnelAPI.getByUnitId(unitFilter);
-                            setPersonnel(updatedList);
-                        }
-                        setIsFormOpen(false);
-                        setEditingPerson(undefined);
-                        toast.success("Lưu thông tin nhân viên thành công!");
-                    } catch (error) {
-                        console.error('Failed to save', error);
-                        toast.error('Lỗi lưu dữ liệu');
-                    }
-                }}
-                person={editingPerson}
-            />
         </div>
     );
 };

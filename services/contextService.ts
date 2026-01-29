@@ -1,15 +1,17 @@
-import { ContractsAPI, UnitsAPI, PersonnelAPI, PaymentsAPI } from './api';
-import { Contract, Unit, SalesPerson } from '../types';
+import { supabase } from '../lib/supabase';
+import { UnitService, SalesPersonService, PaymentService } from './index';
 
 export const getBusinessContext = async (): Promise<string> => {
     try {
-        // Parallel fetch for speed
-        const [allContracts, units, people, paymentsStats] = await Promise.all([
-            ContractsAPI.getAll(),
-            UnitsAPI.getAll(),
-            PersonnelAPI.getAll(),
-            PaymentsAPI.getStats({})
+        // Parallel fetch: Units, People, Payments Stats, and Lightweight Contracts
+        const [units, people, paymentsStats, contractRes] = await Promise.all([
+            UnitService.getAll(),
+            SalesPersonService.getAll(),
+            PaymentService.getStats({}),
+            supabase.from('contracts').select('id, unit_id, salesperson_id, value, actual_revenue, status')
         ]);
+
+        const allContracts = contractRes.data || [];
 
         // --- 1. Processing Unit Performance ---
         const unitMap = new Map<string, string>();
@@ -17,11 +19,11 @@ export const getBusinessContext = async (): Promise<string> => {
 
         const unitStats: Record<string, { revenue: number; value: number; count: number }> = {};
 
-        allContracts.forEach(c => {
-            const uId = c.unitId;
+        allContracts.forEach((c: any) => {
+            const uId = c.unit_id; // DB column name
             if (uId && unitMap.has(uId)) {
                 if (!unitStats[uId]) unitStats[uId] = { revenue: 0, value: 0, count: 0 };
-                unitStats[uId].revenue += c.actualRevenue || 0;
+                unitStats[uId].revenue += c.actual_revenue || 0;
                 unitStats[uId].value += c.value || 0;
                 unitStats[uId].count += 1;
             }
@@ -38,11 +40,11 @@ export const getBusinessContext = async (): Promise<string> => {
 
         const personStats: Record<string, { revenue: number; value: number; count: number }> = {};
 
-        allContracts.forEach(c => {
-            const pId = c.salespersonId;
+        allContracts.forEach((c: any) => {
+            const pId = c.salesperson_id; // DB column name
             if (pId && personMap.has(pId)) {
                 if (!personStats[pId]) personStats[pId] = { revenue: 0, value: 0, count: 0 };
-                personStats[pId].revenue += c.actualRevenue || 0;
+                personStats[pId].revenue += c.actual_revenue || 0;
                 personStats[pId].value += c.value || 0;
                 personStats[pId].count += 1;
             }
@@ -55,8 +57,8 @@ export const getBusinessContext = async (): Promise<string> => {
 
         // Formatters
         const formatCurrency = (val: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(val);
-        const totalRevenue = allContracts.reduce((sum, c) => sum + (c.actualRevenue || 0), 0);
-        const totalValue = allContracts.reduce((sum, c) => sum + (c.value || 0), 0);
+        const totalRevenue = allContracts.reduce((sum, c: any) => sum + (c.actual_revenue || 0), 0);
+        const totalValue = allContracts.reduce((sum, c: any) => sum + (c.value || 0), 0);
 
         // --- Construct Text ---
         let report = `=== BÁO CÁO QUẢN TRỊ THÔNG MINH (Cập nhật: ${new Date().toLocaleString('vi-VN')}) ===\n\n`;

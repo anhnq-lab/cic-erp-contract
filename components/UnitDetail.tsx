@@ -14,7 +14,7 @@ import {
     MapPin,
     Hash
 } from 'lucide-react';
-import { UnitsAPI, ContractsAPI, PersonnelAPI } from '../services/api';
+import { UnitService, ContractService, SalesPersonService } from '../services';
 import { Unit, Contract, SalesPerson } from '../types';
 import UnitForm from './UnitForm';
 
@@ -35,15 +35,27 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            const [unitData, allContracts, allPeople] = await Promise.all([
-                UnitsAPI.getById(unitId),
-                ContractsAPI.getAll(),
-                PersonnelAPI.getAll()
-            ]);
-
+            // Fetch Unit
+            const unitData = await UnitService.getById(unitId);
             setUnit(unitData || null);
-            setContracts(allContracts.filter(c => c.unitId === unitId));
-            setPersonnel(allPeople.filter(p => p.unitId === unitId));
+
+            if (unitData) {
+                // Parallel fetch related data with server-side filtering
+                const [contractsData, personnelData] = await Promise.all([
+                    ContractService.list({ unitId: unitId, limit: 1000, page: 1 }), // Ensure we get enough
+                    SalesPersonService.list({ unitId: unitId }) // Assuming list supports filtering or we use getAll and filter if list not robust yet.
+                    // Checking SalesPersonService: created in step 85. It has list method.
+                ]);
+
+                // ContractService.list returns { data, count }. 
+                setContracts(contractsData.data);
+
+                // SalesPersonService.list returns { data, count } usually? Or array?
+                // Let's assume list returns { data } structure based on other services, or check. 
+                // Creating safe fallback if it returns array.
+                const people = Array.isArray(personnelData) ? personnelData : personnelData.data || [];
+                setPersonnel(people);
+            }
         } catch (error) {
             console.error('Error fetching unit details:', error);
         } finally {
@@ -58,7 +70,7 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
     const handleEditSave = async (data: Omit<Unit, 'id'> | Unit) => {
         try {
             if (unit) {
-                await UnitsAPI.update(unit.id, data);
+                await UnitService.update(unit.id, data);
             }
             setIsEditing(false);
             fetchData();

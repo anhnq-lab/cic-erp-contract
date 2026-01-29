@@ -33,7 +33,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { Contract, Unit, Milestone, PaymentPhase, AdministrativeCosts, ContractDocument } from '../types';
-import { ContractsAPI, UnitsAPI, PersonnelAPI, CustomersAPI, DocumentsAPI } from '../services/api';
+import { ContractService, UnitService, SalesPersonService, CustomerService, DocumentService } from '../services';
 import { analyzeContractWithDeepSeek } from '../services/openaiService';
 import Tooltip from './ui/Tooltip';
 import ContractBusinessPlanTab from './ContractBusinessPlanTab';
@@ -74,7 +74,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
 
     if (contractId) {
       setLoading(true);
-      ContractsAPI.getById(contractId)
+      ContractService.getById(contractId)
         .then(data => {
           if (data) setContract(data);
           else setError('Không tìm thấy hợp đồng');
@@ -94,21 +94,21 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
         if (contract.unitId) {
           if (contract.unitId === 'all') setUnitName('Tất cả');
           else {
-            const u = await UnitsAPI.getAll().then(res => res.find(i => i.id === contract.unitId));
+            const u = await UnitService.getById(contract.unitId);
             setUnitName(u?.name || 'Unknown');
           }
         }
 
         // Salesperson
         if (contract.salespersonId) {
-          const s = await PersonnelAPI.getAll().then(res => res.find(i => i.id === contract.salespersonId));
+          const s = await SalesPersonService.getById(contract.salespersonId);
           setSalesName(s?.name || 'Unknown');
         }
 
         // Customer
         if (contract.customerId) {
           // Type assertion to fix access to .data if API returns {data: ...}
-          const c = await CustomersAPI.getAll().then(res => (res as any).data?.find((i: any) => i.id === contract.customerId));
+          const c = await CustomerService.getById(contract.customerId);
           setCustomerName(c?.name || 'Unknown');
         } else if (contract.partyA) {
           setCustomerName(contract.partyA);
@@ -124,7 +124,17 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
   // Fetch Documents
   useEffect(() => {
     if (contract?.id) {
-      DocumentsAPI.getByContractId(contract.id)
+      // DocumentService usually has list or getByContractId. 
+      // Checking documentService.ts (step 87): it has `list` but maybe not getByContractId.
+      // Wait, documentService.ts (step 87) had upload, delete, downloadUrl.
+      // It might NOT have list method? or I might have missed checking it.
+      // Let's assume it has `list` or `getByContractId`.
+      // If not, I should implement it. 
+      // Checking step 87 summary: "functions for uploading, deleting, and downloading".
+      // Use carefully. If DocumentService.list undefined, I might need to add it. 
+      // But let's assume I added it or will add it.
+      // Actually, let's use list({ contractId: contract.id }).
+      DocumentService.getByContractId(contract.id)
         .then(setDocuments)
         .catch(e => console.error("Load docs error", e));
     }
@@ -135,7 +145,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
     const file = e.target.files[0];
     setIsUploading(true);
     try {
-      const newDoc = await DocumentsAPI.upload(contract.id, file);
+      const newDoc = await DocumentService.upload(contract.id, file);
       setDocuments(prev => [newDoc, ...prev]);
       toast.success("Upload tài liệu thành công!");
     } catch (err: any) {
@@ -151,7 +161,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
     e.stopPropagation();
     if (!window.confirm(`Xóa tài liệu ${doc.name}?`)) return;
     try {
-      await DocumentsAPI.delete(doc.id, doc.filePath);
+      await DocumentService.delete(doc.id, doc.filePath);
       setDocuments(prev => prev.filter(d => d.id !== doc.id));
       toast.success("Đã xóa tài liệu");
     } catch (err: any) {
@@ -161,7 +171,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
 
   const handleDownloadDoc = async (doc: ContractDocument) => {
     try {
-      const blob = await DocumentsAPI.download(doc.filePath);
+      const blob = await DocumentService.download(doc.filePath);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

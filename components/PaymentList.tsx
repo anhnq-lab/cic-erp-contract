@@ -21,7 +21,7 @@ import {
     Trash2
 } from 'lucide-react';
 import { Payment, PaymentStatus, Customer } from '../types';
-import { PaymentsAPI, ContractsAPI, CustomersAPI } from '../services/api';
+import { PaymentService, ContractService, CustomerService } from '../services';
 import PaymentForm from './PaymentForm';
 
 interface PaymentListProps {
@@ -62,23 +62,28 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
         setIsLoading(true);
         try {
             const [listRes, statsRes, customersData] = await Promise.all([
-                PaymentsAPI.list({
+                PaymentService.list({
                     page,
                     limit,
                     search: debouncedSearch,
                     type: typeFilter,
                     status: statusFilter
                 }),
-                PaymentsAPI.getStats({ type: typeFilter }),
-                customers.length === 0 ? CustomersAPI.getAll() : Promise.resolve(customers)
+                PaymentService.getStats({ type: typeFilter }),
+                customers.length === 0 ? CustomerService.getAll({ pageSize: 1000 }) : Promise.resolve({ data: customers })
+                // Fetch all customers for name mapping, or safe big limit.
             ]);
 
             setPayments(listRes.data);
             setTotalCount(listRes.count);
             setStats(statsRes);
+
             if (customers.length === 0) {
-                const cData = (customersData as any).data || customersData;
-                setCustomers(cData as Customer[]);
+                // customerService.getAll returns { data, total ... }
+                // if customersData comes from CustomerService.getAll, it is { data: ... }
+                // if it comes from Promise.resolve, it is { data: customers } (coerced above)
+                const incoming = (customersData as any).data || customersData;
+                setCustomers(incoming as Customer[]);
             }
 
         } catch (error) {
@@ -142,7 +147,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
     const handleDelete = async (id: string) => {
         if (window.confirm('Bạn có chắc muốn xóa khoản thanh toán này?')) {
             try {
-                await PaymentsAPI.delete(id);
+                await PaymentService.delete(id);
                 setPayments(payments.filter(p => p.id !== id));
                 toast.success("Đã xóa khoản thanh toán");
             } catch (error) {
@@ -157,7 +162,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
         try {
             if (paymentData.id) {
                 // Update
-                const updated = await PaymentsAPI.update(paymentData.id, paymentData);
+                const updated = await PaymentService.update(paymentData.id, paymentData);
                 if (updated) {
                     setPayments(payments.map(p => p.id === paymentData.id ? updated : p));
                 }
@@ -167,7 +172,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                     ...paymentData,
                     paymentType: typeFilter // Default to current filter
                 };
-                const created = await PaymentsAPI.create(newPaymentData);
+                const created = await PaymentService.create(newPaymentData);
                 setPayments([created, ...payments]);
             }
             setIsFormOpen(false);

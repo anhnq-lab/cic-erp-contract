@@ -5,8 +5,8 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
     AreaChart, Area, ComposedChart, Line
 } from 'recharts';
-import { Calendar, ChevronDown, Building2, Filter, Download } from 'lucide-react';
-import { ContractsAPI, UnitsAPI, PersonnelAPI, PaymentsAPI } from '../services/api';
+import { Calendar, ChevronDown, Building2, Filter, Download, PieChart as PieChartIcon } from 'lucide-react';
+import { ContractService, UnitService, SalesPersonService, PaymentService } from '../services';
 import { Unit, Contract, Payment, SalesPerson } from '../types';
 import { toast } from 'sonner';
 
@@ -31,16 +31,16 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                const [c, u, p, pay] = await Promise.all([
-                    ContractsAPI.getAll(),
-                    UnitsAPI.getAll(),
-                    PersonnelAPI.getAll(),
-                    PaymentsAPI.getAll()
+                const [c, u, p, payRes] = await Promise.all([
+                    ContractService.getAll(),
+                    UnitService.getAll(),
+                    SalesPersonService.getAll(),
+                    PaymentService.list({ page: 1, limit: 10000 })
                 ]);
                 setContracts(c);
                 setUnits(u);
                 setSalespeople(p);
-                setPayments(pay);
+                setPayments(payRes.data);
             } catch (error) {
                 toast.error("Lỗi tải dữ liệu thống kê");
             } finally {
@@ -233,7 +233,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                 {/* 1. Revenue Structure */}
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm">
                     <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
-                        <PieChart size={20} className="text-indigo-600" />
+                        <PieChartIcon size={20} className="text-indigo-600" />
                         Cơ cấu Doanh thu {selectedUnit.id === 'all' ? '(Theo Đơn vị)' : '(Theo Nhân sự)'}
                     </h3>
                     <div className="h-[300px]">

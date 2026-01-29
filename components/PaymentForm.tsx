@@ -10,7 +10,7 @@ import {
     Hash
 } from 'lucide-react';
 import { Payment, PaymentStatus, PaymentMethod, Contract, Customer } from '../types';
-import { ContractsAPI, CustomersAPI } from '../services/api';
+import { ContractService, CustomerService } from '../services'; // Updated imports
 
 interface PaymentFormProps {
     payment?: Payment;
@@ -41,11 +41,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
         const fetchOptions = async () => {
             try {
                 const [contractsData, customersData] = await Promise.all([
-                    ContractsAPI.getAll(),
-                    CustomersAPI.getAll()
+                    ContractService.getAll(),
+                    CustomerService.getAll()
                 ]);
                 setContracts(contractsData);
-                setCustomers((customersData as any).data || []);
+                // Correctly handle the response structure from CustomerService.getAll
+                setCustomers(customersData.data);
             } catch (error) {
                 console.error("Failed to fetch options:", error);
             }

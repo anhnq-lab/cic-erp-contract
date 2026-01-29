@@ -1,0 +1,32 @@
+# PROJECT RULES
+
+## 1. Nguyên Tắc Cốt Lõi (Mandatory Rules)
+1.  **Giao tiếp (Languages):** BẮT BUỘC sử dụng **Tiếng Việt** trong mọi câu trả lời, giải thích và suy luận.
+2.  **Auto-Push Workflow:**
+    *   Sau mỗi lần chỉnh sửa code hoặc hoàn thành một task, **PHẢI** tự động đẩy code lên GitHub để lưu trữ.
+    *   Thực hiện chuỗi lệnh:
+        ```bash
+        git add .
+        git commit -m "update: mô tả ngắn gọn nội dung thay đổi"
+        git push
+        ```
+    *   *Lưu ý:* Nếu chưa có repo, hãy nhắc user chạy `/init` hoặc `git init` trước.
+
+---
+
+## 2. Hỗ trợ thông minh (Antigravity Workflows)
+Giữ lại các lệnh tắt này để Agent làm việc chuyên nghiệp hơn khi bạn cần:
+
+| Lệnh | Chức năng |
+|:---|:---|
+| `/plan` | Lập kế hoạch thiết kế tính năng chi tiết |
+| `/code` | Viết code và tự động kiểm tra lỗi |
+| `/debug` | Tìm và sửa lỗi code phức tạp |
+| `/test` | Chạy bộ kiểm thử (Unit Test) |
+| `/recap` | Tóm tắt lại dự án nếu bạn quên |
+
+## Resource Mapping
+- **Workflows:** `~/.gemini/antigravity/global_workflows/`
+- **Knowledge:** `~/.gemini/antigravity/knowledge/`
+
+(Mỗi khi user dùng lệnh có dấu `/`, hãy đọc file workflow tương ứng trong folder trên)

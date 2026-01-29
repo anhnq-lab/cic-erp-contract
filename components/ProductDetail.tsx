@@ -14,7 +14,7 @@ import {
     Trash2
 } from 'lucide-react';
 import { Product, Unit, Contract, Customer } from '../types';
-import { UnitsAPI, ContractsAPI, CustomersAPI, ProductsAPI } from '../services/api';
+import { ProductService, UnitService, ContractService, CustomerService } from '../services';
 
 interface ProductDetailProps {
     productId: string;
@@ -34,39 +34,35 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack, onEdit
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                // Fetch Product
-                const productData = await ProductsAPI.getById(productId);
+                // 1. Fetch Product first
+                const productData = await ProductService.getById(productId);
                 if (!productData) {
                     setIsLoading(false);
                     return;
                 }
                 setProduct(productData);
 
-                // Fetch Unit
+                // 2. Parallel Fetch: Unit, Related Contracts (Server-side), Customers
+                const requests: Promise<any>[] = [];
+
                 if (productData.unitId) {
-                    const unitData = await UnitsAPI.getById(productData.unitId);
-                    setUnit(unitData || null);
+                    requests.push(UnitService.getById(productData.unitId));
+                } else {
+                    requests.push(Promise.resolve(null));
                 }
 
-                // Fetch Contracts and Customers
-                const [allContracts, allCustomers] = await Promise.all([
-                    ContractsAPI.getAll(),
-                    CustomersAPI.getAll()
-                ]);
+                // Server-side filtering for related contracts (limit 20 for performance)
+                // Using category and product name as heuristics
+                requests.push(ContractService.getRelated(productData.category, productData.name, 50));
 
-                setCustomers((allCustomers as any).data || []);
+                // Fetch all customers for mapping (Optimizable: fetch only related customers)
+                requests.push(CustomerService.getAll());
 
-                // Filter related contracts
-                const related = allContracts.filter(c =>
-                    (c.category && c.category === productData.category) ||
-                    (c.lineItems?.some(item => item.name === productData.name)) ||
-                    c.title.toLowerCase().includes(productData.name.toLowerCase()) ||
-                    c.title.toLowerCase().includes(productData.name.split(' ')[0].toLowerCase())
-                );
+                const [unitData, related, customerRes] = await Promise.all(requests);
 
-                setRelatedContracts(related.sort((a, b) =>
-                    new Date(b.signedDate).getTime() - new Date(a.signedDate).getTime()
-                ).slice(0, 20));
+                setUnit(unitData || null);
+                setRelatedContracts(related || []);
+                setCustomers(customerRes?.data || []);
 
             } catch (error) {
                 console.error("Error fetching product details:", error);
@@ -150,7 +146,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack, onEdit
                         onClick={async () => {
                             if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này? hành động này không thể hoàn tác.')) {
                                 try {
-                                    await ProductsAPI.delete(productId);
+                                    await ProductService.delete(productId);
                                     toast.success("Đã xóa sản phẩm thành công");
                                     onBack();
                                 } catch (error) {
@@ -290,7 +286,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack, onEdit
                     <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
                         <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
                             <TrendingUp size={18} className="text-slate-400" />
-                            Thống kê (từ HĐ liên quan)
+                            Thống kê (Top 50 HĐ liên quan)
                         </h4>
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">

@@ -14,7 +14,7 @@ import {
   RevenueSchedule, AdministrativeCosts,
   Contract, SalesPerson, Customer, Product, DirectCostDetail
 } from '../types';
-import { UnitsAPI, PersonnelAPI, CustomersAPI, ProductsAPI, ContractsAPI } from '../services/api';
+import { UnitService, SalesPersonService, CustomerService, ProductService, ContractService } from '../services';
 import Modal from './ui/Modal';
 
 interface ContractFormProps {
@@ -36,16 +36,16 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const [unitsData, peopleData, customersData, productsData] = await Promise.all([
-          UnitsAPI.getAll(),
-          PersonnelAPI.getAll(),
-          CustomersAPI.getAll(),
-          ProductsAPI.getAll()
+        const [unitsData, peopleData, customersRes, productsData] = await Promise.all([
+          UnitService.getAll(),
+          SalesPersonService.getAll(),
+          CustomerService.getAll({ pageSize: 1000 }), // Ensure we get enough for dropdown
+          ProductService.getAll()
         ]);
         setUnits(unitsData);
         setSalespeople(peopleData);
-        // CustomersAPI.getAll returns { data, total } now
-        setCustomers((customersData as any).data || []);
+        // CustomerService.getAll returns { data, total }
+        setCustomers(customersRes.data || []);
         setProducts(productsData);
 
         // Set default unit if creating new and no unit selected yet
@@ -291,7 +291,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
         const year = new Date(signedDate).getFullYear();
 
         // Get next number from API
-        const nextNum = await ContractsAPI.getNextContractNumber(unitId, year);
+        const nextNum = await ContractService.getNextContractNumber(unitId, year);
         const stt = nextNum.toString().padStart(3, '0');
 
         const clientInitial = clientName ? clientName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 5) : 'KH';

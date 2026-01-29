@@ -17,7 +17,7 @@ import {
     Loader2
 } from 'lucide-react';
 import { Customer, Contract } from '../types';
-import { CustomersAPI, ContractsAPI } from '../services/api';
+import { CustomerService, ContractService } from '../services'; // Updated imports
 import CustomerForm from './CustomerForm';
 
 interface CustomerDetailProps {
@@ -36,8 +36,8 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ customerId, onBack, onV
         setIsLoading(true);
         try {
             const [custData, contData] = await Promise.all([
-                CustomersAPI.getById(customerId),
-                ContractsAPI.getByCustomerId(customerId)
+                CustomerService.getById(customerId),
+                ContractService.getByCustomerId(customerId)
             ]);
             setCustomer(custData || null);
             setContracts(contData || []);
@@ -103,7 +103,7 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ customerId, onBack, onV
     const handleDelete = async () => {
         if (confirm('Bạn có chắc chắn muốn xóa khách hàng này? Hành động này không thể hoàn tác.')) {
             try {
-                await CustomersAPI.delete(customerId);
+                await CustomerService.delete(customerId);
                 toast.success("Đã xóa khách hàng thành công");
                 onBack();
             } catch (error) {
@@ -115,7 +115,7 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ customerId, onBack, onV
 
     const handleSave = async (data: Customer | Omit<Customer, 'id'>) => {
         if ('id' in data) {
-            await CustomersAPI.update(data.id, data);
+            await CustomerService.update(data.id, data);
             setCustomer(data as Customer);
             setIsEditing(false);
             toast.success("Cập nhật thông tin khách hàng thành công");

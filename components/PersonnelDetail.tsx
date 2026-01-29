@@ -19,7 +19,7 @@ import {
     Hash,
     Pencil
 } from 'lucide-react';
-import { PersonnelAPI, ContractsAPI, UnitsAPI } from '../services/api';
+import { SalesPersonService, ContractService, UnitService } from '../services'; // Updated imports
 import PersonnelForm from './PersonnelForm';
 import { SalesPerson, Contract, Unit, UserRole } from '../types';
 
@@ -53,14 +53,14 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
         setIsLoading(true);
         try {
             const [personData, statsData, contractsData] = await Promise.all([
-                PersonnelAPI.getById(personnelId),
-                PersonnelAPI.getStats(personnelId),
-                ContractsAPI.getBySalespersonId(personnelId),
+                SalesPersonService.getById(personnelId),
+                SalesPersonService.getStats(personnelId),
+                ContractService.getBySalespersonId(personnelId),
             ]);
 
             if (personData) {
                 setPerson(personData);
-                const unitData = await UnitsAPI.getById(personData.unitId);
+                const unitData = await UnitService.getById(personData.unitId);
                 setUnit(unitData || null);
             }
             setStats(statsData);
@@ -79,7 +79,7 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
     const handleEditSave = async (data: Omit<SalesPerson, 'id'> | SalesPerson) => {
         try {
             if (person) {
-                await PersonnelAPI.update(person.id, data);
+                await SalesPersonService.update(person.id, data);
             }
             setIsEditing(false);
             fetchData(); // Reload data
