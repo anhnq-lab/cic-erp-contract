@@ -149,5 +149,25 @@ export const EmployeeService = {
                 revenueProgress: 0
             };
         }
+    },
+
+    getWithStats: async (unitId?: string, search?: string): Promise<Employee[]> => {
+        const { data, error } = await supabase.rpc('get_employees_with_stats', {
+            p_unit_id: unitId === 'all' ? null : unitId,
+            p_year: new Date().getFullYear(),
+            p_search: search || null
+        });
+
+        if (error) throw error;
+
+        return data.map((e: any) => ({
+            ...mapEmployee(e),
+            // Inject stats
+            stats: {
+                contractCount: e.contract_count,
+                totalSigning: e.total_signing,
+                totalRevenue: e.total_revenue
+            }
+        }));
     }
 };

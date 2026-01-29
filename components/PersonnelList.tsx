@@ -25,7 +25,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
 
     // Data state
     const [units, setUnits] = useState<Unit[]>([]);
-    const [personnel, setPersonnel] = useState<Employee[]>([]);
+    const [allPersonnel, setAllPersonnel] = useState<any[]>([]); // Store all fetched
     const [personnelStats, setPersonnelStats] = useState<Record<string, PersonnelStats>>({});
     const [isLoading, setIsLoading] = useState(true);
 
@@ -56,35 +56,31 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                     setUnits(unitsData.filter(u => u.id !== 'all'));
                 }
 
-                // Fetch Personnel (Paginated)
-                const res = await EmployeeService.list({
-                    unitId: unitFilter,
-                    page: currentPage,
-                    pageSize,
-                    search: searchQuery
-                });
+                // Fetch All Personnel with Stats (Instant Load)
+                // Use getWithStats which calls the optimized RPC
+                const fullList = await EmployeeService.getWithStats(unitFilter, searchQuery);
 
-                setPersonnel(res.data);
-                setTotalCount(res.total);
-                setTotalPages(Math.ceil(res.total / pageSize));
+                setAllPersonnel(fullList);
+                setTotalCount(fullList.length);
+                setTotalPages(Math.ceil(fullList.length / pageSize));
 
-                // Fetch stats for visible personnel
-                const statsPromises = res.data.map(async p => {
-                    try {
-                        const stats = await EmployeeService.getStats(p.id);
-                        return { id: p.id, stats };
-                    } catch (e) {
-                        console.warn(`Failed to fetch stats for ${p.id}`, e);
-                        return { id: p.id, stats: { contractCount: 0, totalSigning: 0, totalRevenue: 0, signingProgress: 0, revenueProgress: 0 } };
-                    }
-                });
-                const statsResults = await Promise.all(statsPromises);
-
+                // Map stats for UI compatibility
                 const statsMap: Record<string, PersonnelStats> = {};
-                statsResults.forEach(({ id, stats }) => {
-                    statsMap[id] = stats;
+                fullList.forEach((p: any) => {
+                    const s = p.stats || {};
+                    const targetSign = p.target?.signing || 1;
+                    const targetRev = p.target?.revenue || 1;
+
+                    statsMap[p.id] = {
+                        contractCount: Number(s.contractCount),
+                        totalSigning: Number(s.totalSigning),
+                        totalRevenue: Number(s.totalRevenue),
+                        signingProgress: targetSign > 0 ? (Number(s.totalSigning) / targetSign) * 100 : 0,
+                        revenueProgress: targetRev > 0 ? (Number(s.totalRevenue) / targetRev) * 100 : 0
+                    };
                 });
                 setPersonnelStats(statsMap);
+
             } catch (error) {
                 console.error('Error fetching data:', error);
                 toast.error('Lỗi tải dữ liệu');
@@ -95,16 +91,21 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
 
         const timer = setTimeout(fetchData, 300);
         return () => clearTimeout(timer);
-    }, [unitFilter, currentPage, searchQuery]);
+    }, [unitFilter, searchQuery]); // Re-fetch on filter change
+
+    // Calculate current page slice
+    const filteredPersonnel = useMemo(() => {
+        const from = (currentPage - 1) * pageSize;
+        const to = from + pageSize;
+        return allPersonnel.slice(from, to);
+    }, [allPersonnel, currentPage]);
 
     // Reset page on filter change
     useEffect(() => {
         setCurrentPage(1);
     }, [unitFilter, searchQuery]);
 
-    // Use direct personnel list
-    const filteredPersonnel = personnel;
-
+    // HANDLERS
     const getUnitCode = (unitId: string) => {
         return units.find(u => u.id === unitId)?.code || 'N/A';
     };
@@ -137,9 +138,8 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
         let totalTargetSigning = 0;
         let totalTargetRevenue = 0;
 
-        filteredPersonnel.forEach(p => {
+        filteredPersonnel.forEach((p: any) => { // Use 'any' or intersection type if needed
             // ONLY calculate stats for Sales staff (NVKD) or Unit Leaders if requested
-            // User explicitly said "KPI only for sales staff"
             if (p.roleCode === 'NVKD' || p.roleCode === 'UnitLeader') {
                 const stats = personnelStats[p.id];
                 if (stats) {
@@ -156,7 +156,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
             totalRevenue,
             totalTargetSigning,
             totalTargetRevenue,
-            achievedCount: filteredPersonnel.filter(p => (personnelStats[p.id]?.signingProgress || 0) >= 100).length
+            achievedCount: filteredPersonnel.filter((p: any) => (personnelStats[p.id]?.signingProgress || 0) >= 100).length
         };
     }, [filteredPersonnel, personnelStats]);
 
@@ -174,22 +174,20 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
         setActionMenuId(null);
     };
 
-    const handleSave = async (data: Omit<Employee, 'id'> | Employee) => {
+    const handleSave = async (data: any) => { // Typing loose to match form output
         try {
-            if ('id' in data) {
+            if (data.id) {
                 await EmployeeService.update(data.id, data);
             } else {
                 await EmployeeService.create(data);
             }
-            // Refresh List
-            const res = await EmployeeService.list({
-                unitId: unitFilter,
-                page: currentPage,
-                pageSize,
-                search: searchQuery
-            });
-            setPersonnel(res.data);
-            setTotalCount(res.total);
+            // Trigger refresh by toggling something or refetching
+            // For simplicity, we can just reload the window or better, re-trigger the effect by updating a 'refreshTrigger' state
+            // But since we have the effect on search/filter, let's just re-call fetching logic? 
+            // Better yet, just force a refetch.
+            // setUnitFilter(unitFilter) trigger update? maybe not if value same.
+            // Let's manually add/update local list for instant feedback
+            window.location.reload(); // Simplest way to ensure everything is sync, or I can update 'allPersonnel' list.
 
             toast.success("Lưu thông tin nhân viên thành công!");
             setIsFormOpen(false);
@@ -204,7 +202,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
         if (window.confirm('Bạn có chắc chắn muốn xóa nhân sự này?')) {
             try {
                 await EmployeeService.delete(id);
-                setPersonnel(prev => prev.filter(p => p.id !== id));
+                setAllPersonnel(prev => prev.filter(p => p.id !== id));
                 toast.success("Đã xóa nhân viên");
             } catch (error) {
                 console.error('Lỗi khi xóa nhân viên:', error);
@@ -301,8 +299,8 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
             <PersonnelForm
                 isOpen={isFormOpen}
                 onClose={() => { setIsFormOpen(false); setEditingPerson(undefined); }}
-                onSave={handleSave}
-                person={editingPerson}
+                onSubmit={handleSave}
+                initialData={editingPerson}
             />
 
             {/* Stats Summary */}

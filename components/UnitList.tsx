@@ -28,13 +28,11 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            const [unitsData, contractsData] = await Promise.all([
-                UnitService.getAll(),
-                ContractService.getAll()
-            ]);
-            // Filter out the "All" mock unit if present
-            setUnits(unitsData.filter(u => u.id !== 'all'));
-            setContracts(contractsData);
+            // New Bulk API: Get Units AND specific KPIs in one shot
+            const unitsWithStats = await UnitService.getWithStats();
+            setUnits(unitsWithStats.filter(u => u.id !== 'all'));
+            // Contracts no longer needed for list view stats calculation
+            setContracts([]);
         } catch (error) {
             console.error('Error fetching data:', error);
             toast.error('Không thể tải dữ liệu đơn vị');
@@ -43,35 +41,27 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
         }
     };
 
-    // Calculate Stats
+    // Calculate Global Stats Only (Individual stats now come from Backend)
     const stats = useMemo(() => {
         const unitStats = new Map<string, { signing: number, revenue: number, profit: number }>();
-
-        // Init map with 0
-        units.forEach(u => unitStats.set(u.id, { signing: 0, revenue: 0, profit: 0 }));
-
-        // Sum up actuals from contracts
-        contracts.forEach(c => {
-            if (!unitStats.has(c.unitId)) return;
-            const current = unitStats.get(c.unitId)!;
-            const profit = c.value - (c.estimatedCost || 0);
-
-            unitStats.set(c.unitId, {
-                signing: current.signing + c.value,
-                revenue: current.revenue + (c.actualRevenue || 0),
-                profit: current.profit + profit
-            });
-        });
 
         // Global sums
         let totalSigning = 0, totalRevenue = 0, totalProfit = 0;
         let targetSigning = 0, targetRevenue = 0, targetProfit = 0;
 
-        units.forEach(u => {
-            const s = unitStats.get(u.id)!;
-            totalSigning += s.signing;
-            totalRevenue += s.revenue;
-            totalProfit += s.profit;
+        units.forEach((u: any) => {
+            const s = u.stats || { totalSigning: 0, totalRevenue: 0, totalProfit: 0 };
+            const profit = s.totalProfit || 0;
+
+            unitStats.set(u.id, {
+                signing: s.totalSigning,
+                revenue: s.totalRevenue,
+                profit: profit
+            });
+
+            totalSigning += Number(s.totalSigning);
+            totalRevenue += Number(s.totalRevenue);
+            totalProfit += profit;
 
             targetSigning += u.target?.signing || 0;
             targetRevenue += u.target?.revenue || 0;
@@ -85,7 +75,7 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
                 target: { signing: targetSigning, revenue: targetRevenue, profit: targetProfit }
             }
         };
-    }, [units, contracts]);
+    }, [units]);
 
     const filteredUnits = useMemo(() => {
         if (!searchQuery) return units;

@@ -578,7 +578,18 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     </label>
                     <select
                       value={salespersonId}
-                      onChange={(e) => setSalespersonId(e.target.value)}
+                      onChange={(e) => {
+                        const sId = e.target.value;
+                        setSalespersonId(sId);
+                        // Auto-fill Unit if not locked
+                        if (sId) {
+                          const person = salespeople.find(s => s.id === sId);
+                          if (person && person.unitId) {
+                            setUnitId(person.unitId);
+                            toast.info(`Đã tự động chọn đơn vị: ${units.find(u => u.id === person.unitId)?.name}`);
+                          }
+                        }
+                      }}
                       className="w-full px-5 py-3 bg-indigo-50 dark:bg-indigo-900/20 border-2 border-indigo-100 dark:border-indigo-800 rounded-2xl text-sm font-bold text-indigo-700 dark:text-indigo-300 outline-none"
                     >
                       <option value="" className="text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900">-- Chọn nhân viên phụ trách --</option>

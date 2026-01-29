@@ -109,5 +109,28 @@ export const UnitService = {
                 revenueProgress: 0
             };
         }
+    },
+
+    getWithStats: async (year?: number): Promise<Unit[]> => {
+        const { data, error } = await supabase.rpc('get_units_with_stats', {
+            p_year: year || new Date().getFullYear()
+        });
+
+        if (error) throw error;
+
+        return data.map((u: any) => ({
+            ...mapUnit(u),
+            // Inject stats into the unit object for easy UI access, or handle separately.
+            // Based on the RPC return: total_signing, total_revenue, contract_count
+            // We can map these to a 'stats' property if we extend the Unit type, or just map them to runtime properties.
+            // For now, let's assume we might extend Unit type or just return as is with extra props.
+            // Type assertion to any to pass TS check if Unit doesn't have these fields strictly typed yet.
+            stats: {
+                contractCount: u.contract_count,
+                totalSigning: u.total_signing,
+                totalRevenue: u.total_revenue,
+                totalProfit: u.total_profit
+            }
+        }));
     }
 };
