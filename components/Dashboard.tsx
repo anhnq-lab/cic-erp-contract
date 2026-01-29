@@ -309,7 +309,19 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
           <p className="text-slate-500">Hệ thống đang tính toán các chỉ số KPI theo thời gian thực.</p>
         </div>
       </div>
-    )
+    );
+  }
+
+  // Safety check for selectedUnit
+  if (!selectedUnit) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 gap-4">
+        <Loader2 className="animate-spin text-indigo-600" size={48} />
+        <div className="text-center">
+          <h3 className="text-xl font-black text-slate-800 dark:text-slate-200">Đang tải cấu hình đơn vị...</h3>
+        </div>
+      </div>
+    );
   }
 
   // Define metric tabs
@@ -443,10 +455,10 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
 
       {/* Main KPI Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        <KPIItem title="Ký kết (Signing)" metric="signing" stats={stats.actual} target={selectedUnit.target} yoy={getYoY('signing')} color="indigo" icon={<FileText size={20} />} />
-        <KPIItem title="Doanh thu (Revenue)" metric="revenue" stats={stats.actual} target={selectedUnit.target} yoy={getYoY('revenue')} color="emerald" icon={<CreditCard size={20} />} />
-        <KPIItem title="LNG Quản trị" metric="adminProfit" stats={stats.actual} target={selectedUnit.target} yoy={getYoY('adminProfit')} color="purple" icon={<TrendingUp size={20} />} />
-        <KPIItem title="LNG theo DT" metric="revProfit" stats={stats.actual} target={selectedUnit.target} yoy={getYoY('revProfit')} color="amber" icon={<Target size={20} />} />
+        <KPIItem title="Ký kết (Signing)" metric="signing" stats={stats.actual} target={safeUnit?.target || { signing: 0 }} yoy={getYoY('signing')} color="indigo" icon={<FileText size={20} />} />
+        <KPIItem title="Doanh thu (Revenue)" metric="revenue" stats={stats.actual} target={safeUnit?.target || { revenue: 0 }} yoy={getYoY('revenue')} color="emerald" icon={<CreditCard size={20} />} />
+        <KPIItem title="LNG Quản trị" metric="adminProfit" stats={stats.actual} target={safeUnit?.target || { adminProfit: 0 }} yoy={getYoY('adminProfit')} color="purple" icon={<TrendingUp size={20} />} />
+        <KPIItem title="LNG theo DT" metric="revProfit" stats={stats.actual} target={safeUnit?.target || { revProfit: 0 }} yoy={getYoY('revProfit')} color="amber" icon={<Target size={20} />} />
         <KPIItem title="Dòng tiền ròng (Net CF)" metric="netCashflow" stats={stats.actual} target={{ netCashflow: 0 }} yoy={{ value: '0', isUp: true }} color="cyan" icon={<Wallet size={20} />} />
       </div>
 
@@ -492,7 +504,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
 
         <div className="bg-white dark:bg-slate-900 p-8 rounded-[40px] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
           <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight mb-2">
-            Phân bổ {selectedUnit.id === 'all' ? 'theo Đơn vị' : 'theo Sales'}
+            Phân bổ {safeUnit?.id === 'all' ? 'theo Đơn vị' : 'theo Sales'}
           </h3>
           <p className="text-sm font-medium text-slate-500 mb-8">Tỷ trọng đóng góp vào tổng số</p>
 
@@ -548,8 +560,8 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
           <div>
             <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-3 mb-2">
-              {selectedUnit.id === 'all' ? <Building2 className="text-indigo-600" size={24} /> : <Users className="text-indigo-600" size={24} />}
-              {selectedUnit.id === 'all' ? 'Hiệu suất thực hiện Đơn vị' : 'Hiệu suất nhân sự kinh doanh'}
+              {safeUnit?.id === 'all' ? <Building2 className="text-indigo-600" size={24} /> : <Users className="text-indigo-600" size={24} />}
+              {safeUnit?.id === 'all' ? 'Hiệu suất thực hiện Đơn vị' : 'Hiệu suất nhân sự kinh doanh'}
             </h3>
             <p className="text-sm font-medium text-slate-500">Bảng xếp hạng hiệu quả hoạt động dựa trên LNG Quản trị</p>
           </div>
@@ -562,7 +574,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
           <table className="w-full text-left border-separate border-spacing-y-3">
             <thead>
               <tr className="text-[11px] uppercase tracking-wider text-slate-400 font-black">
-                <th className="pb-2">{selectedUnit.id === 'all' ? 'Đơn vị' : 'Nhân sự'}</th>
+                <th className="pb-2">{safeUnit?.id === 'all' ? 'Đơn vị' : 'Nhân sự'}</th>
                 <th className="pb-2 text-right">Mục tiêu</th>
                 <th className="pb-2 text-right">Thực tế</th>
                 <th className="pb-2 text-center w-64">Tiến độ hoàn thành</th>
@@ -573,7 +585,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
                 <tr key={row.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                   <td className="py-4 pl-4 rounded-l-3xl bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/40 border-y border-l border-transparent transition-colors">
                     <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-2xl ${selectedUnit.id === 'all' ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-100 text-slate-600'} flex items-center justify-center font-black text-lg shadow-sm group-hover:scale-105 transition-transform`}>
+                      <div className={`w-12 h-12 rounded-2xl ${safeUnit?.id === 'all' ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-100 text-slate-600'} flex items-center justify-center font-black text-lg shadow-sm group-hover:scale-105 transition-transform`}>
                         {row.name.substring(0, 1)}
                       </div>
                       <div>
