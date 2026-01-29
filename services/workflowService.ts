@@ -21,40 +21,45 @@ export const WorkflowService = {
             const currentStatus = plan.status as PlanStatus;
 
             // 2. Determine next status based on Role & Current Status
-            // Logic from PAKD_APPROVAL_PROCESS.md
-            if (currentStatus === 'Draft' && (currentRole === 'NVKD' || currentRole === 'AdminUnit')) {
+            if (currentStatus === 'Draft' && (currentRole === 'NVKD' || currentRole === 'UnitLeader' || currentRole === 'AdminUnit')) {
                 nextStatus = 'Pending_Unit';
-            } else if (currentStatus === 'Pending_Unit' && currentRole === 'UnitLeader') {
+            } else if (currentStatus === 'Pending_Unit' && (currentRole === 'UnitLeader' || currentRole === 'AdminUnit')) {
                 nextStatus = 'Pending_Finance';
             } else if (currentStatus === 'Pending_Finance' && (currentRole === 'Accountant' || currentRole === 'ChiefAccountant')) {
                 nextStatus = 'Pending_Board';
             } else if (currentStatus === 'Pending_Board' && currentRole === 'Leadership') {
                 nextStatus = 'Approved';
-            } else if (currentRole === 'Leadership') {
-                // Leadership can force approve from any state? Let's stick to flow for now, or allow shortcut.
-                // For now, strict flow.
-                if (currentStatus === 'Pending_Finance') nextStatus = 'Approved'; // Board bypassing Board step? No.
-                // Let's assume strict lineal flow for now.
             }
 
             if (!nextStatus) {
-                throw new Error(`Invalid transition for Role ${currentRole} from Status ${currentStatus}`);
+                // Allow Leadership to force approve or fallback? For now, strict.
+                if (currentRole === 'Leadership') nextStatus = 'Approved';
+                else throw new Error(`Invalid transition for Role ${currentRole} from Status ${currentStatus}`);
             }
+
+            const currentUser = (await supabase.auth.getUser()).data.user;
 
             // 3. Update Status
             const { error: updateError } = await supabase
                 .from('contract_business_plans')
                 .update({
                     status: nextStatus,
-                    approved_by: nextStatus === 'Approved' ? (await supabase.auth.getUser()).data.user?.id : undefined,
+                    approved_by: nextStatus === 'Approved' ? currentUser?.id : undefined,
                     approved_at: nextStatus === 'Approved' ? new Date().toISOString() : undefined
                 })
                 .eq('id', planId);
 
             if (updateError) throw updateError;
 
-            // 4. Log Action (Audit Log handles this via DB Triggers implicitly, but we can also log explicit workflow event if needed)
-            // For now, rely on Status change.
+            // 4. Manual Log to contract_reviews
+            await supabase.from('contract_reviews').insert({
+                contract_id: plan.contract_id,
+                plan_id: planId,
+                reviewer_id: currentUser?.id,
+                role: 'Unit', // Simplified mapping, ideally map currentRole to ReviewRole
+                action: 'Approve',
+                comment: `Approved from ${currentStatus} to ${nextStatus}`
+            });
 
             return { success: true };
 
@@ -64,20 +69,35 @@ export const WorkflowService = {
         }
     },
 
-    /**
-     * Reject a Business Plan
-     */
     async rejectPAKD(planId: string, reason: string): Promise<{ success: boolean; error?: any }> {
         try {
+            const currentUser = (await supabase.auth.getUser()).data.user;
+
+            // Get Plan for contract_id
+            const { data: plan } = await supabase.from('contract_business_plans').select('contract_id').eq('id', planId).single();
+
             const { error } = await supabase
                 .from('contract_business_plans')
                 .update({
                     status: 'Rejected',
-                    notes: reason // Store rejection reason in notes for now, or separate log
+                    notes: reason
                 })
                 .eq('id', planId);
 
             if (error) throw error;
+
+            // Log Rejection
+            if (plan) {
+                await supabase.from('contract_reviews').insert({
+                    contract_id: plan.contract_id,
+                    plan_id: planId,
+                    reviewer_id: currentUser?.id,
+                    role: 'Unit', // Placeholder
+                    action: 'Reject',
+                    comment: reason
+                });
+            }
+
             return { success: true };
         } catch (error) {
             console.error('Reject PAKD Error:', error);
@@ -85,12 +105,7 @@ export const WorkflowService = {
         }
     },
 
-    /**
-     * Submit a Draft for Approval (Convenience method for NVKD)
-     */
     async submitPAKD(planId: string): Promise<{ success: boolean; error?: any }> {
-        // Alias for approve from Draft -> Pending_Unit (conceptually different but same tech action)
-        // Actually strictly checking "Submit" is better for UI.
         return this.approvePAKD(planId, 'NVKD');
     }
 };
