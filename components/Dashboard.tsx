@@ -68,25 +68,30 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit }) => 
     const fetchDashboardData = async () => {
       setLoadingConfig(true);
       try {
+        // Create a timeout promise
+        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), 15000));
+
         // Safe individual fetching to prevent one failure from crashing everything
-        const [contracts, units, people, paymentsRes] = await Promise.all([
+        const fetchData = Promise.all([
           ContractService.getAll().catch(e => { console.error('Contracts sync failed', e); return []; }),
           UnitService.getAll().catch(e => { console.error('Units sync failed', e); return []; }),
           EmployeeService.getAll().catch(e => { console.error('Employees sync failed', e); return []; }),
-          PaymentService.list({ page: 1, limit: 10000 }).catch(e => { console.error('Payments sync failed', e); return { data: [], total: 0 }; })
+          PaymentService.getAll().catch(e => { console.error('Payments sync failed', e); return []; }) // Switched to getAll (lighter)
         ]);
+
+        // Race against timeout
+        const [contracts, units, people, payments] = await Promise.race([fetchData, timeout]) as [Contract[], Unit[], Employee[], Payment[]];
 
         setAllContracts(contracts);
         setAllUnits(units);
         setAllSalespeople(people);
-        // PaymentService.list returns { data }.
-        setAllPayments(paymentsRes.data);
+        setAllPayments(payments); // Direct array from getAll
 
         // Only fetch AI after data is ready (initial load)
         // fetchAI(contracts); // Moved to useEffect depending on filteredContracts
       } catch (error) {
         console.error("Dashboard Fetch Error", error);
-        toast.error("Không thể tải dữ liệu Dashboard. Vui lòng thử lại.");
+        toast.error("Không thể tải dữ liệu: " + (error instanceof Error ? error.message : "Lỗi không xác định"));
       } finally {
         setLoadingConfig(false);
       }
