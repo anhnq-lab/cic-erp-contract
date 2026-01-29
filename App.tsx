@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Toaster, toast } from 'sonner';
+import { RoleSwitcher } from './components/RoleSwitcher';
 import DataSeeder from './components/admin/DataSeeder';
 import PilotRunner from './components/admin/PilotRunner';
 import Sidebar from './components/Sidebar';
@@ -368,6 +369,7 @@ const App: React.FC = () => {
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
       </button>
       <Toaster richColors position="top-center" />
+      <RoleSwitcher />
     </div>
   );
 };

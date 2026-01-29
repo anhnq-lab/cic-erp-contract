@@ -14,6 +14,7 @@ interface AuthContextType {
     hasRole: (role: UserRole | UserRole[]) => boolean;
     canEdit: (resource: 'contract' | 'pakd', resourceUnitId?: string, status?: string) => boolean;
     canApprove: (resource: 'pakd', curStatus: string) => boolean;
+    refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -154,6 +155,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
     };
 
+    const refreshProfile = async () => {
+        if (!user) return;
+        const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+        if (data) setProfile(data);
+    };
+
     const value = {
         session,
         user,
@@ -162,7 +169,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signOut,
         hasRole,
         canEdit,
-        canApprove
+        canApprove,
+        refreshProfile
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
