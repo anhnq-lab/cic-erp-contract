@@ -119,6 +119,9 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
     // Memoized stats calculation removed in favor of Server-Side RPC
     // const stats = useMemo(() => { ... }, [contracts, unit]);
 
+    // Alias for UI compatibility
+    const personnel = staff;
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-[60vh]">
