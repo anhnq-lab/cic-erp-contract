@@ -116,6 +116,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
     };
 
     const getProgressColor = (progress: number) => {
+        if (!progress || isNaN(progress)) return 'bg-slate-200 dark:bg-slate-800'; // Safe fallback
         if (progress >= 100) return 'bg-emerald-500';
         if (progress >= 70) return 'bg-indigo-500';
         if (progress >= 40) return 'bg-amber-500';
@@ -137,13 +138,17 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
         let totalTargetRevenue = 0;
 
         filteredPersonnel.forEach(p => {
-            const stats = personnelStats[p.id];
-            if (stats) {
-                totalSigning += stats.totalSigning;
-                totalRevenue += stats.totalRevenue;
+            // ONLY calculate stats for Sales staff (NVKD) or Unit Leaders if requested
+            // User explicitly said "KPI only for sales staff"
+            if (p.roleCode === 'NVKD' || p.roleCode === 'UnitLeader') {
+                const stats = personnelStats[p.id];
+                if (stats) {
+                    totalSigning += stats.totalSigning || 0;
+                    totalRevenue += stats.totalRevenue || 0;
+                }
+                totalTargetSigning += p.target?.signing || 0;
+                totalTargetRevenue += p.target?.revenue || 0;
             }
-            totalTargetSigning += p.target.signing;
-            totalTargetRevenue += p.target.revenue;
         });
 
         return {
