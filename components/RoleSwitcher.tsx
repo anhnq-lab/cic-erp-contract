@@ -18,51 +18,90 @@ const ROLES: { value: UserRole; label: string }[] = [
 export const RoleSwitcher: React.FC = () => {
     const { user, profile, refreshProfile } = useAuth();
     const [isUpdating, setIsUpdating] = useState(false);
+    const [units, setUnits] = useState<any[]>([]);
 
     // Only show for specific admin email
     if (user?.email !== 'anhnq@cic.com.vn') return null;
 
-    const handleRoleChange = async (newRole: UserRole) => {
+    // Fetch units on mount
+    React.useEffect(() => {
+        const fetchUnits = async () => {
+            const { data } = await supabase.from('units').select('id, name');
+            if (data) setUnits(data);
+        };
+        fetchUnits();
+    }, []);
+
+    const handleRoleChange = async (newRole: UserRole, newUnitId?: string) => {
         if (!user || isUpdating) return;
         setIsUpdating(true);
         try {
+            const updatePayload: any = { role: newRole };
+            if (newUnitId !== undefined) {
+                updatePayload.unit_id = newUnitId;
+            }
+
             const { error } = await supabase
                 .from('profiles')
-                .update({ role: newRole })
+                .update(updatePayload)
                 .eq('id', user.id);
 
             if (error) throw error;
 
-            toast.success(`Đã chuyển sang vai trò: ${newRole}`);
-            await refreshProfile(); // Ensure context updates
-
-            // Reload window to ensure all RLS subscriptions reset
+            toast.success(`Đã chuyển vai trò: ${newRole}${newUnitId ? ` - Unit: ${units.find(u => u.id === newUnitId)?.name}` : ''}`);
+            await refreshProfile();
             window.location.reload();
 
         } catch (error: any) {
-            toast.error("Lỗi chuyển vai trò: " + error.message);
+            toast.error("Lỗi: " + error.message);
         } finally {
             setIsUpdating(false);
         }
     };
 
     return (
-        <div className="fixed bottom-4 right-4 z-50 bg-slate-900 text-white p-2 rounded-lg shadow-xl border border-slate-700 flex items-center gap-2 text-xs opacity-50 hover:opacity-100 transition-opacity">
-            <Shield size={14} className="text-amber-400" />
-            <span className="font-bold text-slate-300">TEST ROLE:</span>
-            <select
-                value={profile?.role}
-                onChange={(e) => handleRoleChange(e.target.value as UserRole)}
-                className="bg-slate-800 border border-slate-600 rounded px-2 py-1 outline-none focus:border-indigo-500"
-                disabled={isUpdating}
-            >
-                {ROLES.map((r) => (
-                    <option key={r.value} value={r.value}>
-                        {r.label} ({r.value})
-                    </option>
-                ))}
-            </select>
-            {isUpdating && <RefreshCw size={12} className="animate-spin text-slate-400" />}
+        <div className="fixed bottom-4 right-4 z-50 bg-slate-900 text-white p-3 rounded-lg shadow-xl border border-slate-700 flex flex-col gap-2 text-xs opacity-75 hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-2">
+                <Shield size={14} className="text-amber-400" />
+                <span className="font-bold text-slate-300 uppercase">Test Mode</span>
+            </div>
+
+            <div className="flex flex-col gap-1">
+                <label className="text-[10px] text-slate-400">Vai trò:</label>
+                <select
+                    value={profile?.role}
+                    onChange={(e) => handleRoleChange(e.target.value as UserRole)}
+                    className="bg-slate-800 border border-slate-600 rounded px-2 py-1 outline-none focus:border-indigo-500 w-full"
+                    disabled={isUpdating}
+                >
+                    {ROLES.map((r) => (
+                        <option key={r.value} value={r.value}>
+                            {r.label}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            {['NVKD', 'UnitLeader', 'AdminUnit'].includes(profile?.role || '') && (
+                <div className="flex flex-col gap-1">
+                    <label className="text-[10px] text-slate-400">Đơn vị:</label>
+                    <select
+                        value={profile?.unitId || ''}
+                        onChange={(e) => handleRoleChange(profile!.role, e.target.value)}
+                        className="bg-slate-800 border border-slate-600 rounded px-2 py-1 outline-none focus:border-indigo-500 w-full"
+                        disabled={isUpdating}
+                    >
+                        <option value="">-- Chọn Đơn vị --</option>
+                        {units.map((u) => (
+                            <option key={u.id} value={u.id}>
+                                {u.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            )}
+
+            {isUpdating && <div className="text-center text-[10px] text-indigo-400 animate-pulse">Đang cập nhật...</div>}
         </div>
     );
 };
