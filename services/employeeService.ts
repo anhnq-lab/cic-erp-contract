@@ -135,6 +135,7 @@ export const EmployeeService = {
                 contractCount: data.contractCount || 0,
                 totalSigning: data.totalSigning || 0,
                 totalRevenue: data.totalRevenue || 0,
+                totalProfit: data.totalProfit || 0,
                 // Progress handled by UI since target is on Employee object, not returned by RPC
                 signingProgress: 0,
                 revenueProgress: 0

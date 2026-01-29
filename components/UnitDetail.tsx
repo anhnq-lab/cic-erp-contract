@@ -64,14 +64,10 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
                 const calculatedStats = {
                     actualSigning: statsData.totalSigning,
                     actualRevenue: statsData.totalRevenue,
-                    adminProfit: 0, // RPC doesn't calc this yet, or we assume 0 for now. 
-                    // To include adminProfit in RPC would require cost data. 
-                    // For now, let's keep logic simple or accept 0. 
-                    // Wait, previous client-calc had adminProfit. 
-                    // I should probably map statsData correctly.
+                    adminProfit: statsData.totalProfit || 0,
                     signingProgress: (statsData.totalSigning / (unitData.target.signing || 1)) * 100,
                     revenueProgress: (statsData.totalRevenue / (unitData.target.revenue || 1)) * 100,
-                    adminProfitProgress: 0 // Placeholder until RPC supports it or we drop it
+                    adminProfitProgress: ((statsData.totalProfit || 0) / (unitData.target.adminProfit || 1)) * 100
                 };
 
                 // If we want accurate AdminProfit, we might need that in RPC.

@@ -94,6 +94,7 @@ export const UnitService = {
                 contractCount: data.contractCount || 0,
                 totalSigning: data.totalSigning || 0,
                 totalRevenue: data.totalRevenue || 0,
+                totalProfit: data.totalProfit || 0,
                 // Progress handled by UI or calculated here if we fetch target too. 
                 // For consistency with EmployeeService, we return raw values.
                 signingProgress: 0,
