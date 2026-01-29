@@ -5,6 +5,7 @@ import { Search, Building, Plus, Pencil, Trash2, Target, TrendingUp, Users, Eye,
 import { UnitService, ContractService } from '../services';
 import { Unit, Contract } from '../types';
 import UnitForm from './UnitForm';
+import { NON_BUSINESS_UNIT_CODES } from '../constants';
 
 interface UnitListProps {
     onSelectUnit?: (id: string) => void;
@@ -28,9 +29,10 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
     const fetchData = async () => {
         setIsLoading(true);
         try {
+            // ... (in fetchData)
             // New Bulk API: Get Units AND specific KPIs in one shot
             const unitsWithStats = await UnitService.getWithStats();
-            setUnits(unitsWithStats.filter(u => u.id !== 'all'));
+            setUnits(unitsWithStats.filter(u => u.id !== 'all' && !NON_BUSINESS_UNIT_CODES.includes(u.code)));
             // Contracts no longer needed for list view stats calculation
             setContracts([]);
         } catch (error) {

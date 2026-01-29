@@ -30,6 +30,8 @@ export const PLAN_STATUS_LABELS: Record<PlanStatus, string> = {
   'Rejected': 'Từ chối'
 };
 
+export const NON_BUSINESS_UNIT_CODES = ['HCNS', 'TCKT'];
+
 export const CONTRACT_STATUS_LABELS: Record<string, string> = {
   'Active': 'Đang hiệu lực',
   'Pending': 'Chờ xử lý',

@@ -42,6 +42,7 @@ import ErrorBoundary from './ErrorBoundary';
 import { ContractService, UnitService, EmployeeService } from '../services';
 import { Unit, KPIPlan, Contract, Employee } from '../types';
 import { getSmartInsightsWithDeepSeek } from '../services/openaiService';
+import { NON_BUSINESS_UNIT_CODES } from '../constants';
 
 interface DashboardProps {
   selectedUnit: Unit;
@@ -117,8 +118,9 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
   useEffect(() => {
     const fetchConfig = async () => {
       try {
+        // ... (in fetchConfig)
         const units = await UnitService.getAll();
-        setAllUnits(units);
+        setAllUnits(units.filter(u => !NON_BUSINESS_UNIT_CODES.includes(u.code)));
       } catch (e) {
         console.error("Config load failed", e);
       }
