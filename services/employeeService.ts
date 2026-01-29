@@ -14,7 +14,7 @@ const mapEmployee = (s: any): Employee => ({
     roleCode: s.role_code,
     dateJoined: s.date_joined,
     avatar: s.avatar,
-    target: s.target
+    target: s.target || { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 }
 });
 
 export const EmployeeService = {

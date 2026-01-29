@@ -7,8 +7,8 @@ const mapUnit = (u: any): Unit => ({
     name: u.name,
     type: u.type,
     code: u.code,
-    target: u.target,
-    lastYearActual: u.last_year_actual
+    target: u.target || { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 },
+    lastYearActual: u.last_year_actual || { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 }
 });
 
 export const UnitService = {
