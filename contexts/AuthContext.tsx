@@ -26,7 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setSession(session);
             setUser(session?.user ?? null);
             if (session?.user) {
-                fetchProfile(session.user.id);
+                fetchProfile(session.user.id, session.user.email);
             } else {
                 setIsLoading(false);
             }
@@ -41,7 +41,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 // Determine if we need to refetch profile (e.g. on LOGIN vs TOKEN_REFRESH)
                 // Use simple strategy: always fetch if user changes
                 if (session.user.id !== user?.id) {
-                    await fetchProfile(session.user.id);
+                    await fetchProfile(session.user.id, session.user.email);
                 }
             } else {
                 setProfile(null);
@@ -52,7 +52,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return () => subscription.unsubscribe();
     }, []);
 
-    const fetchProfile = async (userId: string) => {
+    const fetchProfile = async (userId: string, email?: string) => {
+        // Safety timeout to prevent infinite loading
+        const timeoutId = setTimeout(() => setIsLoading(false), 5000);
+
         try {
             const { data, error } = await supabase
                 .from('profiles')
@@ -60,16 +63,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 .eq('id', userId)
                 .single();
 
+            clearTimeout(timeoutId);
+
             if (error) {
                 console.error("Error fetching profile:", error);
                 // If profile missing, maybe try to create one or set default?
                 // For now, leave null so UI knows it's an incomplete user
             } else {
+                // TEMPORARY: Override role for testing
+                let userRole: UserRole = data.role as UserRole;
+                const userEmail = email || data.email || '';
+
+                if (userEmail === 'anhnq@cic.com.vn') {
+                    userRole = 'Leadership';
+                }
+
                 setProfile({
                     id: data.id,
-                    email: data.email,
+                    email: userEmail,
                     fullName: data.full_name,
-                    role: data.role as UserRole,
+                    role: userRole,
                     unitId: data.unit_id,
                     avatarUrl: data.avatar_url
                 });
@@ -77,6 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (e) {
             console.error(e);
         } finally {
+            clearTimeout(timeoutId);
             setIsLoading(false);
         }
     };

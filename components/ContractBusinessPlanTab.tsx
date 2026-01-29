@@ -250,6 +250,43 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                 </div>
             </div>
 
+            {/* 1. FINANCIAL SUMMARY (Restored) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="bg-slate-50 dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Doanh thu dự kiến</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                        {new Intl.NumberFormat('vi-VN').format(financials.revenue)} ₫
+                    </p>
+                </div>
+
+                <div className="bg-slate-50 dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Tổng chi phí</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                        {new Intl.NumberFormat('vi-VN').format(financials.costs)} ₫
+                    </p>
+                </div>
+
+                <div className={`p-5 rounded-2xl border ${financials.margin >= 30
+                    ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'
+                    : 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800'
+                    }`}>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${financials.margin >= 30 ? 'text-green-600' : 'text-amber-600'
+                                }`}>Lợi nhuận gộp</p>
+                            <p className={`text-2xl font-bold ${financials.margin >= 30 ? 'text-green-700' : 'text-amber-700'
+                                }`}>
+                                {new Intl.NumberFormat('vi-VN').format(financials.grossProfit)} ₫
+                            </p>
+                        </div>
+                        <div className={`text-lg font-bold px-3 py-1 rounded-lg ${financials.margin >= 30 ? 'bg-green-200 text-green-800' : 'bg-amber-200 text-amber-800'
+                            }`}>
+                            {financials.margin.toFixed(1)}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* 2. BUSINESS PLAN DETAILS (Moved from Overview) */}
             <div className="mb-8">
                 {/* 2.1 Products Table */}
