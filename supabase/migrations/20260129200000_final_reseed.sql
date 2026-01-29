@@ -1,15 +1,13 @@
 -- CRITICAL FIX: Re-seed all data with correct Types and FKs
--- 1. Disable triggers/FKs temporarily if needed (or just delete in order)
--- 2. Ensure Units exist
--- 3. Populate Employees (Board, BackOffice, Units)
+-- Corrected: Use employee_id for contracts
 
 BEGIN;
 
--- 1. DELETE existing employees (Contract links might block this, so we handle contracts first if needed. 
--- For now, allow CASCADE if set, otherwise un-link contracts)
-UPDATE contracts SET salesperson_id = NULL, unit_id = NULL; 
+-- 1. Unlink contracts to allow person deletion
+UPDATE contracts SET employee_id = NULL, unit_id = NULL; 
 DELETE FROM employees;
--- Ensure Units are correct (upsert)
+
+-- 2. Ensure Units exist
 INSERT INTO units (id, name, code, type) VALUES
 ('bim', 'Trung tâm BIM', 'BIM', 'Center'),
 ('css', 'Trung tâm CSS', 'CSS', 'Center'),
@@ -23,18 +21,18 @@ INSERT INTO units (id, name, code, type) VALUES
 ('tckt', 'Phòng TCKT', 'TCKT', 'Company')
 ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
 
--- 2. Seed BOARD OF DIRECTORS
+-- 3. Seed BOARD OF DIRECTORS
 INSERT INTO employees (id, name, email, unit_id, role_code, position, is_director, target) VALUES
 (gen_random_uuid(), 'Hoàng Hà', 'hoangha@cic.com.vn', 'hcns', 'Leadership', 'Tổng Giám đốc', true, '{"signing":0, "revenue":0}'),
 (gen_random_uuid(), 'Trần Lâm Hùng', 'hungtl@cic.com.vn', 'hcns', 'Leadership', 'Phó Tổng Giám đốc', true, '{"signing":0, "revenue":0}'),
 (gen_random_uuid(), 'Nguyễn Quốc Anh', 'anhnq@cic.com.vn', 'hcns', 'Leadership', 'Quản trị viên', false, '{"signing":0, "revenue":0}');
 
--- 3. Seed BACKOFFICE
+-- 4. Seed BACKOFFICE
 INSERT INTO employees (id, name, email, unit_id, role_code, position, target) VALUES
 (gen_random_uuid(), 'Nguyễn Thị Thu', 'thu.nguyen@cic.com.vn', 'hcns', 'Support', 'Trưởng phòng HCNS', '{"signing":0, "revenue":0}'),
 (gen_random_uuid(), 'Phạm Tuấn Anh', 'tuananh@cic.com.vn', 'tckt', 'ChiefAccountant', 'Kế toán trưởng', '{"signing":0, "revenue":0}');
 
--- 4. Seed UNITS (Director + 2 Sales each)
+-- 5. Seed UNITS (Director + 2 Sales each)
 -- BIM
 INSERT INTO employees (id, name, email, unit_id, role_code, position, is_director, target) VALUES
 (gen_random_uuid(), 'Nguyễn Thành Luân', 'luannt@cic.com.vn', 'bim', 'UnitLeader', 'Giám đốc TT BIM', true, '{"signing":5000000000, "revenue":3000000000}'),
@@ -84,7 +82,7 @@ INSERT INTO employees (id, name, email, unit_id, role_code, position, is_directo
 (gen_random_uuid(), 'TVTK Sales 2', 'tvtk.sales2@cic.com.vn', 'tvtk', 'NVKD', 'Chuyên viên KD', false, '{"signing":2000000000, "revenue":1000000000}');
 
 
--- 5. Fix RLS just in case (Redundant but safe)
+-- 6. Refresh RLS permissions
 ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public Full Access" ON employees;
 CREATE POLICY "Public Full Access" ON employees FOR ALL USING (true) WITH CHECK (true);
