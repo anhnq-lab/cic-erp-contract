@@ -24,9 +24,10 @@ import { MOCK_CONTRACTS } from './constants';
 import { Unit, Contract, Product } from './types';
 import { ContractsAPI } from './services/api';
 import { Moon, Sun } from 'lucide-react';
-import { supabase } from './lib/supabase';
+// import { supabase } from './lib/supabase'; // logic moved to context
 import { Session } from '@supabase/supabase-js';
 import Auth from './components/Auth';
+import { useAuth } from './contexts/AuthContext';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -51,24 +52,9 @@ const App: React.FC = () => {
   const [editingContract, setEditingContract] = useState<Contract | null>(null);
   const [cloningContract, setCloningContract] = useState<Contract | null>(null);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoadingSession, setIsLoadingSession] = useState(true);
 
-  // Auth State Listener
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setIsLoadingSession(false);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  // Auth Context
+  const { session, isLoading: isLoadingSession, user, profile } = useAuth();
 
   // Theme management
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {

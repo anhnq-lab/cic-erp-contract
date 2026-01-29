@@ -9,7 +9,35 @@ import {
   Building2,
   Package
 } from 'lucide-react';
-import { Contract, Unit, ImplementationStage, ContractType, SalesPerson, Customer, Product, ProductCategory, Payment, PaymentStatus, PaymentMethod } from './types';
+import { Contract, Unit, ImplementationStage, ContractType, SalesPerson, Customer, Product, ProductCategory, Payment, PaymentStatus, PaymentMethod, UserRole, PlanStatus } from './types';
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  'NVKD': 'Nhân viên Kinh doanh',
+  'UnitLeader': 'Lãnh đạo Đơn vị',
+  'AdminUnit': 'Quản trị Đơn vị',
+  'Accountant': 'Kế toán Viễn thông',
+  'ChiefAccountant': 'Kế toán trưởng',
+  'Legal': 'Ban Pháp chế',
+  'Leadership': 'Ban Lãnh đạo'
+};
+
+export const PLAN_STATUS_LABELS: Record<PlanStatus, string> = {
+  'Draft': 'Nháp (Soạn thảo)',
+  'Pending_Unit': 'Chờ Đơn vị duyệt',
+  'Pending_Finance': 'Chờ Kế toán duyệt',
+  'Pending_Board': 'Chờ Lãnh đạo duyệt',
+  'Approved': 'Đã phê duyệt',
+  'Rejected': 'Từ chối'
+};
+
+export const CONTRACT_STATUS_LABELS: Record<string, string> = {
+  'Active': 'Đang hiệu lực',
+  'Pending': 'Chờ xử lý',
+  'Reviewing': 'Đang xem xét',
+  'Expired': 'Hết hạn',
+  'Draft': 'Nháp',
+  'Liquidated': 'Đã thanh lý'
+};
 
 export const MOCK_UNITS: Unit[] = [
   {

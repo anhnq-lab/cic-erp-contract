@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { CONTRACT_STATUS_LABELS, ROLE_LABELS } from '../constants';
 import { toast } from 'sonner';
 
 import {
@@ -20,7 +21,7 @@ import {
 } from 'lucide-react';
 import { PersonnelAPI, ContractsAPI, UnitsAPI } from '../services/api';
 import PersonnelForm from './PersonnelForm';
-import { SalesPerson, Contract, Unit } from '../types';
+import { SalesPerson, Contract, Unit, UserRole } from '../types';
 
 interface PersonnelDetailProps {
     personnelId: string;
@@ -204,7 +205,7 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
                                     </h2>
                                     {person.position && (
                                         <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400 mt-0.5">
-                                            {person.position}
+                                            {ROLE_LABELS[person.position as UserRole] || person.position}
                                         </p>
                                     )}
                                 </div>
@@ -408,7 +409,7 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
                                         </td>
                                         <td className="py-3.5 px-5 text-center">
                                             <span className={`inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase ${getStatusColor(contract.status)}`}>
-                                                {contract.status}
+                                                {CONTRACT_STATUS_LABELS[contract.status] || contract.status}
                                             </span>
                                         </td>
                                         <td className="py-3.5 px-5">

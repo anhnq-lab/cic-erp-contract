@@ -254,3 +254,54 @@ export interface CustomerBank {
   accountHolder: string;
 }
 
+
+// ============================================
+// WORKFLOW & PERMISSIONS
+// ============================================
+
+export type UserRole = 'NVKD' | 'AdminUnit' | 'UnitLeader' | 'Accountant' | 'ChiefAccountant' | 'Legal' | 'Leadership';
+
+export interface UserProfile {
+  id: string; // Links to auth.users
+  email: string;
+  fullName: string;
+  role: UserRole;
+  unitId?: string; // Links to Unit
+  avatarUrl?: string;
+}
+
+export type PlanStatus = 'Draft' | 'Pending_Unit' | 'Pending_Finance' | 'Pending_Board' | 'Approved' | 'Rejected';
+
+export interface BusinessPlan {
+  id: string;
+  contractId: string;
+  version: number;
+  status: PlanStatus;
+  financials: {
+    revenue: number;
+    costs: number;
+    grossProfit: number;
+    margin: number;
+    cashflow: PaymentPhase[]; // Using existing PaymentPhase structure
+  };
+  isActive: boolean;
+  createdBy: string;
+  createdAt: string;
+  approvedBy?: string;
+  approvedAt?: string;
+  notes?: string;
+}
+
+export type ReviewAction = 'Approve' | 'Reject' | 'RequestChange' | 'Submit';
+export type ReviewRole = 'Unit' | 'Finance' | 'Legal' | 'Board';
+
+export interface ContractReview {
+  id: string;
+  contractId: string;
+  planId?: string;
+  reviewerId: string;
+  role: ReviewRole;
+  action: ReviewAction;
+  comment?: string;
+  createdAt: string;
+}
