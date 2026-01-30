@@ -160,11 +160,17 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
       const year = yearFilter;
       const prevYear = yearFilter === 'All' ? 'All' : (parseInt(yearFilter) - 1).toString();
 
-      console.log('[Dashboard] Fetching with unitId:', unitId, 'year:', year);
+      console.log('[Dashboard] Fetching with:', {
+        unitId,
+        year,
+        typeUnitId: typeof unitId,
+        typeYear: typeof year
+      });
 
       try {
         // STEP 1: Fetch Stats (Most Critical)
         console.log('[Dashboard] Step 1: Fetching stats...');
+
         const statsData = await ContractService.getStatsRPC(unitId, year);
         console.log('[Dashboard] Stats received:', statsData);
 

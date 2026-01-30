@@ -206,45 +206,73 @@ export const ContractService = {
         activeCount: number,
         pendingCount: number
     }> => {
-        console.log('[ContractService.getStatsRPC] Calling RPC with:', { unitId, year });
-        const { data, error } = await supabase.rpc('get_contract_stats', {
-            p_unit_id: unitId,
-            p_year: year
+        const logPrefix = '[ContractService.getStatsRPC]';
+        console.log(`${logPrefix} START`, {
+            unitId,
+            year,
+            typeUnit: typeof unitId,
+            typeYear: typeof year
         });
 
-        console.log('[ContractService.getStatsRPC] Raw response:', { data, error, dataType: typeof data, isArray: Array.isArray(data) });
+        try {
+            // Create a timeout promise to prevent infinite hanging
+            const timeoutMs = 5000;
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error(`RPC_TIMEOUT_5000MS`)), timeoutMs)
+            );
 
-        if (error) {
-            console.warn('[ContractService.getStatsRPC] RPC failed, using fallback query:', error.message);
-            // FALLBACK: Direct query when RPC doesn't exist
+            // Execute RPC
+            const rpcPromise = supabase.rpc('get_contract_stats', {
+                p_unit_id: String(unitId), // Ensure string to prevent object injection
+                p_year: String(year)       // Ensure string
+            });
+
+            console.log(`${logPrefix} Awaiting RPC with 5s timeout...`);
+
+            // Race against timeout
+            const result: any = await Promise.race([rpcPromise, timeoutPromise]);
+            const { data, error } = result;
+
+            console.log(`${logPrefix} Raw response received:`, {
+                hasData: !!data,
+                errorMsg: error?.message,
+                isArray: Array.isArray(data)
+            });
+
+            if (error) {
+                console.warn(`${logPrefix} RPC Error:`, error.message);
+                throw error; // Throw to trigger fallback
+            }
+
+            // Handle different data formats
+            let statsRow = null;
+            if (Array.isArray(data) && data.length > 0) {
+                statsRow = data[0];
+            } else if (data && typeof data === 'object' && !Array.isArray(data)) {
+                statsRow = data;
+            }
+
+            if (statsRow) {
+                const result = {
+                    totalContracts: Number(statsRow.total_contracts || 0),
+                    totalValue: Number(statsRow.total_value || 0),
+                    totalRevenue: Number(statsRow.total_revenue || 0),
+                    totalProfit: Number(statsRow.total_profit || 0),
+                    activeCount: Number(statsRow.active_count || 0),
+                    pendingCount: Number(statsRow.pending_count || 0)
+                };
+                console.log(`${logPrefix} Returning parsed stats:`, result);
+                return result;
+            }
+
+            console.warn(`${logPrefix} Empty data returned`);
+            throw new Error('EMPTY_DATA');
+
+        } catch (err: any) {
+            console.error(`${logPrefix} FAILED or TIMEOUT:`, err.message || err);
+            console.log(`${logPrefix} Switching to FALLBACK QUERY`);
             return ContractService.getStatsFallback(unitId, year);
         }
-
-        // Handle different data formats from RPC
-        let statsRow = null;
-        if (Array.isArray(data) && data.length > 0) {
-            statsRow = data[0];
-        } else if (data && typeof data === 'object' && !Array.isArray(data)) {
-            // RPC might return single object instead of array
-            statsRow = data;
-        }
-
-        if (statsRow) {
-            console.log('[ContractService.getStatsRPC] Parsed stats row:', statsRow);
-            const result = {
-                totalContracts: Number(statsRow.total_contracts || 0),
-                totalValue: Number(statsRow.total_value || 0),
-                totalRevenue: Number(statsRow.total_revenue || 0),
-                totalProfit: Number(statsRow.total_profit || 0),
-                activeCount: Number(statsRow.active_count || 0),
-                pendingCount: Number(statsRow.pending_count || 0)
-            };
-            console.log('[ContractService.getStatsRPC] Returning:', result);
-            return result;
-        }
-
-        console.warn('[ContractService.getStatsRPC] No stats data, using fallback');
-        return ContractService.getStatsFallback(unitId, year);
     },
 
 
@@ -318,23 +346,42 @@ export const ContractService = {
     },
 
     getChartDataRPC: async (unitId: string = 'all', year: string = 'all'): Promise<Array<{ month: number, revenue: number, profit: number, signing: number }>> => {
-        console.log('[ContractService.getChartDataRPC] Calling RPC with:', { unitId, year });
-        const { data, error } = await supabase.rpc('get_dashboard_chart_data', {
-            p_unit_id: unitId,
-            p_year: year
-        });
+        const logPrefix = '[ContractService.getChartDataRPC]';
+        console.log(`${logPrefix} START`, { unitId, year });
 
-        if (error) {
-            console.warn('[ContractService.getChartDataRPC] RPC failed, using fallback:', error.message);
+        try {
+            // Create a timeout promise to prevent infinite hanging
+            const timeoutMs = 5000;
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error(`RPC_TIMEOUT_5000MS`)), timeoutMs)
+            );
+
+            const rpcPromise = supabase.rpc('get_dashboard_chart_data', {
+                p_unit_id: String(unitId),
+                p_year: String(year)
+            });
+
+            console.log(`${logPrefix} Awaiting RPC with 5s timeout...`);
+            const result: any = await Promise.race([rpcPromise, timeoutPromise]);
+            const { data, error } = result;
+
+            if (error) {
+                console.warn(`${logPrefix} RPC failed:`, error.message);
+                throw error;
+            }
+
+            return (data || []).map((d: any) => ({
+                month: Number(d.month),
+                revenue: Number(d.revenue),
+                profit: Number(d.profit),
+                signing: Number(d.signing)
+            }));
+
+        } catch (err: any) {
+            console.error(`${logPrefix} FAILED or TIMEOUT:`, err.message);
+            console.log(`${logPrefix} Switching to FALLBACK`);
             return ContractService.getChartDataFallback(unitId, year);
         }
-
-        return (data || []).map((d: any) => ({
-            month: Number(d.month),
-            revenue: Number(d.revenue),
-            profit: Number(d.profit),
-            signing: Number(d.signing)
-        }));
     },
 
     // FALLBACK for chart data
