@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Save, Loader2, Upload, X, User, Target } from 'lucide-react';
+import { Save, Loader2, Upload, X, User, Building, Calendar, Mail, Phone, MapPin, GraduationCap, CreditCard, Users, Heart } from 'lucide-react';
 import { EmployeeService, UnitService } from '../services';
-import { Employee, KPIPlan, Unit } from '../types';
+import { Employee, Unit } from '../types';
 import { supabase } from '../lib/supabase';
 
 interface PersonnelFormProps {
@@ -27,13 +27,21 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, initialD
         phone: '',
         dateJoined: '',
         avatar_url: '',
-        target: {
-            signing: 0,
-            revenue: 0,
-            adminProfit: 0,
-            revProfit: 0,
-            cash: 0
-        } as KPIPlan
+        // HR fields
+        dateOfBirth: '',
+        gender: '' as 'male' | 'female' | 'other' | '',
+        address: '',
+        education: '',
+        idNumber: '',
+        bankAccount: '',
+        bankName: '',
+        maritalStatus: '' as 'single' | 'married' | 'divorced' | 'widowed' | '',
+        emergencyContact: '',
+        emergencyPhone: '',
+        contractType: '',
+        contractEndDate: '',
+        // Keep target for backward compatibility but hide from UI
+        target: { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 }
     });
 
     const [units, setUnits] = useState<Unit[]>([]);
@@ -63,7 +71,19 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, initialD
                 email: initialData.email || '',
                 phone: initialData.phone || '',
                 dateJoined: initialData.dateJoined || '',
-                target: { ...initialData.target },
+                dateOfBirth: initialData.dateOfBirth || '',
+                gender: (initialData.gender as any) || '',
+                address: initialData.address || '',
+                education: initialData.education || '',
+                idNumber: initialData.idNumber || '',
+                bankAccount: initialData.bankAccount || '',
+                bankName: initialData.bankName || '',
+                maritalStatus: (initialData.maritalStatus as any) || '',
+                emergencyContact: initialData.emergencyContact || '',
+                emergencyPhone: initialData.emergencyPhone || '',
+                contractType: initialData.contractType || '',
+                contractEndDate: initialData.contractEndDate || '',
+                target: initialData.target || { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 },
             });
             setPreviewUrl(initialData.avatar || '');
             setAvatarFile(null);
@@ -72,11 +92,23 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, initialD
                 name: '',
                 unitId: '',
                 employeeCode: '',
-                position: 'NVKD',
+                position: '',
                 email: '',
                 phone: '',
                 dateJoined: new Date().toISOString().split('T')[0],
                 avatar_url: '',
+                dateOfBirth: '',
+                gender: '',
+                address: '',
+                education: '',
+                idNumber: '',
+                bankAccount: '',
+                bankName: '',
+                maritalStatus: '',
+                emergencyContact: '',
+                emergencyPhone: '',
+                contractType: 'Full-time',
+                contractEndDate: '',
                 target: { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 }
             });
             setPreviewUrl('');
@@ -163,6 +195,7 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, initialD
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                    {/* Avatar & Basic Info */}
                     <div className="flex gap-6">
                         {/* Avatar */}
                         <div className="w-1/4 flex flex-col items-center gap-4">
@@ -189,7 +222,7 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, initialD
                             <p className="text-xs text-slate-500 text-center">Ảnh định dạng .jpg, .png</p>
                         </div>
 
-                        {/* Main Info */}
+                        {/* Basic Info */}
                         <div className="w-3/4 grid grid-cols-2 gap-4">
                             <div className="col-span-2">
                                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Họ và tên *</label>
@@ -210,7 +243,7 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, initialD
                                     value={formData.employeeCode}
                                     onChange={e => setFormData({ ...formData, employeeCode: e.target.value })}
                                     className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500"
-                                    placeholder="NV00..."
+                                    placeholder="NV001"
                                 />
                             </div>
 
@@ -221,12 +254,12 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, initialD
                                     value={formData.position}
                                     onChange={e => setFormData({ ...formData, position: e.target.value })}
                                     className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500"
-                                    placeholder="TP Kinh doanh, NVKD..."
+                                    placeholder="Chuyên viên KD"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Đơn vị (Phòng ban) *</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Đơn vị *</label>
                                 <select
                                     required
                                     value={formData.unitId}
@@ -234,14 +267,14 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, initialD
                                     className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500"
                                 >
                                     <option value="">-- Chọn Đơn vị --</option>
-                                    {units.map(u => (
+                                    {units.filter(u => u.id !== 'all').map(u => (
                                         <option key={u.id} value={u.id}>{u.name}</option>
                                     ))}
                                 </select>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ngày vào</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ngày vào làm</label>
                                 <input
                                     type="date"
                                     value={formData.dateJoined}
@@ -249,66 +282,200 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, initialD
                                     className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500"
                                 />
                             </div>
+                        </div>
+                    </div>
 
+                    {/* Personal Info Section */}
+                    <div className="border-t pt-4 dark:border-slate-700">
+                        <h4 className="font-medium mb-3 flex items-center gap-2 text-slate-800 dark:text-slate-200">
+                            <User size={18} className="text-indigo-500" />
+                            Thông tin cá nhân
+                        </h4>
+                        <div className="grid grid-cols-3 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+                                <label className="block text-xs text-slate-500 mb-1">Ngày sinh</label>
+                                <input
+                                    type="date"
+                                    value={formData.dateOfBirth}
+                                    onChange={e => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-slate-500 mb-1">Giới tính</label>
+                                <select
+                                    value={formData.gender}
+                                    onChange={e => setFormData({ ...formData, gender: e.target.value as any })}
+                                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                                >
+                                    <option value="">-- Chọn --</option>
+                                    <option value="male">Nam</option>
+                                    <option value="female">Nữ</option>
+                                    <option value="other">Khác</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs text-slate-500 mb-1">Tình trạng hôn nhân</label>
+                                <select
+                                    value={formData.maritalStatus}
+                                    onChange={e => setFormData({ ...formData, maritalStatus: e.target.value as any })}
+                                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                                >
+                                    <option value="">-- Chọn --</option>
+                                    <option value="single">Độc thân</option>
+                                    <option value="married">Đã kết hôn</option>
+                                    <option value="divorced">Ly hôn</option>
+                                    <option value="widowed">Góa</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs text-slate-500 mb-1">Số CCCD/CMND</label>
+                                <input
+                                    type="text"
+                                    value={formData.idNumber}
+                                    onChange={e => setFormData({ ...formData, idNumber: e.target.value })}
+                                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                                    placeholder="001234567890"
+                                />
+                            </div>
+                            <div className="col-span-2">
+                                <label className="block text-xs text-slate-500 mb-1">Địa chỉ</label>
+                                <input
+                                    type="text"
+                                    value={formData.address}
+                                    onChange={e => setFormData({ ...formData, address: e.target.value })}
+                                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                                    placeholder="Số nhà, đường, quận/huyện, tỉnh/thành"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Contact Info Section */}
+                    <div className="border-t pt-4 dark:border-slate-700">
+                        <h4 className="font-medium mb-3 flex items-center gap-2 text-slate-800 dark:text-slate-200">
+                            <Phone size={18} className="text-emerald-500" />
+                            Thông tin liên hệ
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs text-slate-500 mb-1">Email</label>
                                 <input
                                     type="email"
                                     value={formData.email}
                                     onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                                    placeholder="email@company.com"
                                 />
                             </div>
-
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Số điện thoại</label>
+                                <label className="block text-xs text-slate-500 mb-1">Số điện thoại</label>
                                 <input
                                     type="tel"
                                     value={formData.phone}
                                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                                    placeholder="0912345678"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-slate-500 mb-1">Người liên hệ khẩn cấp</label>
+                                <input
+                                    type="text"
+                                    value={formData.emergencyContact}
+                                    onChange={e => setFormData({ ...formData, emergencyContact: e.target.value })}
+                                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                                    placeholder="Tên người thân"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-slate-500 mb-1">SĐT khẩn cấp</label>
+                                <input
+                                    type="tel"
+                                    value={formData.emergencyPhone}
+                                    onChange={e => setFormData({ ...formData, emergencyPhone: e.target.value })}
+                                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                                    placeholder="0912345678"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    {/* KPI Targets */}
+                    {/* Education & Bank Section */}
                     <div className="border-t pt-4 dark:border-slate-700">
                         <h4 className="font-medium mb-3 flex items-center gap-2 text-slate-800 dark:text-slate-200">
-                            <Target size={18} className="text-indigo-500" />
-                            Chỉ tiêu KPI (Năm nay)
+                            <GraduationCap size={18} className="text-amber-500" />
+                            Học vấn & Ngân hàng
                         </h4>
                         <div className="grid grid-cols-3 gap-4">
                             <div>
-                                <label className="block text-xs text-slate-500 mb-1">Doanh số ký (VNĐ)</label>
+                                <label className="block text-xs text-slate-500 mb-1">Trình độ học vấn</label>
                                 <input
-                                    type="number"
-                                    value={formData.target.signing}
-                                    onChange={e => setFormData({ ...formData, target: { ...formData.target, signing: Number(e.target.value) } })}
+                                    type="text"
+                                    value={formData.education}
+                                    onChange={e => setFormData({ ...formData, education: e.target.value })}
                                     className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                                    placeholder="Đại học, Thạc sĩ..."
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-slate-500 mb-1">Doanh thu (VNĐ)</label>
+                                <label className="block text-xs text-slate-500 mb-1">Số tài khoản</label>
                                 <input
-                                    type="number"
-                                    value={formData.target.revenue}
-                                    onChange={e => setFormData({ ...formData, target: { ...formData.target, revenue: Number(e.target.value) } })}
+                                    type="text"
+                                    value={formData.bankAccount}
+                                    onChange={e => setFormData({ ...formData, bankAccount: e.target.value })}
                                     className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                                    placeholder="1234567890"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-slate-500 mb-1">Tiền về (VNĐ)</label>
+                                <label className="block text-xs text-slate-500 mb-1">Ngân hàng</label>
                                 <input
-                                    type="number"
-                                    value={formData.target.cash}
-                                    onChange={e => setFormData({ ...formData, target: { ...formData.target, cash: Number(e.target.value) } })}
+                                    type="text"
+                                    value={formData.bankName}
+                                    onChange={e => setFormData({ ...formData, bankName: e.target.value })}
+                                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                                    placeholder="Vietcombank, BIDV..."
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Contract Info Section */}
+                    <div className="border-t pt-4 dark:border-slate-700">
+                        <h4 className="font-medium mb-3 flex items-center gap-2 text-slate-800 dark:text-slate-200">
+                            <Building size={18} className="text-purple-500" />
+                            Hợp đồng lao động
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs text-slate-500 mb-1">Loại hợp đồng</label>
+                                <select
+                                    value={formData.contractType}
+                                    onChange={e => setFormData({ ...formData, contractType: e.target.value })}
+                                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                                >
+                                    <option value="">-- Chọn --</option>
+                                    <option value="Full-time">Toàn thời gian</option>
+                                    <option value="Part-time">Bán thời gian</option>
+                                    <option value="Contract">Hợp đồng</option>
+                                    <option value="Intern">Thực tập</option>
+                                    <option value="Freelance">Tự do</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs text-slate-500 mb-1">Ngày hết hạn HĐ</label>
+                                <input
+                                    type="date"
+                                    value={formData.contractEndDate}
+                                    onChange={e => setFormData({ ...formData, contractEndDate: e.target.value })}
                                     className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
                                 />
                             </div>
                         </div>
                     </div>
 
+                    {/* Actions */}
                     <div className="flex justify-end gap-3 pt-4 border-t dark:border-slate-700">
                         <button
                             type="button"

@@ -25,6 +25,19 @@ export interface Employee {
   roleCode?: string; // Mã role hệ thống
   dateJoined?: string; // Ngày vào công ty
   employeeCode?: string; // Mã nhân viên
+  // HR fields
+  dateOfBirth?: string; // Ngày sinh
+  gender?: 'male' | 'female' | 'other';
+  address?: string; // Địa chỉ
+  education?: string; // Trình độ học vấn
+  idNumber?: string; // CCCD/CMND
+  bankAccount?: string; // Số tài khoản
+  bankName?: string; // Tên ngân hàng
+  maritalStatus?: 'single' | 'married' | 'divorced' | 'widowed';
+  emergencyContact?: string; // Người liên hệ khẩn cấp
+  emergencyPhone?: string; // SĐT khẩn cấp
+  contractType?: string; // Loại hợp đồng LĐ
+  contractEndDate?: string; // Ngày hết hạn HĐ
 }
 
 export interface Unit {

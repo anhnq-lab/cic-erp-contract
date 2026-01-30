@@ -22,7 +22,20 @@ const mapEmployee = (s: any): Employee => {
         roleCode: s.role_code || '',
         dateJoined: s.date_joined || '',
         avatar: s.avatar || '',
-        target: s.target || { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 }
+        target: s.target || { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 },
+        // HR fields
+        dateOfBirth: s.date_of_birth || '',
+        gender: s.gender || '',
+        address: s.address || '',
+        education: s.education || '',
+        idNumber: s.id_number || '',
+        bankAccount: s.bank_account || '',
+        bankName: s.bank_name || '',
+        maritalStatus: s.marital_status || '',
+        emergencyContact: s.emergency_contact || '',
+        emergencyPhone: s.emergency_phone || '',
+        contractType: s.contract_type || '',
+        contractEndDate: s.contract_end_date || ''
     };
 };
 
@@ -109,6 +122,19 @@ export const EmployeeService = {
         if (payload.dateJoined !== undefined) dbPayload.date_joined = payload.dateJoined;
         if (payload.avatar !== undefined) dbPayload.avatar = payload.avatar;
         if (payload.target !== undefined) dbPayload.target = payload.target;
+        // HR fields
+        if (payload.dateOfBirth !== undefined) dbPayload.date_of_birth = payload.dateOfBirth || null;
+        if (payload.gender !== undefined) dbPayload.gender = payload.gender || null;
+        if (payload.address !== undefined) dbPayload.address = payload.address;
+        if (payload.education !== undefined) dbPayload.education = payload.education;
+        if (payload.idNumber !== undefined) dbPayload.id_number = payload.idNumber;
+        if (payload.bankAccount !== undefined) dbPayload.bank_account = payload.bankAccount;
+        if (payload.bankName !== undefined) dbPayload.bank_name = payload.bankName;
+        if (payload.maritalStatus !== undefined) dbPayload.marital_status = payload.maritalStatus || null;
+        if (payload.emergencyContact !== undefined) dbPayload.emergency_contact = payload.emergencyContact;
+        if (payload.emergencyPhone !== undefined) dbPayload.emergency_phone = payload.emergencyPhone;
+        if (payload.contractType !== undefined) dbPayload.contract_type = payload.contractType;
+        if (payload.contractEndDate !== undefined) dbPayload.contract_end_date = payload.contractEndDate || null;
 
         const { data, error } = await supabase.from('employees').update(dbPayload).eq('id', id).select().single();
         if (error) throw error;
