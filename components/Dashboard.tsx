@@ -1,5 +1,6 @@
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 import {
   XAxis,
@@ -169,11 +170,35 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
       });
 
       try {
-        // STEP 1: Fetch Stats (Most Critical)
-        console.log('[Dashboard] Step 1: Fetching stats...');
+        // STEP 1: Fetch Stats (DIRECT SQL - BYPASS SERVICE)
+        console.log('[Dashboard] Executing DIRECT RPC call...');
+        const { data: rpcData, error: rpcError } = await supabase.rpc('get_contract_stats', {
+          p_unit_id: unitId,
+          p_year: year
+        });
 
-        const statsData = await ContractService.getStatsRPC(unitId, year);
-        console.log('[Dashboard] Stats received:', statsData);
+        if (rpcError) {
+          console.error('[Dashboard] RPC Error:', rpcError);
+          throw rpcError;
+        }
+
+        console.log('[Dashboard] RPC Success:', rpcData);
+        let statsData;
+
+        if (rpcData && rpcData.length > 0) {
+          statsData = {
+            totalContracts: Number(rpcData[0].total_contracts || 0),
+            totalValue: Number(rpcData[0].total_value || 0),
+            totalRevenue: Number(rpcData[0].total_revenue || 0),
+            totalProfit: Number(rpcData[0].total_profit || 0),
+            activeCount: Number(rpcData[0].active_count || 0),
+            pendingCount: Number(rpcData[0].pending_count || 0)
+          };
+        } else {
+          statsData = { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0, activeCount: 0, pendingCount: 0 };
+        }
+
+        console.log('[Dashboard] Stats processed:', statsData);
 
         if (!isCancelled) {
           setStats({

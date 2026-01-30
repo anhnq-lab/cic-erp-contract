@@ -142,6 +142,35 @@ const DebugPanel: React.FC = () => {
             }
         }
 
+        // 5. TEST FULL LOAD (Simulate Fallback)
+        try {
+            const startLoad = Date.now();
+            const { data: contracts, error: loadError } = await supabase
+                .from('contracts')
+                .select('id, value, actual_revenue, estimated_cost, status');
+            const endLoad = Date.now();
+
+            if (loadError) {
+                newResults.push({
+                    name: 'FULL LOAD TEST',
+                    status: 'error',
+                    message: `Failed: ${loadError.message}`
+                });
+            } else {
+                newResults.push({
+                    name: 'FULL LOAD TEST',
+                    status: 'ok',
+                    message: `Fetched ${contracts?.length} rows in ${endLoad - startLoad}ms`
+                });
+            }
+        } catch (e: any) {
+            newResults.push({
+                name: 'FULL LOAD TEST',
+                status: 'error',
+                message: `Crash: ${e.message}`
+            });
+        }
+
         setResults(newResults);
         setIsRunning(false);
     };
