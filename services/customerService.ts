@@ -5,75 +5,64 @@ import { Customer } from '../types';
 const mapCustomer = (c: any): Customer => ({
     id: c.id,
     name: c.name,
-    shortName: c.short_name,
+    shortName: c.short_name || c.shortName, // Handle both snake_case (RPC) and camelCase (if any)
     industry: c.industry,
-    contactPerson: c.contact_person,
+    contactPerson: c.contact_person || c.contactPerson,
     phone: c.phone,
     email: c.email,
     address: c.address,
-    taxCode: c.tax_code,
+    taxCode: c.tax_code || c.taxCode,
     website: c.website,
     notes: c.notes,
-    bankName: c.bank_name,
-    bankBranch: c.bank_branch,
-    bankAccount: c.bank_account,
-    foundedDate: c.founded_date,
-    type: c.type || 'Customer'
+    bankName: c.bank_name || c.bankName,
+    bankBranch: c.bank_branch || c.bankBranch,
+    bankAccount: c.bank_account || c.bankAccount,
+    foundedDate: c.founded_date || c.foundedDate,
+    type: c.type || 'Customer',
+    stats: c.contract_count !== undefined ? {
+        contractCount: Number(c.contract_count),
+        totalValue: Number(c.total_value),
+        totalRevenue: Number(c.total_revenue),
+        activeContracts: Number(c.active_contracts_count)
+    } : undefined
 });
 
 export const CustomerService = {
     getAll: async (params?: { page?: number; pageSize?: number; search?: string; type?: string; industry?: string }): Promise<{ data: Customer[]; total: number }> => {
-        let query = supabase.from('customers').select('*', { count: 'exact' });
+        const p_search = params?.search || null;
+        const p_type = params?.type === 'all' ? null : params?.type;
+        const p_industry = params?.industry === 'all' ? null : params?.industry;
+        const p_limit = params?.pageSize || 10;
+        const p_offset = ((params?.page || 1) - 1) * p_limit;
 
-        if (params?.search) {
-            query = query.or(`name.ilike.%${params.search}%,short_name.ilike.%${params.search}%,contact_person.ilike.%${params.search}%`);
-        }
+        const [listRes, countRes] = await Promise.all([
+            supabase.rpc('get_customers_with_stats', {
+                p_search,
+                p_type,
+                p_industry,
+                p_limit,
+                p_offset
+            }),
+            supabase.rpc('get_customers_count', {
+                p_search,
+                p_type,
+                p_industry
+            })
+        ]);
 
-        if (params?.type && params.type !== 'all') {
-            // Logic: type='Customer' matches 'Customer' or 'Both'. type='Supplier' matches 'Supplier' or 'Both'.
-            if (params.type === 'Customer') {
-                query = query.in('type', ['Customer', 'Both', 'Customer,Supplier']);
-            } else if (params.type === 'Supplier') {
-                query = query.in('type', ['Supplier', 'Both', 'Customer,Supplier']);
-            } else {
-                query = query.eq('type', params.type);
-            }
-        }
+        if (listRes.error) throw listRes.error;
+        if (countRes.error) throw countRes.error;
 
-        if (params?.industry && params.industry !== 'all') {
-            query = query.eq('industry', params.industry);
-        }
-
-        query = query.order('created_at', { ascending: false });
-
-        if (params?.page !== undefined && params?.pageSize !== undefined) {
-            const from = (params.page - 1) * params.pageSize;
-            const to = from + params.pageSize - 1;
-            query = query.range(from, to);
-        }
-
-        const { data, error, count } = await query;
-        if (error) throw error;
-        return { data: data.map(mapCustomer), total: count || 0 };
+        return {
+            data: (listRes.data || []).map(mapCustomer),
+            total: Number(countRes.data) || 0
+        };
     },
 
     getById: async (id: string): Promise<Customer | undefined> => {
         const { data, error } = await supabase.from('customers').select('*').eq('id', id).single();
         if (error) return undefined;
         return mapCustomer(data);
-    },
-
-    getStats: async (id: string) => {
-        const { data: contracts, error } = await supabase.from('contracts').select('*').eq('customer_id', id);
-
-        if (error || !contracts) return null;
-
-        return {
-            contractCount: contracts.length,
-            totalValue: contracts.reduce((sum, c) => sum + (c.value || 0), 0),
-            totalRevenue: contracts.reduce((sum, c) => sum + (c.actual_revenue || 0), 0),
-            activeContracts: contracts.filter(c => c.status === 'Active').length,
-        };
     },
 
     create: async (data: Omit<Customer, 'id'>): Promise<Customer> => {

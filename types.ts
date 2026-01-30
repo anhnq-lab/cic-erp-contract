@@ -187,6 +187,12 @@ export interface Customer {
   bankAccount?: string;
   foundedDate?: string;
   type?: 'Customer' | 'Supplier' | 'Both';
+  stats?: {
+    contractCount: number;
+    totalValue: number;
+    totalRevenue: number;
+    activeContracts: number;
+  };
 }
 
 /**

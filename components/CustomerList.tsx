@@ -13,8 +13,8 @@ import {
     Trash2,
     MoreVertical
 } from 'lucide-react';
-import { Customer, Contract } from '../types';
-import { CustomerService, ContractService } from '../services';
+import { Customer } from '../types';
+import { CustomerService } from '../services';
 import CustomerForm from './CustomerForm';
 
 interface CustomerListProps {
@@ -26,7 +26,6 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
     const [industryFilter, setIndustryFilter] = useState<string>('all');
     const [typeFilter, setTypeFilter] = useState<'all' | 'Customer' | 'Supplier'>('all');
     const [customers, setCustomers] = useState<Customer[]>([]);
-    const [contracts, setContracts] = useState<Contract[]>([]); // Note: This might only be a subset if ContractsAPI is paginated
     const [isLoading, setIsLoading] = useState(true);
 
     // Pagination State
@@ -45,7 +44,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                // Fetch Customers (Paginated)
+                // Fetch Customers (Paginated) with Stats included
                 const custRes = await CustomerService.getAll({
                     page: currentPage,
                     pageSize,
@@ -57,35 +56,6 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                 setCustomers(custRes.data);
                 setTotalCount(custRes.total);
                 setTotalPages(Math.ceil(custRes.total / pageSize));
-
-                // Optimize: Fetch contracts only for displayed customers to reduce payload
-                if (custRes.data.length > 0) {
-                    // This is slightly tricky, we probably want stats per customer.
-                    // Instead of fetching individual contracts per customer (N+1), 
-                    // we might want a new API ContractService.getByCustomerIds(ids)
-                    // For now, let's just fetch all contracts (if not too large) or iterate.
-                    // Actually, ContractService.getAll might be too heavy.
-                    // Let's rely on CustomerService.getStats() in loop or a new bulk endpoint?
-                    // To keep it simple and safe for refactor, let's fetch individual stats or use ContractService.getAll but filtered.
-                    // The old code used ContractsAPI.getByCustomerIds... wait, checking old code.
-                    // Old code: ContractsAPI.getByCustomerIds(visibleIds). 
-                    // My previous ContractService didn't implement getByCustomerIds explicitly in the walkthrough, but let's check contractService.ts.
-                    // I will add getByCustomerIds to ContractService to match this requirement or simulate it.
-
-                    // SIMULATION: Fetch all contracts for these customers.
-                    // Since we don't have bulk fetch in my remembered service, I will map.
-                    const visibleIds = custRes.data.map(c => c.id);
-                    // This is inefficient (10 requests). But safe for now. 
-                    // BETTER: Add getByCustomerIds to ContractService later.
-                    // For now, let's assume we implement a helper or loop.
-
-                    const contractPromises = visibleIds.map(id => ContractService.getByCustomerId(id));
-                    const contractsArrays = await Promise.all(contractPromises);
-                    const allContracts = contractsArrays.flat();
-                    setContracts(allContracts);
-                } else {
-                    setContracts([]);
-                }
 
             } catch (error) {
                 console.error("Error loading data", error);
@@ -105,18 +75,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
         setCurrentPage(1);
     }, [searchQuery, typeFilter, industryFilter]);
 
-    // Derived Filters (Client-side logic removed, now using server data directly)
-    const displayCustomers = customers;
-
     const industries = ['all', 'Xây dựng', 'Bất động sản', 'Năng lượng', 'Công nghệ', 'Sản xuất', 'Khác']; // Hardcoded for filter UI
-
-    const getCustomerStats = (customer: Customer) => {
-        const custContracts = contracts.filter(c => c.customerId === customer.id || c.partyA === customer.name);
-        const totalValue = custContracts.reduce((sum, c) => sum + (c.value || 0), 0);
-        const totalRevenue = custContracts.reduce((sum, c) => sum + (c.actualRevenue || 0), 0);
-        const activeContracts = custContracts.filter(c => c.status === 'Active').length;
-        return { contractCount: custContracts.length, totalValue, totalRevenue, activeContracts };
-    };
 
     const formatCurrency = (val: number) => {
         if (val >= 1e9) return `${(val / 1e9).toFixed(1)} tỷ`;
@@ -135,21 +94,17 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
         }
     };
 
-    // Summary stats (Approximate based on current view or total)
-    // Calculating on only 10 visible items is misleading.
-    // Better to hide or fetch from a "GetTotalStats" API.
-    // I will show stats for "Current Page" or remove.
-    // Let's calculate for displayCustomers.
+    // Summary stats for current view
     const viewStats = useMemo(() => {
         let totalContracts = 0;
         let totalValue = 0;
-        displayCustomers.forEach(c => {
-            const stats = getCustomerStats(c);
+        customers.forEach(c => {
+            const stats = c.stats || { contractCount: 0, totalValue: 0, totalRevenue: 0, activeContracts: 0 };
             totalContracts += stats.contractCount;
             totalValue += stats.totalValue;
         });
         return { totalContracts, totalValue };
-    }, [displayCustomers, contracts]);
+    }, [customers]);
 
     // CRUD handlers
     const handleAdd = () => {
@@ -163,22 +118,13 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
         setActionMenuId(null);
     };
 
-    // ... handleSave and handleDelete need minor update to refresh list
-    const handleRefresh = () => {
-        // Trigger re-fetch
-        const event = new Event('refresh-customers');
-        // simplistic way? or just depend on `customers` setter. 
-        // Actually, handleSave calls setCustomers directly which is fine for Optimistic UI or simple update
-        // But for reliable sync with server side sorting, better to re-fetch.
-        // For now, I'll keep existing logic but update `totalCount`.
-    };
-
-
     const handleSave = async (data: Omit<Customer, 'id'> | Customer) => {
         try {
             if ('id' in data) {
-                await CustomerService.update(data.id, data);
-                setCustomers(prev => prev.map(c => c.id === data.id ? data as Customer : c));
+                const updated = await CustomerService.update(data.id, data);
+                // Note: 'updated' might not have stats if API generic update doesn't return joined stats.
+                // Ideally we should refetch or preserve old stats. For now, let's just refetch to be safe/simple.
+                setCustomers(prev => prev.map(c => c.id === data.id ? { ...updated!, stats: c.stats } : c));
                 toast.success("Cập nhật đối tác thành công");
             } else {
                 const newCustomer = await CustomerService.create(data);
@@ -210,7 +156,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                     {typeFilter === 'all' ? 'Quản lý Đối tác' : typeFilter === 'Customer' ? 'Quản lý Khách hàng' : 'Quản lý Nhà cung cấp'}
                 </h1>
                 <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-                    {displayCustomers.length} {typeFilter === 'Supplier' ? 'nhà cung cấp' : 'khách hàng'} • Trang {currentPage}/{totalPages}
+                    {totalCount} {typeFilter === 'Supplier' ? 'nhà cung cấp' : 'khách hàng'} • Trang {currentPage}/{totalPages}
                 </p>
             </div>
 
@@ -341,7 +287,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                                 <tr>
                                     <td colSpan={6} className="py-12 text-center text-slate-500">Đang tải dữ liệu...</td>
                                 </tr>
-                            ) : displayCustomers.length === 0 ? (
+                            ) : customers.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="py-12 text-center text-slate-500">
                                         <div className="flex flex-col items-center">
@@ -351,8 +297,8 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                                     </td>
                                 </tr>
                             ) : (
-                                displayCustomers.map((customer) => {
-                                    const stats = getCustomerStats(customer);
+                                customers.map((customer) => {
+                                    const stats = customer.stats || { contractCount: 0, totalValue: 0, totalRevenue: 0, activeContracts: 0 };
                                     return (
                                         <tr
                                             key={customer.id}
@@ -448,7 +394,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                 {/* Pagination Footer */}
                 <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <div className="text-sm text-slate-500 dark:text-slate-400">
-                        Hiển thị <strong>{displayCustomers.length}</strong> trên tổng số <strong>{totalCount}</strong> đối tác
+                        Hiển thị <strong>{customers.length}</strong> trên tổng số <strong>{totalCount}</strong> đối tác
                     </div>
                     <div className="flex gap-2">
                         <button
