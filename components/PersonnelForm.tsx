@@ -161,10 +161,32 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, initialD
                 setIsUploading(false);
             }
 
+            // Build submit data with correct field names
             const submitData: any = {
-                ...formData,
-                avatar: avatarUrl
+                name: formData.name,
+                unitId: formData.unitId,
+                employeeCode: formData.employeeCode,
+                position: formData.position,
+                email: formData.email,
+                phone: formData.phone,
+                dateJoined: formData.dateJoined,
+                avatar: avatarUrl, // Note: 'avatar' not 'avatar_url'
+                target: formData.target,
+                // HR fields
+                dateOfBirth: formData.dateOfBirth || null,
+                gender: formData.gender || null,
+                address: formData.address,
+                education: formData.education,
+                idNumber: formData.idNumber,
+                bankAccount: formData.bankAccount,
+                bankName: formData.bankName,
+                maritalStatus: formData.maritalStatus || null,
+                emergencyContact: formData.emergencyContact,
+                emergencyPhone: formData.emergencyPhone,
+                contractType: formData.contractType,
+                contractEndDate: formData.contractEndDate || null
             };
+
             if (initialData && initialData.id) {
                 submitData.id = initialData.id;
             }
