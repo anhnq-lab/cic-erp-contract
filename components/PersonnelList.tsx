@@ -306,14 +306,14 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                 </div>
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-amber-100 dark:bg-amber-900/30 rounded-xl text-amber-600 dark:text-amber-400">
-                            <GraduationCap size={20} />
+                        <div className="p-2.5 bg-pink-100 dark:bg-pink-900/30 rounded-xl text-pink-600 dark:text-pink-400">
+                            <User size={20} />
                         </div>
                         <div>
                             <p className="text-2xl font-black text-slate-900 dark:text-slate-100">
-                                {allPersonnel.filter(p => p.education).length}
+                                {allPersonnel.filter(p => p.gender === 'male').length}/{allPersonnel.filter(p => p.gender === 'female').length}
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Có học vấn</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Nam / Nữ</p>
                         </div>
                     </div>
                 </div>
