@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIC ERP - Database Debug</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        .loading {
+            color: orange;
+        }
+
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #4338ca;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #4f46e5;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔧 CIC ERP - Database Debug Tool</h1>
+
+    <div class="card">
+        <h2>1. Supabase Connection</h2>
+        <div id="connection-status" class="loading">Checking...</div>
+        <pre id="connection-details"></pre>
+    </div>
+
+    <div class="card">
+        <h2>2. Authentication Status</h2>
+        <div id="auth-status" class="loading">Checking...</div>
+        <pre id="auth-details"></pre>
+    </div>
+
+    <div class="card">
+        <h2>3. Data Counts (Raw Query)</h2>
+        <button onclick="runDataCheck()">🔄 Run Data Check</button>
+        <table id="data-table">
+            <thead>
+                <tr>
+                    <th>Table</th>
+                    <th>Count</th>
+                    <th>Status</th>
+                    <th>Error</th>
+                </tr>
+            </thead>
+            <tbody id="data-tbody"></tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>4. RLS Status Check</h2>
+        <button onclick="checkRLS()">🔒 Check RLS</button>
+        <pre id="rls-result"></pre>
+    </div>
+
+    <div class="card">
+        <h2>5. Quick Fixes</h2>
+        <button onclick="disableRLS()">⚠️ Disable RLS (Dev Only)</button>
+        <button onclick="testDirectQuery()">🧪 Test Direct Query</button>
+        <pre id="fix-result"></pre>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        // Get env from localStorage or prompt
+        const SUPABASE_URL = localStorage.getItem('SUPABASE_URL') || prompt('Enter Supabase URL:', 'https://yrlqaotysixcdqnwtlko.supabase.co');
+        const SUPABASE_KEY = localStorage.getItem('SUPABASE_KEY') || prompt('Enter Supabase Anon Key:');
+
+        localStorage.setItem('SUPABASE_URL', SUPABASE_URL);
+        localStorage.setItem('SUPABASE_KEY', SUPABASE_KEY);
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.supabase = supabase;
+
+        // 1. Check Connection
+        async function checkConnection() {
+            const el = document.getElementById('connection-status');
+            const details = document.getElementById('connection-details');
+            try {
+                const start = Date.now();
+                const { data, error } = await supabase.from('units').select('count', { count: 'exact', head: true });
+                const elapsed = Date.now() - start;
+
+                if (error) throw error;
+
+                el.className = 'success';
+                el.textContent = `✅ Connected! (${elapsed}ms)`;
+                details.textContent = `URL: ${SUPABASE_URL}\nResponse time: ${elapsed}ms`;
+            } catch (err) {
+                el.className = 'error';
+                el.textContent = '❌ Connection Failed';
+                details.textContent = JSON.stringify(err, null, 2);
+            }
+        }
+
+        // 2. Check Auth
+        async function checkAuth() {
+            const el = document.getElementById('auth-status');
+            const details = document.getElementById('auth-details');
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+
+                if (error) throw error;
+
+                if (session) {
+                    el.className = 'success';
+                    el.textContent = '✅ Authenticated';
+                    details.textContent = `User: ${session.user.email}\nID: ${session.user.id}\nExpires: ${new Date(session.expires_at * 1000).toLocaleString()}`;
+                } else {
+                    el.className = 'error';
+                    el.textContent = '❌ Not Authenticated';
+                    details.textContent = 'No session found. User may need to login.';
+                }
+            } catch (err) {
+                el.className = 'error';
+                el.textContent = '❌ Auth Check Failed';
+                details.textContent = JSON.stringify(err, null, 2);
+            }
+        }
+
+        // 3. Run Data Check
+        window.runDataCheck = async function () {
+            const tbody = document.getElementById('data-tbody');
+            tbody.innerHTML = '<tr><td colspan="4" class="loading">Loading...</td></tr>';
+
+            const tables = ['units', 'employees', 'contracts', 'customers', 'profiles', 'products'];
+            const results = [];
+
+            for (const table of tables) {
+                try {
+                    const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true });
+                    results.push({
+                        table,
+                        count: count ?? 0,
+                        status: error ? 'error' : (count > 0 ? 'success' : 'empty'),
+                        error: error ? error.message : null
+                    });
+                } catch (err) {
+                    results.push({
+                        table,
+                        count: 0,
+                        status: 'error',
+                        error: err.message
+                    });
+                }
+            }
+
+            tbody.innerHTML = results.map(r => `
+                <tr>
+                    <td>${r.table}</td>
+                    <td>${r.count}</td>
+                    <td class="${r.status === 'success' ? 'success' : r.status === 'error' ? 'error' : 'loading'}">${r.status}</td>
+                    <td>${r.error || '-'}</td>
+                </tr>
+            `).join('');
+        };
+
+        // 4. Check RLS
+        window.checkRLS = async function () {
+            const el = document.getElementById('rls-result');
+            el.textContent = 'Checking RLS status...';
+
+            try {
+                // Try to query pg_tables - this requires special permissions
+                const { data, error } = await supabase.rpc('check_rls_status');
+
+                if (error) {
+                    el.textContent = `RLS Check via RPC failed: ${error.message}\n\nNote: You may need to run this SQL in Supabase SQL Editor:\n\n` +
+                        `SELECT tablename, \n` +
+                        `       CASE WHEN rowsecurity THEN 'ENABLED' ELSE 'DISABLED' END as rls_status\n` +
+                        `FROM pg_tables \n` +
+                        `WHERE schemaname = 'public' \n` +
+                        `ORDER BY tablename;`;
+                } else {
+                    el.textContent = JSON.stringify(data, null, 2);
+                }
+            } catch (err) {
+                el.textContent = `Error: ${err.message}`;
+            }
+        };
+
+        // 5. Quick Fixes
+        window.disableRLS = async function () {
+            const el = document.getElementById('fix-result');
+            el.textContent = 'To disable RLS, run this SQL in Supabase SQL Editor:\n\n' +
+                `ALTER TABLE public.units DISABLE ROW LEVEL SECURITY;\n` +
+                `ALTER TABLE public.employees DISABLE ROW LEVEL SECURITY;\n` +
+                `ALTER TABLE public.contracts DISABLE ROW LEVEL SECURITY;\n` +
+                `ALTER TABLE public.customers DISABLE ROW LEVEL SECURITY;\n` +
+                `ALTER TABLE public.profiles DISABLE ROW LEVEL SECURITY;\n` +
+                `ALTER TABLE public.products DISABLE ROW LEVEL SECURITY;\n` +
+                `ALTER TABLE public.payments DISABLE ROW LEVEL SECURITY;\n` +
+                `ALTER TABLE public.contract_business_plans DISABLE ROW LEVEL SECURITY;\n` +
+                `ALTER TABLE public.contract_documents DISABLE ROW LEVEL SECURITY;`;
+        };
+
+        window.testDirectQuery = async function () {
+            const el = document.getElementById('fix-result');
+            el.textContent = 'Testing direct queries...\n\n';
+
+            try {
+                // Test units
+                const { data: units, error: unitsErr } = await supabase.from('units').select('*');
+                el.textContent += `Units: ${units?.length ?? 0} records ${unitsErr ? '(Error: ' + unitsErr.message + ')' : ''}\n`;
+
+                // Test employees
+                const { data: employees, error: empErr } = await supabase.from('employees').select('*');
+                el.textContent += `Employees: ${employees?.length ?? 0} records ${empErr ? '(Error: ' + empErr.message + ')' : ''}\n`;
+
+                // Test contracts
+                const { data: contracts, error: contErr } = await supabase.from('contracts').select('*');
+                el.textContent += `Contracts: ${contracts?.length ?? 0} records ${contErr ? '(Error: ' + contErr.message + ')' : ''}\n`;
+
+                if (units?.length > 0) {
+                    el.textContent += `\nFirst Unit: ${JSON.stringify(units[0], null, 2)}`;
+                }
+            } catch (err) {
+                el.textContent += `\nError: ${err.message}`;
+            }
+        };
+
+        // Run initial checks
+        checkConnection();
+        checkAuth();
+    </script>
+</body>
+
+</html>
