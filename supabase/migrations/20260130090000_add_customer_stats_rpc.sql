@@ -9,10 +9,9 @@ CREATE OR REPLACE FUNCTION get_customers_with_stats(
     p_offset INT DEFAULT NULL
 )
 RETURNS TABLE (
-    id UUID,
+    id TEXT,
     name TEXT,
     short_name TEXT,
-    code TEXT,
     tax_code TEXT,
     address TEXT,
     phone TEXT,
@@ -21,13 +20,10 @@ RETURNS TABLE (
     type TEXT,
     industry TEXT,
     contact_person TEXT,
-    "position" TEXT,
     bank_account TEXT,
     bank_name TEXT,
     notes TEXT,
-    is_active BOOLEAN,
     created_at TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ,
     contract_count BIGINT,
     total_value NUMERIC,
     total_revenue NUMERIC,
@@ -55,7 +51,6 @@ BEGIN
         c.id,
         c.name,
         c.short_name,
-        c.code,
         c.tax_code,
         c.address,
         c.phone,
@@ -64,13 +59,10 @@ BEGIN
         c.type,
         c.industry,
         c.contact_person,
-        c.position,
         c.bank_account,
         c.bank_name,
         c.notes,
-        c.is_active,
         c.created_at,
-        c.updated_at,
         
         -- Join stats or default to 0
         COALESCE(s.contract_count, 0) as contract_count,
