@@ -60,7 +60,7 @@ export const RoleSwitcher: React.FC = () => {
     };
 
     return (
-        <div className="fixed bottom-4 right-4 z-50 bg-slate-900 text-white p-3 rounded-lg shadow-xl border border-slate-700 flex flex-col gap-2 text-xs opacity-75 hover:opacity-100 transition-opacity">
+        <div className="fixed top-20 right-4 z-[100] bg-slate-900 text-white p-3 rounded-lg shadow-xl border border-slate-700 flex flex-col gap-2 text-xs opacity-75 hover:opacity-100 transition-opacity">
             <div className="flex items-center gap-2">
                 <Shield size={14} className="text-amber-400" />
                 <span className="font-bold text-slate-300 uppercase">Test Mode</span>
