@@ -70,20 +70,21 @@ const STATUS_ORDER = ['Draft', 'Pending_Unit', 'Pending_Finance', 'Pending_Board
 
 // Map từ status sang review_role để tìm đúng review
 const getReviewForStep = (stepId: PlanStatus, reviews: ReviewData[] = []): ReviewData | undefined => {
-    // Find the review that advanced TO this status
-    const statusMap: Record<string, string> = {
-        'Pending_Unit': 'Draft',      // Review "Draft → Pending_Unit" 
-        'Pending_Finance': 'Pending_Unit',
-        'Pending_Board': 'Pending_Finance',
-        'Approved': 'Pending_Board'
+    // Map step to the "TO" status (what the review transitions to)
+    const toStatusMap: Record<string, string> = {
+        'Pending_Unit': 'Pending_Unit',      // Review that created Pending_Unit
+        'Pending_Finance': 'Pending_Finance', // Review that created Pending_Finance
+        'Pending_Board': 'Pending_Board',     // Review that created Pending_Board
+        'Approved': 'Approved'                // Review that created Approved
     };
 
-    const fromStatus = statusMap[stepId];
-    if (!fromStatus) return undefined;
+    const toStatus = toStatusMap[stepId];
+    if (!toStatus) return undefined;
 
+    // Find review where comment contains "to {toStatus}"
     return reviews.find(r =>
         r.action === 'Approve' &&
-        r.comment?.includes(`from ${fromStatus}`)
+        r.comment?.includes(`to ${toStatus}`)
     );
 };
 
@@ -112,27 +113,30 @@ export const ApprovalStepper: React.FC<Props> = ({ currentStatus, reviews = [] }
                     const isPast = !isRejected && currentIdx > stepIdx;
                     const isNext = !isRejected && stepIdx === currentIdx + 1;
 
-                    // Find the review that completed this step
-                    const stepReview = isPast ? getReviewForStep(STEPS[stepIdx + 1]?.id, reviews) : undefined;
+                    // Find the review that transition to this step (or approved this step)
+                    // For Draft step: find review that went to Pending_Unit
+                    // For Pending_Unit step: find review that went to Pending_Finance
+                    const nextStepId = STEPS[stepIdx + 1]?.id;
+                    const stepReview = isPast && nextStepId ? getReviewForStep(nextStepId, reviews) : undefined;
 
                     return (
                         <div
                             key={step.id}
                             className={`relative p-4 rounded-2xl border-2 transition-all ${isCurrent
-                                    ? 'border-indigo-500 bg-indigo-50 shadow-lg shadow-indigo-100'
-                                    : isPast
-                                        ? 'border-emerald-300 bg-emerald-50'
-                                        : isNext
-                                            ? 'border-amber-200 bg-amber-50/50'
-                                            : 'border-slate-100 bg-slate-50/50 opacity-60'
+                                ? 'border-indigo-500 bg-indigo-50 shadow-lg shadow-indigo-100'
+                                : isPast
+                                    ? 'border-emerald-300 bg-emerald-50'
+                                    : isNext
+                                        ? 'border-amber-200 bg-amber-50/50'
+                                        : 'border-slate-100 bg-slate-50/50 opacity-60'
                                 }`}
                         >
                             {/* Step Number Badge */}
                             <div className={`absolute -top-2.5 -left-2.5 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shadow-sm ${isPast
-                                    ? 'bg-emerald-500 text-white'
-                                    : isCurrent
-                                        ? 'bg-indigo-600 text-white ring-2 ring-indigo-200'
-                                        : 'bg-slate-200 text-slate-500'
+                                ? 'bg-emerald-500 text-white'
+                                : isCurrent
+                                    ? 'bg-indigo-600 text-white ring-2 ring-indigo-200'
+                                    : 'bg-slate-200 text-slate-500'
                                 }`}>
                                 {isPast ? <Check size={14} /> : idx + 1}
                             </div>
