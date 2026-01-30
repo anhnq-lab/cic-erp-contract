@@ -191,11 +191,18 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
 
         console.log('[Dashboard] All promises settled:', results.map(r => r.status));
 
+        // DETAILED LOGGING FOR DEBUG
+        console.log('[Dashboard] Stats result:', results[0]);
+
         const statsData = results[0].status === 'fulfilled' ? results[0].value : { totalValue: 0, totalRevenue: 0, totalProfit: 0, activeCount: 0, pendingCount: 0 };
         const chartCurrent = results[1].status === 'fulfilled' ? results[1].value : [];
         const chartLast = results[2].status === 'fulfilled' ? results[2].value : [];
         const distData = results[3].status === 'fulfilled' ? results[3].value : [];
         const recent = results[4].status === 'fulfilled' ? results[4].value : [];
+
+        console.log('[Dashboard] Parsed statsData:', statsData);
+        console.log('[Dashboard] Chart current length:', chartCurrent?.length);
+        console.log('[Dashboard] Distribution data length:', distData?.length);
 
         // Log errors if any
         results.forEach((res, index) => {
@@ -204,23 +211,33 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
           }
         });
 
-        // Transform Stats
+        // Transform Stats - with explicit null coalescing
+        const safeStatsData = {
+          totalValue: Number(statsData?.totalValue) || 0,
+          totalRevenue: Number(statsData?.totalRevenue) || 0,
+          totalProfit: Number(statsData?.totalProfit) || 0,
+          activeCount: Number(statsData?.activeCount) || 0,
+          pendingCount: Number(statsData?.pendingCount) || 0
+        };
+        console.log('[Dashboard] Safe stats data:', safeStatsData);
+
         setStats({
           actual: {
-            signing: statsData.totalValue || 0,
-            revenue: statsData.totalRevenue || 0,
-            adminProfit: statsData.totalProfit || 0,
-            revProfit: statsData.totalProfit || 0,
-            cash: statsData.totalRevenue || 0,
+            signing: safeStatsData.totalValue,
+            revenue: safeStatsData.totalRevenue,
+            adminProfit: safeStatsData.totalProfit,
+            revProfit: safeStatsData.totalProfit,
+            cash: safeStatsData.totalRevenue,
             netCashflow: 0
           },
           statusCounts: {
-            active: statsData.activeCount || 0,
-            pending: statsData.pendingCount || 0,
+            active: safeStatsData.activeCount,
+            pending: safeStatsData.pendingCount,
             expired: 0,
             completed: 0
           }
         });
+
 
         // Store Chart Data
         setChartDataCurrent(chartCurrent);
