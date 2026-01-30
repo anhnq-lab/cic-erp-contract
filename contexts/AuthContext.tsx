@@ -26,37 +26,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Global safety timeout
+        let isMounted = true;
+
+        // Global safety timeout - shorter for better UX
         const safetyTimeout = setTimeout(() => {
             console.warn("Auth initialization timed out, forcing release...");
-            setIsLoading(false);
-        }, 5000);
+            if (isMounted) setIsLoading(false);
+        }, 3000); // Reduced from 5s to 3s
 
         // Initialize session
         supabase.auth.getSession().then(({ data: { session } }) => {
+            if (!isMounted) return;
+
             setSession(session);
             setUser(session?.user ?? null);
             if (session?.user) {
-                // If we have a user, fetch profile. Profile fetch has its own timeout logic effectively.
-                // But we should ensure we don't clear the safety timeout prematurely if we are still fetching.
                 fetchProfile(session.user.id, session.user.email);
             } else {
+                clearTimeout(safetyTimeout);
                 setIsLoading(false);
             }
         }).catch((err) => {
             console.error("Session init error:", err);
-            setIsLoading(false);
+            if (isMounted) {
+                clearTimeout(safetyTimeout);
+                setIsLoading(false);
+            }
         });
 
         // Listen for changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            if (!isMounted) return;
+
             setSession(session);
             setUser(session?.user ?? null);
 
             if (session?.user) {
-                if (session.user.id !== user?.id) {
-                    await fetchProfile(session.user.id, session.user.email);
-                }
+                await fetchProfile(session.user.id, session.user.email);
             } else {
                 setProfile(null);
                 setIsLoading(false);
@@ -64,6 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         return () => {
+            isMounted = false;
             subscription.unsubscribe();
             clearTimeout(safetyTimeout);
         };
