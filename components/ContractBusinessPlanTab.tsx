@@ -4,13 +4,13 @@ import { ActionPanel } from './workflow/ActionPanel';
 import { ReviewLog } from './workflow/ReviewLog';
 import { RejectDialog } from './workflow/RejectDialog';
 import { PLAN_STATUS_LABELS } from '../constants';
-import { Contract, BusinessPlan, PaymentPhase, UserProfile } from '../types';
+import { Contract, BusinessPlan, PaymentPhase, UserProfile, LineItem, AdministrativeCosts, Product, Customer, DirectCostDetail } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { WorkflowService } from '../services';
+import { WorkflowService, ProductService, CustomerService } from '../services';
 import { toast } from 'sonner';
-import { Check, X, AlertTriangle, Send, FileText, Lock, Plus, Trash2 } from 'lucide-react';
-import { LineItem, AdministrativeCosts } from '../types';
+import { Check, X, AlertTriangle, Send, FileText, Lock, Plus, Trash2, Percent, DollarSign, Calculator, RotateCcw } from 'lucide-react';
+import Modal from './ui/Modal';
 
 interface Props {
     contract: Contract;
@@ -27,11 +27,39 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
     const [showRejectDialog, setShowRejectDialog] = useState(false);
     const [isRejecting, setIsRejecting] = useState(false);
 
+    // Data Options State (for dropdowns)
+    const [products, setProducts] = useState<Product[]>([]);
+    const [customers, setCustomers] = useState<Customer[]>([]);
+
     // Editable Local State
     const [lineItems, setLineItems] = useState<LineItem[]>(contract.lineItems || []);
     const [adminCosts, setAdminCosts] = useState<AdministrativeCosts>(contract.adminCosts || {
         transferFee: 0, contractorTax: 0, importFee: 0, expertHiring: 0, documentProcessing: 0
     });
+    const [adminCostPercentages, setAdminCostPercentages] = useState<AdministrativeCosts>({
+        transferFee: 0, contractorTax: 0, importFee: 0, expertHiring: 0, documentProcessing: 0
+    });
+
+    // Direct Costs Modal State
+    const [activeCostModalIndex, setActiveCostModalIndex] = useState<number | null>(null);
+    const [tempCostDetails, setTempCostDetails] = useState<DirectCostDetail[]>([]);
+
+    // Fetch products and customers for dropdowns
+    useEffect(() => {
+        const fetchOptions = async () => {
+            try {
+                const [productsData, customersRes] = await Promise.all([
+                    ProductService.getAll(),
+                    CustomerService.getAll({ pageSize: 1000 })
+                ]);
+                setProducts(productsData);
+                setCustomers(customersRes.data || []);
+            } catch (error) {
+                console.error('Error fetching dropdown options:', error);
+            }
+        };
+        fetchOptions();
+    }, []);
 
     // Sync from contract when contract changes
     useEffect(() => {
@@ -39,6 +67,17 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
         setAdminCosts(contract.adminCosts || {
             transferFee: 0, contractorTax: 0, importFee: 0, expertHiring: 0, documentProcessing: 0
         });
+        // Recalculate percentages based on contract value
+        if (contract.adminCosts && contract.value > 0) {
+            const costs = contract.adminCosts;
+            setAdminCostPercentages({
+                transferFee: Number(((costs.transferFee || 0) / contract.value * 100).toFixed(2)),
+                contractorTax: Number(((costs.contractorTax || 0) / contract.value * 100).toFixed(2)),
+                importFee: Number(((costs.importFee || 0) / contract.value * 100).toFixed(2)),
+                expertHiring: Number(((costs.expertHiring || 0) / contract.value * 100).toFixed(2)),
+                documentProcessing: Number(((costs.documentProcessing || 0) / contract.value * 100).toFixed(2))
+            });
+        }
     }, [contract.id]);
 
     // Form State - Auto-calculated from lineItems and adminCosts
@@ -68,6 +107,9 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
         });
     }, [lineItems, adminCosts]);
 
+    // Format VND helper
+    const formatVND = (value: number) => new Intl.NumberFormat('vi-VN').format(value);
+
     // Helper functions for editing
     const addLineItem = () => {
         setLineItems([...lineItems, {
@@ -77,7 +119,8 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
             supplier: '',
             inputPrice: 0,
             outputPrice: 0,
-            directCosts: 0
+            directCosts: 0,
+            directCostDetails: []
         }]);
     };
 
@@ -93,8 +136,45 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
         setLineItems(newItems);
     };
 
+    // Direct Cost Modal functions
+    const openCostModal = (index: number) => {
+        setActiveCostModalIndex(index);
+        setTempCostDetails(lineItems[index].directCostDetails || []);
+    };
+
+    const saveCostModal = () => {
+        if (activeCostModalIndex === null) return;
+        const newList = [...lineItems];
+        const totalAmount = tempCostDetails.reduce((acc, item) => acc + item.amount, 0);
+        newList[activeCostModalIndex].directCostDetails = tempCostDetails;
+        newList[activeCostModalIndex].directCosts = totalAmount;
+        setLineItems(newList);
+        setActiveCostModalIndex(null);
+    };
+
+    // Admin cost update with % sync
     const updateAdminCost = (key: keyof AdministrativeCosts, value: number) => {
         setAdminCosts({ ...adminCosts, [key]: value });
+        // Reverse calc percentage
+        if (financials.revenue > 0) {
+            const pct = (value / financials.revenue) * 100;
+            setAdminCostPercentages({ ...adminCostPercentages, [key]: Number(pct.toFixed(2)) });
+        }
+    };
+
+    const updateAdminCostByPercent = (key: keyof AdministrativeCosts, pct: number) => {
+        setAdminCostPercentages({ ...adminCostPercentages, [key]: pct });
+        const amount = Math.round((pct / 100) * financials.revenue);
+        setAdminCosts({ ...adminCosts, [key]: amount });
+    };
+
+    // Reset to original contract data
+    const resetToOriginal = () => {
+        setLineItems(contract.lineItems || []);
+        setAdminCosts(contract.adminCosts || {
+            transferFee: 0, contractorTax: 0, importFee: 0, expertHiring: 0, documentProcessing: 0
+        });
+        toast.info('Đã khôi phục dữ liệu từ Hợp đồng gốc');
     };
 
     // ... (keep useEffect and fetchPlan)
@@ -348,21 +428,32 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                     <h4 className="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
                         Sản phẩm/Dịch vụ
                     </h4>
-                    {isEditing && (
-                        <button
-                            onClick={addLineItem}
-                            className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 border border-emerald-100 dark:border-emerald-800 hover:bg-emerald-100 transition-colors"
-                        >
-                            <Plus size={12} /> Thêm hạng mục
-                        </button>
-                    )}
+                    <div className="flex gap-2">
+                        {isEditing && (
+                            <>
+                                <button
+                                    onClick={resetToOriginal}
+                                    className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 text-slate-500 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition-colors"
+                                >
+                                    <RotateCcw size={12} /> Reset từ HĐ
+                                </button>
+                                <button
+                                    onClick={addLineItem}
+                                    className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 border border-emerald-100 dark:border-emerald-800 hover:bg-emerald-100 transition-colors"
+                                >
+                                    <Plus size={12} /> Thêm hạng mục
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
                 <div className="mb-8 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
-                    <table className="w-full text-left text-xs min-w-[900px]">
+                    <table className="w-full text-left text-xs min-w-[1100px]">
                         <thead className="bg-slate-50 dark:bg-slate-800/50">
                             <tr>
-                                <th className="px-4 py-3 font-black text-slate-400 uppercase tracking-tighter">Sản phẩm/Dịch vụ</th>
-                                <th className="px-2 py-3 font-black text-slate-400 uppercase tracking-tighter text-center w-16">SL</th>
+                                <th className="px-4 py-3 font-black text-slate-400 uppercase tracking-tighter w-[200px]">Sản phẩm/Dịch vụ</th>
+                                <th className="px-2 py-3 font-black text-slate-400 uppercase tracking-tighter text-center w-14">SL</th>
+                                <th className="px-4 py-3 font-black text-slate-400 uppercase tracking-tighter w-[140px]">Nhà cung cấp</th>
                                 <th className="px-4 py-3 font-black text-slate-400 uppercase tracking-tighter text-right">Giá Đầu vào</th>
                                 <th className="px-4 py-3 font-black text-slate-400 uppercase tracking-tighter text-right">Giá Đầu ra</th>
                                 <th className="px-4 py-3 font-black text-slate-400 uppercase tracking-tighter text-right">CP Trực tiếp</th>
@@ -374,23 +465,41 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                             {lineItems.map((item, idx) => {
                                 const inputTotal = item.quantity * item.inputPrice;
                                 const outputTotal = item.quantity * item.outputPrice;
-                                const margin = outputTotal - inputTotal - (item.directCosts || 0);
+                                const lineMargin = outputTotal - inputTotal - (item.directCosts || 0);
+                                const lineMarginRate = outputTotal > 0 ? (lineMargin / outputTotal) * 100 : 0;
 
                                 return (
                                     <tr key={item.id || idx} className="group hover:bg-slate-50 dark:hover:bg-slate-800/20">
+                                        {/* Product Dropdown */}
                                         <td className="px-4 py-3">
                                             {isEditing ? (
-                                                <input
-                                                    type="text"
-                                                    value={item.name}
-                                                    onChange={(e) => updateLineItem(idx, 'name', e.target.value)}
-                                                    placeholder="Tên sản phẩm..."
+                                                <select
+                                                    value={products.find(p => p.name === item.name)?.id || ''}
+                                                    onChange={(e) => {
+                                                        const pId = e.target.value;
+                                                        const prod = products.find(p => p.id === pId);
+                                                        const newList = [...lineItems];
+                                                        if (prod) {
+                                                            newList[idx].name = prod.name;
+                                                            newList[idx].inputPrice = prod.costPrice || 0;
+                                                            newList[idx].outputPrice = prod.basePrice;
+                                                        } else {
+                                                            newList[idx].name = '';
+                                                        }
+                                                        setLineItems(newList);
+                                                    }}
                                                     className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1 font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                                />
+                                                >
+                                                    <option value="">-- Chọn SP --</option>
+                                                    {products.map(p => (
+                                                        <option key={p.id} value={p.id}>{p.name}</option>
+                                                    ))}
+                                                </select>
                                             ) : (
                                                 <span className="font-bold text-slate-700 dark:text-slate-200">{item.name}</span>
                                             )}
                                         </td>
+                                        {/* Quantity */}
                                         <td className="px-2 py-3 text-center">
                                             {isEditing ? (
                                                 <input
@@ -403,45 +512,94 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                 item.quantity
                                             )}
                                         </td>
+                                        {/* Supplier Dropdown */}
+                                        <td className="px-4 py-3">
+                                            {isEditing ? (
+                                                <select
+                                                    value={item.supplier || ''}
+                                                    onChange={(e) => updateLineItem(idx, 'supplier', e.target.value)}
+                                                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1 text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                >
+                                                    <option value="">-- Chọn NCC --</option>
+                                                    {customers.filter(c => c.type === 'Supplier' || c.type === 'Both').map(s => (
+                                                        <option key={s.id} value={s.shortName}>{s.shortName}</option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <span className="text-slate-500">{item.supplier || '-'}</span>
+                                            )}
+                                        </td>
+                                        {/* Input Price */}
                                         <td className="px-4 py-3 text-right">
                                             {isEditing ? (
                                                 <input
-                                                    type="number"
-                                                    value={item.inputPrice}
-                                                    onChange={(e) => updateLineItem(idx, 'inputPrice', Number(e.target.value) || 0)}
+                                                    type="text"
+                                                    value={formatVND(item.inputPrice)}
+                                                    onChange={(e) => {
+                                                        const raw = e.target.value.replace(/\./g, '');
+                                                        if (!/^\d*$/.test(raw)) return;
+                                                        updateLineItem(idx, 'inputPrice', Number(raw) || 0);
+                                                    }}
                                                     className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1 text-right focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                                 />
                                             ) : (
-                                                <span className="text-slate-500">{new Intl.NumberFormat('vi-VN').format(item.inputPrice)}</span>
+                                                <span className="text-slate-500">{formatVND(item.inputPrice)}</span>
                                             )}
                                         </td>
+                                        {/* Output Price */}
                                         <td className="px-4 py-3 text-right">
                                             {isEditing ? (
                                                 <input
-                                                    type="number"
-                                                    value={item.outputPrice}
-                                                    onChange={(e) => updateLineItem(idx, 'outputPrice', Number(e.target.value) || 0)}
+                                                    type="text"
+                                                    value={formatVND(item.outputPrice)}
+                                                    onChange={(e) => {
+                                                        const raw = e.target.value.replace(/\./g, '');
+                                                        if (!/^\d*$/.test(raw)) return;
+                                                        updateLineItem(idx, 'outputPrice', Number(raw) || 0);
+                                                    }}
                                                     className="w-full bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-600 rounded-lg px-2 py-1 text-right font-bold text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                                 />
                                             ) : (
-                                                <span className="font-bold text-indigo-600">{new Intl.NumberFormat('vi-VN').format(item.outputPrice)}</span>
+                                                <span className="font-bold text-indigo-600">{formatVND(item.outputPrice)}</span>
                                             )}
                                         </td>
+                                        {/* Direct Costs (Modal trigger) */}
                                         <td className="px-4 py-3 text-right">
                                             {isEditing ? (
-                                                <input
-                                                    type="number"
-                                                    value={item.directCosts || 0}
-                                                    onChange={(e) => updateLineItem(idx, 'directCosts', Number(e.target.value) || 0)}
-                                                    className="w-full bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-600 rounded-lg px-2 py-1 text-right text-rose-500 font-bold focus:outline-none focus:ring-2 focus:ring-rose-500"
-                                                />
+                                                <div className="relative group">
+                                                    <input
+                                                        type="text"
+                                                        readOnly
+                                                        onClick={() => openCostModal(idx)}
+                                                        value={formatVND(item.directCosts || 0)}
+                                                        className="w-full bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-600 rounded-lg px-2 py-1 text-right text-rose-500 font-bold cursor-pointer hover:bg-rose-50 dark:hover:bg-rose-900/20 focus:outline-none"
+                                                        title="Nhấn để thêm chi phí trực tiếp"
+                                                    />
+                                                    {item.directCostDetails && item.directCostDetails.length > 0 && (
+                                                        <div className="absolute top-full right-0 mt-2 w-64 p-3 bg-slate-900 text-white text-[10px] rounded-xl shadow-xl z-50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                                            <div className="space-y-1">
+                                                                {item.directCostDetails.map((detail, i) => (
+                                                                    <div key={i} className="flex justify-between items-center border-b border-slate-700 pb-1 last:border-0 last:pb-0">
+                                                                        <span className="font-medium">{detail.name}</span>
+                                                                        <span className="font-bold">{formatVND(detail.amount)}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             ) : (
-                                                <span className="text-rose-500 font-bold">{new Intl.NumberFormat('vi-VN').format(item.directCosts || 0)}</span>
+                                                <span className="text-rose-500 font-bold">{formatVND(item.directCosts || 0)}</span>
                                             )}
                                         </td>
-                                        <td className={`px-4 py-3 text-right font-black ${margin >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                            {new Intl.NumberFormat('vi-VN').format(margin)}
+                                        {/* Margin */}
+                                        <td className="px-4 py-3 text-right">
+                                            <div className="flex flex-col items-end">
+                                                <span className={`font-black ${lineMargin >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{formatVND(lineMargin)}</span>
+                                                <span className="text-[9px] font-bold text-slate-400">{lineMarginRate.toFixed(1)}%</span>
+                                            </div>
                                         </td>
+                                        {/* Delete */}
                                         {isEditing && (
                                             <td className="px-2 py-3 text-center">
                                                 {lineItems.length > 1 && (
@@ -449,7 +607,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                         onClick={() => removeLineItem(item.id)}
                                                         className="text-slate-300 hover:text-rose-500 transition-colors"
                                                     >
-                                                        <Trash2 size={16} />
+                                                        <Trash2 size={14} />
                                                     </button>
                                                 )}
                                             </td>
@@ -457,17 +615,18 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                     </tr>
                                 );
                             })}
+                            {/* Totals Row */}
                             <tr className="bg-slate-50 dark:bg-slate-800/50 font-black text-slate-800 dark:text-slate-200 border-t-2 border-slate-100 dark:border-slate-700">
-                                <td className="px-4 py-3" colSpan={2}>TỔNG CỘNG</td>
+                                <td className="px-4 py-3" colSpan={3}>TỔNG CỘNG</td>
                                 <td className="px-4 py-3 text-right text-slate-500">
-                                    {new Intl.NumberFormat('vi-VN').format(lineItems.reduce((acc, item) => acc + (item.quantity * item.inputPrice), 0))}
+                                    {formatVND(lineItems.reduce((acc, item) => acc + (item.quantity * item.inputPrice), 0))}
                                 </td>
-                                <td className="px-4 py-3 text-right text-indigo-600">{new Intl.NumberFormat('vi-VN').format(financials.revenue)}</td>
+                                <td className="px-4 py-3 text-right text-indigo-600">{formatVND(financials.revenue)}</td>
                                 <td className="px-4 py-3 text-right text-rose-500">
-                                    {new Intl.NumberFormat('vi-VN').format(lineItems.reduce((acc, item) => acc + (item.directCosts || 0), 0))}
+                                    {formatVND(lineItems.reduce((acc, item) => acc + (item.directCosts || 0), 0))}
                                 </td>
                                 <td className={`px-4 py-3 text-right ${financials.grossProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                    {new Intl.NumberFormat('vi-VN').format(financials.grossProfit)}
+                                    {formatVND(financials.grossProfit)}
                                 </td>
                                 {isEditing && <td></td>}
                             </tr>
@@ -475,34 +634,74 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                     </table>
                 </div>
 
-                {/* 2.2 Admin Costs */}
-                <h4 className="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    Chi phí Quản lý Hợp đồng
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    {[
-                        { key: 'transferFee', label: 'Phí chuyển tiền' },
-                        { key: 'contractorTax', label: 'Thuế nhà thầu' },
-                        { key: 'importFee', label: 'Logistics/NK' },
-                        { key: 'expertHiring', label: 'Thuê chuyên gia' },
-                        { key: 'documentProcessing', label: 'Xử lý chứng từ' }
-                    ].map(item => (
-                        <div key={item.key} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
-                            <p className="text-[10px] text-slate-400 font-bold uppercase truncate" title={item.label}>{item.label}</p>
-                            {isEditing ? (
-                                <input
-                                    type="number"
-                                    value={(adminCosts as any)[item.key] || 0}
-                                    onChange={(e) => updateAdminCost(item.key as keyof AdministrativeCosts, Number(e.target.value) || 0)}
-                                    className="w-full mt-1 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-600 rounded-lg px-2 py-1 text-sm font-black text-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500"
-                                />
-                            ) : (
-                                <p className="text-sm font-black text-rose-500 mt-1">
-                                    {new Intl.NumberFormat('vi-VN').format((adminCosts as any)[item.key] || 0)}
-                                </p>
-                            )}
+                {/* 2.2 Admin Costs with % */}
+                <div className="bg-slate-50 dark:bg-slate-800/40 p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 space-y-4">
+                    <h4 className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <Calculator size={14} /> Chi phí quản lý hợp đồng
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        {[
+                            { key: 'transferFee', label: 'Phí chuyển tiền / Ngân hàng' },
+                            { key: 'contractorTax', label: 'Thuế nhà thầu (nếu có)' },
+                            { key: 'importFee', label: 'Phí nhập khẩu / Logistics' },
+                            { key: 'expertHiring', label: 'Chi phí thuê khoán chuyên môn' },
+                            { key: 'documentProcessing', label: 'Chi phí xử lý chứng từ' }
+                        ].map(item => (
+                            <div key={item.key} className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase ml-1 truncate block" title={item.label}>{item.label}</label>
+                                {isEditing ? (
+                                    <div className="grid grid-cols-12 gap-2">
+                                        {/* Percentage Input */}
+                                        <div className="col-span-4 relative">
+                                            <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
+                                                <Percent size={10} className="text-slate-400" />
+                                            </div>
+                                            <input
+                                                type="number"
+                                                step="0.1"
+                                                placeholder="%"
+                                                value={(adminCostPercentages as any)[item.key] || ''}
+                                                onChange={(e) => updateAdminCostByPercent(item.key as keyof AdministrativeCosts, Number(e.target.value))}
+                                                className="w-full pl-6 pr-1 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold focus:ring-2 focus:ring-indigo-500 outline-none text-center"
+                                            />
+                                        </div>
+                                        {/* Amount Input */}
+                                        <div className="col-span-8 relative">
+                                            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
+                                            <input
+                                                type="text"
+                                                value={(adminCosts as any)[item.key] ? formatVND((adminCosts as any)[item.key]) : '0'}
+                                                onChange={(e) => {
+                                                    const raw = e.target.value.replace(/\./g, '');
+                                                    if (!/^\d*$/.test(raw)) return;
+                                                    updateAdminCost(item.key as keyof AdministrativeCosts, Number(raw));
+                                                }}
+                                                className="w-full pl-8 pr-2 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black focus:ring-2 focus:ring-rose-500 outline-none text-right text-rose-500"
+                                            />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p className="text-sm font-black text-rose-500 py-2">
+                                        {formatVND((adminCosts as any)[item.key] || 0)}
+                                        {(adminCostPercentages as any)[item.key] > 0 && (
+                                            <span className="text-xs text-slate-400 font-medium ml-2">
+                                                ({(adminCostPercentages as any)[item.key]}%)
+                                            </span>
+                                        )}
+                                    </p>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                    {/* Total Admin Costs */}
+                    <div className="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-700">
+                        <div className="text-right">
+                            <p className="text-[10px] text-slate-400 uppercase font-bold">Tổng CP quản lý</p>
+                            <p className="text-lg font-black text-rose-500">
+                                {formatVND(Object.values(adminCosts).reduce((acc, val) => acc + (val || 0), 0))}
+                            </p>
                         </div>
-                    ))}
+                    </div>
                 </div>
             </div>
 
@@ -535,6 +734,84 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                 onConfirm={handleReject}
                 isLoading={isRejecting}
             />
+
+            {/* Direct Costs Modal */}
+            {activeCostModalIndex !== null && (
+                <Modal
+                    isOpen={true}
+                    onClose={() => setActiveCostModalIndex(null)}
+                    title={`Chi phí trực tiếp - ${lineItems[activeCostModalIndex]?.name || 'Hạng mục'}`}
+                >
+                    <div className="space-y-4">
+                        <p className="text-xs text-slate-500">Thêm các khoản chi phí trực tiếp cho hạng mục này:</p>
+
+                        {tempCostDetails.map((detail, i) => (
+                            <div key={i} className="flex gap-2 items-center">
+                                <input
+                                    type="text"
+                                    value={detail.name}
+                                    onChange={(e) => {
+                                        const updated = [...tempCostDetails];
+                                        updated[i].name = e.target.value;
+                                        setTempCostDetails(updated);
+                                    }}
+                                    placeholder="Tên chi phí..."
+                                    className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                                <input
+                                    type="text"
+                                    value={formatVND(detail.amount)}
+                                    onChange={(e) => {
+                                        const raw = e.target.value.replace(/\./g, '');
+                                        if (!/^\d*$/.test(raw)) return;
+                                        const updated = [...tempCostDetails];
+                                        updated[i].amount = Number(raw);
+                                        setTempCostDetails(updated);
+                                    }}
+                                    placeholder="Số tiền"
+                                    className="w-32 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-right font-bold text-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                                />
+                                <button
+                                    onClick={() => setTempCostDetails(tempCostDetails.filter((_, idx) => idx !== i))}
+                                    className="p-2 text-slate-300 hover:text-rose-500 transition-colors"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                        ))}
+
+                        <button
+                            onClick={() => setTempCostDetails([...tempCostDetails, { id: Date.now().toString(), name: '', amount: 0 }])}
+                            className="flex items-center gap-2 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
+                        >
+                            <Plus size={14} /> Thêm chi phí
+                        </button>
+
+                        <div className="flex justify-between items-center pt-4 border-t border-slate-200 dark:border-slate-700">
+                            <div>
+                                <p className="text-[10px] text-slate-400 uppercase font-bold">Tổng cộng</p>
+                                <p className="text-lg font-black text-rose-500">
+                                    {formatVND(tempCostDetails.reduce((acc, d) => acc + d.amount, 0))}
+                                </p>
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setActiveCostModalIndex(null)}
+                                    className="px-4 py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    onClick={saveCostModal}
+                                    className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition-colors"
+                                >
+                                    Lưu
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </Modal>
+            )}
         </div>
     );
 };
