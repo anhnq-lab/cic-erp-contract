@@ -193,12 +193,14 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
 
     if (isLoading) return <div className="p-8 text-center text-slate-500">Đang tải phương án kinh doanh...</div>;
 
-    // Permissions
+    // Permissions - check BOTH current status AND user permission
     const canEditPlan = canEditResource('pakd', contract.unitId, plan?.status);
     const showSubmit = plan?.status === 'Draft' && canEditResource('pakd', contract.unitId, 'Draft');
-    const showApproveUnit = canApprove('pakd', 'Pending_Unit');
-    const showApproveFinance = canApprove('pakd', 'Pending_Finance');
-    const showApproveBoard = canApprove('pakd', 'Pending_Board');
+
+    // Only show approve button if CURRENT STATUS matches the expected stage AND user has permission
+    const showApproveUnit = plan?.status === 'Pending_Unit' && canApprove('pakd', 'Pending_Unit');
+    const showApproveFinance = plan?.status === 'Pending_Finance' && canApprove('pakd', 'Pending_Finance');
+    const showApproveBoard = plan?.status === 'Pending_Board' && canApprove('pakd', 'Pending_Board');
 
     // Explicitly check for Admin/Cost Adjustment roles
     const canAdjustCost = !!(profile?.role === 'Accountant' || profile?.role === 'ChiefAccountant' || profile?.role === 'Leadership' || profile?.role === 'Admin');
@@ -364,7 +366,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
             <div className="mt-8 border-t border-slate-100 dark:border-slate-800 pt-6">
                 <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Tiến độ Phê duyệt</h4>
 
-                {plan && <ApprovalStepper currentStatus={plan.status} />}
+                {plan && <ApprovalStepper currentStatus={plan.status} reviews={reviews} />}
 
                 <div className="mt-6">
                     <ReviewLog reviews={reviews} />
