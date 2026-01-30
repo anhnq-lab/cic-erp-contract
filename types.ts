@@ -34,6 +34,7 @@ export interface Unit {
   code: string;
   target: KPIPlan;
   lastYearActual?: KPIPlan; // Dữ liệu năm trước để so sánh YoY
+  functions?: string; // Chức năng nhiệm vụ
 }
 
 /**

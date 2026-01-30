@@ -18,7 +18,8 @@ const mapUnit = (u: any): Unit => {
         type: u.type || 'Center',
         code: u.code || 'UNK',
         target: u.target || { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 },
-        lastYearActual: u.last_year_actual || { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 }
+        lastYearActual: u.last_year_actual || { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 },
+        functions: u.functions || ''
     };
 };
 
@@ -59,6 +60,7 @@ export const UnitService = {
         if (data.type) payload.type = data.type;
         if (data.code) payload.code = data.code;
         if (data.target) payload.target = data.target;
+        if (data.functions !== undefined) payload.functions = data.functions;
 
         const { data: res, error } = await supabase.from('units').update(payload).eq('id', id).select().single();
         if (error) throw error;

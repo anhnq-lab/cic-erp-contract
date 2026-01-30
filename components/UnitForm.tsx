@@ -26,6 +26,7 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
             revProfit: 0,
             cash: 0,
         } as KPIPlan,
+        functions: '',
     });
 
     useEffect(() => {
@@ -35,6 +36,7 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                 type: unit.type,
                 code: unit.code,
                 target: { ...unit.target },
+                functions: unit.functions || '',
             });
         } else {
             setFormData({
@@ -48,6 +50,7 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                     revProfit: 0,
                     cash: 0,
                 },
+                functions: '',
             });
         }
     }, [unit, isOpen]);
@@ -125,44 +128,56 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                                 <option value="Branch">Chi nhánh</option>
                                 <option value="Center">Trung tâm</option>
                             </select>
-                        </div>
-                    </div>
-
-                    {/* KPI Targets */}
-                    <div className="space-y-4">
-                        <h3 className="font-bold text-slate-800 dark:text-slate-200 border-b pb-2">Chỉ tiêu KPI (Năm)</h3>
-
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Chỉ tiêu Ký kết</label>
-                            <input
-                                type="number"
-                                value={formData.target.signing}
-                                onChange={(e) => handleTargetChange('signing', e.target.value)}
-                                className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Chỉ tiêu Doanh thu</label>
-                            <input
-                                type="number"
-                                value={formData.target.revenue}
-                                onChange={(e) => handleTargetChange('revenue', e.target.value)}
-                                className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Chỉ tiêu LNG Quản trị</label>
-                            <input
-                                type="number"
-                                value={formData.target.adminProfit}
-                                onChange={(e) => handleTargetChange('adminProfit', e.target.value)}
-                                className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                            />
-                        </div>
+                        </select>
                     </div>
                 </div>
+
+                <div className="md:col-span-2">
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Chức năng - Nhiệm vụ</label>
+                    <textarea
+                        value={(formData as any).functions || ''}
+                        onChange={(e) => handleChange('functions', e.target.value)}
+                        className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all min-h-[100px]"
+                        placeholder="Mô tả chức năng, nhiệm vụ của đơn vị..."
+                    />
+                </div>
+            </div>
+
+            {/* KPI Targets */}
+            <div className="space-y-4">
+                <h3 className="font-bold text-slate-800 dark:text-slate-200 border-b pb-2">Chỉ tiêu KPI (Năm)</h3>
+
+                <div>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Chỉ tiêu Ký kết</label>
+                    <input
+                        type="number"
+                        value={formData.target.signing}
+                        onChange={(e) => handleTargetChange('signing', e.target.value)}
+                        className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Chỉ tiêu Doanh thu</label>
+                    <input
+                        type="number"
+                        value={formData.target.revenue}
+                        onChange={(e) => handleTargetChange('revenue', e.target.value)}
+                        className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Chỉ tiêu LNG Quản trị</label>
+                    <input
+                        type="number"
+                        value={formData.target.adminProfit}
+                        onChange={(e) => handleTargetChange('adminProfit', e.target.value)}
+                        className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    />
+                </div>
+
+
 
                 <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                     <button
@@ -182,7 +197,7 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                     </button>
                 </div>
             </form>
-        </Modal>
+        </Modal >
     );
 };
 

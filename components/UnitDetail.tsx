@@ -166,6 +166,18 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
                 </button>
             </div>
 
+            {/* Functions & Duties */}
+            {unit.functions && (
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-[24px] border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                        <Target size={20} className="text-indigo-500" /> Chức năng - Nhiệm vụ
+                    </h3>
+                    <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 whitespace-pre-line">
+                        {unit.functions}
+                    </div>
+                </div>
+            )}
+
             {/* Stats Overview */}
             {stats && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
