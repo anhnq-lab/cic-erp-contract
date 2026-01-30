@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { dataClient as supabase } from '../lib/dataClient';
 import { Employee } from '../types';
 
 // Helper to map DB Employee to Frontend Employee

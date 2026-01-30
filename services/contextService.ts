@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { dataClient as supabase } from '../lib/dataClient';
 import { UnitService, EmployeeService, PaymentService } from './index';
 
 export const getBusinessContext = async (): Promise<string> => {

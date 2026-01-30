@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { dataClient as supabase } from '../lib/dataClient';
 import { PlanStatus, UserRole } from '../types';
 
 export const WorkflowService = {

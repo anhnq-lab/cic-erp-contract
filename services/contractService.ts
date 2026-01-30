@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { dataClient as supabase } from '../lib/dataClient';
 import { Contract } from '../types';
 
 // Helper to map DB Contract to Frontend Contract

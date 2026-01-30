@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { dataClient as supabase } from '../lib/dataClient';
 import { Payment } from '../types';
 
 // Helper to map DB Payment to Frontend Payment

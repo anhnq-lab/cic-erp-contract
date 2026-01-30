@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { dataClient as supabase } from '../lib/dataClient';
 
 // Helper to sanitize filename for S3 storage
 const sanitizeFileName = (fileName: string): string => {

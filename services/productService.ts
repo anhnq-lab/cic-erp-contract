@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { dataClient as supabase } from '../lib/dataClient';
 import { Product } from '../types';
 
 // Helper to map DB Product to Frontend Product

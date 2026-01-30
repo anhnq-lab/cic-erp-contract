@@ -1,7 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
-import { createClient } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 import {
   XAxis,
@@ -171,40 +169,10 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
       });
 
       try {
-        // STEP 1: Fetch Stats (ISOLATED CLIENT - NO AUTH)
-        console.log('[Dashboard] Creating ISOLATED Supabase Client...');
-        const sbUrl = import.meta.env.VITE_SUPABASE_URL || '';
-        const sbKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-        const localClient = createClient(sbUrl, sbKey, { auth: { persistSession: false } });
-
-        console.log('[Dashboard] Executing RPC via ISOLATED Client...');
-        const { data: rpcData, error: rpcError } = await localClient.rpc('get_contract_stats', {
-          p_unit_id: unitId,
-          p_year: year
-        });
-
-        if (rpcError) {
-          console.error('[Dashboard] RPC Error:', rpcError);
-          throw rpcError;
-        }
-
-        console.log('[Dashboard] RPC Success:', rpcData);
-        let statsData;
-
-        if (rpcData && rpcData.length > 0) {
-          statsData = {
-            totalContracts: Number(rpcData[0].total_contracts || 0),
-            totalValue: Number(rpcData[0].total_value || 0),
-            totalRevenue: Number(rpcData[0].total_revenue || 0),
-            totalProfit: Number(rpcData[0].total_profit || 0),
-            activeCount: Number(rpcData[0].active_count || 0),
-            pendingCount: Number(rpcData[0].pending_count || 0)
-          };
-        } else {
-          statsData = { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0, activeCount: 0, pendingCount: 0 };
-        }
-
-        console.log('[Dashboard] Stats processed:', statsData);
+        // STEP 1: Fetch Stats via ContractService (now uses dataClient)
+        console.log('[Dashboard] Step 1: Fetching stats via ContractService...');
+        const statsData = await ContractService.getStatsRPC(unitId, year);
+        console.log('[Dashboard] Stats received:', statsData);
 
         if (!isCancelled) {
           setStats({
