@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase'; // Auth operations only
+import { dataClient } from '../lib/dataClient'; // Data operations
 import { UserProfile, UserRole } from '../types';
 
 interface AuthContextType {
@@ -92,7 +93,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         try {
             console.log('[AuthContext.fetchProfile] Querying profiles table...');
-            const { data: profiles, error } = await supabase
+            // Use dataClient for data operations (isolated from auth state)
+            const { data: profiles, error } = await dataClient
                 .from('profiles')
                 .select('*')
                 .eq('id', userId);
@@ -189,8 +191,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const refreshProfile = async () => {
         if (!user) return;
-        const { data: profiles } = await supabase.from('profiles').select('*').eq('id', user.id);
-        if (profiles && profiles.length > 0) setProfile(profiles[0]);
+        // Use dataClient for data operations
+        const { data: profiles } = await dataClient.from('profiles').select('*').eq('id', user.id);
+        if (profiles && profiles.length > 0) {
+            setProfile({
+                id: profiles[0].id,
+                email: profiles[0].email || user.email || '',
+                fullName: profiles[0].full_name,
+                role: profiles[0].role as UserRole,
+                unitId: profiles[0].unit_id,
+                avatarUrl: profiles[0].avatar_url
+            });
+        }
     };
 
 

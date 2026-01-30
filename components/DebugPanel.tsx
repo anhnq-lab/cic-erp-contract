@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { dataClient as supabase } from '../lib/dataClient';
 import { Bug, RefreshCw, Database, User, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 
 interface DiagResult {
