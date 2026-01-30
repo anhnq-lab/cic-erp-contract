@@ -235,10 +235,27 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
             // Fetch reviews
             const { data: reviewsData } = await supabase
                 .from('contract_reviews')
-                .select('*, reviewer_profile:reviewer_id(full_name)')
+                .select('*')
                 .eq('plan_id', data.id)
                 .order('created_at', { ascending: false });
-            setReviews(reviewsData || []);
+
+            // Manually fetch reviewer profiles
+            if (reviewsData && reviewsData.length > 0) {
+                const reviewerIds = [...new Set(reviewsData.map(r => r.reviewer_id).filter(Boolean))];
+                const { data: profilesData } = await supabase
+                    .from('profiles')
+                    .select('id, full_name')
+                    .in('id', reviewerIds);
+
+                const profileMap = new Map(profilesData?.map(p => [p.id, p]) || []);
+                const enrichedReviews = reviewsData.map(r => ({
+                    ...r,
+                    reviewer_profile: profileMap.get(r.reviewer_id)
+                }));
+                setReviews(enrichedReviews);
+            } else {
+                setReviews([]);
+            }
 
             setFinancials({
                 revenue: data.financials.revenue || contract.value,
