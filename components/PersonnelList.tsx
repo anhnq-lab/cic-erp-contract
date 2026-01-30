@@ -20,7 +20,7 @@ interface PersonnelStats {
 
 const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPersonnel }) => {
     const [searchQuery, setSearchQuery] = useState('');
-    const [unitFilter, setUnitFilter] = useState<string>(selectedUnit.id);
+    const [unitFilter, setUnitFilter] = useState<string>('all'); // Default to all to show all personnel
     const [isUnitDropdownOpen, setIsUnitDropdownOpen] = useState(false);
 
     // Data state
