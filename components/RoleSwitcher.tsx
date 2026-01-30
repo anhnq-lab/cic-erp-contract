@@ -23,6 +23,8 @@ export const RoleSwitcher: React.FC = () => {
     // Only show for specific admin email
     if (user?.email !== 'anhnq@cic.com.vn') return null;
 
+    return null; // FORCE HIDE FOR DEV MODE
+
     // Fetch units on mount
     React.useEffect(() => {
         const fetchUnits = async () => {
