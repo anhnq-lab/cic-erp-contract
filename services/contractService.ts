@@ -197,7 +197,7 @@ export const ContractService = {
         }, { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0 });
     },
 
-    // OPTIMIZED RPC-BASED STATS
+    // OPTIMIZED RPC-BASED STATS with fallback
     getStatsRPC: async (unitId: string = 'all', year: string = 'all'): Promise<{
         totalContracts: number,
         totalValue: number,
@@ -206,17 +206,20 @@ export const ContractService = {
         activeCount: number,
         pendingCount: number
     }> => {
+        console.log('[ContractService.getStatsRPC] Calling RPC with:', { unitId, year });
         const { data, error } = await supabase.rpc('get_contract_stats', {
             p_unit_id: unitId,
             p_year: year
         });
 
         if (error) {
-            console.error('get_contract_stats RPC error:', error);
-            return { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0, activeCount: 0, pendingCount: 0 };
+            console.warn('[ContractService.getStatsRPC] RPC failed, using fallback query:', error.message);
+            // FALLBACK: Direct query when RPC doesn't exist
+            return ContractService.getStatsFallback(unitId, year);
         }
 
         if (data && data.length > 0) {
+            console.log('[ContractService.getStatsRPC] RPC success:', data[0]);
             return {
                 totalContracts: Number(data[0].total_contracts),
                 totalValue: Number(data[0].total_value),
@@ -227,6 +230,49 @@ export const ContractService = {
             };
         }
         return { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0, activeCount: 0, pendingCount: 0 };
+    },
+
+    // FALLBACK for when RPC doesn't exist
+    getStatsFallback: async (unitId: string = 'all', year: string = 'all'): Promise<{
+        totalContracts: number,
+        totalValue: number,
+        totalRevenue: number,
+        totalProfit: number,
+        activeCount: number,
+        pendingCount: number
+    }> => {
+        console.log('[ContractService.getStatsFallback] Using direct query');
+        let query = supabase.from('contracts').select('id, value, actual_revenue, estimated_cost, status');
+
+        if (unitId && unitId !== 'all') {
+            query = query.eq('unit_id', unitId);
+        }
+        if (year && year !== 'All' && year !== 'all') {
+            const startDate = `${year}-01-01`;
+            const endDate = `${year}-12-31`;
+            query = query.gte('signed_date', startDate).lte('signed_date', endDate);
+        }
+
+        const { data, error } = await query;
+        if (error) {
+            console.error('[ContractService.getStatsFallback] Query error:', error);
+            return { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0, activeCount: 0, pendingCount: 0 };
+        }
+
+        console.log('[ContractService.getStatsFallback] Got contracts:', data?.length);
+        return (data || []).reduce((acc: any, curr: any) => {
+            const val = curr.value || 0;
+            const rev = curr.actual_revenue || 0;
+            const cost = curr.estimated_cost || 0;
+            return {
+                totalContracts: acc.totalContracts + 1,
+                totalValue: acc.totalValue + val,
+                totalRevenue: acc.totalRevenue + rev,
+                totalProfit: acc.totalProfit + (val - cost),
+                activeCount: acc.activeCount + (curr.status === 'Processing' || curr.status === 'Active' ? 1 : 0),
+                pendingCount: acc.pendingCount + (curr.status === 'Pending' ? 1 : 0)
+            };
+        }, { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0, activeCount: 0, pendingCount: 0 });
     },
 
     getPaymentStatsRPC: async (contractId: string): Promise<{
@@ -256,14 +302,15 @@ export const ContractService = {
     },
 
     getChartDataRPC: async (unitId: string = 'all', year: string = 'all'): Promise<Array<{ month: number, revenue: number, profit: number, signing: number }>> => {
+        console.log('[ContractService.getChartDataRPC] Calling RPC with:', { unitId, year });
         const { data, error } = await supabase.rpc('get_dashboard_chart_data', {
             p_unit_id: unitId,
             p_year: year
         });
 
         if (error) {
-            console.error('get_dashboard_chart_data RPC error:', error);
-            return [];
+            console.warn('[ContractService.getChartDataRPC] RPC failed, using fallback:', error.message);
+            return ContractService.getChartDataFallback(unitId, year);
         }
 
         return (data || []).map((d: any) => ({
@@ -271,6 +318,49 @@ export const ContractService = {
             revenue: Number(d.revenue),
             profit: Number(d.profit),
             signing: Number(d.signing)
+        }));
+    },
+
+    // FALLBACK for chart data
+    getChartDataFallback: async (unitId: string = 'all', year: string = 'all'): Promise<Array<{ month: number, revenue: number, profit: number, signing: number }>> => {
+        console.log('[ContractService.getChartDataFallback] Using direct query');
+        let query = supabase.from('contracts').select('signed_date, value, actual_revenue, estimated_cost');
+
+        if (unitId && unitId !== 'all') {
+            query = query.eq('unit_id', unitId);
+        }
+        if (year && year !== 'All' && year !== 'all') {
+            const startDate = `${year}-01-01`;
+            const endDate = `${year}-12-31`;
+            query = query.gte('signed_date', startDate).lte('signed_date', endDate);
+        }
+
+        const { data, error } = await query;
+        if (error) {
+            console.error('[ContractService.getChartDataFallback] Query error:', error);
+            return [];
+        }
+
+        // Aggregate by month
+        const monthlyData: Record<number, { revenue: number, profit: number, signing: number }> = {};
+        for (let m = 1; m <= 12; m++) {
+            monthlyData[m] = { revenue: 0, profit: 0, signing: 0 };
+        }
+
+        (data || []).forEach((c: any) => {
+            if (c.signed_date) {
+                const month = new Date(c.signed_date).getMonth() + 1;
+                if (monthlyData[month]) {
+                    monthlyData[month].signing += (c.value || 0);
+                    monthlyData[month].revenue += (c.actual_revenue || 0);
+                    monthlyData[month].profit += ((c.value || 0) - (c.estimated_cost || 0));
+                }
+            }
+        });
+
+        return Object.entries(monthlyData).map(([month, vals]) => ({
+            month: Number(month),
+            ...vals
         }));
     },
 

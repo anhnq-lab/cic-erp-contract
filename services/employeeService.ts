@@ -220,22 +220,56 @@ export const EmployeeService = {
     },
 
     getWithStats: async (unitId?: string, search?: string): Promise<Employee[]> => {
-        const { data, error } = await supabase.rpc('get_employees_with_stats', {
-            p_unit_id: unitId === 'all' ? null : unitId,
-            p_year: new Date().getFullYear(),
-            p_search: search || null
-        });
+        console.log('[EmployeeService.getWithStats] Fetching with RPC...');
+        try {
+            const { data, error } = await supabase.rpc('get_employees_with_stats', {
+                p_unit_id: unitId === 'all' ? null : unitId,
+                p_year: new Date().getFullYear(),
+                p_search: search || null
+            });
 
-        if (error) throw error;
-
-        return data.map((e: any) => ({
-            ...mapEmployee(e),
-            // Inject stats
-            stats: {
-                contractCount: e.contract_count,
-                totalSigning: e.total_signing,
-                totalRevenue: e.total_revenue
+            if (error) {
+                console.warn('[EmployeeService.getWithStats] RPC failed, falling back to getAll:', error.message);
+                // Fallback to regular getAll
+                let employees: Employee[];
+                if (unitId && unitId !== 'all') {
+                    employees = await EmployeeService.getByUnitId(unitId);
+                } else {
+                    employees = await EmployeeService.getAll();
+                }
+                // Filter by search if provided
+                if (search) {
+                    const lowerSearch = search.toLowerCase();
+                    employees = employees.filter(e => e.name.toLowerCase().includes(lowerSearch));
+                }
+                return employees.map(e => ({
+                    ...e,
+                    stats: { contractCount: 0, totalSigning: 0, totalRevenue: 0 }
+                }));
             }
-        }));
+
+            console.log('[EmployeeService.getWithStats] RPC success, count:', data?.length);
+            return data.map((e: any) => ({
+                ...mapEmployee(e),
+                stats: {
+                    contractCount: e.contract_count,
+                    totalSigning: e.total_signing,
+                    totalRevenue: e.total_revenue
+                }
+            }));
+        } catch (error) {
+            console.error('[EmployeeService.getWithStats] Exception, falling back to getAll:', error);
+            // Fallback
+            let employees: Employee[];
+            if (unitId && unitId !== 'all') {
+                employees = await EmployeeService.getByUnitId(unitId);
+            } else {
+                employees = await EmployeeService.getAll();
+            }
+            return employees.map(e => ({
+                ...e,
+                stats: { contractCount: 0, totalSigning: 0, totalRevenue: 0 }
+            }));
+        }
     }
 };
