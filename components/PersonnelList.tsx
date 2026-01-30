@@ -93,12 +93,55 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
         return () => clearTimeout(timer);
     }, [unitFilter, searchQuery]); // Re-fetch on filter change
 
-    // Calculate current page slice
+
+    // Position priority for sorting (higher = more important, shown first)
+    const getPositionPriority = (position?: string, roleCode?: string): number => {
+        if (!position && !roleCode) return 0;
+        const pos = position?.toLowerCase() || '';
+
+        // Executive level
+        if (pos.includes('tổng giám đốc') && !pos.includes('phó')) return 100;
+        if (pos.includes('phó tổng')) return 90;
+
+        // Unit leaders
+        if (pos.includes('giám đốc tt') || pos.includes('giám đốc cn')) return 80;
+        if (roleCode === 'UnitLeader') return 75;
+
+        // Department heads
+        if (pos.includes('trưởng phòng') || pos.includes('kế toán trưởng')) return 70;
+        if (roleCode === 'ChiefAccountant') return 65;
+
+        // Staff levels
+        if (pos.includes('chuyên viên') || roleCode === 'NVKD') return 50;
+        if (roleCode === 'Accountant') return 45;
+        if (roleCode === 'Support') return 40;
+
+        return 30; // Default
+    };
+
+    // Calculate current page slice with sorting
     const filteredPersonnel = useMemo(() => {
+        // Sort by: 1) Position priority (desc), 2) Unit (asc), 3) Name (asc)
+        const sorted = [...allPersonnel].sort((a, b) => {
+            const priorityA = getPositionPriority(a.position, a.roleCode);
+            const priorityB = getPositionPriority(b.position, b.roleCode);
+
+            // First by position priority (descending - higher priority first)
+            if (priorityB !== priorityA) return priorityB - priorityA;
+
+            // Then by unit (ascending)
+            const unitA = units.find(u => u.id === a.unitId)?.code || 'ZZZ';
+            const unitB = units.find(u => u.id === b.unitId)?.code || 'ZZZ';
+            if (unitA !== unitB) return unitA.localeCompare(unitB);
+
+            // Finally by name
+            return a.name.localeCompare(b.name);
+        });
+
         const from = (currentPage - 1) * pageSize;
         const to = from + pageSize;
-        return allPersonnel.slice(from, to);
-    }, [allPersonnel, currentPage]);
+        return sorted.slice(from, to);
+    }, [allPersonnel, currentPage, units]);
 
     // Reset page on filter change
     useEffect(() => {
@@ -406,7 +449,10 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                                                                 <span className="px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[9px] font-black rounded uppercase">Đạt KPI</span>
                                                             )}
                                                         </h3>
-                                                        <p className="text-xs text-slate-500 dark:text-slate-400 md:hidden">
+                                                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                                                            {person.position || (person.roleCode === 'NVKD' ? 'Chuyên viên KD' : person.roleCode || 'Nhân viên')}
+                                                        </p>
+                                                        <p className="text-xs text-slate-400 md:hidden">
                                                             {getUnitCode(person.unitId)}
                                                         </p>
                                                     </div>
