@@ -25,7 +25,9 @@ const mapUnit = (u: any): Unit => {
 
 export const UnitService = {
     getAll: async (): Promise<Unit[]> => {
+        console.log('[UnitService.getAll] Fetching...');
         const { data, error } = await supabase.from('units').select('*');
+        console.log('[UnitService.getAll] Result:', { count: data?.length, error });
         if (error) throw error;
         return data.map(mapUnit);
     },
@@ -115,25 +117,41 @@ export const UnitService = {
     },
 
     getWithStats: async (year?: number): Promise<Unit[]> => {
-        const { data, error } = await supabase.rpc('get_units_with_stats', {
-            p_year: year || new Date().getFullYear()
-        });
+        console.log('[UnitService.getWithStats] Fetching with RPC...');
+        try {
+            const { data, error } = await supabase.rpc('get_units_with_stats', {
+                p_year: year || new Date().getFullYear()
+            });
 
-        if (error) throw error;
+            console.log('[UnitService.getWithStats] RPC Result:', { count: data?.length, error });
 
-        return data.map((u: any) => ({
-            ...mapUnit(u),
-            // Inject stats into the unit object for easy UI access, or handle separately.
-            // Based on the RPC return: total_signing, total_revenue, contract_count
-            // We can map these to a 'stats' property if we extend the Unit type, or just map them to runtime properties.
-            // For now, let's assume we might extend Unit type or just return as is with extra props.
-            // Type assertion to any to pass TS check if Unit doesn't have these fields strictly typed yet.
-            stats: {
-                contractCount: u.contract_count,
-                totalSigning: u.total_signing,
-                totalRevenue: u.total_revenue,
-                totalProfit: u.total_profit
+            if (error) {
+                console.error('[UnitService.getWithStats] RPC failed, falling back to getAll:', error);
+                // Fallback to regular getAll
+                const allUnits = await UnitService.getAll();
+                return allUnits.map(u => ({
+                    ...u,
+                    stats: { contractCount: 0, totalSigning: 0, totalRevenue: 0, totalProfit: 0 }
+                }));
             }
-        }));
+
+            return data.map((u: any) => ({
+                ...mapUnit(u),
+                stats: {
+                    contractCount: u.contract_count,
+                    totalSigning: u.total_signing,
+                    totalRevenue: u.total_revenue,
+                    totalProfit: u.total_profit
+                }
+            }));
+        } catch (error) {
+            console.error('[UnitService.getWithStats] Exception, falling back to getAll:', error);
+            // Fallback
+            const allUnits = await UnitService.getAll();
+            return allUnits.map(u => ({
+                ...u,
+                stats: { contractCount: 0, totalSigning: 0, totalRevenue: 0, totalProfit: 0 }
+            }));
+        }
     }
 };

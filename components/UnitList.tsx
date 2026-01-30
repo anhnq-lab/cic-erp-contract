@@ -27,18 +27,20 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
     }, []);
 
     const fetchData = async () => {
+        console.log('[UnitList] fetchData starting...');
         setIsLoading(true);
         try {
-            // ... (in fetchData)
-            // New Bulk API: Get Units AND specific KPIs in one shot
             const unitsWithStats = await UnitService.getWithStats();
-            setUnits(unitsWithStats.filter(u => u.id !== 'all' && !NON_BUSINESS_UNIT_CODES.includes(u.code)));
-            // Contracts no longer needed for list view stats calculation
+            console.log('[UnitList] Received units:', unitsWithStats.length);
+            const filtered = unitsWithStats.filter(u => u.id !== 'all' && !NON_BUSINESS_UNIT_CODES.includes(u.code));
+            console.log('[UnitList] After filter:', filtered.length);
+            setUnits(filtered);
             setContracts([]);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('[UnitList] Error fetching data:', error);
             toast.error('Không thể tải dữ liệu đơn vị');
         } finally {
+            console.log('[UnitList] fetchData completed');
             setIsLoading(false);
         }
     };
