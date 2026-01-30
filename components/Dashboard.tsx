@@ -163,7 +163,8 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
         // 4. Fetch Recent Contracts (Light Limit 5)
         const recentPromise = ContractService.search('', 5);
 
-        const [statsData, chartCurrent, chartLast, distData, recent] = await Promise.all([
+        // USE PROMISE.ALLSETTLED for resilience
+        const results = await Promise.allSettled([
           statsPromise,
           chartCurrentPromise,
           chartLastPromise,
@@ -171,19 +172,32 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
           recentPromise
         ]);
 
+        const statsData = results[0].status === 'fulfilled' ? results[0].value : { totalValue: 0, totalRevenue: 0, totalProfit: 0, activeCount: 0, pendingCount: 0 };
+        const chartCurrent = results[1].status === 'fulfilled' ? results[1].value : [];
+        const chartLast = results[2].status === 'fulfilled' ? results[2].value : [];
+        const distData = results[3].status === 'fulfilled' ? results[3].value : [];
+        const recent = results[4].status === 'fulfilled' ? results[4].value : [];
+
+        // Log errors if any
+        results.forEach((res, index) => {
+          if (res.status === 'rejected') {
+            console.error(`Dashboard Fetch Error (Index ${index}):`, res.reason);
+          }
+        });
+
         // Transform Stats
         setStats({
           actual: {
-            signing: statsData.totalValue,
-            revenue: statsData.totalRevenue,
-            adminProfit: statsData.totalProfit,
-            revProfit: statsData.totalProfit,
-            cash: statsData.totalRevenue,
+            signing: statsData.totalValue || 0,
+            revenue: statsData.totalRevenue || 0,
+            adminProfit: statsData.totalProfit || 0,
+            revProfit: statsData.totalProfit || 0,
+            cash: statsData.totalRevenue || 0,
             netCashflow: 0
           },
           statusCounts: {
-            active: statsData.activeCount,
-            pending: statsData.pendingCount,
+            active: statsData.activeCount || 0,
+            pending: statsData.pendingCount || 0,
             expired: 0,
             completed: 0
           }
@@ -193,16 +207,17 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
         setChartDataCurrent(chartCurrent);
         setChartDataLast(chartLast);
 
-        // Store Raw Distribution Data for local re-calc
-        // We cast to any[] temporarily as Types might handle this differently
         setRawDistData(distData as any[]);
-
         setRecentContracts(recent);
-        fetchAI(recent);
+
+        // Only fetch AI if recent contracts exist
+        if (recent.length > 0) {
+          fetchAI(recent);
+        }
 
       } catch (error) {
-        console.error("Dashboard Fetch Error", error);
-        toast.error("Không thể tải dữ liệu Dashboard");
+        console.error("Dashboard Config Load Error", error);
+        // Don't toast error here to avoid annoying user if partial load works
       } finally {
         setLoadingConfig(false);
       }
