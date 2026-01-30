@@ -364,14 +364,16 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
+        {/* Content Grid - PAKD tab uses full width */}
+        {activeTab === 'pakd' && contract && (
+          <div className="w-full">
+            <ContractBusinessPlanTab contract={contract} onUpdate={() => { /* maybe refresh contract */ }} />
+          </div>
+        )}
 
-            {activeTab === 'pakd' && contract && (
-              <ContractBusinessPlanTab contract={contract} onUpdate={() => { /* maybe refresh contract */ }} />
-            )}
-
-            {activeTab === 'overview' && (
+        {activeTab === 'overview' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
               <>
                 {/* 1. FINANCIAL SUMMARY */}
                 <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
@@ -532,11 +534,9 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                   </div>
                 </div>
               </>
-            )}
-          </div>
+            </div>
 
-          {/* SIDEBAR RIGHT */}
-          {activeTab === 'overview' && (
+            {/* SIDEBAR RIGHT */}
             <div className="space-y-6">
               <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-6 text-white shadow-xl shadow-indigo-200 dark:shadow-none relative overflow-hidden transition-all">
                 <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
@@ -635,10 +635,10 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
-    </ErrorBoundary >
+    </ErrorBoundary>
 
   );
 };
