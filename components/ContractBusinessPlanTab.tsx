@@ -243,16 +243,42 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-slate-50 dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700">
                     <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Doanh thu dự kiến</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                        {new Intl.NumberFormat('vi-VN').format(financials.revenue)} ₫
-                    </p>
+                    {isEditing ? (
+                        <input
+                            type="number"
+                            value={financials.revenue}
+                            onChange={(e) => {
+                                const rev = Number(e.target.value) || 0;
+                                const { profit, margin } = calculateMargin(rev, financials.costs);
+                                setFinancials({ ...financials, revenue: rev, grossProfit: profit, margin });
+                            }}
+                            className="w-full text-xl font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-700 border border-indigo-300 dark:border-indigo-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                    ) : (
+                        <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                            {new Intl.NumberFormat('vi-VN').format(financials.revenue)} ₫
+                        </p>
+                    )}
                 </div>
 
                 <div className="bg-slate-50 dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700">
                     <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Tổng chi phí</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                        {new Intl.NumberFormat('vi-VN').format(financials.costs)} ₫
-                    </p>
+                    {isEditing ? (
+                        <input
+                            type="number"
+                            value={financials.costs}
+                            onChange={(e) => {
+                                const cost = Number(e.target.value) || 0;
+                                const { profit, margin } = calculateMargin(financials.revenue, cost);
+                                setFinancials({ ...financials, costs: cost, grossProfit: profit, margin });
+                            }}
+                            className="w-full text-xl font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-700 border border-indigo-300 dark:border-indigo-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                    ) : (
+                        <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                            {new Intl.NumberFormat('vi-VN').format(financials.costs)} ₫
+                        </p>
+                    )}
                 </div>
 
                 <div className={`p-5 rounded-2xl border ${financials.margin >= 30
