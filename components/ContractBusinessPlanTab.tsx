@@ -9,7 +9,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { WorkflowService } from '../services';
 import { toast } from 'sonner';
-import { Check, X, AlertTriangle, Send, FileText, Lock } from 'lucide-react';
+import { Check, X, AlertTriangle, Send, FileText, Lock, Plus, Trash2 } from 'lucide-react';
+import { LineItem, AdministrativeCosts } from '../types';
 
 interface Props {
     contract: Contract;
@@ -26,13 +27,75 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
     const [showRejectDialog, setShowRejectDialog] = useState(false);
     const [isRejecting, setIsRejecting] = useState(false);
 
-    // Form State
+    // Editable Local State
+    const [lineItems, setLineItems] = useState<LineItem[]>(contract.lineItems || []);
+    const [adminCosts, setAdminCosts] = useState<AdministrativeCosts>(contract.adminCosts || {
+        transferFee: 0, contractorTax: 0, importFee: 0, expertHiring: 0, documentProcessing: 0
+    });
+
+    // Sync from contract when contract changes
+    useEffect(() => {
+        setLineItems(contract.lineItems || []);
+        setAdminCosts(contract.adminCosts || {
+            transferFee: 0, contractorTax: 0, importFee: 0, expertHiring: 0, documentProcessing: 0
+        });
+    }, [contract.id]);
+
+    // Form State - Auto-calculated from lineItems and adminCosts
     const [financials, setFinancials] = useState({
         revenue: contract.value,
         costs: contract.estimatedCost,
         margin: 0,
         grossProfit: 0
     });
+
+    // Auto-calculate financials when lineItems or adminCosts change
+    useEffect(() => {
+        const totalOutput = lineItems.reduce((acc, item) => acc + (item.quantity * item.outputPrice), 0);
+        const totalInput = lineItems.reduce((acc, item) => acc + (item.quantity * item.inputPrice), 0);
+        const totalDirectCosts = lineItems.reduce((acc, item) => acc + (item.directCosts || 0), 0);
+        const adminSum = Object.values(adminCosts).reduce((acc, val) => acc + (val || 0), 0);
+
+        const costs = totalInput + totalDirectCosts + adminSum;
+        const grossProfit = totalOutput - costs;
+        const margin = totalOutput > 0 ? (grossProfit / totalOutput) * 100 : 0;
+
+        setFinancials({
+            revenue: totalOutput,
+            costs: costs,
+            margin: margin,
+            grossProfit: grossProfit
+        });
+    }, [lineItems, adminCosts]);
+
+    // Helper functions for editing
+    const addLineItem = () => {
+        setLineItems([...lineItems, {
+            id: Date.now().toString(),
+            name: '',
+            quantity: 1,
+            supplier: '',
+            inputPrice: 0,
+            outputPrice: 0,
+            directCosts: 0
+        }]);
+    };
+
+    const removeLineItem = (id: string) => {
+        if (lineItems.length > 1) {
+            setLineItems(lineItems.filter(item => item.id !== id));
+        }
+    };
+
+    const updateLineItem = (index: number, field: keyof LineItem, value: any) => {
+        const newItems = [...lineItems];
+        (newItems[index] as any)[field] = value;
+        setLineItems(newItems);
+    };
+
+    const updateAdminCost = (key: keyof AdministrativeCosts, value: number) => {
+        setAdminCosts({ ...adminCosts, [key]: value });
+    };
 
     // ... (keep useEffect and fetchPlan)
     useEffect(() => {
@@ -239,46 +302,22 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                 />
             </div>
 
-            {/* 1. FINANCIAL SUMMARY */}
+            {/* 1. FINANCIAL SUMMARY - Auto-calculated from Line Items */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-slate-50 dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700">
                     <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Doanh thu dự kiến</p>
-                    {isEditing ? (
-                        <input
-                            type="number"
-                            value={financials.revenue}
-                            onChange={(e) => {
-                                const rev = Number(e.target.value) || 0;
-                                const { profit, margin } = calculateMargin(rev, financials.costs);
-                                setFinancials({ ...financials, revenue: rev, grossProfit: profit, margin });
-                            }}
-                            className="w-full text-xl font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-700 border border-indigo-300 dark:border-indigo-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
-                    ) : (
-                        <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                            {new Intl.NumberFormat('vi-VN').format(financials.revenue)} ₫
-                        </p>
-                    )}
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                        {new Intl.NumberFormat('vi-VN').format(financials.revenue)} ₫
+                    </p>
+                    {isEditing && <p className="text-[10px] text-slate-400 mt-1">Tự động tính từ bảng sản phẩm</p>}
                 </div>
 
                 <div className="bg-slate-50 dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700">
                     <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Tổng chi phí</p>
-                    {isEditing ? (
-                        <input
-                            type="number"
-                            value={financials.costs}
-                            onChange={(e) => {
-                                const cost = Number(e.target.value) || 0;
-                                const { profit, margin } = calculateMargin(financials.revenue, cost);
-                                setFinancials({ ...financials, costs: cost, grossProfit: profit, margin });
-                            }}
-                            className="w-full text-xl font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-700 border border-indigo-300 dark:border-indigo-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
-                    ) : (
-                        <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                            {new Intl.NumberFormat('vi-VN').format(financials.costs)} ₫
-                        </p>
-                    )}
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                        {new Intl.NumberFormat('vi-VN').format(financials.costs)} ₫
+                    </p>
+                    {isEditing && <p className="text-[10px] text-slate-400 mt-1">Tự động tính từ bảng + CP quản lý</p>}
                 </div>
 
                 <div className={`p-5 rounded-2xl border ${financials.margin >= 30
@@ -305,51 +344,132 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
             {/* 2. BUSINESS PLAN DETAILS */}
             <div className="mb-8">
                 {/* 2.1 Products Table */}
+                <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        Sản phẩm/Dịch vụ
+                    </h4>
+                    {isEditing && (
+                        <button
+                            onClick={addLineItem}
+                            className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 border border-emerald-100 dark:border-emerald-800 hover:bg-emerald-100 transition-colors"
+                        >
+                            <Plus size={12} /> Thêm hạng mục
+                        </button>
+                    )}
+                </div>
                 <div className="mb-8 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
-                    <table className="w-full text-left text-xs min-w-[800px]">
+                    <table className="w-full text-left text-xs min-w-[900px]">
                         <thead className="bg-slate-50 dark:bg-slate-800/50">
                             <tr>
                                 <th className="px-4 py-3 font-black text-slate-400 uppercase tracking-tighter">Sản phẩm/Dịch vụ</th>
-                                <th className="px-2 py-3 font-black text-slate-400 uppercase tracking-tighter text-center">SL</th>
+                                <th className="px-2 py-3 font-black text-slate-400 uppercase tracking-tighter text-center w-16">SL</th>
                                 <th className="px-4 py-3 font-black text-slate-400 uppercase tracking-tighter text-right">Giá Đầu vào</th>
                                 <th className="px-4 py-3 font-black text-slate-400 uppercase tracking-tighter text-right">Giá Đầu ra</th>
                                 <th className="px-4 py-3 font-black text-slate-400 uppercase tracking-tighter text-right">CP Trực tiếp</th>
                                 <th className="px-4 py-3 font-black text-slate-400 uppercase tracking-tighter text-right">Chênh lệch</th>
+                                {isEditing && <th className="px-2 py-3 w-10"></th>}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
-                            {contract.lineItems?.map((item, idx) => {
+                            {lineItems.map((item, idx) => {
                                 const inputTotal = item.quantity * item.inputPrice;
                                 const outputTotal = item.quantity * item.outputPrice;
                                 const margin = outputTotal - inputTotal - (item.directCosts || 0);
 
                                 return (
-                                    <tr key={idx} className="group hover:bg-slate-50 dark:hover:bg-slate-800/20">
-                                        <td className="px-4 py-3 font-bold text-slate-700 dark:text-slate-200">{item.name}</td>
-                                        <td className="px-2 py-3 text-center">{item.quantity}</td>
-                                        <td className="px-4 py-3 text-right text-slate-500">{new Intl.NumberFormat('vi-VN').format(item.inputPrice)}</td>
-                                        <td className="px-4 py-3 text-right font-bold text-indigo-600">{new Intl.NumberFormat('vi-VN').format(item.outputPrice)}</td>
-                                        <td className="px-4 py-3 text-right text-rose-500 font-bold align-top">
-                                            <div className={`border-b border-dashed ${item.directCostDetails?.length ? 'border-rose-300/50 cursor-help' : 'border-transparent'} w-fit ml-auto pb-0.5`} title="Chi tiết phí trực tiếp">
-                                                {new Intl.NumberFormat('vi-VN').format(item.directCosts || 0)}
-                                            </div>
+                                    <tr key={item.id || idx} className="group hover:bg-slate-50 dark:hover:bg-slate-800/20">
+                                        <td className="px-4 py-3">
+                                            {isEditing ? (
+                                                <input
+                                                    type="text"
+                                                    value={item.name}
+                                                    onChange={(e) => updateLineItem(idx, 'name', e.target.value)}
+                                                    placeholder="Tên sản phẩm..."
+                                                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1 font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                />
+                                            ) : (
+                                                <span className="font-bold text-slate-700 dark:text-slate-200">{item.name}</span>
+                                            )}
+                                        </td>
+                                        <td className="px-2 py-3 text-center">
+                                            {isEditing ? (
+                                                <input
+                                                    type="number"
+                                                    value={item.quantity}
+                                                    onChange={(e) => updateLineItem(idx, 'quantity', Number(e.target.value) || 1)}
+                                                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                />
+                                            ) : (
+                                                item.quantity
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3 text-right">
+                                            {isEditing ? (
+                                                <input
+                                                    type="number"
+                                                    value={item.inputPrice}
+                                                    onChange={(e) => updateLineItem(idx, 'inputPrice', Number(e.target.value) || 0)}
+                                                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1 text-right focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                />
+                                            ) : (
+                                                <span className="text-slate-500">{new Intl.NumberFormat('vi-VN').format(item.inputPrice)}</span>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3 text-right">
+                                            {isEditing ? (
+                                                <input
+                                                    type="number"
+                                                    value={item.outputPrice}
+                                                    onChange={(e) => updateLineItem(idx, 'outputPrice', Number(e.target.value) || 0)}
+                                                    className="w-full bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-600 rounded-lg px-2 py-1 text-right font-bold text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                />
+                                            ) : (
+                                                <span className="font-bold text-indigo-600">{new Intl.NumberFormat('vi-VN').format(item.outputPrice)}</span>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3 text-right">
+                                            {isEditing ? (
+                                                <input
+                                                    type="number"
+                                                    value={item.directCosts || 0}
+                                                    onChange={(e) => updateLineItem(idx, 'directCosts', Number(e.target.value) || 0)}
+                                                    className="w-full bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-600 rounded-lg px-2 py-1 text-right text-rose-500 font-bold focus:outline-none focus:ring-2 focus:ring-rose-500"
+                                                />
+                                            ) : (
+                                                <span className="text-rose-500 font-bold">{new Intl.NumberFormat('vi-VN').format(item.directCosts || 0)}</span>
+                                            )}
                                         </td>
                                         <td className={`px-4 py-3 text-right font-black ${margin >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                                             {new Intl.NumberFormat('vi-VN').format(margin)}
                                         </td>
+                                        {isEditing && (
+                                            <td className="px-2 py-3 text-center">
+                                                {lineItems.length > 1 && (
+                                                    <button
+                                                        onClick={() => removeLineItem(item.id)}
+                                                        className="text-slate-300 hover:text-rose-500 transition-colors"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                )}
+                                            </td>
+                                        )}
                                     </tr>
                                 );
                             })}
                             <tr className="bg-slate-50 dark:bg-slate-800/50 font-black text-slate-800 dark:text-slate-200 border-t-2 border-slate-100 dark:border-slate-700">
                                 <td className="px-4 py-3" colSpan={2}>TỔNG CỘNG</td>
-                                <td className="px-4 py-3 text-right text-slate-500">{new Intl.NumberFormat('vi-VN').format(financials.costs - (contract.adminCosts ? Object.values(contract.adminCosts).reduce((a: any, b: any) => a + b, 0) : 0))}</td>
+                                <td className="px-4 py-3 text-right text-slate-500">
+                                    {new Intl.NumberFormat('vi-VN').format(lineItems.reduce((acc, item) => acc + (item.quantity * item.inputPrice), 0))}
+                                </td>
                                 <td className="px-4 py-3 text-right text-indigo-600">{new Intl.NumberFormat('vi-VN').format(financials.revenue)}</td>
                                 <td className="px-4 py-3 text-right text-rose-500">
-                                    {new Intl.NumberFormat('vi-VN').format(contract.lineItems?.reduce((acc, item) => acc + (item.directCosts || 0), 0) || 0)}
+                                    {new Intl.NumberFormat('vi-VN').format(lineItems.reduce((acc, item) => acc + (item.directCosts || 0), 0))}
                                 </td>
                                 <td className={`px-4 py-3 text-right ${financials.grossProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                                     {new Intl.NumberFormat('vi-VN').format(financials.grossProfit)}
                                 </td>
+                                {isEditing && <td></td>}
                             </tr>
                         </tbody>
                     </table>
@@ -369,9 +489,18 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                     ].map(item => (
                         <div key={item.key} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
                             <p className="text-[10px] text-slate-400 font-bold uppercase truncate" title={item.label}>{item.label}</p>
-                            <p className="text-sm font-black text-rose-500 mt-1">
-                                {new Intl.NumberFormat('vi-VN').format((contract.adminCosts as any)?.[item.key] || 0)}
-                            </p>
+                            {isEditing ? (
+                                <input
+                                    type="number"
+                                    value={(adminCosts as any)[item.key] || 0}
+                                    onChange={(e) => updateAdminCost(item.key as keyof AdministrativeCosts, Number(e.target.value) || 0)}
+                                    className="w-full mt-1 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-600 rounded-lg px-2 py-1 text-sm font-black text-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                                />
+                            ) : (
+                                <p className="text-sm font-black text-rose-500 mt-1">
+                                    {new Intl.NumberFormat('vi-VN').format((adminCosts as any)[item.key] || 0)}
+                                </p>
+                            )}
                         </div>
                     ))}
                 </div>
