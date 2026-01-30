@@ -89,17 +89,32 @@ export const EmployeeService = {
     },
 
     create: async (payload: Omit<Employee, 'id'>): Promise<Employee> => {
-        // Map frontend back to DB
-        const dbPayload = {
+        // Map frontend back to DB - include all HR fields
+        const dbPayload: any = {
             name: payload.name,
             unit_id: payload.unitId || null,
+            employee_code: payload.employeeCode,
             email: payload.email,
             phone: payload.phone,
             position: payload.position,
             department: payload.department,
             role_code: payload.roleCode,
             date_joined: payload.dateJoined,
-            target: payload.target
+            avatar: payload.avatar,
+            target: payload.target,
+            // HR fields
+            date_of_birth: payload.dateOfBirth || null,
+            gender: payload.gender || null,
+            address: payload.address,
+            education: payload.education,
+            id_number: payload.idNumber,
+            bank_account: payload.bankAccount,
+            bank_name: payload.bankName,
+            marital_status: payload.maritalStatus || null,
+            emergency_contact: payload.emergencyContact,
+            emergency_phone: payload.emergencyPhone,
+            contract_type: payload.contractType,
+            contract_end_date: payload.contractEndDate || null
         };
 
         const { data, error } = await supabase.from('employees').insert(dbPayload).select().single();

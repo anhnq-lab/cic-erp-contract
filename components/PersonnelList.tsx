@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Search, User, Building, ChevronDown, Loader2, Plus, Pencil, Trash2, MoreVertical, Phone, Mail, Calendar, GraduationCap, MapPin, CreditCard } from 'lucide-react';
+import { Search, User, Building, ChevronDown, Loader2, Plus, Pencil, Trash2, MoreVertical, Phone, Mail, Calendar, GraduationCap, MapPin, CreditCard, Eye } from 'lucide-react';
 import { EmployeeService, UnitService } from '../services';
 import { Employee, Unit } from '../types';
 import PersonnelForm from './PersonnelForm';
+import EmployeeDetailModal from './EmployeeDetailModal';
 
 interface PersonnelListProps {
     selectedUnit: Unit;
@@ -28,6 +29,10 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingPerson, setEditingPerson] = useState<Employee | undefined>(undefined);
     const [actionMenuId, setActionMenuId] = useState<string | null>(null);
+
+    // Detail modal state
+    const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+    const [isDetailOpen, setIsDetailOpen] = useState(false);
 
     // Fetch data
     useEffect(() => {
@@ -151,6 +156,12 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
         setActionMenuId(null);
     };
 
+    // Handle view detail
+    const handleViewDetail = (employee: Employee) => {
+        setSelectedEmployee(employee);
+        setIsDetailOpen(true);
+    };
+
     // Format date for display
     const formatDate = (dateStr?: string) => {
         if (!dateStr) return '—';
@@ -238,6 +249,16 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                 initialData={editingPerson}
             />
 
+            {/* Employee Detail Modal */}
+            <EmployeeDetailModal
+                isOpen={isDetailOpen}
+                onClose={() => { setIsDetailOpen(false); setSelectedEmployee(null); }}
+                employee={selectedEmployee}
+                unit={units.find(u => u.id === selectedEmployee?.unitId)}
+                onEdit={(emp) => { setEditingPerson(emp); setIsFormOpen(true); }}
+                onDelete={handleDelete}
+            />
+
             {/* Summary Stats - HR focused */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
@@ -313,7 +334,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                                 {filteredPersonnel.map((person) => (
                                     <tr
                                         key={person.id}
-                                        onClick={() => onSelectPersonnel(person.id)}
+                                        onClick={() => handleViewDetail(person)}
                                         className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer"
                                     >
                                         {/* Name & Position */}
