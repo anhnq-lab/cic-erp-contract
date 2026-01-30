@@ -212,25 +212,41 @@ export const ContractService = {
             p_year: year
         });
 
+        console.log('[ContractService.getStatsRPC] Raw response:', { data, error, dataType: typeof data, isArray: Array.isArray(data) });
+
         if (error) {
             console.warn('[ContractService.getStatsRPC] RPC failed, using fallback query:', error.message);
             // FALLBACK: Direct query when RPC doesn't exist
             return ContractService.getStatsFallback(unitId, year);
         }
 
-        if (data && data.length > 0) {
-            console.log('[ContractService.getStatsRPC] RPC success:', data[0]);
-            return {
-                totalContracts: Number(data[0].total_contracts),
-                totalValue: Number(data[0].total_value),
-                totalRevenue: Number(data[0].total_revenue),
-                totalProfit: Number(data[0].total_profit),
-                activeCount: Number(data[0].active_count),
-                pendingCount: Number(data[0].pending_count)
-            };
+        // Handle different data formats from RPC
+        let statsRow = null;
+        if (Array.isArray(data) && data.length > 0) {
+            statsRow = data[0];
+        } else if (data && typeof data === 'object' && !Array.isArray(data)) {
+            // RPC might return single object instead of array
+            statsRow = data;
         }
-        return { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0, activeCount: 0, pendingCount: 0 };
+
+        if (statsRow) {
+            console.log('[ContractService.getStatsRPC] Parsed stats row:', statsRow);
+            const result = {
+                totalContracts: Number(statsRow.total_contracts || 0),
+                totalValue: Number(statsRow.total_value || 0),
+                totalRevenue: Number(statsRow.total_revenue || 0),
+                totalProfit: Number(statsRow.total_profit || 0),
+                activeCount: Number(statsRow.active_count || 0),
+                pendingCount: Number(statsRow.pending_count || 0)
+            };
+            console.log('[ContractService.getStatsRPC] Returning:', result);
+            return result;
+        }
+
+        console.warn('[ContractService.getStatsRPC] No stats data, using fallback');
+        return ContractService.getStatsFallback(unitId, year);
     },
+
 
     // FALLBACK for when RPC doesn't exist
     getStatsFallback: async (unitId: string = 'all', year: string = 'all'): Promise<{
