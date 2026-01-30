@@ -36,24 +36,38 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
 
     // Fetch data
     useEffect(() => {
+        console.log('[PersonnelList] Fetch effect triggered');
+
+        // Safety timeout
+        const timeoutId = setTimeout(() => {
+            console.warn('[PersonnelList] Safety timeout - forcing loading to false');
+            setIsLoading(false);
+        }, 10000);
+
         const fetchData = async () => {
             setIsLoading(true);
             try {
+                console.log('[PersonnelList] Starting data fetch...');
                 const [employeesData, unitsData] = await Promise.all([
                     EmployeeService.getAll(),
                     UnitService.getAll()
                 ]);
+                console.log('[PersonnelList] Data received:', { employees: employeesData.length, units: unitsData.length });
                 setAllPersonnel(employeesData);
                 setUnits(unitsData);
             } catch (error) {
-                console.error('Error fetching data:', error);
+                console.error('[PersonnelList] Error fetching data:', error);
                 toast.error('Lỗi tải dữ liệu nhân sự');
             } finally {
+                console.log('[PersonnelList] Setting loading to false');
                 setIsLoading(false);
+                clearTimeout(timeoutId);
             }
         };
         fetchData();
-    }, [unitFilter, searchQuery]);
+
+        return () => clearTimeout(timeoutId);
+    }, []);
 
     // Filter units for dropdown
     const filterUnits = useMemo(() => {
@@ -124,20 +138,27 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
     }, [unitFilter, searchQuery]);
 
     const handleSave = async (data: any) => {
+        console.log('[PersonnelList.handleSave] Starting...', { id: data.id });
         try {
             if (data.id) {
+                console.log('[PersonnelList.handleSave] Calling update...');
                 await EmployeeService.update(data.id, data);
+                console.log('[PersonnelList.handleSave] Update completed');
             } else {
+                console.log('[PersonnelList.handleSave] Calling create...');
                 await EmployeeService.create(data);
+                console.log('[PersonnelList.handleSave] Create completed');
             }
             // Refresh data
+            console.log('[PersonnelList.handleSave] Refreshing data...');
             const employeesData = await EmployeeService.getAll();
+            console.log('[PersonnelList.handleSave] Refresh completed, count:', employeesData.length);
             setAllPersonnel(employeesData);
             toast.success("Lưu thông tin nhân viên thành công!");
             setIsFormOpen(false);
             setEditingPerson(undefined);
         } catch (error) {
-            console.error('Failed to save', error);
+            console.error('[PersonnelList.handleSave] Failed:', error);
             toast.error('Lỗi lưu dữ liệu');
         }
     };
