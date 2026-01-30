@@ -341,6 +341,31 @@ export const ContractService = {
         };
         const { data: res, error } = await supabase.from('contracts').insert(payload).select().single();
         if (error) throw error;
+
+        // Auto-create Business Plan (PAKD) for Workflow
+        try {
+            const financials = {
+                revenue: data.value || 0,
+                costs: data.estimatedCost || 0,
+                grossProfit: (data.value || 0) - (data.estimatedCost || 0),
+                margin: data.value ? (((data.value - data.estimatedCost) / data.value) * 100) : 0,
+                cashflow: data.paymentPhases || []
+            };
+
+            const user = (await supabase.auth.getUser()).data.user;
+
+            await supabase.from('contract_business_plans').insert({
+                contract_id: res.id,
+                version: 1,
+                status: 'Draft',
+                financials: financials,
+                is_active: true,
+                created_by: user?.id
+            });
+        } catch (planError) {
+            console.error("Failed to auto-create PAKD:", planError);
+        }
+
         return mapContract(res);
     },
 

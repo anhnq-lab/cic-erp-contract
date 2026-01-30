@@ -21,19 +21,34 @@ export const WorkflowService = {
             const currentStatus = plan.status as PlanStatus;
 
             // 2. Determine next status based on Role & Current Status
-            if (currentStatus === 'Draft' && (currentRole === 'NVKD' || currentRole === 'UnitLeader' || currentRole === 'AdminUnit')) {
-                nextStatus = 'Pending_Unit';
-            } else if (currentStatus === 'Pending_Unit' && (currentRole === 'UnitLeader' || currentRole === 'AdminUnit')) {
-                nextStatus = 'Pending_Finance';
-            } else if (currentStatus === 'Pending_Finance' && (currentRole === 'Accountant' || currentRole === 'ChiefAccountant')) {
-                nextStatus = 'Pending_Board';
-            } else if (currentStatus === 'Pending_Board' && currentRole === 'Leadership') {
-                nextStatus = 'Approved';
+            const user = (await supabase.auth.getUser()).data.user;
+            const userEmail = user?.email;
+            const isAdmin = currentRole === 'Admin' || userEmail === 'anhnq@cic.com.vn';
+
+            if (isAdmin) {
+                // GOD MODE: Auto-advance based on current status
+                if (currentStatus === 'Draft') nextStatus = 'Pending_Unit';
+                else if (currentStatus === 'Pending_Unit') nextStatus = 'Pending_Finance';
+                else if (currentStatus === 'Pending_Finance') nextStatus = 'Pending_Board';
+                else if (currentStatus === 'Pending_Board') nextStatus = 'Approved';
+            }
+
+            // Normal Flow Fallback
+            if (!nextStatus) {
+                if (currentStatus === 'Draft' && (currentRole === 'NVKD' || currentRole === 'UnitLeader' || currentRole === 'AdminUnit')) {
+                    nextStatus = 'Pending_Unit';
+                } else if (currentStatus === 'Pending_Unit' && (currentRole === 'UnitLeader' || currentRole === 'AdminUnit')) {
+                    nextStatus = 'Pending_Finance';
+                } else if (currentStatus === 'Pending_Finance' && (currentRole === 'Accountant' || currentRole === 'ChiefAccountant')) {
+                    nextStatus = 'Pending_Board';
+                } else if (currentStatus === 'Pending_Board' && currentRole === 'Leadership') {
+                    nextStatus = 'Approved';
+                }
             }
 
             if (!nextStatus) {
-                // Allow Leadership to force approve or fallback? For now, strict.
-                if (currentRole === 'Leadership') nextStatus = 'Approved';
+                // Allow Leadership to force approve
+                if (currentRole === 'Leadership' || isAdmin) nextStatus = 'Approved';
                 else throw new Error(`Invalid transition for Role ${currentRole} from Status ${currentStatus}`);
             }
 
@@ -107,5 +122,20 @@ export const WorkflowService = {
 
     async submitPAKD(planId: string): Promise<{ success: boolean; error?: any }> {
         return this.approvePAKD(planId, 'NVKD');
+    },
+
+    /**
+     * Helper to check if user can approve current stage
+     */
+    checkPermission(currentRole: UserRole, planStatus: PlanStatus, userEmail?: string): boolean {
+        const isAdmin = currentRole === 'Admin' || userEmail === 'anhnq@cic.com.vn';
+        if (isAdmin) return true;
+
+        if (planStatus === 'Draft' && (currentRole === 'NVKD' || currentRole === 'UnitLeader')) return true;
+        if (planStatus === 'Pending_Unit' && (currentRole === 'UnitLeader' || currentRole === 'AdminUnit')) return true;
+        if (planStatus === 'Pending_Finance' && (currentRole === 'Accountant' || currentRole === 'ChiefAccountant')) return true;
+        if (planStatus === 'Pending_Board' && currentRole === 'Leadership') return true;
+
+        return false;
     }
 };

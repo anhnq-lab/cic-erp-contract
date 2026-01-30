@@ -125,12 +125,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const canEdit = (resource: 'contract' | 'pakd', resourceUnitId?: string, status?: string) => {
         if (!profile) return false;
-        return true; // DEV MODE: Always allow edit
+        if (profile.role === 'Admin') return true;
+        // God Mode for specific user
+        if (user?.email === 'anhnq@cic.com.vn') return true;
+
+        // If no status is passed, assume editable unless specific restrictions apply based on role/unit
+        if (!status) return true;
+
+        // Most resources are editable only in Draft or early stages
+        // Contracts typically editable until signed/active, but here we simplify
+        if (['Draft', 'New', 'Pending'].includes(status)) {
+            // If resourceUnitId provided, check if user belongs to that unit or is global
+            if (resourceUnitId && profile.unitId) {
+                if (profile.unitId === 'all') return true;
+                if (resourceUnitId !== profile.unitId) return false;
+            }
+            return true;
+        }
+
+        // Once approved/active, editing is restricted
+        return false;
     };
 
     const canApprove = (resource: 'pakd', curStatus: string) => {
         if (!profile) return false;
-        return true; // DEV MODE: Always allow approve
+        if (profile.role === 'Admin') return true;
+        // God Mode
+        if (user?.email === 'anhnq@cic.com.vn') return true;
+
+        switch (curStatus) {
+            case 'Pending_Unit':
+                return profile.role === 'UnitLeader' || profile.role === 'Leadership' || profile.role === 'AdminUnit';
+            case 'Pending_Finance':
+                return profile.role === 'Accountant' || profile.role === 'ChiefAccountant' || profile.role === 'Leadership';
+            case 'Pending_Board':
+                return profile.role === 'Leadership';
+            default:
+                return false;
+        }
     };
 
     const refreshProfile = async () => {
