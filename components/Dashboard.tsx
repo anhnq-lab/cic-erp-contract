@@ -117,16 +117,27 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
 
   // Initial Config Load
   useEffect(() => {
+    console.log('[Dashboard] Initial config load starting...');
+
+    // Safety timeout - force loading to false after 8 seconds
+    const safetyTimeout = setTimeout(() => {
+      console.warn('[Dashboard] Safety timeout triggered - forcing loadingConfig to false');
+      setLoadingConfig(false);
+    }, 8000);
+
     const fetchConfig = async () => {
       try {
-        // ... (in fetchConfig)
+        console.log('[Dashboard] Fetching units...');
         const units = await UnitService.getAll();
+        console.log('[Dashboard] Units fetched:', units.length);
         setAllUnits(units.filter(u => !NON_BUSINESS_UNIT_CODES.includes(u.code)));
       } catch (e) {
-        console.error("Config load failed", e);
+        console.error("[Dashboard] Config load failed", e);
       }
     };
     fetchConfig();
+
+    return () => clearTimeout(safetyTimeout);
   }, []);
 
   // Update Previous Year when year filter changes
@@ -138,12 +149,17 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
 
   // Main Data Fetch Effect
   useEffect(() => {
+    console.log('[Dashboard] Main fetch effect triggered, selectedUnit:', selectedUnit?.id);
+
     const fetchDashboardData = async () => {
+      console.log('[Dashboard] fetchDashboardData starting...');
       setLoadingConfig(true);
       try {
         const unitId = selectedUnit ? selectedUnit.id : 'all';
         const year = yearFilter;
         const prevYear = yearFilter === 'All' ? 'All' : (parseInt(yearFilter) - 1).toString();
+
+        console.log('[Dashboard] Fetching with unitId:', unitId, 'year:', year);
 
         // 1. Fetch Stats (RPC)
         const statsPromise = ContractService.getStatsRPC(unitId, year);
@@ -164,6 +180,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
         const recentPromise = ContractService.search('', 5);
 
         // USE PROMISE.ALLSETTLED for resilience
+        console.log('[Dashboard] Awaiting all promises...');
         const results = await Promise.allSettled([
           statsPromise,
           chartCurrentPromise,
@@ -171,6 +188,8 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
           distributionPromise,
           recentPromise
         ]);
+
+        console.log('[Dashboard] All promises settled:', results.map(r => r.status));
 
         const statsData = results[0].status === 'fulfilled' ? results[0].value : { totalValue: 0, totalRevenue: 0, totalProfit: 0, activeCount: 0, pendingCount: 0 };
         const chartCurrent = results[1].status === 'fulfilled' ? results[1].value : [];
@@ -181,7 +200,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
         // Log errors if any
         results.forEach((res, index) => {
           if (res.status === 'rejected') {
-            console.error(`Dashboard Fetch Error (Index ${index}):`, res.reason);
+            console.error(`[Dashboard] Fetch Error (Index ${index}):`, res.reason);
           }
         });
 
@@ -210,21 +229,27 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
         setRawDistData(distData as any[]);
         setRecentContracts(recent);
 
+        console.log('[Dashboard] Data fetch complete, recent contracts:', recent.length);
+
         // Only fetch AI if recent contracts exist
         if (recent.length > 0) {
           fetchAI(recent);
         }
 
       } catch (error) {
-        console.error("Dashboard Config Load Error", error);
+        console.error("[Dashboard] Config Load Error", error);
         // Don't toast error here to avoid annoying user if partial load works
       } finally {
+        console.log('[Dashboard] Setting loadingConfig to false');
         setLoadingConfig(false);
       }
     };
 
     if (selectedUnit) {
       fetchDashboardData();
+    } else {
+      console.log('[Dashboard] No selectedUnit, skipping fetch');
+      setLoadingConfig(false); // Prevent stuck loading
     }
   }, [selectedUnit, yearFilter]); // Removed activeMetric to prevent re-fetch
 
