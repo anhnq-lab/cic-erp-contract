@@ -19,7 +19,7 @@ DROP POLICY IF EXISTS "Enable insert for authenticated" ON audit_logs;
 CREATE POLICY "Enable insert for authenticated" ON audit_logs FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 
--- 2. COST ADJUSTMENTS (For Actual Cost tracking separate from Plan)
+-- 2. COST ADJUSTMENTS
 CREATE TABLE IF NOT EXISTS cost_adjustments (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     contract_id TEXT REFERENCES contracts(id) ON DELETE CASCADE,
@@ -43,22 +43,23 @@ DROP POLICY IF EXISTS "Enable all for authenticated" ON cost_adjustments;
 CREATE POLICY "Enable all for authenticated" ON cost_adjustments FOR ALL USING (auth.role() = 'authenticated');
 
 
--- 3. RLS HELPERS
+-- 3. RLS HELPERS (OPTIMIZED WITH STABLE)
 -- Function to get current user's Unit ID
 CREATE OR REPLACE FUNCTION get_my_unit_id()
 RETURNS TEXT AS $$
   SELECT unit_id FROM profiles WHERE id = auth.uid()
-$$ LANGUAGE sql SECURITY DEFINER;
+$$ LANGUAGE sql STABLE SECURITY DEFINER; 
+-- ADDED "STABLE" to improve performance by caching the result within a transaction
 
--- Function to check if user is Leadership or Legal or ChiefAccountant (Global View)
+-- Function to check if user is Global Viewer
+-- REMOVED 'AdminUnit' from this list as per Requirement
 CREATE OR REPLACE FUNCTION is_global_viewer()
 RETURNS BOOLEAN AS $$
-  SELECT role IN ('Leadership', 'Legal', 'ChiefAccountant', 'Accountant', 'AdminUnit') FROM profiles WHERE id = auth.uid()
-$$ LANGUAGE sql SECURITY DEFINER;
-
+  SELECT role IN ('Leadership', 'Legal', 'ChiefAccountant', 'Accountant') FROM profiles WHERE id = auth.uid()
+$$ LANGUAGE sql STABLE SECURITY DEFINER;
+-- ADDED "STABLE"
 
 -- 4. UPDATE RLS for CONTRACTS (Enforce Unit Scope)
--- First drop existing permissive policies
 DROP POLICY IF EXISTS "Enable read access for all users" ON contracts;
 DROP POLICY IF EXISTS "Enable insert for authenticated users" ON contracts;
 DROP POLICY IF EXISTS "Enable update for users" ON contracts;
@@ -72,17 +73,17 @@ CREATE POLICY "Unit Scope Read" ON contracts FOR SELECT
 USING (
   is_global_viewer() 
   OR 
-  unit_id::text = get_my_unit_id() -- Robust cast
+  unit_id::text = get_my_unit_id()
   OR
-  salesperson_id::text = auth.uid()::text -- Robust cast for text-uuid comparison
-  OR -- Coordinating Unit (if we had that column, logic here) 
-  id IN (SELECT contract_id FROM contract_reviews WHERE reviewer_id = auth.uid()) -- Access if I reviewed it
+  employee_id::text = auth.uid()::text
+  OR 
+  id IN (SELECT contract_id FROM contract_reviews WHERE reviewer_id = auth.uid())
 );
 
--- INSERT: Only for NVKD, UnitAdmin, Leadership
+-- INSERT: Only for NVKD, UnitAdmin, Leadership (Authenticated)
 CREATE POLICY "Unit Scope Insert" ON contracts FOR INSERT
 WITH CHECK (
-  auth.role() = 'authenticated' -- We assume App logic handles role check
+  auth.role() = 'authenticated'
 );
 
 -- UPDATE: Own Unit (Draft) OR Global Admin
@@ -113,7 +114,6 @@ USING (
 -- INSERT/UPDATE
 CREATE POLICY "Unit Scope Write PAKD" ON contract_business_plans FOR ALL
 USING (
-  -- Can write if belonging to Unit or Global
   is_global_viewer() 
   OR 
   contract_id IN (SELECT id FROM contracts WHERE unit_id::text = get_my_unit_id())

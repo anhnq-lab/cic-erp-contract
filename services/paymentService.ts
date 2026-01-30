@@ -50,7 +50,15 @@ export const PaymentService = {
             query = query.eq('payment_type', type);
         }
         if (status && status !== 'all') {
-            query = query.eq('status', status);
+            if (status === 'Tiền về' || status === 'Paid') {
+                query = query.in('status', ['Tiền về', 'Paid']);
+            } else if (status === 'Chờ xuất HĐ' || status === 'Pending') {
+                query = query.in('status', ['Chờ xuất HĐ', 'Pending', 'Chờ thu', 'Chờ chi']);
+            } else if (status === 'Quá hạn' || status === 'Overdue') {
+                query = query.in('status', ['Quá hạn', 'Overdue']);
+            } else {
+                query = query.eq('status', status);
+            }
         }
 
         // Pagination & Sort

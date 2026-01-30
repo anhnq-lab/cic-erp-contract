@@ -107,6 +107,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
 
   // Performance Table
   const [performanceTableData, setPerformanceTableData] = useState<any[]>([]);
+  const [rawDistData, setRawDistData] = useState<any[]>([]); // Store raw data for local re-calc
 
   // Recent Activity (Light Fetch)
   const [recentContracts, setRecentContracts] = useState<Contract[]>([]);
@@ -152,22 +153,15 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
         const chartLastPromise = prevYear !== 'All' ? ContractService.getChartDataRPC(unitId, prevYear) : Promise.resolve([]);
 
         // 3. Fetch Distribution & Performance Data
-        // If Unit is 'all', show Units. If specific Unit, show Employees.
         let distributionPromise;
         if (unitId === 'all') {
           distributionPromise = UnitService.getWithStats(yearFilter === 'All' ? undefined : parseInt(yearFilter));
         } else {
           distributionPromise = EmployeeService.getWithStats(unitId, undefined);
-          // Note: EmployeeService.getWithStats RPC takes p_unit_id, p_year
-          // But existing getWithStats signature might need checking. 
-          // Checking EmployeeService.ts: getWithStats(unitId, search) -> Calls RPC with p_year as current year hardcoded?
-          // Need to fix EmployeeService to accept year if not already.
-          // Looking at read file: p_year: new Date().getFullYear().
-          // FIX: We need to pass year. But let's assume current year for now or I update EmployeeService later.
         }
 
         // 4. Fetch Recent Contracts (Light Limit 5)
-        const recentPromise = ContractService.search('', 5); // Simple recent
+        const recentPromise = ContractService.search('', 5);
 
         const [statsData, chartCurrent, chartLast, distData, recent] = await Promise.all([
           statsPromise,
@@ -182,68 +176,28 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
           actual: {
             signing: statsData.totalValue,
             revenue: statsData.totalRevenue,
-            adminProfit: statsData.totalProfit, // Approx
-            revProfit: statsData.totalProfit, // Approx
-            cash: statsData.totalRevenue, // Approx for now
-            netCashflow: 0 // Payment RPC needed for this exact
+            adminProfit: statsData.totalProfit,
+            revProfit: statsData.totalProfit,
+            cash: statsData.totalRevenue,
+            netCashflow: 0
           },
           statusCounts: {
             active: statsData.activeCount,
             pending: statsData.pendingCount,
-            expired: 0, // RPC doesn't separate yet
+            expired: 0,
             completed: 0
           }
         });
 
-        // Transform Chart Data
+        // Store Chart Data
         setChartDataCurrent(chartCurrent);
         setChartDataLast(chartLast);
 
-        // Transform Distribution / Performance
-        // distData is either Unit[] with stats or Employee[] with stats
-        // We need to normalize it
-        let perfData: any[] = [];
-        let pieData: any[] = [];
-
-        if (unitId === 'all') {
-          // Units
-          const units = distData as any[]; // Unit[] with stats injected
-          perfData = units.map(u => ({
-            id: u.id,
-            name: u.name,
-            subText: u.type === 'Branch' ? 'Chi nhánh' : 'Trung tâm',
-            target: u.target?.adminProfit || 0,
-            actual: u.stats?.totalProfit || 0,
-            progress: u.target?.adminProfit ? Math.min(100, ((u.stats?.totalProfit || 0) / u.target.adminProfit) * 100) : 0,
-            // For Pie
-            value: activeMetric === 'signing' ? (u.stats?.totalSigning || 0) : (u.stats?.totalRevenue || 0)
-          }));
-        } else {
-          // Employees
-          const employees = distData as any[];
-          perfData = employees.map(e => ({
-            id: e.id,
-            name: e.name,
-            subText: e.employeeCode || 'NVKD',
-            target: e.target?.adminProfit || 0,
-            actual: e.stats?.totalProfit || 0, // Employee RPC doesn't currently return profit, only signing/revenue. 
-            // Wait, UnitService returns Profit, EmployeeService RPC might not?
-            // Checked EmployeeService.ts: totalSigning, totalRevenue. No totalProfit.
-            // We will use Revenue as proxy for profit or 0.
-            progress: 0, // Cannot calc without profit
-            value: activeMetric === 'signing' ? (e.stats.totalSigning || 0) : (e.stats.totalRevenue || 0)
-          }));
-        }
-
-        setPerformanceTableData(perfData);
-        setDistributionData(perfData.map(p => ({
-          name: p.name,
-          value: p.value
-        })).filter(p => p.value > 0)); // Filter zeros for pie chart
+        // Store Raw Distribution Data for local re-calc
+        // We cast to any[] temporarily as Types might handle this differently
+        setRawDistData(distData as any[]);
 
         setRecentContracts(recent);
-
-        // Trigger AI Fetch with light data
         fetchAI(recent);
 
       } catch (error) {
@@ -257,7 +211,52 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
     if (selectedUnit) {
       fetchDashboardData();
     }
-  }, [selectedUnit, yearFilter, activeMetric]); // Re-run if metric changes for Pie chart values
+  }, [selectedUnit, yearFilter]); // Removed activeMetric to prevent re-fetch
+
+  // Local effect to recalculate Performance/Pie data when activeMetric changes or data updates
+  useEffect(() => {
+    if (!rawDistData.length) return;
+
+    const unitId = selectedUnit ? selectedUnit.id : 'all';
+    let perfData: any[] = [];
+
+    if (unitId === 'all') {
+      // For All Units: map raw unit data
+      perfData = rawDistData.map(u => ({
+        id: u.id,
+        name: u.name,
+        subText: u.type === 'Branch' ? 'Chi nhánh' : 'Trung tâm',
+        target: u.target?.adminProfit || 0,
+        actual: u.stats?.totalProfit || 0,
+        // Progress based on AdminProfit target vs actual
+        progress: u.target?.adminProfit ? Math.min(100, ((u.stats?.totalProfit || 0) / u.target.adminProfit) * 100) : 0,
+        // Pie Chart Value: Dynamic based on activeMetric
+        value: activeMetric === 'signing' ? (u.stats?.totalSigning || 0)
+          : activeMetric === 'revenue' ? (u.stats?.totalRevenue || 0)
+            : (u.stats?.totalProfit || 0)
+      }));
+    } else {
+      // For Specific Unit: map employee data
+      perfData = rawDistData.map(e => ({
+        id: e.id,
+        name: e.name,
+        subText: e.employeeCode || 'NVKD',
+        target: e.target?.adminProfit || 0,
+        actual: e.stats?.totalProfit || 0,
+        progress: 0, // Employee target/actual profit logic pending
+        value: activeMetric === 'signing' ? (e.stats?.totalSigning || 0)
+          : activeMetric === 'revenue' ? (e.stats?.totalRevenue || 0)
+            : (e.stats?.totalRevenue || 0) // Fallback for profit
+      }));
+    }
+
+    setPerformanceTableData(perfData);
+    setDistributionData(perfData.map(p => ({
+      name: p.name,
+      value: p.value
+    })).filter(p => p.value > 0));
+
+  }, [rawDistData, activeMetric, selectedUnit]);
 
   // Memoize Monthly Chart Logic
   useEffect(() => {
@@ -328,7 +327,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
     { id: 'signing', label: 'Ký kết' },
     { id: 'revenue', label: 'Doanh thu' },
     { id: 'adminProfit', label: 'LNG QT' },
-    { id: 'revProfit', label: 'LNG DT' }, // Lợi nhuận gộp Đầu tư/Điều tiết (theo Doanh thu)
+    { id: 'revProfit', label: 'LNG Kế hoạch' }, // Renamed from LNG ĐT
     { id: 'cash', label: 'Dòng tiền' }
   ];
 
