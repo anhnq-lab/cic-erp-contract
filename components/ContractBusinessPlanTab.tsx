@@ -4,12 +4,12 @@ import { ActionPanel } from './workflow/ActionPanel';
 import { ReviewLog } from './workflow/ReviewLog';
 import { RejectDialog } from './workflow/RejectDialog';
 import { PLAN_STATUS_LABELS } from '../constants';
-import { Contract, BusinessPlan, PaymentPhase, UserProfile, LineItem, AdministrativeCosts, Product, Customer, DirectCostDetail } from '../types';
+import { Contract, BusinessPlan, PaymentPhase, UserProfile, LineItem, AdministrativeCosts, Product, Customer, DirectCostDetail, PaymentSchedule } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { WorkflowService, ProductService, CustomerService } from '../services';
 import { toast } from 'sonner';
-import { Check, X, AlertTriangle, Send, FileText, Lock, Plus, Trash2, Percent, DollarSign, Calculator, RotateCcw } from 'lucide-react';
+import { Check, X, AlertTriangle, Send, FileText, Lock, Plus, Trash2, Percent, DollarSign, Calculator, RotateCcw, Wallet, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 import Modal from './ui/Modal';
 
 interface Props {
@@ -39,6 +39,28 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
     const [adminCostPercentages, setAdminCostPercentages] = useState<AdministrativeCosts>({
         transferFee: 0, contractorTax: 0, importFee: 0, expertHiring: 0, documentProcessing: 0
     });
+
+    // Payment Schedules State (Dòng tiền)
+    const [paymentSchedules, setPaymentSchedules] = useState<PaymentSchedule[]>(
+        (contract.paymentPhases?.filter(p => !p.type || p.type === 'Revenue') || []).map(p => ({
+            id: p.id || Date.now().toString(),
+            date: p.dueDate || '',
+            amount: p.amount || 0,
+            description: p.name || '',
+            status: 'Pending',
+            type: 'Revenue'
+        })) || [{ id: '1', date: '', amount: 0, description: 'Tạm ứng', type: 'Revenue' }]
+    );
+    const [supplierSchedules, setSupplierSchedules] = useState<PaymentSchedule[]>(
+        (contract.paymentPhases?.filter(p => p.type === 'Expense') || []).map(p => ({
+            id: p.id || Date.now().toString(),
+            date: p.dueDate || '',
+            amount: p.amount || 0,
+            description: p.name || '',
+            status: 'Pending',
+            type: 'Expense'
+        })) || [{ id: '1', date: '', amount: 0, description: 'Thanh toán NCC đợt 1', type: 'Expense' }]
+    );
 
     // Direct Costs Modal State
     const [activeCostModalIndex, setActiveCostModalIndex] = useState<number | null>(null);
@@ -244,6 +266,31 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
     const handleSave = async () => {
         const { profit, margin } = calculateMargin(financials.revenue, financials.costs);
 
+        // Combine payment schedules into paymentPhases format
+        const allPaymentPhases = [
+            ...paymentSchedules.map(p => ({ id: p.id, name: p.description, dueDate: p.date, amount: p.amount, type: 'Revenue' as const })),
+            ...supplierSchedules.map(p => ({ id: p.id, name: p.description, dueDate: p.date, amount: p.amount, type: 'Expense' as const }))
+        ];
+
+        // 1. Update Contract with lineItems, adminCosts, paymentPhases
+        const { error: contractError } = await supabase
+            .from('contracts')
+            .update({
+                line_items: lineItems,
+                admin_costs: adminCosts,
+                payment_phases: allPaymentPhases,
+                value: financials.revenue,
+                estimated_cost: financials.costs,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', contract.id);
+
+        if (contractError) {
+            toast.error("Lỗi lưu Contract: " + contractError.message);
+            return;
+        }
+
+        // 2. Save/Update PAKD
         const payload = {
             contract_id: contract.id,
             version: plan ? plan.version + 1 : 1,
@@ -253,7 +300,9 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                 costs: financials.costs,
                 grossProfit: profit,
                 margin: margin,
-                cashflow: contract.paymentPhases || []
+                lineItems: lineItems,
+                adminCosts: adminCosts,
+                cashflow: allPaymentPhases
             },
             is_active: true,
             created_by: profile?.id,
@@ -261,6 +310,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
         };
 
         if (plan && plan.status !== 'Draft') {
+            // Create new version if current plan is not Draft
             const { error } = await supabase.from('contract_business_plans').insert(payload);
             if (error) { toast.error("Lỗi tạo phiên bản mới: " + error.message); return; }
         } else {
@@ -700,6 +750,197 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                             <p className="text-lg font-black text-rose-500">
                                 {formatVND(Object.values(adminCosts).reduce((acc, val) => acc + (val || 0), 0))}
                             </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* 2.3 Payment Schedules - Dòng tiền dự kiến */}
+            <div className="bg-gradient-to-br from-slate-50 to-indigo-50/30 dark:from-slate-800/40 dark:to-indigo-900/10 p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 space-y-6 mb-8">
+                <h4 className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Wallet size={14} /> Dòng tiền dự kiến
+                </h4>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* 2.3.1 Thu từ Khách hàng (Tiền vào) */}
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <p className="text-[11px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1.5">
+                                <ArrowDownCircle size={12} /> Tiền về từ Khách hàng
+                            </p>
+                            {isEditing && (
+                                <button
+                                    onClick={() => setPaymentSchedules([...paymentSchedules, { id: Date.now().toString(), date: '', amount: 0, description: '', status: 'Pending', type: 'Revenue' }])}
+                                    className="text-emerald-600 font-bold text-[10px]"
+                                >+ Thêm đợt</button>
+                            )}
+                        </div>
+                        <div className="space-y-3">
+                            {paymentSchedules.map((pay, idx) => (
+                                <div key={pay.id} className="grid grid-cols-12 gap-2 bg-emerald-50/50 dark:bg-emerald-900/20 p-3 rounded-2xl border border-emerald-100 dark:border-emerald-800">
+                                    <div className="col-span-4 space-y-1">
+                                        <label className="text-[9px] text-slate-400 font-bold uppercase">Ngày thanh toán</label>
+                                        {isEditing ? (
+                                            <input
+                                                type="date"
+                                                value={pay.date}
+                                                onChange={(e) => {
+                                                    const newSched = [...paymentSchedules];
+                                                    newSched[idx].date = e.target.value;
+                                                    setPaymentSchedules(newSched);
+                                                }}
+                                                className="w-full bg-transparent text-[11px] font-bold outline-none"
+                                            />
+                                        ) : (
+                                            <p className="text-[11px] font-bold">{pay.date || '-'}</p>
+                                        )}
+                                    </div>
+                                    <div className="col-span-4 space-y-1">
+                                        <label className="text-[9px] text-slate-400 font-bold uppercase">Nội dung</label>
+                                        {isEditing ? (
+                                            <input
+                                                placeholder="Tạm ứng, Đợt 1..."
+                                                value={pay.description}
+                                                onChange={(e) => {
+                                                    const newSched = [...paymentSchedules];
+                                                    newSched[idx].description = e.target.value;
+                                                    setPaymentSchedules(newSched);
+                                                }}
+                                                className="w-full bg-transparent text-[11px] font-bold outline-none"
+                                            />
+                                        ) : (
+                                            <p className="text-[11px] font-bold">{pay.description || '-'}</p>
+                                        )}
+                                    </div>
+                                    <div className="col-span-4 space-y-1 text-right">
+                                        <label className="text-[9px] text-slate-400 font-bold uppercase">Số tiền</label>
+                                        <div className="flex items-center justify-end gap-2">
+                                            {isEditing ? (
+                                                <>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Tiền..."
+                                                        value={pay.amount ? formatVND(pay.amount) : ''}
+                                                        onChange={(e) => {
+                                                            const raw = e.target.value.replace(/\./g, '');
+                                                            if (!/^\d*$/.test(raw)) return;
+                                                            const newSched = [...paymentSchedules];
+                                                            newSched[idx].amount = Number(raw);
+                                                            setPaymentSchedules(newSched);
+                                                        }}
+                                                        className="w-full bg-transparent text-[11px] font-black text-right outline-none text-emerald-600"
+                                                    />
+                                                    {paymentSchedules.length > 1 && (
+                                                        <button onClick={() => setPaymentSchedules(paymentSchedules.filter(p => p.id !== pay.id))} className="text-emerald-400 hover:text-emerald-600">
+                                                            <X size={12} />
+                                                        </button>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <span className="text-[11px] font-black text-emerald-600">{formatVND(pay.amount)}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            {/* Total Thu */}
+                            <div className="flex justify-end pt-2">
+                                <div className="text-right">
+                                    <p className="text-[9px] text-slate-400 uppercase font-bold">Tổng tiền về</p>
+                                    <p className="text-sm font-black text-emerald-600">{formatVND(paymentSchedules.reduce((acc, p) => acc + p.amount, 0))}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 2.3.2 Chi ra cho NCC/Thầu phụ */}
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest flex items-center gap-1.5">
+                                <ArrowUpCircle size={12} /> Chi trả NCC / Thầu phụ
+                            </p>
+                            {isEditing && (
+                                <button
+                                    onClick={() => setSupplierSchedules([...supplierSchedules, { id: Date.now().toString(), date: '', amount: 0, description: '', status: 'Pending', type: 'Expense' }])}
+                                    className="text-rose-600 font-bold text-[10px]"
+                                >+ Thêm đợt chi</button>
+                            )}
+                        </div>
+                        <div className="space-y-3">
+                            {supplierSchedules.map((pay, idx) => (
+                                <div key={pay.id} className="grid grid-cols-12 gap-2 bg-rose-50/50 dark:bg-rose-900/10 p-3 rounded-2xl border border-rose-100 dark:border-rose-800">
+                                    <div className="col-span-4 space-y-1">
+                                        <label className="text-[9px] text-slate-400 font-bold uppercase">Hạn thanh toán</label>
+                                        {isEditing ? (
+                                            <input
+                                                type="date"
+                                                value={pay.date}
+                                                onChange={(e) => {
+                                                    const newSched = [...supplierSchedules];
+                                                    newSched[idx].date = e.target.value;
+                                                    setSupplierSchedules(newSched);
+                                                }}
+                                                className="w-full bg-transparent text-[11px] font-bold outline-none"
+                                            />
+                                        ) : (
+                                            <p className="text-[11px] font-bold">{pay.date || '-'}</p>
+                                        )}
+                                    </div>
+                                    <div className="col-span-4 space-y-1">
+                                        <label className="text-[9px] text-slate-400 font-bold uppercase">Nội dung</label>
+                                        {isEditing ? (
+                                            <input
+                                                placeholder="Thanh toán NCC..."
+                                                value={pay.description}
+                                                onChange={(e) => {
+                                                    const newSched = [...supplierSchedules];
+                                                    newSched[idx].description = e.target.value;
+                                                    setSupplierSchedules(newSched);
+                                                }}
+                                                className="w-full bg-transparent text-[11px] font-bold outline-none"
+                                            />
+                                        ) : (
+                                            <p className="text-[11px] font-bold">{pay.description || '-'}</p>
+                                        )}
+                                    </div>
+                                    <div className="col-span-4 space-y-1 text-right">
+                                        <label className="text-[9px] text-slate-400 font-bold uppercase">Số tiền</label>
+                                        <div className="flex items-center justify-end gap-2">
+                                            {isEditing ? (
+                                                <>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Tiền..."
+                                                        value={pay.amount ? formatVND(pay.amount) : ''}
+                                                        onChange={(e) => {
+                                                            const raw = e.target.value.replace(/\./g, '');
+                                                            if (!/^\d*$/.test(raw)) return;
+                                                            const newSched = [...supplierSchedules];
+                                                            newSched[idx].amount = Number(raw);
+                                                            setSupplierSchedules(newSched);
+                                                        }}
+                                                        className="w-full bg-transparent text-[11px] font-black text-right outline-none text-rose-500"
+                                                    />
+                                                    {supplierSchedules.length > 1 && (
+                                                        <button onClick={() => setSupplierSchedules(supplierSchedules.filter(p => p.id !== pay.id))} className="text-rose-400 hover:text-rose-600">
+                                                            <X size={12} />
+                                                        </button>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <span className="text-[11px] font-black text-rose-500">{formatVND(pay.amount)}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            {/* Total Chi */}
+                            <div className="flex justify-end pt-2">
+                                <div className="text-right">
+                                    <p className="text-[9px] text-slate-400 uppercase font-bold">Tổng chi NCC</p>
+                                    <p className="text-sm font-black text-rose-500">{formatVND(supplierSchedules.reduce((acc, p) => acc + p.amount, 0))}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

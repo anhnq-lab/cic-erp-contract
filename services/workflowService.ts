@@ -8,10 +8,10 @@ export const WorkflowService = {
      */
     async approvePAKD(planId: string, currentRole: UserRole): Promise<{ success: boolean; error?: any }> {
         try {
-            // 1. Get current plan status
+            // 1. Get current plan status and financials for auto-approve check
             const { data: plan, error: fetchError } = await supabase
                 .from('contract_business_plans')
-                .select('status, contract_id')
+                .select('status, contract_id, financials')
                 .eq('id', planId)
                 .single();
 
@@ -40,7 +40,18 @@ export const WorkflowService = {
                 } else if (currentStatus === 'Pending_Unit' && (currentRole === 'UnitLeader' || currentRole === 'AdminUnit')) {
                     nextStatus = 'Pending_Finance';
                 } else if (currentStatus === 'Pending_Finance' && (currentRole === 'Accountant' || currentRole === 'ChiefAccountant')) {
-                    nextStatus = 'Pending_Board';
+                    // AUTO-APPROVE CHECK: If margin >= 30% AND no expert hiring, skip Pending_Board
+                    const financials = plan.financials as { margin?: number; adminCosts?: { expertHiring?: number } } | null;
+                    const margin = financials?.margin || 0;
+                    const expertHiring = financials?.adminCosts?.expertHiring || 0;
+
+                    if (margin >= 30 && expertHiring === 0) {
+                        nextStatus = 'Approved'; // Auto-approve, skip Board
+                        console.log(`[AUTO-APPROVE] PAKD ${planId}: margin=${margin}%, expertHiring=${expertHiring} → Skipping Pending_Board`);
+                    } else {
+                        nextStatus = 'Pending_Board';
+                        console.log(`[MANUAL] PAKD ${planId}: margin=${margin}%, expertHiring=${expertHiring} → Requires Board approval`);
+                    }
                 } else if (currentStatus === 'Pending_Board' && currentRole === 'Leadership') {
                     nextStatus = 'Approved';
                 }
@@ -76,13 +87,19 @@ export const WorkflowService = {
             };
             const reviewRole = reviewRoleMap[currentStatus] || 'Unit';
 
+            // Determine if this was auto-approved
+            const wasAutoApproved = currentStatus === 'Pending_Finance' && nextStatus === 'Approved';
+            const commentText = wasAutoApproved
+                ? `[TỰ ĐỘNG] Phê duyệt từ ${currentStatus} → ${nextStatus} (Margin ≥ 30%, Không thuê ngoài)`
+                : `Approved from ${currentStatus} to ${nextStatus}`;
+
             const { error: reviewError } = await supabase.from('contract_reviews').insert({
                 contract_id: plan.contract_id,
                 plan_id: planId,
                 reviewer_id: currentUser?.id,
-                role: reviewRole,
+                role: wasAutoApproved ? 'Finance' : reviewRole,
                 action: 'Approve',
-                comment: `Approved from ${currentStatus} to ${nextStatus}`
+                comment: commentText
             });
 
             if (reviewError) {
