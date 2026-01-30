@@ -261,7 +261,7 @@ export interface CustomerBank {
 // WORKFLOW & PERMISSIONS
 // ============================================
 
-export type UserRole = 'NVKD' | 'AdminUnit' | 'UnitLeader' | 'Accountant' | 'ChiefAccountant' | 'Legal' | 'Leadership';
+export type UserRole = 'Admin' | 'NVKD' | 'AdminUnit' | 'UnitLeader' | 'Accountant' | 'ChiefAccountant' | 'Legal' | 'Leadership';
 
 export interface UserProfile {
   id: string; // Links to auth.users

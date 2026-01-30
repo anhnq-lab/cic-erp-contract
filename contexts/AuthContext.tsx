@@ -87,13 +87,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 // If profile missing, maybe try to create one or set default?
                 // For now, leave null so UI knows it's an incomplete user
             } else {
-                // TEMPORARY: Override role for testing
+
+
                 let userRole: UserRole = data.role as UserRole;
                 const userEmail = email || data.email || '';
-
-                if (userEmail === 'anhnq@cic.com.vn') {
-                    userRole = 'Leadership';
-                }
 
                 setProfile({
                     id: data.id,
@@ -129,7 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const canEdit = (resource: 'contract' | 'pakd', resourceUnitId?: string, status?: string) => {
         if (!profile) return false;
         // Global admins
-        if (['Leadership', 'Legal', 'ChiefAccountant'].includes(profile.role)) return true; // Expanded global roles for now due to strict RLS
+        if (['Admin', 'Leadership', 'Legal', 'ChiefAccountant'].includes(profile.role)) return true; // Expanded global roles for now due to strict RLS
 
         // Unit Scope Check
         if (resourceUnitId && resourceUnitId !== profile.unitId && profile.role !== 'Leadership') return false;
