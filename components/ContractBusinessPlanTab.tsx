@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ApprovalStepper } from './workflow/ApprovalStepper';
 import { ActionPanel } from './workflow/ActionPanel';
 import { ReviewLog } from './workflow/ReviewLog';
+import { RejectDialog } from './workflow/RejectDialog';
 import { PLAN_STATUS_LABELS } from '../constants';
 import { Contract, BusinessPlan, PaymentPhase, UserProfile } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -22,6 +23,8 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
     const [reviews, setReviews] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
+    const [showRejectDialog, setShowRejectDialog] = useState(false);
+    const [isRejecting, setIsRejecting] = useState(false);
 
     // Form State
     const [financials, setFinancials] = useState({
@@ -138,6 +141,12 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
     const handleAction = async (action: 'Submit' | 'Approve' | 'Reject') => {
         if (!plan) return;
 
+        // Handle Reject via dialog
+        if (action === 'Reject') {
+            setShowRejectDialog(true);
+            return;
+        }
+
         try {
             let result;
             if (action === 'Submit') {
@@ -146,10 +155,6 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                 // Profile role check handled in service mostly
                 if (!profile?.role && !profile?.email) return;
                 result = await WorkflowService.approvePAKD(plan.id, profile?.role || 'NVKD');
-            } else if (action === 'Reject') {
-                const reason = window.prompt("Nhập lý do từ chối:");
-                if (!reason) return;
-                result = await WorkflowService.rejectPAKD(plan.id, reason);
             }
 
             if (result && result.success) {
@@ -162,6 +167,27 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
 
         } catch (err: any) {
             toast.error("Lỗi cập nhật trạng thái: " + err.message);
+        }
+    };
+
+    const handleReject = async (reason: string) => {
+        if (!plan) return;
+        setIsRejecting(true);
+
+        try {
+            const result = await WorkflowService.rejectPAKD(plan.id, reason);
+            if (result.success) {
+                toast.success('Đã từ chối PAKD');
+                setShowRejectDialog(false);
+                fetchPlan();
+                onUpdate();
+            } else {
+                toast.error(`Lỗi: ${result.error?.message || 'Không xác định'}`);
+            }
+        } catch (err: any) {
+            toast.error("Lỗi từ chối: " + err.message);
+        } finally {
+            setIsRejecting(false);
         }
     };
 
@@ -344,6 +370,14 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                     <ReviewLog reviews={reviews} />
                 </div>
             </div>
+
+            {/* Reject Dialog */}
+            <RejectDialog
+                isOpen={showRejectDialog}
+                onClose={() => setShowRejectDialog(false)}
+                onConfirm={handleReject}
+                isLoading={isRejecting}
+            />
         </div>
     );
 };

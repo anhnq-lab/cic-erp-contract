@@ -67,14 +67,28 @@ export const WorkflowService = {
             if (updateError) throw updateError;
 
             // 4. Manual Log to contract_reviews
-            await supabase.from('contract_reviews').insert({
+            // Map current status to review_role enum (Unit, Finance, Legal, Board)
+            const reviewRoleMap: Record<string, 'Unit' | 'Finance' | 'Legal' | 'Board'> = {
+                'Draft': 'Unit',           // Submitting from Draft is Unit action
+                'Pending_Unit': 'Unit',    // UnitLeader approving
+                'Pending_Finance': 'Finance', // Accountant approving
+                'Pending_Board': 'Board'   // Leadership approving
+            };
+            const reviewRole = reviewRoleMap[currentStatus] || 'Unit';
+
+            const { error: reviewError } = await supabase.from('contract_reviews').insert({
                 contract_id: plan.contract_id,
                 plan_id: planId,
                 reviewer_id: currentUser?.id,
-                role: 'Unit', // Simplified mapping, ideally map currentRole to ReviewRole
+                role: reviewRole,
                 action: 'Approve',
                 comment: `Approved from ${currentStatus} to ${nextStatus}`
             });
+
+            if (reviewError) {
+                console.error('Failed to log review:', reviewError);
+                // Don't fail the entire operation, but log it
+            }
 
             return { success: true };
 
@@ -88,8 +102,12 @@ export const WorkflowService = {
         try {
             const currentUser = (await supabase.auth.getUser()).data.user;
 
-            // Get Plan for contract_id
-            const { data: plan } = await supabase.from('contract_business_plans').select('contract_id').eq('id', planId).single();
+            // Get Plan for contract_id and current status
+            const { data: plan } = await supabase
+                .from('contract_business_plans')
+                .select('contract_id, status')
+                .eq('id', planId)
+                .single();
 
             const { error } = await supabase
                 .from('contract_business_plans')
@@ -101,16 +119,27 @@ export const WorkflowService = {
 
             if (error) throw error;
 
-            // Log Rejection
+            // Log Rejection with proper role mapping
             if (plan) {
-                await supabase.from('contract_reviews').insert({
+                const reviewRoleMap: Record<string, 'Unit' | 'Finance' | 'Legal' | 'Board'> = {
+                    'Pending_Unit': 'Unit',
+                    'Pending_Finance': 'Finance',
+                    'Pending_Board': 'Board'
+                };
+                const reviewRole = reviewRoleMap[plan.status as string] || 'Unit';
+
+                const { error: reviewError } = await supabase.from('contract_reviews').insert({
                     contract_id: plan.contract_id,
                     plan_id: planId,
                     reviewer_id: currentUser?.id,
-                    role: 'Unit', // Placeholder
+                    role: reviewRole,
                     action: 'Reject',
                     comment: reason
                 });
+
+                if (reviewError) {
+                    console.error('Failed to log rejection:', reviewError);
+                }
             }
 
             return { success: true };
