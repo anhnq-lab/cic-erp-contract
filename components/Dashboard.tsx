@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 import {
   XAxis,
@@ -170,9 +171,14 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
       });
 
       try {
-        // STEP 1: Fetch Stats (DIRECT SQL - BYPASS SERVICE)
-        console.log('[Dashboard] Executing DIRECT RPC call...');
-        const { data: rpcData, error: rpcError } = await supabase.rpc('get_contract_stats', {
+        // STEP 1: Fetch Stats (ISOLATED CLIENT - NO AUTH)
+        console.log('[Dashboard] Creating ISOLATED Supabase Client...');
+        const sbUrl = import.meta.env.VITE_SUPABASE_URL || '';
+        const sbKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+        const localClient = createClient(sbUrl, sbKey, { auth: { persistSession: false } });
+
+        console.log('[Dashboard] Executing RPC via ISOLATED Client...');
+        const { data: rpcData, error: rpcError } = await localClient.rpc('get_contract_stats', {
           p_unit_id: unitId,
           p_year: year
         });
