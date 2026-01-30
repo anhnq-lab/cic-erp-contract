@@ -280,8 +280,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                 admin_costs: adminCosts,
                 payment_phases: allPaymentPhases,
                 value: financials.revenue,
-                estimated_cost: financials.costs,
-                updated_at: new Date().toISOString()
+                estimated_cost: financials.costs
             })
             .eq('id', contract.id);
 
