@@ -28,11 +28,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         let isMounted = true;
 
-        // Global safety timeout - shorter for better UX
+        // Global safety timeout - longer for slow networks
         const safetyTimeout = setTimeout(() => {
             console.warn("Auth initialization timed out, forcing release...");
             if (isMounted) setIsLoading(false);
-        }, 3000); // Reduced from 5s to 3s
+        }, 10000); // Increased from 3s to 10s for slow networks
 
         // Initialize session
         supabase.auth.getSession().then(({ data: { session } }) => {

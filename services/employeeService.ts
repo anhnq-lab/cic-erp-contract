@@ -41,7 +41,9 @@ const mapEmployee = (s: any): Employee => {
 
 export const EmployeeService = {
     getAll: async (): Promise<Employee[]> => {
+        console.log('[EmployeeService.getAll] Fetching...');
         const { data, error } = await supabase.from('employees').select('*');
+        console.log('[EmployeeService.getAll] Result:', { count: data?.length, error });
         if (error) throw error;
         return data.map(mapEmployee);
     },
@@ -123,6 +125,8 @@ export const EmployeeService = {
     },
 
     update: async (id: string, payload: Partial<Employee>): Promise<Employee> => {
+        console.log('[employeeService.update] Input payload:', payload);
+
         // Map frontend camelCase to DB snake_case
         const dbPayload: any = {};
 
@@ -151,7 +155,12 @@ export const EmployeeService = {
         if (payload.contractType !== undefined) dbPayload.contract_type = payload.contractType;
         if (payload.contractEndDate !== undefined) dbPayload.contract_end_date = payload.contractEndDate || null;
 
+        console.log('[employeeService.update] DB payload:', dbPayload);
+
         const { data, error } = await supabase.from('employees').update(dbPayload).eq('id', id).select().single();
+
+        console.log('[employeeService.update] DB response:', { data, error });
+
         if (error) throw error;
         return mapEmployee(data);
     },
