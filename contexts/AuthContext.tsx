@@ -92,20 +92,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         try {
             console.log('[AuthContext.fetchProfile] Querying profiles table...');
-            const { data, error } = await supabase
+            const { data: profiles, error } = await supabase
                 .from('profiles')
                 .select('*')
-                .eq('id', userId)
-                .single();
+                .eq('id', userId);
 
-            console.log('[AuthContext.fetchProfile] Result:', { data, error });
+            console.log('[AuthContext.fetchProfile] Result:', { profiles, error });
             clearTimeout(timeoutId);
 
             if (error) {
                 console.error("[AuthContext.fetchProfile] Error fetching profile:", error);
                 // If profile missing, maybe try to create one or set default?
                 // For now, leave null so UI knows it's an incomplete user
-            } else {
+            } else if (profiles && profiles.length > 0) {
+                const data = profiles[0];
+
 
 
                 let userRole: UserRole = data.role as UserRole;
@@ -188,9 +189,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const refreshProfile = async () => {
         if (!user) return;
-        const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-        if (data) setProfile(data);
+        const { data: profiles } = await supabase.from('profiles').select('*').eq('id', user.id);
+        if (profiles && profiles.length > 0) setProfile(profiles[0]);
     };
+
 
     const value = {
         session,

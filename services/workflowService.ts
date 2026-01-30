@@ -9,13 +9,17 @@ export const WorkflowService = {
     async approvePAKD(planId: string, currentRole: UserRole): Promise<{ success: boolean; error?: any }> {
         try {
             // 1. Get current plan status and financials for auto-approve check
-            const { data: plan, error: fetchError } = await supabase
+            const { data: plans, error: fetchError } = await supabase
                 .from('contract_business_plans')
                 .select('status, contract_id, financials')
-                .eq('id', planId)
-                .single();
+                .eq('id', planId);
 
-            if (fetchError || !plan) throw new Error('Plan not found');
+            if (fetchError || !plans || plans.length === 0) {
+                console.error('Plan not found:', planId);
+                return { success: false, error: 'Plan not found' };
+            }
+            const plan = plans[0];
+
 
             let nextStatus: PlanStatus | null = null;
             const currentStatus = plan.status as PlanStatus;
@@ -120,11 +124,13 @@ export const WorkflowService = {
             const currentUser = (await supabase.auth.getUser()).data.user;
 
             // Get Plan for contract_id and current status
-            const { data: plan } = await supabase
+            const { data: plans } = await supabase
                 .from('contract_business_plans')
                 .select('contract_id, status')
-                .eq('id', planId)
-                .single();
+                .eq('id', planId);
+
+            const plan = plans?.[0];
+
 
             const { error } = await supabase
                 .from('contract_business_plans')
