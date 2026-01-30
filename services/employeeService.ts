@@ -125,7 +125,9 @@ export const EmployeeService = {
     },
 
     update: async (id: string, payload: Partial<Employee>): Promise<Employee> => {
-        console.log('[employeeService.update] Input payload:', payload);
+        console.log('[employeeService.update] ====== UPDATE START ======');
+        console.log('[employeeService.update] ID:', id);
+        console.log('[employeeService.update] Input payload:', JSON.stringify(payload, null, 2));
 
         // Map frontend camelCase to DB snake_case
         const dbPayload: any = {};
@@ -155,11 +157,17 @@ export const EmployeeService = {
         if (payload.contractType !== undefined) dbPayload.contract_type = payload.contractType;
         if (payload.contractEndDate !== undefined) dbPayload.contract_end_date = payload.contractEndDate || null;
 
-        console.log('[employeeService.update] DB payload:', dbPayload);
+        console.log('[employeeService.update] DB payload keys:', Object.keys(dbPayload));
+        console.log('[employeeService.update] DB payload:', JSON.stringify(dbPayload, null, 2));
+
+        if (Object.keys(dbPayload).length === 0) {
+            console.warn('[employeeService.update] WARNING: Empty payload, nothing to update!');
+        }
 
         const { data, error } = await supabase.from('employees').update(dbPayload).eq('id', id).select().single();
 
         console.log('[employeeService.update] DB response:', { data, error });
+        console.log('[employeeService.update] ====== UPDATE END ======');
 
         if (error) throw error;
         return mapEmployee(data);
