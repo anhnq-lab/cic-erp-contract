@@ -95,11 +95,20 @@ export const EmployeeService = {
     },
 
     update: async (id: string, payload: Partial<Employee>): Promise<Employee> => {
-        const dbPayload: any = { ...payload };
-        // Map keys if necessary, simplistic mapping for now
+        // Map frontend camelCase to DB snake_case
+        const dbPayload: any = {};
+
+        if (payload.name !== undefined) dbPayload.name = payload.name;
         if (payload.unitId !== undefined) dbPayload.unit_id = payload.unitId || null;
-        if (payload.roleCode) dbPayload.role_code = payload.roleCode;
-        if (payload.dateJoined) dbPayload.date_joined = payload.dateJoined;
+        if (payload.employeeCode !== undefined) dbPayload.employee_code = payload.employeeCode;
+        if (payload.email !== undefined) dbPayload.email = payload.email;
+        if (payload.phone !== undefined) dbPayload.phone = payload.phone;
+        if (payload.position !== undefined) dbPayload.position = payload.position;
+        if (payload.department !== undefined) dbPayload.department = payload.department;
+        if (payload.roleCode !== undefined) dbPayload.role_code = payload.roleCode;
+        if (payload.dateJoined !== undefined) dbPayload.date_joined = payload.dateJoined;
+        if (payload.avatar !== undefined) dbPayload.avatar = payload.avatar;
+        if (payload.target !== undefined) dbPayload.target = payload.target;
 
         const { data, error } = await supabase.from('employees').update(dbPayload).eq('id', id).select().single();
         if (error) throw error;
