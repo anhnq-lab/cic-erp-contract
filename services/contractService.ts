@@ -319,7 +319,7 @@ export const ContractService = {
             customer_id: data.customerId,
             unit_id: data.unitId,
             coordinating_unit_id: data.coordinatingUnitId,
-            salesperson_id: data.salespersonId,
+            employee_id: data.salespersonId,
             value: data.value,
             estimated_cost: data.estimatedCost,
             actual_revenue: data.actualRevenue,
@@ -354,7 +354,7 @@ export const ContractService = {
         if (data.customerId !== undefined) payload.customer_id = data.customerId;
         if (data.unitId !== undefined) payload.unit_id = data.unitId;
         if (data.coordinatingUnitId !== undefined) payload.coordinating_unit_id = data.coordinatingUnitId;
-        if (data.salespersonId !== undefined) payload.salesperson_id = data.salespersonId;
+        if (data.salespersonId !== undefined) payload.employee_id = data.salespersonId;
         if (data.value !== undefined) payload.value = data.value;
         if (data.estimatedCost !== undefined) payload.estimated_cost = data.estimatedCost;
         if (data.actualRevenue !== undefined) payload.actual_revenue = data.actualRevenue;
