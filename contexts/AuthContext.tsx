@@ -27,27 +27,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         let isMounted = true;
+        console.log('[AuthContext] Starting auth initialization...');
 
-        // Global safety timeout - longer for slow networks
+        // Global safety timeout - shorter for faster fallback
         const safetyTimeout = setTimeout(() => {
-            console.warn("Auth initialization timed out, forcing release...");
+            console.warn("[AuthContext] Safety timeout triggered - forcing release...");
             if (isMounted) setIsLoading(false);
-        }, 10000); // Increased from 3s to 10s for slow networks
+        }, 5000); // Reduced to 5s
 
         // Initialize session
+        console.log('[AuthContext] Calling getSession...');
         supabase.auth.getSession().then(({ data: { session } }) => {
+            console.log('[AuthContext] getSession result:', { hasSession: !!session, userId: session?.user?.id });
             if (!isMounted) return;
 
             setSession(session);
             setUser(session?.user ?? null);
             if (session?.user) {
+                console.log('[AuthContext] User found, fetching profile...');
                 fetchProfile(session.user.id, session.user.email);
             } else {
+                console.log('[AuthContext] No session, setting loading false');
                 clearTimeout(safetyTimeout);
                 setIsLoading(false);
             }
         }).catch((err) => {
-            console.error("Session init error:", err);
+            console.error("[AuthContext] Session init error:", err);
             if (isMounted) {
                 clearTimeout(safetyTimeout);
                 setIsLoading(false);
@@ -56,6 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Listen for changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            console.log('[AuthContext] Auth state changed:', _event, { hasSession: !!session });
             if (!isMounted) return;
 
             setSession(session);
@@ -77,20 +83,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     const fetchProfile = async (userId: string, email?: string) => {
+        console.log('[AuthContext.fetchProfile] Starting for userId:', userId);
         // Safety timeout to prevent infinite loading
-        const timeoutId = setTimeout(() => setIsLoading(false), 5000);
+        const timeoutId = setTimeout(() => {
+            console.warn('[AuthContext.fetchProfile] Timeout - forcing loading false');
+            setIsLoading(false);
+        }, 3000); // Reduced to 3s
 
         try {
+            console.log('[AuthContext.fetchProfile] Querying profiles table...');
             const { data, error } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', userId)
                 .single();
 
+            console.log('[AuthContext.fetchProfile] Result:', { data, error });
             clearTimeout(timeoutId);
 
             if (error) {
-                console.error("Error fetching profile:", error);
+                console.error("[AuthContext.fetchProfile] Error fetching profile:", error);
                 // If profile missing, maybe try to create one or set default?
                 // For now, leave null so UI knows it's an incomplete user
             } else {
@@ -107,11 +119,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     unitId: data.unit_id,
                     avatarUrl: data.avatar_url
                 });
+                console.log('[AuthContext.fetchProfile] Profile set successfully');
             }
         } catch (e) {
-            console.error(e);
+            console.error('[AuthContext.fetchProfile] Exception:', e);
         } finally {
             clearTimeout(timeoutId);
+            console.log('[AuthContext.fetchProfile] Setting loading to false');
             setIsLoading(false);
         }
     };
