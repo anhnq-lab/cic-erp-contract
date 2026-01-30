@@ -54,31 +54,33 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
                 // 1. Stats from RPC (Fast & Accurate)
                 // 2. Recent 5 contracts for list
                 // 3. Personnel list
-                const [statsData, contractsData, staffData] = await Promise.all([
+                // Optimized: Parallel fetch with focused data - resilient using Promise.allSettled
+                const results = await Promise.allSettled([
                     UnitService.getStats(unitId),
                     ContractService.list({ unitId: unitId, limit: 10, page: 1 }),
                     EmployeeService.list({ unitId: unitId })
                 ]);
 
+                const statsData = results[0].status === 'fulfilled' ? results[0].value : { totalSigning: 0, totalRevenue: 0, totalProfit: 0 };
+                const contractsData = results[1].status === 'fulfilled' ? results[1].value : { data: [], count: 0 };
+                const staffData = results[2].status === 'fulfilled' ? results[2].value : [];
+
+                if (results[0].status === 'rejected') console.error("Unit Stats Error:", results[0].reason);
+
                 // Calculate progress percentages based on RPC data + Targets
                 const calculatedStats = {
-                    actualSigning: statsData.totalSigning,
-                    actualRevenue: statsData.totalRevenue,
+                    actualSigning: statsData.totalSigning || 0,
+                    actualRevenue: statsData.totalRevenue || 0,
                     adminProfit: statsData.totalProfit || 0,
-                    signingProgress: (statsData.totalSigning / (unitData.target.signing || 1)) * 100,
-                    revenueProgress: (statsData.totalRevenue / (unitData.target.revenue || 1)) * 100,
-                    adminProfitProgress: ((statsData.totalProfit || 0) / (unitData.target.adminProfit || 1)) * 100
+                    signingProgress: unitData.target.signing ? (statsData.totalSigning / unitData.target.signing) * 100 : 0,
+                    revenueProgress: unitData.target.revenue ? (statsData.totalRevenue / unitData.target.revenue) * 100 : 0,
+                    adminProfitProgress: unitData.target.adminProfit ? ((statsData.totalProfit || 0) / unitData.target.adminProfit) * 100 : 0
                 };
 
-                // If we want accurate AdminProfit, we might need that in RPC.
-                // For now, let's stick to the high-level KPIs.
-                // Or... we can re-implement adminProfit in client if we fetch few contracts? No.
-                // Let's rely on RPC for critical Signing/Revenue. 
-
                 setStats(calculatedStats);
-                setContracts(contractsData.data);
+                setContracts(contractsData.data || []);
 
-                const people = Array.isArray(staffData) ? staffData : staffData.data || [];
+                const people = Array.isArray(staffData) ? staffData : (staffData as any).data || [];
                 setStaff(people);
             }
         } catch (error) {
