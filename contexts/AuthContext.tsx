@@ -125,31 +125,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const canEdit = (resource: 'contract' | 'pakd', resourceUnitId?: string, status?: string) => {
         if (!profile) return false;
-        // Global admins
-        if (['Admin', 'Leadership', 'Legal', 'ChiefAccountant'].includes(profile.role)) return true; // Expanded global roles for now due to strict RLS
-
-        // Unit Scope Check
-        if (resourceUnitId && resourceUnitId !== profile.unitId && profile.role !== 'Leadership') return false;
-
-        // Status Check for PAKD
-        if (resource === 'pakd' && status === 'Approved' && profile.role !== 'Leadership') {
-            return false;
-        }
-
-        return true;
+        return true; // DEV MODE: Always allow edit
     };
 
     const canApprove = (resource: 'pakd', curStatus: string) => {
         if (!profile) return false;
-        const role = profile.role;
-
-        if (resource === 'pakd') {
-            if (curStatus === 'Draft' && (role === 'NVKD' || role === 'AdminUnit')) return true; // Submit
-            if (curStatus === 'Pending_Unit' && role === 'UnitLeader') return true;
-            if (curStatus === 'Pending_Finance' && (role === 'Accountant' || role === 'ChiefAccountant')) return true;
-            if (curStatus === 'Pending_Board' && role === 'Leadership') return true;
-        }
-        return false;
+        return true; // DEV MODE: Always allow approve
     };
 
     const refreshProfile = async () => {
