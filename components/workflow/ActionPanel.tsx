@@ -32,7 +32,7 @@ export const ActionPanel: React.FC<Props> = ({
                     onClick={() => setIsEditing(true)}
                     className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-100 font-medium text-sm transition-colors"
                 >
-                    {planExists ? 'Chỉnh sửa' : 'Lập PAKD'}
+                    Chỉnh sửa
                 </button>
             )}
 
