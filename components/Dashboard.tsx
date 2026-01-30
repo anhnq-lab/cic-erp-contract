@@ -147,124 +147,100 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
     }
   }, [yearFilter]);
 
-  // Main Data Fetch Effect
+  // Main Data Fetch Effect - SIMPLIFIED VERSION
   useEffect(() => {
     console.log('[Dashboard] Main fetch effect triggered, selectedUnit:', selectedUnit?.id);
+    let isCancelled = false;
 
     const fetchDashboardData = async () => {
       console.log('[Dashboard] fetchDashboardData starting...');
       setLoadingConfig(true);
+
+      const unitId = selectedUnit ? selectedUnit.id : 'all';
+      const year = yearFilter;
+      const prevYear = yearFilter === 'All' ? 'All' : (parseInt(yearFilter) - 1).toString();
+
+      console.log('[Dashboard] Fetching with unitId:', unitId, 'year:', year);
+
       try {
-        const unitId = selectedUnit ? selectedUnit.id : 'all';
-        const year = yearFilter;
-        const prevYear = yearFilter === 'All' ? 'All' : (parseInt(yearFilter) - 1).toString();
+        // STEP 1: Fetch Stats (Most Critical)
+        console.log('[Dashboard] Step 1: Fetching stats...');
+        const statsData = await ContractService.getStatsRPC(unitId, year);
+        console.log('[Dashboard] Stats received:', statsData);
 
-        console.log('[Dashboard] Fetching with unitId:', unitId, 'year:', year);
+        if (!isCancelled) {
+          setStats({
+            actual: {
+              signing: Number(statsData?.totalValue) || 0,
+              revenue: Number(statsData?.totalRevenue) || 0,
+              adminProfit: Number(statsData?.totalProfit) || 0,
+              revProfit: Number(statsData?.totalProfit) || 0,
+              cash: Number(statsData?.totalRevenue) || 0,
+              netCashflow: 0
+            },
+            statusCounts: {
+              active: Number(statsData?.activeCount) || 0,
+              pending: Number(statsData?.pendingCount) || 0,
+              expired: 0,
+              completed: 0
+            }
+          });
+        }
 
-        // 1. Fetch Stats (RPC)
-        const statsPromise = ContractService.getStatsRPC(unitId, year);
+        // STEP 2: Fetch Chart Data (Current Year)
+        console.log('[Dashboard] Step 2: Fetching chart data...');
+        const chartCurrent = await ContractService.getChartDataRPC(unitId, year);
+        console.log('[Dashboard] Chart current received:', chartCurrent?.length);
+        if (!isCancelled) setChartDataCurrent(chartCurrent || []);
 
-        // 2. Fetch Chart Data (RPC) - Current Year & Last Year
-        const chartCurrentPromise = ContractService.getChartDataRPC(unitId, year);
-        const chartLastPromise = prevYear !== 'All' ? ContractService.getChartDataRPC(unitId, prevYear) : Promise.resolve([]);
+        // STEP 3: Fetch Chart Data (Previous Year) 
+        if (prevYear !== 'All') {
+          const chartLast = await ContractService.getChartDataRPC(unitId, prevYear);
+          if (!isCancelled) setChartDataLast(chartLast || []);
+        }
 
-        // 3. Fetch Distribution & Performance Data
-        let distributionPromise;
+        // STEP 4: Fetch Distribution Data
+        console.log('[Dashboard] Step 4: Fetching distribution...');
+        let distData: any[] = [];
         if (unitId === 'all') {
-          distributionPromise = UnitService.getWithStats(yearFilter === 'All' ? undefined : parseInt(yearFilter));
+          distData = await UnitService.getWithStats(yearFilter === 'All' ? undefined : parseInt(yearFilter));
         } else {
-          distributionPromise = EmployeeService.getWithStats(unitId, undefined);
+          distData = await EmployeeService.getWithStats(unitId, undefined);
+        }
+        if (!isCancelled) setRawDistData(distData || []);
+
+        // STEP 5: Fetch Recent Contracts
+        console.log('[Dashboard] Step 5: Fetching recent contracts...');
+        const recent = await ContractService.search('', 5);
+        if (!isCancelled) {
+          setRecentContracts(recent || []);
+          if (recent.length > 0) {
+            fetchAI(recent);
+          }
         }
 
-        // 4. Fetch Recent Contracts (Light Limit 5)
-        const recentPromise = ContractService.search('', 5);
-
-        // USE PROMISE.ALLSETTLED for resilience
-        console.log('[Dashboard] Awaiting all promises...');
-        const results = await Promise.allSettled([
-          statsPromise,
-          chartCurrentPromise,
-          chartLastPromise,
-          distributionPromise,
-          recentPromise
-        ]);
-
-        console.log('[Dashboard] All promises settled:', results.map(r => r.status));
-
-        // DETAILED LOGGING FOR DEBUG
-        console.log('[Dashboard] Stats result:', results[0]);
-
-        const statsData = results[0].status === 'fulfilled' ? results[0].value : { totalValue: 0, totalRevenue: 0, totalProfit: 0, activeCount: 0, pendingCount: 0 };
-        const chartCurrent = results[1].status === 'fulfilled' ? results[1].value : [];
-        const chartLast = results[2].status === 'fulfilled' ? results[2].value : [];
-        const distData = results[3].status === 'fulfilled' ? results[3].value : [];
-        const recent = results[4].status === 'fulfilled' ? results[4].value : [];
-
-        console.log('[Dashboard] Parsed statsData:', statsData);
-        console.log('[Dashboard] Chart current length:', chartCurrent?.length);
-        console.log('[Dashboard] Distribution data length:', distData?.length);
-
-        // Log errors if any
-        results.forEach((res, index) => {
-          if (res.status === 'rejected') {
-            console.error(`[Dashboard] Fetch Error (Index ${index}):`, res.reason);
-          }
-        });
-
-        // Transform Stats - with explicit null coalescing
-        const safeStatsData = {
-          totalValue: Number(statsData?.totalValue) || 0,
-          totalRevenue: Number(statsData?.totalRevenue) || 0,
-          totalProfit: Number(statsData?.totalProfit) || 0,
-          activeCount: Number(statsData?.activeCount) || 0,
-          pendingCount: Number(statsData?.pendingCount) || 0
-        };
-        console.log('[Dashboard] Safe stats data:', safeStatsData);
-
-        setStats({
-          actual: {
-            signing: safeStatsData.totalValue,
-            revenue: safeStatsData.totalRevenue,
-            adminProfit: safeStatsData.totalProfit,
-            revProfit: safeStatsData.totalProfit,
-            cash: safeStatsData.totalRevenue,
-            netCashflow: 0
-          },
-          statusCounts: {
-            active: safeStatsData.activeCount,
-            pending: safeStatsData.pendingCount,
-            expired: 0,
-            completed: 0
-          }
-        });
-
-
-        // Store Chart Data
-        setChartDataCurrent(chartCurrent);
-        setChartDataLast(chartLast);
-
-        setRawDistData(distData as any[]);
-        setRecentContracts(recent);
-
-        console.log('[Dashboard] Data fetch complete, recent contracts:', recent.length);
-
-        // Only fetch AI if recent contracts exist
-        if (recent.length > 0) {
-          fetchAI(recent);
-        }
+        console.log('[Dashboard] All data loaded successfully!');
 
       } catch (error) {
-        console.error("[Dashboard] Config Load Error", error);
-        // Don't toast error here to avoid annoying user if partial load works
+        console.error("[Dashboard] Data Fetch Error:", error);
+        // Set empty defaults on error
+        if (!isCancelled) {
+          setStats({
+            actual: { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0, netCashflow: 0 },
+            statusCounts: { active: 0, pending: 0, expired: 0, completed: 0 }
+          });
+        }
       } finally {
         console.log('[Dashboard] Setting loadingConfig to false');
-        setLoadingConfig(false);
+        if (!isCancelled) setLoadingConfig(false);
       }
     };
 
-    // ALWAYS fetch data - use 'all' if selectedUnit is not yet available
     fetchDashboardData();
-  }, [selectedUnit, yearFilter]); // Removed conditional check - always fetch
+
+    return () => { isCancelled = true; };
+  }, [selectedUnit, yearFilter]); // Always fetch when these change
+
 
   // Local effect to recalculate Performance/Pie data when activeMetric changes or data updates
   useEffect(() => {
