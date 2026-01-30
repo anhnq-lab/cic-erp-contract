@@ -119,11 +119,11 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
   useEffect(() => {
     console.log('[Dashboard] Initial config load starting...');
 
-    // Safety timeout - force loading to false after 8 seconds
+    // Safety timeout - force loading to false after 20 seconds
     const safetyTimeout = setTimeout(() => {
       console.warn('[Dashboard] Safety timeout triggered - forcing loadingConfig to false');
       setLoadingConfig(false);
-    }, 8000);
+    }, 20000);
 
     const fetchConfig = async () => {
       try {
@@ -139,6 +139,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
 
     return () => clearTimeout(safetyTimeout);
   }, []);
+
 
   // Update Previous Year when year filter changes
   useEffect(() => {

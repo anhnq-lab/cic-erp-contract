@@ -207,13 +207,18 @@ export const ContractService = {
         pendingCount: number
     }> => {
         const logPrefix = '[ContractService.getStatsRPC]';
-        console.log(`${logPrefix} START`, {
+        console.log(`${logPrefix} START (Forcing DIRECT QUERY)`, {
             unitId,
             year,
             typeUnit: typeof unitId,
             typeYear: typeof year
         });
 
+        // FORCE FALLBACK - Bypass RPC due to timeout issues
+        return ContractService.getStatsFallback(unitId, year);
+
+        /* RPC DISABLED FOR DEBUGGING */
+        /*
         try {
             // Create a timeout promise to prevent infinite hanging
             const timeoutMs = 5000;
@@ -273,6 +278,7 @@ export const ContractService = {
             console.log(`${logPrefix} Switching to FALLBACK QUERY`);
             return ContractService.getStatsFallback(unitId, year);
         }
+        */
     },
 
 
@@ -347,8 +353,13 @@ export const ContractService = {
 
     getChartDataRPC: async (unitId: string = 'all', year: string = 'all'): Promise<Array<{ month: number, revenue: number, profit: number, signing: number }>> => {
         const logPrefix = '[ContractService.getChartDataRPC]';
-        console.log(`${logPrefix} START`, { unitId, year });
+        console.log(`${logPrefix} START (Forcing DIRECT QUERY)`, { unitId, year });
 
+        // FORCE FALLBACK - Bypass RPC
+        return ContractService.getChartDataFallback(unitId, year);
+
+        /* RPC DISABLED FOR DEBUGGING */
+        /*
         try {
             // Create a timeout promise to prevent infinite hanging
             const timeoutMs = 5000;
@@ -382,6 +393,7 @@ export const ContractService = {
             console.log(`${logPrefix} Switching to FALLBACK`);
             return ContractService.getChartDataFallback(unitId, year);
         }
+        */
     },
 
     // FALLBACK for chart data
