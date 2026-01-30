@@ -245,13 +245,9 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
       }
     };
 
-    if (selectedUnit) {
-      fetchDashboardData();
-    } else {
-      console.log('[Dashboard] No selectedUnit, skipping fetch');
-      setLoadingConfig(false); // Prevent stuck loading
-    }
-  }, [selectedUnit, yearFilter]); // Removed activeMetric to prevent re-fetch
+    // ALWAYS fetch data - use 'all' if selectedUnit is not yet available
+    fetchDashboardData();
+  }, [selectedUnit, yearFilter]); // Removed conditional check - always fetch
 
   // Local effect to recalculate Performance/Pie data when activeMetric changes or data updates
   useEffect(() => {
