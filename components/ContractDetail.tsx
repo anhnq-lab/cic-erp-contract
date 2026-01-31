@@ -359,6 +359,9 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                 const userId = profile?.id || '';
                 let result;
                 switch (action) {
+                  case 'SubmitLegal':
+                    result = await WorkflowService.submitContractForReview(contract.id);
+                    break;
                   case 'ApproveLegal':
                     result = await WorkflowService.approveContractLegal(contract.id, userId);
                     break;
