@@ -24,28 +24,28 @@ export const AuditLogService = {
      */
     async getByRecordId(tableName: string, recordId: string): Promise<AuditLog[]> {
         try {
-            // Query audit_logs and join with profiles to get user name
+            console.log('[AuditLogService] Fetching logs for:', tableName, recordId);
+
+            // Query audit_logs only (without profile join to avoid FK issues)
             const { data, error } = await supabase
                 .from('audit_logs')
-                .select(`
-                    *,
-                    profiles:user_id (
-                        full_name
-                    )
-                `)
+                .select('*')
                 .eq('table_name', tableName)
                 .eq('record_id', recordId)
-                .order('created_at', { ascending: false });
+                .order('created_at', { ascending: false })
+                .limit(20);
+
+            console.log('[AuditLogService] Query result:', { data, error });
 
             if (error) {
                 console.error('Error fetching audit logs:', error);
                 return [];
             }
 
-            // Transform to include user_name directly
+            // Map data with default user_name
             return (data || []).map((log: any) => ({
                 ...log,
-                user_name: log.profiles?.full_name || 'Hệ thống'
+                user_name: 'Hệ thống' // Will enhance later with user lookup
             }));
         } catch (err) {
             console.error('AuditLogService.getByRecordId error:', err);
