@@ -20,10 +20,10 @@ export const RoleSwitcher: React.FC = () => {
     const [isUpdating, setIsUpdating] = useState(false);
     const [units, setUnits] = useState<any[]>([]);
 
-    // Only show for specific admin email
-    if (user?.email !== 'anhnq@cic.com.vn') return null;
+    // Only show for Admin or Leadership roles
+    if (!profile || (profile.role !== 'Admin' && profile.role !== 'Leadership')) return null;
 
-    return null; // FORCE HIDE FOR DEV MODE
+    return null; // FORCE HIDE FOR DEV MODE - remove this line to enable
 
     // Fetch units on mount
     React.useEffect(() => {

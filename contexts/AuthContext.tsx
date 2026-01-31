@@ -149,9 +149,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const canEdit = (resource: 'contract' | 'pakd', resourceUnitId?: string, status?: string) => {
         if (!profile) return false;
-        if (profile.role === 'Admin') return true;
-        // God Mode for specific user
-        if (user?.email === 'anhnq@cic.com.vn') return true;
+        // Admin role (from database) has full access
+        if (profile.role === 'Admin' || profile.role === 'Leadership') return true;
 
         // If no status is passed, assume editable unless specific restrictions apply based on role/unit
         if (!status) return true;
@@ -173,9 +172,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const canApprove = (resource: 'pakd', curStatus: string) => {
         if (!profile) return false;
-        if (profile.role === 'Admin') return true;
-        // God Mode
-        if (user?.email === 'anhnq@cic.com.vn') return true;
+        // Admin/Leadership role (from database) has full access
+        if (profile.role === 'Admin' || profile.role === 'Leadership') return true;
 
         switch (curStatus) {
             case 'Pending_Unit':

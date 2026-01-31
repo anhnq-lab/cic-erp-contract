@@ -30,7 +30,6 @@ export const ContractListPage: React.FC = () => {
             selectedUnit={selectedUnit}
             onSelectContract={(id) => {
                 const encodedId = encodeURIComponent(id);
-                console.log('[ContractListPage] Navigating to contract:', id, '-> encoded:', encodedId);
                 navigate(ROUTES.CONTRACT_DETAIL(encodedId));
             }}
             onAdd={() => navigate(ROUTES.CONTRACT_NEW)}
@@ -47,7 +46,6 @@ export const ContractDetailPage: React.FC = () => {
     const { id: rawId } = useParams<{ id: string }>();
     // Decode URL-encoded ID (handles special chars like / in contract IDs)
     const id = rawId ? decodeURIComponent(rawId) : undefined;
-    console.log('[ContractDetailPage] Mounted with id:', rawId, '-> decoded:', id);
     if (!id) return <div>Contract not found</div>;
     return (
         <ContractDetailComponent

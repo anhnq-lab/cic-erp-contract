@@ -27,7 +27,7 @@ export const WorkflowService = {
             // 2. Determine next status based on Role & Current Status
             const user = (await supabase.auth.getUser()).data.user;
             const userEmail = user?.email;
-            const isAdmin = currentRole === 'Admin' || userEmail === 'anhnq@cic.com.vn';
+            const isAdmin = currentRole === 'Admin' || currentRole === 'Leadership';
 
             if (isAdmin) {
                 // GOD MODE: Auto-advance based on current status
@@ -180,7 +180,7 @@ export const WorkflowService = {
      * Helper to check if user can approve current stage
      */
     checkPermission(currentRole: UserRole, planStatus: PlanStatus, userEmail?: string): boolean {
-        const isAdmin = currentRole === 'Admin' || userEmail === 'anhnq@cic.com.vn';
+        const isAdmin = currentRole === 'Admin' || currentRole === 'Leadership';
         if (isAdmin) return true;
 
         if (planStatus === 'Draft' && (currentRole === 'NVKD' || currentRole === 'UnitLeader')) return true;
