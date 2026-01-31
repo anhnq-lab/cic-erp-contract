@@ -40,6 +40,7 @@ import ContractBusinessPlanTab from './ContractBusinessPlanTab';
 import ErrorBoundary from './ErrorBoundary';
 import { useAuth } from '../contexts/AuthContext';
 import { ContractReviewPanel } from './workflow/ContractReviewPanel';
+import { SubmitLegalDialog } from './workflow/SubmitLegalDialog';
 
 interface ContractDetailProps {
   contract?: Contract;
@@ -68,6 +69,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
   // Documents State
   const [documents, setDocuments] = useState<ContractDocument[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [showLegalDialog, setShowLegalDialog] = useState(false);
 
   useEffect(() => {
     if (initialContract) {
@@ -360,8 +362,9 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                 let result;
                 switch (action) {
                   case 'SubmitLegal':
-                    result = await WorkflowService.submitContractForReview(contract.id);
-                    break;
+                    // Open dialog to get draft URL
+                    setShowLegalDialog(true);
+                    return; // Don't continue, dialog will handle submission
                   case 'ApproveLegal':
                     result = await WorkflowService.approveContractLegal(contract.id, userId);
                     break;
@@ -689,8 +692,27 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
           </div>
         )}
       </div>
-    </ErrorBoundary>
 
+      {/* Submit Legal Dialog */}
+      {contract && (
+        <SubmitLegalDialog
+          isOpen={showLegalDialog}
+          onClose={() => setShowLegalDialog(false)}
+          onSubmit={async (draftUrl) => {
+            const result = await WorkflowService.submitContractForReview(contract.id, draftUrl);
+            if (result.success) {
+              toast.success('Đã gửi duyệt pháp lý thành công!');
+              setShowLegalDialog(false);
+              const refreshed = await ContractService.getById(contract.id);
+              if (refreshed) setContract(refreshed);
+            } else {
+              toast.error(result.error?.message || 'Có lỗi xảy ra');
+            }
+          }}
+          contractName={contract.id}
+        />
+      )}
+    </ErrorBoundary>
   );
 };
 

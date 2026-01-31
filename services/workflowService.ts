@@ -195,12 +195,19 @@ export const WorkflowService = {
     // Flow: Draft → Pending_Legal → Legal_Approved → Pending_Finance → Finance_Approved → Pending_Sign → Signed → Active
 
     /**
-     * Submit contract for legal review (Draft → Pending_Legal)
+     * Submit contract for legal review (Draft/Pending → Pending_Legal)
+     * @param contractId - Contract ID
+     * @param draftUrl - URL to draft contract document (Google Doc) for legal review
      */
-    async submitContractForReview(contractId: string): Promise<{ success: boolean; error?: any }> {
+    async submitContractForReview(contractId: string, draftUrl?: string): Promise<{ success: boolean; error?: any }> {
+        const updateData: Record<string, any> = { status: 'Pending_Legal' };
+        if (draftUrl) {
+            updateData.draft_url = draftUrl;
+        }
+
         const { error } = await supabase
             .from('contracts')
-            .update({ status: 'Pending_Legal' })
+            .update(updateData)
             .eq('id', contractId);
 
         if (error) return { success: false, error };
@@ -210,7 +217,7 @@ export const WorkflowService = {
             contract_id: contractId,
             role: 'NVKD',
             action: 'Submit',
-            comment: 'Gửi duyệt pháp lý'
+            comment: draftUrl ? `Gửi duyệt pháp lý - Draft: ${draftUrl}` : 'Gửi duyệt pháp lý'
         });
 
         return { success: true };
