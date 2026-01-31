@@ -724,7 +724,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                       </button>
                     </div>
 
-                    <div className="overflow-x-auto rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                    <div className="overflow-x-auto rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800">
                       <table className="w-full text-left text-xs min-w-[1200px]">
                         <thead className="bg-slate-50 dark:bg-slate-800/50">
                           <tr>
@@ -738,7 +738,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                             <th className="px-4 py-4 w-10"></th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800/50">
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800">
                           {lineItems.map((item, index) => {
                             const inputTotal = item.quantity * item.inputPrice;
                             const outputTotal = item.quantity * item.outputPrice;
@@ -901,7 +901,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
 
 
                   {/* 3.2 CHI PHÍ QUẢN LÝ HỢP ĐỒNG (Moved inside Step 2) */}
-                  <div className="bg-slate-50 dark:bg-slate-800/40 p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 space-y-6">
+                  <div className="bg-slate-50 dark:bg-slate-800 p-6 rounded-[24px] border border-slate-100 dark:border-slate-700 space-y-6">
                     <h4 className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
                       <Calculator size={14} /> Chi phí quản lý hợp đồng
                     </h4>
@@ -931,7 +931,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                   const amount = Math.round((pct / 100) * totals.signingValue);
                                   setAdminCosts({ ...adminCosts, [cost.key]: amount });
                                 }}
-                                className="w-full pl-6 pr-1 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold focus:ring-2 focus:ring-indigo-500 outline-none text-center"
+                                className="w-full pl-6 pr-1 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-center"
                               />
                             </div>
                             <div className="col-span-8 relative">
@@ -951,7 +951,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                     setAdminCostPercentages({ ...adminCostPercentages, [cost.key]: Number(pct.toFixed(2)) });
                                   }
                                 }}
-                                className="w-full pl-8 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black focus:ring-2 focus:ring-rose-500 outline-none transition-all text-right"
+                                className="w-full pl-8 pr-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-black text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-rose-500 outline-none transition-all text-right"
                               />
                             </div>
                           </div>
@@ -982,7 +982,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                       </div>
                       <div className="space-y-3">
                         {revenueSchedules.map((rev, idx) => (
-                          <div key={rev.id} className="grid grid-cols-12 gap-2 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
+                          <div key={rev.id} className="grid grid-cols-12 gap-2 bg-slate-50 dark:bg-slate-800 p-3 rounded-2xl border border-slate-100 dark:border-slate-700">
                             <div className="col-span-4 space-y-1">
                               <label className="text-[9px] text-slate-400 font-bold uppercase">Ngày XHĐ</label>
                               <input
