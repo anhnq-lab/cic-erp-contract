@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Link, FileText, Table, FolderOpen, Plus, AlertCircle, Loader2, RefreshCw } from 'lucide-react';
+import { X, Link, FileText, Table, FolderOpen, Plus, AlertCircle, Loader2, RefreshCw, AlertTriangle } from 'lucide-react';
 
 interface AddDocumentLinkDialogProps {
     isOpen: boolean;
@@ -14,10 +14,6 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://jyohocjsnsyfg
  */
 const extractGoogleDocInfo = (url: string): { type: 'doc' | 'sheet' | 'drive' | 'other', id: string | null, defaultName: string } => {
     try {
-        // Google Docs: https://docs.google.com/document/d/{ID}/...
-        // Google Sheets: https://docs.google.com/spreadsheets/d/{ID}/...
-        // Google Drive: https://drive.google.com/file/d/{ID}/...
-
         let type: 'doc' | 'sheet' | 'drive' | 'other' = 'other';
         let id: string | null = null;
 
@@ -57,31 +53,44 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
     const [url, setUrl] = useState('');
     const [error, setError] = useState('');
     const [isFetchingTitle, setIsFetchingTitle] = useState(false);
-    const [fetchAttempted, setFetchAttempted] = useState(false);
+    const [fetchFailed, setFetchFailed] = useState(false);
+    const debounceRef = useRef<number | null>(null);
 
-    // Auto-set default name when URL changes
+    // Auto-set default name when URL changes and try to fetch
     useEffect(() => {
         if (!url) {
-            setFetchAttempted(false);
+            setFetchFailed(false);
             return;
         }
 
         const { defaultName, type } = extractGoogleDocInfo(url);
 
-        // If no name set yet, use default name
+        // Set default name immediately
         if (!name && type !== 'other') {
             setName(defaultName);
         }
 
-        // Auto-fetch title for Google URLs
-        if (type !== 'other' && !fetchAttempted) {
-            fetchTitleFromGoogle(url);
+        // Debounce fetch
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
         }
+
+        if (type !== 'other') {
+            debounceRef.current = window.setTimeout(() => {
+                fetchTitleFromGoogle(url);
+            }, 800);
+        }
+
+        return () => {
+            if (debounceRef.current) {
+                clearTimeout(debounceRef.current);
+            }
+        };
     }, [url]);
 
     const fetchTitleFromGoogle = async (link: string) => {
         setIsFetchingTitle(true);
-        setFetchAttempted(true);
+        setFetchFailed(false);
         try {
             const response = await fetch(`${SUPABASE_URL}/functions/v1/fetch-google-doc-title`, {
                 method: 'POST',
@@ -90,12 +99,15 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
             });
 
             const data = await response.json();
-            if (data.title) {
+            if (data.title && data.success) {
                 setName(data.title);
+                setFetchFailed(false);
+            } else {
+                setFetchFailed(true);
             }
         } catch (err) {
             console.error('Failed to fetch title:', err);
-            // Keep default name if fetch fails
+            setFetchFailed(true);
         } finally {
             setIsFetchingTitle(false);
         }
@@ -115,7 +127,6 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
             return;
         }
 
-        // Basic URL validation
         try {
             new URL(url);
         } catch {
@@ -127,7 +138,7 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
         setName('');
         setUrl('');
         setError('');
-        setFetchAttempted(false);
+        setFetchFailed(false);
         onClose();
     };
 
@@ -175,8 +186,8 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
                                 onChange={(e) => {
                                     setUrl(e.target.value);
                                     setError('');
-                                    setName(''); // Reset name when URL changes
-                                    setFetchAttempted(false);
+                                    setName('');
+                                    setFetchFailed(false);
                                 }}
                                 placeholder="https://docs.google.com/..."
                                 className="w-full px-4 py-3 pl-10 rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-colors"
@@ -218,15 +229,26 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
                                 <button
                                     onClick={() => fetchTitleFromGoogle(url)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
-                                    title="Thử lấy tên từ Google"
+                                    title="Thử lấy lại tên từ Google"
                                 >
                                     <RefreshCw size={14} className="text-slate-400" />
                                 </button>
                             )}
                         </div>
-                        <p className="mt-1 text-xs text-slate-400">
-                            💡 Nếu không tự động lấy được, hãy share file "Anyone with the link" rồi thử lại
-                        </p>
+
+                        {/* Warning when fetch fails - show share instructions */}
+                        {fetchFailed && url && detectedType !== 'other' && (
+                            <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                                <p className="text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
+                                    <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" />
+                                    <span>
+                                        Không lấy được tên tự động. Vui lòng:<br />
+                                        1. Share file → "Anyone with the link"<br />
+                                        2. Bấm 🔄 để thử lại hoặc nhập tên thủ công
+                                    </span>
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     {error && (

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, FileText, Link, Send, AlertCircle, Loader2, RefreshCw, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, FileText, Link, Send, AlertCircle, Loader2, RefreshCw, CheckCircle, AlertTriangle } from 'lucide-react';
 
 interface SubmitLegalDialogProps {
     isOpen: boolean;
@@ -57,12 +57,15 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
     const [error, setError] = useState('');
     const [isFetchingTitle, setIsFetchingTitle] = useState(false);
     const [titleFetched, setTitleFetched] = useState(false);
+    const [fetchFailed, setFetchFailed] = useState(false);
+    const debounceRef = useRef<number | null>(null);
 
     // Auto-fetch title when URL changes
     useEffect(() => {
         if (!draftUrl) {
             setDraftName('');
             setTitleFetched(false);
+            setFetchFailed(false);
             return;
         }
 
@@ -73,14 +76,27 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
             setDraftName(defaultName);
         }
 
-        // Try to fetch real title
-        if (type !== 'other') {
-            fetchTitleFromGoogle(draftUrl);
+        // Debounce fetch
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
         }
+
+        if (type !== 'other') {
+            debounceRef.current = window.setTimeout(() => {
+                fetchTitleFromGoogle(draftUrl);
+            }, 800);
+        }
+
+        return () => {
+            if (debounceRef.current) {
+                clearTimeout(debounceRef.current);
+            }
+        };
     }, [draftUrl]);
 
     const fetchTitleFromGoogle = async (link: string) => {
         setIsFetchingTitle(true);
+        setFetchFailed(false);
         try {
             const response = await fetch(`${SUPABASE_URL}/functions/v1/fetch-google-doc-title`, {
                 method: 'POST',
@@ -89,12 +105,16 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
             });
 
             const data = await response.json();
-            if (data.title) {
+            if (data.title && data.success) {
                 setDraftName(data.title);
                 setTitleFetched(true);
+                setFetchFailed(false);
+            } else {
+                setFetchFailed(true);
             }
         } catch (err) {
             console.error('Failed to fetch title:', err);
+            setFetchFailed(true);
         } finally {
             setIsFetchingTitle(false);
         }
@@ -126,6 +146,7 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
         setDraftUrl('');
         setDraftName('');
         setTitleFetched(false);
+        setFetchFailed(false);
     };
 
     const { type } = extractGoogleDocInfo(draftUrl);
@@ -172,6 +193,7 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
                                 setError('');
                                 setDraftName('');
                                 setTitleFetched(false);
+                                setFetchFailed(false);
                             }}
                             placeholder="https://docs.google.com/document/d/..."
                             className={`w-full px-4 py-3 rounded-xl border ${error
@@ -224,15 +246,26 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
                                     </button>
                                 )}
                             </div>
-                            <p className="mt-1 text-xs text-slate-400">
-                                💡 Nếu không lấy được tên, hãy share file "Anyone with the link"
-                            </p>
+
+                            {/* Warning when fetch fails */}
+                            {fetchFailed && (
+                                <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                                    <p className="text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
+                                        <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" />
+                                        <span>
+                                            Không lấy được tên tự động. Để lấy tên:<br />
+                                            1. Share file → "Anyone with the link"<br />
+                                            2. Bấm 🔄 để thử lại
+                                        </span>
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     )}
 
                     <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-sm">
                         <p className="text-amber-800 dark:text-amber-300">
-                            <strong>Lưu ý:</strong> Link phải là Google Docs hoặc Google Drive và được share quyền view/comment cho Pháp chế.
+                            <strong>Lưu ý:</strong> Link phải là Google Docs và được share quyền view/comment cho Pháp chế.
                         </p>
                     </div>
                 </div>
