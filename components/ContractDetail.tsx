@@ -749,7 +749,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
         <SubmitLegalDialog
           isOpen={showLegalDialog}
           onClose={() => setShowLegalDialog(false)}
-          onSubmit={async (draftUrl) => {
+          onSubmit={async (draftUrl, draftName) => {
             const result = await WorkflowService.submitContractForReview(contract.id, draftUrl);
             if (result.success) {
               toast.success('Đã gửi duyệt pháp lý thành công!');

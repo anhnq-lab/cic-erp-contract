@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Link, FileText, Table, FolderOpen, Plus, AlertCircle, Loader2 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { X, Link, FileText, Table, FolderOpen, Plus, AlertCircle, Loader2, RefreshCw } from 'lucide-react';
 
 interface AddDocumentLinkDialogProps {
     isOpen: boolean;
@@ -11,8 +10,43 @@ interface AddDocumentLinkDialogProps {
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://jyohocjsnsyfgfsmjfqx.supabase.co';
 
 /**
+ * Extract document ID from Google URL for default naming
+ */
+const extractGoogleDocInfo = (url: string): { type: 'doc' | 'sheet' | 'drive' | 'other', id: string | null, defaultName: string } => {
+    try {
+        // Google Docs: https://docs.google.com/document/d/{ID}/...
+        // Google Sheets: https://docs.google.com/spreadsheets/d/{ID}/...
+        // Google Drive: https://drive.google.com/file/d/{ID}/...
+
+        let type: 'doc' | 'sheet' | 'drive' | 'other' = 'other';
+        let id: string | null = null;
+
+        if (url.includes('docs.google.com/document')) {
+            type = 'doc';
+            const match = url.match(/\/document\/d\/([a-zA-Z0-9_-]+)/);
+            id = match ? match[1] : null;
+        } else if (url.includes('docs.google.com/spreadsheets')) {
+            type = 'sheet';
+            const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+            id = match ? match[1] : null;
+        } else if (url.includes('drive.google.com')) {
+            type = 'drive';
+            const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+            id = match ? match[1] : null;
+        }
+
+        const typeLabel = type === 'doc' ? 'Google Doc' : type === 'sheet' ? 'Google Sheet' : type === 'drive' ? 'Google Drive' : 'Tài liệu';
+        const shortId = id ? id.substring(0, 8) : '';
+        const defaultName = id ? `${typeLabel} - ${shortId}...` : typeLabel;
+
+        return { type, id, defaultName };
+    } catch {
+        return { type: 'other', id: null, defaultName: 'Tài liệu' };
+    }
+};
+
+/**
  * Dialog để thêm link tài liệu Google Drive/Doc/Sheet
- * Tự động lấy tên file từ Google
  */
 export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
     isOpen,
@@ -23,36 +57,31 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
     const [url, setUrl] = useState('');
     const [error, setError] = useState('');
     const [isFetchingTitle, setIsFetchingTitle] = useState(false);
-    const debounceRef = useRef<number | null>(null);
+    const [fetchAttempted, setFetchAttempted] = useState(false);
 
-    // Auto-fetch title when URL changes
+    // Auto-set default name when URL changes
     useEffect(() => {
-        if (!url || !isGoogleUrl(url)) {
+        if (!url) {
+            setFetchAttempted(false);
             return;
         }
 
-        // Debounce fetch
-        if (debounceRef.current) {
-            clearTimeout(debounceRef.current);
+        const { defaultName, type } = extractGoogleDocInfo(url);
+
+        // If no name set yet, use default name
+        if (!name && type !== 'other') {
+            setName(defaultName);
         }
 
-        debounceRef.current = window.setTimeout(async () => {
-            await fetchGoogleTitle(url);
-        }, 500);
-
-        return () => {
-            if (debounceRef.current) {
-                clearTimeout(debounceRef.current);
-            }
-        };
+        // Auto-fetch title for Google URLs
+        if (type !== 'other' && !fetchAttempted) {
+            fetchTitleFromGoogle(url);
+        }
     }, [url]);
 
-    const isGoogleUrl = (link: string): boolean => {
-        return link.includes('docs.google.com') || link.includes('drive.google.com');
-    };
-
-    const fetchGoogleTitle = async (link: string) => {
+    const fetchTitleFromGoogle = async (link: string) => {
         setIsFetchingTitle(true);
+        setFetchAttempted(true);
         try {
             const response = await fetch(`${SUPABASE_URL}/functions/v1/fetch-google-doc-title`, {
                 method: 'POST',
@@ -61,11 +90,12 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
             });
 
             const data = await response.json();
-            if (data.title && !name) {
+            if (data.title) {
                 setName(data.title);
             }
         } catch (err) {
             console.error('Failed to fetch title:', err);
+            // Keep default name if fetch fails
         } finally {
             setIsFetchingTitle(false);
         }
@@ -73,12 +103,7 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
 
     if (!isOpen) return null;
 
-    const detectLinkType = (link: string): 'drive' | 'doc' | 'sheet' | 'other' => {
-        if (link.includes('docs.google.com/document')) return 'doc';
-        if (link.includes('docs.google.com/spreadsheets')) return 'sheet';
-        if (link.includes('drive.google.com')) return 'drive';
-        return 'other';
-    };
+    const { type: detectedType } = extractGoogleDocInfo(url);
 
     const handleSubmit = () => {
         if (!name.trim()) {
@@ -98,11 +123,11 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
             return;
         }
 
-        const type = detectLinkType(url);
-        onSubmit({ name, url, type });
+        onSubmit({ name, url, type: detectedType });
         setName('');
         setUrl('');
         setError('');
+        setFetchAttempted(false);
         onClose();
     };
 
@@ -114,8 +139,6 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
             default: return <Link size={16} className="text-slate-500" />;
         }
     };
-
-    const detectedType = url ? detectLinkType(url) : null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -140,7 +163,7 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
 
                 {/* Content */}
                 <div className="p-5 space-y-4">
-                    {/* Document URL - Đặt lên trước để auto-fetch tên */}
+                    {/* Document URL */}
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                             Link tài liệu
@@ -149,26 +172,30 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
                             <input
                                 type="url"
                                 value={url}
-                                onChange={(e) => { setUrl(e.target.value); setError(''); }}
+                                onChange={(e) => {
+                                    setUrl(e.target.value);
+                                    setError('');
+                                    setName(''); // Reset name when URL changes
+                                    setFetchAttempted(false);
+                                }}
                                 placeholder="https://docs.google.com/..."
                                 className="w-full px-4 py-3 pl-10 rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-colors"
                             />
                             <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                                {detectedType ? linkTypeIcon(detectedType) : <Link size={16} className="text-slate-400" />}
+                                {url ? linkTypeIcon(detectedType) : <Link size={16} className="text-slate-400" />}
                             </div>
                         </div>
-                        {detectedType && (
+                        {detectedType !== 'other' && url && (
                             <p className="mt-2 text-xs text-slate-500 flex items-center gap-1">
                                 {linkTypeIcon(detectedType)}
                                 {detectedType === 'doc' && 'Google Docs'}
                                 {detectedType === 'sheet' && 'Google Sheets'}
                                 {detectedType === 'drive' && 'Google Drive'}
-                                {detectedType === 'other' && 'Link khác'}
                             </p>
                         )}
                     </div>
 
-                    {/* Document Name - Auto-filled from Google */}
+                    {/* Document Name */}
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
                             Tên tài liệu
@@ -179,13 +206,27 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
                                 </span>
                             )}
                         </label>
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => { setName(e.target.value); setError(''); }}
-                            placeholder="Tự động lấy từ Google hoặc nhập thủ công"
-                            className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-colors"
-                        />
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => { setName(e.target.value); setError(''); }}
+                                placeholder="Nhập tên tài liệu"
+                                className="w-full px-4 py-3 pr-10 rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-colors"
+                            />
+                            {url && detectedType !== 'other' && !isFetchingTitle && (
+                                <button
+                                    onClick={() => fetchTitleFromGoogle(url)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
+                                    title="Thử lấy tên từ Google"
+                                >
+                                    <RefreshCw size={14} className="text-slate-400" />
+                                </button>
+                            )}
+                        </div>
+                        <p className="mt-1 text-xs text-slate-400">
+                            💡 Nếu không tự động lấy được, hãy share file "Anyone with the link" rồi thử lại
+                        </p>
                     </div>
 
                     {error && (

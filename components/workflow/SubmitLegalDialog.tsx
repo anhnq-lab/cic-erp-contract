@@ -1,15 +1,50 @@
-import React, { useState } from 'react';
-import { X, FileText, Link, Send, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, FileText, Link, Send, AlertCircle, Loader2, RefreshCw, CheckCircle } from 'lucide-react';
 
 interface SubmitLegalDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (draftUrl: string) => void;
+    onSubmit: (draftUrl: string, draftName?: string) => void;
     contractName: string;
 }
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://jyohocjsnsyfgfsmjfqx.supabase.co';
+
+/**
+ * Extract document ID from Google URL for default naming
+ */
+const extractGoogleDocInfo = (url: string): { type: string, id: string | null, defaultName: string } => {
+    try {
+        let type = 'other';
+        let id: string | null = null;
+
+        if (url.includes('docs.google.com/document')) {
+            type = 'doc';
+            const match = url.match(/\/document\/d\/([a-zA-Z0-9_-]+)/);
+            id = match ? match[1] : null;
+        } else if (url.includes('docs.google.com/spreadsheets')) {
+            type = 'sheet';
+            const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+            id = match ? match[1] : null;
+        } else if (url.includes('drive.google.com')) {
+            type = 'drive';
+            const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+            id = match ? match[1] : null;
+        }
+
+        const shortId = id ? id.substring(0, 8) : '';
+        const typeLabel = type === 'doc' ? 'Google Doc' : type === 'sheet' ? 'Google Sheet' : type === 'drive' ? 'Google Drive' : 'Tài liệu';
+        const defaultName = id ? `Dự thảo HĐ - ${shortId}...` : 'Dự thảo hợp đồng';
+
+        return { type, id, defaultName };
+    } catch {
+        return { type: 'other', id: null, defaultName: 'Dự thảo hợp đồng' };
+    }
+};
+
 /**
  * Dialog để nhập link dự thảo hợp đồng (Google Doc) trước khi gửi pháp lý duyệt
+ * Tự động lấy tên từ Google
  */
 export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
     isOpen,
@@ -18,7 +53,52 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
     contractName
 }) => {
     const [draftUrl, setDraftUrl] = useState('');
+    const [draftName, setDraftName] = useState('');
     const [error, setError] = useState('');
+    const [isFetchingTitle, setIsFetchingTitle] = useState(false);
+    const [titleFetched, setTitleFetched] = useState(false);
+
+    // Auto-fetch title when URL changes
+    useEffect(() => {
+        if (!draftUrl) {
+            setDraftName('');
+            setTitleFetched(false);
+            return;
+        }
+
+        const { type, defaultName } = extractGoogleDocInfo(draftUrl);
+
+        // Set default name immediately
+        if (!draftName && type !== 'other') {
+            setDraftName(defaultName);
+        }
+
+        // Try to fetch real title
+        if (type !== 'other') {
+            fetchTitleFromGoogle(draftUrl);
+        }
+    }, [draftUrl]);
+
+    const fetchTitleFromGoogle = async (link: string) => {
+        setIsFetchingTitle(true);
+        try {
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/fetch-google-doc-title`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: link })
+            });
+
+            const data = await response.json();
+            if (data.title) {
+                setDraftName(data.title);
+                setTitleFetched(true);
+            }
+        } catch (err) {
+            console.error('Failed to fetch title:', err);
+        } finally {
+            setIsFetchingTitle(false);
+        }
+    };
 
     if (!isOpen) return null;
 
@@ -42,9 +122,13 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
         }
 
         setError('');
-        onSubmit(draftUrl);
+        onSubmit(draftUrl, draftName || 'Dự thảo hợp đồng');
         setDraftUrl('');
+        setDraftName('');
+        setTitleFetched(false);
     };
+
+    const { type } = extractGoogleDocInfo(draftUrl);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -73,8 +157,9 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
-                    <div className="mb-4">
+                <div className="p-6 space-y-4">
+                    {/* URL Input */}
+                    <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                             <Link size={14} className="inline mr-2" />
                             Link dự thảo hợp đồng (Google Doc)
@@ -85,11 +170,13 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
                             onChange={(e) => {
                                 setDraftUrl(e.target.value);
                                 setError('');
+                                setDraftName('');
+                                setTitleFetched(false);
                             }}
                             placeholder="https://docs.google.com/document/d/..."
                             className={`w-full px-4 py-3 rounded-xl border ${error
-                                    ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                                    : 'border-slate-300 focus:border-violet-500 focus:ring-violet-200'
+                                ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+                                : 'border-slate-300 focus:border-violet-500 focus:ring-violet-200'
                                 } dark:bg-slate-800 dark:border-slate-700 focus:ring-2 transition-colors`}
                         />
                         {error && (
@@ -99,6 +186,49 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
                             </p>
                         )}
                     </div>
+
+                    {/* Document Name - Auto-filled */}
+                    {draftUrl && type !== 'other' && (
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                                <FileText size={14} />
+                                Tên tài liệu
+                                {isFetchingTitle && (
+                                    <span className="text-xs text-violet-500 flex items-center gap-1">
+                                        <Loader2 size={12} className="animate-spin" />
+                                        Đang lấy tên...
+                                    </span>
+                                )}
+                                {titleFetched && (
+                                    <span className="text-xs text-green-500 flex items-center gap-1">
+                                        <CheckCircle size={12} />
+                                        Đã lấy tên
+                                    </span>
+                                )}
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={draftName}
+                                    onChange={(e) => setDraftName(e.target.value)}
+                                    placeholder="Tên tài liệu"
+                                    className="w-full px-4 py-3 pr-10 rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-colors"
+                                />
+                                {!isFetchingTitle && (
+                                    <button
+                                        onClick={() => fetchTitleFromGoogle(draftUrl)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
+                                        title="Thử lấy lại tên từ Google"
+                                    >
+                                        <RefreshCw size={14} className="text-slate-400" />
+                                    </button>
+                                )}
+                            </div>
+                            <p className="mt-1 text-xs text-slate-400">
+                                💡 Nếu không lấy được tên, hãy share file "Anyone with the link"
+                            </p>
+                        </div>
+                    )}
 
                     <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-sm">
                         <p className="text-amber-800 dark:text-amber-300">
@@ -117,7 +247,8 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="px-5 py-2.5 rounded-xl bg-violet-600 text-white hover:bg-violet-700 font-medium flex items-center gap-2 transition-colors shadow-lg shadow-violet-200 dark:shadow-violet-900/30"
+                        disabled={isFetchingTitle}
+                        className="px-5 py-2.5 rounded-xl bg-violet-600 text-white hover:bg-violet-700 font-medium flex items-center gap-2 transition-colors shadow-lg shadow-violet-200 dark:shadow-violet-900/30 disabled:opacity-50"
                     >
                         <Send size={16} />
                         Gửi duyệt
