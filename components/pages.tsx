@@ -29,8 +29,9 @@ export const ContractListPage: React.FC = () => {
         <ContractListComponent
             selectedUnit={selectedUnit}
             onSelectContract={(id) => {
-                console.log('[ContractListPage] Navigating to contract:', id, ROUTES.CONTRACT_DETAIL(id));
-                navigate(ROUTES.CONTRACT_DETAIL(id));
+                const encodedId = encodeURIComponent(id);
+                console.log('[ContractListPage] Navigating to contract:', id, '-> encoded:', encodedId);
+                navigate(ROUTES.CONTRACT_DETAIL(encodedId));
             }}
             onAdd={() => navigate(ROUTES.CONTRACT_NEW)}
             onClone={(contract) => navigate(ROUTES.CONTRACT_NEW, { state: { cloneFrom: contract } })}
@@ -38,18 +39,21 @@ export const ContractListPage: React.FC = () => {
     );
 };
 
+
 // Contract Detail
 import ContractDetailComponent from './ContractDetail';
 export const ContractDetailPage: React.FC = () => {
     const navigate = useNavigate();
-    const { id } = useParams<{ id: string }>();
-    console.log('[ContractDetailPage] Mounted with id:', id);
+    const { id: rawId } = useParams<{ id: string }>();
+    // Decode URL-encoded ID (handles special chars like / in contract IDs)
+    const id = rawId ? decodeURIComponent(rawId) : undefined;
+    console.log('[ContractDetailPage] Mounted with id:', rawId, '-> decoded:', id);
     if (!id) return <div>Contract not found</div>;
     return (
         <ContractDetailComponent
             contractId={id}
             onBack={() => navigate(ROUTES.CONTRACTS)}
-            onEdit={() => navigate(ROUTES.CONTRACT_EDIT(id))}
+            onEdit={() => navigate(ROUTES.CONTRACT_EDIT(encodeURIComponent(id)))}
             onDelete={async () => {
                 // Handle delete then navigate
                 navigate(ROUTES.CONTRACTS);
@@ -58,6 +62,7 @@ export const ContractDetailPage: React.FC = () => {
     );
 };
 
+
 // Contract Form
 import ContractFormComponent from './ContractForm';
 import { useLocation } from 'react-router-dom';
@@ -65,7 +70,8 @@ import { ContractService } from '../services';
 import { toast } from 'sonner';
 export const ContractFormPage: React.FC = () => {
     const navigate = useNavigate();
-    const { id } = useParams<{ id: string }>();
+    const { id: rawId } = useParams<{ id: string }>();
+    const id = rawId ? decodeURIComponent(rawId) : undefined;
     const location = useLocation();
     const cloneFrom = location.state?.cloneFrom;
 
