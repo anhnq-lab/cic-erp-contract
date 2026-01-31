@@ -4,25 +4,25 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 // Layout Component
 import MainLayout from '../components/layout/MainLayout';
 
-// Page Wrapper Components (bridge router → existing components)
+// Lazy-loaded Page Components (Code Splitting)
 import {
-    DashboardPage,
-    ContractListPage,
-    ContractDetailPage,
-    ContractFormPage,
-    PaymentListPage,
-    AnalyticsPage,
-    AIAssistantPage,
-    PersonnelListPage,
-    PersonnelDetailPage,
-    CustomerListPage,
-    CustomerDetailPage,
-    ProductListPage,
-    ProductDetailPage,
-    UnitListPage,
-    UnitDetailPage,
-    SettingsPage,
-} from '../components/pages';
+    LazyDashboardPage as DashboardPage,
+    LazyContractListPage as ContractListPage,
+    LazyContractDetailPage as ContractDetailPage,
+    LazyContractFormPage as ContractFormPage,
+    LazyPaymentListPage as PaymentListPage,
+    LazyAnalyticsPage as AnalyticsPage,
+    LazyAIAssistantPage as AIAssistantPage,
+    LazyPersonnelListPage as PersonnelListPage,
+    LazyPersonnelDetailPage as PersonnelDetailPage,
+    LazyCustomerListPage as CustomerListPage,
+    LazyCustomerDetailPage as CustomerDetailPage,
+    LazyProductListPage as ProductListPage,
+    LazyProductDetailPage as ProductDetailPage,
+    LazyUnitListPage as UnitListPage,
+    LazyUnitDetailPage as UnitDetailPage,
+    LazySettingsPage as SettingsPage,
+} from '../components/LazyPages';
 
 // Route Configuration
 export const router = createBrowserRouter([
