@@ -28,7 +28,10 @@ export const ContractListPage: React.FC = () => {
     return (
         <ContractListComponent
             selectedUnit={selectedUnit}
-            onSelectContract={(id) => navigate(ROUTES.CONTRACT_DETAIL(id))}
+            onSelectContract={(id) => {
+                console.log('[ContractListPage] Navigating to contract:', id, ROUTES.CONTRACT_DETAIL(id));
+                navigate(ROUTES.CONTRACT_DETAIL(id));
+            }}
             onAdd={() => navigate(ROUTES.CONTRACT_NEW)}
             onClone={(contract) => navigate(ROUTES.CONTRACT_NEW, { state: { cloneFrom: contract } })}
         />
@@ -40,6 +43,7 @@ import ContractDetailComponent from './ContractDetail';
 export const ContractDetailPage: React.FC = () => {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
+    console.log('[ContractDetailPage] Mounted with id:', id);
     if (!id) return <div>Contract not found</div>;
     return (
         <ContractDetailComponent
