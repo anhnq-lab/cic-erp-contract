@@ -17,6 +17,7 @@ import {
 import { UnitService, CustomerService, ProductService, ContractService, EmployeeService } from '../services';
 import Modal from './ui/Modal';
 import SearchableSelect from './ui/SearchableSelect';
+import QuickAddCustomerDialog from './ui/QuickAddCustomerDialog';
 
 interface ContractFormProps {
   contract?: Contract; // For edit mode
@@ -71,6 +72,9 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
   const [title, setTitle] = useState(contract?.title || '');
   const [clientName, setClientName] = useState(contract?.partyA || '');
   const [signedDate, setSignedDate] = useState(contract?.signedDate || new Date().toISOString().split('T')[0]);
+
+  // Quick Add Customer Dialog
+  const [showAddCustomerDialog, setShowAddCustomerDialog] = useState(false);
 
   // const [manualValue, setManualValue] = useState<number>(contract?.value || 0); // Removed per request
 
@@ -644,6 +648,8 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                           .filter(c => !c.type || c.type === 'Customer' || c.type === 'Both')
                           .map(c => ({ id: c.id, name: c.name, subText: c.industry }));
                       }}
+                      onAddNew={() => setShowAddCustomerDialog(true)}
+                      addNewLabel="+ Thêm khách hàng mới"
                     />
                   </div>
                   <div className="space-y-2">
@@ -1299,6 +1305,17 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
           )}
         </div>
       </div >
+
+      {/* Quick Add Customer Dialog */}
+      <QuickAddCustomerDialog
+        isOpen={showAddCustomerDialog}
+        onClose={() => setShowAddCustomerDialog(false)}
+        onCreated={(customer) => {
+          setCustomerId(customer.id);
+          setClientName(customer.name);
+          toast.success(`Đã thêm khách hàng: ${customer.name}`);
+        }}
+      />
     </div >
   );
 };

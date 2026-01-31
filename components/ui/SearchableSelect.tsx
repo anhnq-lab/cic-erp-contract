@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, X, Loader2, ChevronDown } from 'lucide-react';
+import { Search, X, Loader2, ChevronDown, Plus } from 'lucide-react';
 
 interface Option {
     id: string;
@@ -16,6 +16,8 @@ interface SearchableSelectProps {
     disabled?: boolean;
     initialOptions?: Option[];
     getDisplayValue?: (id: string) => string | undefined;
+    onAddNew?: () => void;
+    addNewLabel?: string;
 }
 
 /**
@@ -31,6 +33,8 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     disabled = false,
     initialOptions = [],
     getDisplayValue,
+    onAddNew,
+    addNewLabel = '+ Thêm mới',
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [query, setQuery] = useState('');
@@ -189,6 +193,23 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                             ))
                         )}
                     </div>
+
+                    {/* Add New Button */}
+                    {onAddNew && (
+                        <div className="border-t border-slate-100 dark:border-slate-800 p-2">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    onAddNew();
+                                }}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 font-bold text-sm rounded-xl transition-colors"
+                            >
+                                <Plus size={16} />
+                                {addNewLabel}
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
