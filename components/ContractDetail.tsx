@@ -640,7 +640,31 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                   </label>
                 </div>
                 <div className="space-y-2">
-                  {documents.length === 0 && <p className="text-xs text-slate-400 italic text-center py-4">Chưa có tài liệu nào</p>}
+                  {/* Draft URL - Dự thảo hợp đồng */}
+                  {contract.draft_url && (
+                    <a
+                      href={contract.draft_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 rounded-2xl bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="p-2 bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 rounded-lg">
+                          <FileText size={16} />
+                        </div>
+                        <div className="overflow-hidden">
+                          <p className="text-xs font-bold text-violet-700 dark:text-violet-300">📝 Dự thảo hợp đồng (Google Doc)</p>
+                          <p className="text-[10px] text-violet-500 dark:text-violet-400 truncate max-w-[180px]">{contract.draft_url}</p>
+                        </div>
+                      </div>
+                      <div className="px-2 py-1 bg-violet-600 text-white rounded-lg text-[10px] font-bold">
+                        Mở
+                      </div>
+                    </a>
+                  )}
+
+                  {/* Uploaded documents */}
+                  {documents.length === 0 && !contract.draft_url && <p className="text-xs text-slate-400 italic text-center py-4">Chưa có tài liệu nào</p>}
                   {documents.map((file) => (
                     <div key={file.id} className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-all cursor-pointer group" onClick={() => handleDownloadDoc(file)}>
                       <div className="flex items-center gap-3 overflow-hidden">

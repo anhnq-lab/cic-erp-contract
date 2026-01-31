@@ -166,6 +166,7 @@ export interface Contract {
   milestones?: Milestone[];
   paymentPhases?: PaymentPhase[];
   documents?: ContractDocument[];
+  draft_url?: string; // URL to draft contract document (Google Doc) for legal review
 }
 
 export interface ContractDocument {
