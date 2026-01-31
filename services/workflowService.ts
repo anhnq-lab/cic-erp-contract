@@ -230,17 +230,7 @@ export const WorkflowService = {
         });
         console.log('[WorkflowService] contract_reviews insert:', { reviewError });
 
-        // Add audit log entry
-        const auditResult = await AuditLogService.create({
-            user_id: null,  // Will be null if no auth session
-            table_name: 'contracts',
-            record_id: contractId,
-            action: 'SUBMIT_LEGAL',
-            old_data: { status: 'Draft' },
-            new_data: { status: 'Pending_Legal', draft_url: draftUrl },
-            comment: 'Gửi duyệt pháp lý'
-        });
-        console.log('[WorkflowService] audit_log insert result:', auditResult);
+        // NOTE: Audit log is created automatically by database trigger on UPDATE
 
         return { success: true };
     },
@@ -271,17 +261,7 @@ export const WorkflowService = {
         });
         console.log('[WorkflowService] contract_reviews insert:', { reviewError });
 
-        // Add audit log entry
-        const auditResult = await AuditLogService.create({
-            user_id: reviewerId,
-            table_name: 'contracts',
-            record_id: contractId,
-            action: 'APPROVE_LEGAL',
-            old_data: { status: 'Pending_Legal' },
-            new_data: { status: 'Pending_Finance' },
-            comment: comment || 'Pháp lý phê duyệt hợp đồng'
-        });
-        console.log('[WorkflowService] audit_log insert result:', auditResult);
+        // NOTE: Audit log is created automatically by database trigger on UPDATE
 
         return { success: true };
     },
@@ -305,16 +285,7 @@ export const WorkflowService = {
             comment: reason
         });
 
-        // Add audit log entry
-        await AuditLogService.create({
-            user_id: reviewerId,
-            table_name: 'contracts',
-            record_id: contractId,
-            action: 'REJECT',
-            old_data: { status: 'Pending_Legal' },
-            new_data: { status: 'Draft' },
-            comment: `Pháp lý từ chối: ${reason}`
-        });
+        // NOTE: Audit log is created automatically by database trigger on UPDATE
 
         return { success: true };
     },
@@ -339,16 +310,7 @@ export const WorkflowService = {
             comment: comment || 'Duyệt tài chính'
         });
 
-        // Add audit log entry
-        await AuditLogService.create({
-            user_id: reviewerId,
-            table_name: 'contracts',
-            record_id: contractId,
-            action: 'APPROVE_FINANCE',
-            old_data: { status: 'Pending_Finance' },
-            new_data: { status: 'Finance_Approved' },
-            comment: comment || 'Tài chính phê duyệt hợp đồng'
-        });
+        // NOTE: Audit log is created automatically by database trigger on UPDATE
 
         return { success: true };
     },
@@ -372,16 +334,7 @@ export const WorkflowService = {
             comment: reason
         });
 
-        // Add audit log entry
-        await AuditLogService.create({
-            user_id: reviewerId,
-            table_name: 'contracts',
-            record_id: contractId,
-            action: 'REJECT',
-            old_data: { status: 'Pending_Finance' },
-            new_data: { status: 'Draft' },
-            comment: `Tài chính từ chối: ${reason}`
-        });
+        // NOTE: Audit log is created automatically by database trigger on UPDATE
 
         return { success: true };
     },
