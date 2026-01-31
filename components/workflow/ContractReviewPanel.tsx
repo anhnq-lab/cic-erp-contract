@@ -24,6 +24,9 @@ export const ContractReviewPanel: React.FC<ContractReviewPanelProps> = ({
     userRole,
     onAction
 }) => {
+    // Debug log
+    console.log('[ContractReviewPanel] userRole:', userRole, 'currentStatus:', currentStatus);
+
     // Admin/Leadership có quyền thấy và thao tác tất cả
     const isAdmin = userRole === 'Admin' || userRole === 'Leadership';
 

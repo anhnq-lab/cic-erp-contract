@@ -108,8 +108,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 // For now, leave null so UI knows it's an incomplete user
             } else if (profiles && profiles.length > 0) {
                 const data = profiles[0];
-
-
+                console.log('[AuthContext.fetchProfile] Raw data:', JSON.stringify(data));
+                console.log('[AuthContext.fetchProfile] data.role:', data.role, 'typeof:', typeof data.role);
 
                 let userRole: UserRole = data.role as UserRole;
                 const userEmail = email || data.email || '';
