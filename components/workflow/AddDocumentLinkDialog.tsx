@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { X, Link, FileText, Table, FolderOpen, Plus, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Link, FileText, Table, FolderOpen, Plus, AlertCircle, Loader2 } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 interface AddDocumentLinkDialogProps {
     isOpen: boolean;
@@ -7,8 +8,11 @@ interface AddDocumentLinkDialogProps {
     onSubmit: (doc: { name: string; url: string; type: 'drive' | 'doc' | 'sheet' | 'other' }) => void;
 }
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://jyohocjsnsyfgfsmjfqx.supabase.co';
+
 /**
  * Dialog để thêm link tài liệu Google Drive/Doc/Sheet
+ * Tự động lấy tên file từ Google
  */
 export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
     isOpen,
@@ -18,6 +22,54 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
     const [name, setName] = useState('');
     const [url, setUrl] = useState('');
     const [error, setError] = useState('');
+    const [isFetchingTitle, setIsFetchingTitle] = useState(false);
+    const debounceRef = useRef<number | null>(null);
+
+    // Auto-fetch title when URL changes
+    useEffect(() => {
+        if (!url || !isGoogleUrl(url)) {
+            return;
+        }
+
+        // Debounce fetch
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+
+        debounceRef.current = window.setTimeout(async () => {
+            await fetchGoogleTitle(url);
+        }, 500);
+
+        return () => {
+            if (debounceRef.current) {
+                clearTimeout(debounceRef.current);
+            }
+        };
+    }, [url]);
+
+    const isGoogleUrl = (link: string): boolean => {
+        return link.includes('docs.google.com') || link.includes('drive.google.com');
+    };
+
+    const fetchGoogleTitle = async (link: string) => {
+        setIsFetchingTitle(true);
+        try {
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/fetch-google-doc-title`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: link })
+            });
+
+            const data = await response.json();
+            if (data.title && !name) {
+                setName(data.title);
+            }
+        } catch (err) {
+            console.error('Failed to fetch title:', err);
+        } finally {
+            setIsFetchingTitle(false);
+        }
+    };
 
     if (!isOpen) return null;
 
@@ -88,21 +140,7 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
 
                 {/* Content */}
                 <div className="p-5 space-y-4">
-                    {/* Document Name */}
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            Tên tài liệu
-                        </label>
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => { setName(e.target.value); setError(''); }}
-                            placeholder="VD: Dự thảo hợp đồng v1"
-                            className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-colors"
-                        />
-                    </div>
-
-                    {/* Document URL */}
+                    {/* Document URL - Đặt lên trước để auto-fetch tên */}
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                             Link tài liệu
@@ -130,6 +168,26 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
                         )}
                     </div>
 
+                    {/* Document Name - Auto-filled from Google */}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                            Tên tài liệu
+                            {isFetchingTitle && (
+                                <span className="text-xs text-indigo-500 flex items-center gap-1">
+                                    <Loader2 size={12} className="animate-spin" />
+                                    Đang lấy tên...
+                                </span>
+                            )}
+                        </label>
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => { setName(e.target.value); setError(''); }}
+                            placeholder="Tự động lấy từ Google hoặc nhập thủ công"
+                            className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-colors"
+                        />
+                    </div>
+
                     {error && (
                         <p className="text-sm text-red-600 flex items-center gap-1">
                             <AlertCircle size={14} />
@@ -148,7 +206,8 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 font-medium flex items-center gap-2 transition-colors shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30"
+                        disabled={isFetchingTitle}
+                        className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 font-medium flex items-center gap-2 transition-colors shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30 disabled:opacity-50"
                     >
                         <Plus size={16} />
                         Thêm
