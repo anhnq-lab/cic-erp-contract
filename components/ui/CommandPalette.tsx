@@ -5,7 +5,7 @@ import {
     LayoutDashboard, BarChart3, Settings, Bot,
     CreditCard, ChevronRight, Command, X
 } from 'lucide-react';
-import { ROUTES } from '../../routes/AppRoutes';
+import { ROUTES } from '../../routes/routes';
 import { ContractService, CustomerService, EmployeeService, ProductService, UnitService } from '../../services';
 
 interface SearchResult {

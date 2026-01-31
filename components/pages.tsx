@@ -4,7 +4,7 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLayoutContext } from './layout/MainLayout';
-import { ROUTES } from '../routes/AppRoutes';
+import { ROUTES } from '../routes/routes';
 
 // Dashboard
 import DashboardComponent from './Dashboard';

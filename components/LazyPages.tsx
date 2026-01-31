@@ -4,7 +4,7 @@
 import React, { Suspense, lazy } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useLayoutContext } from './layout/MainLayout';
-import { ROUTES } from '../routes/AppRoutes';
+import { ROUTES } from '../routes/routes';
 import { Loader2 } from 'lucide-react';
 
 // Loading Fallback Component

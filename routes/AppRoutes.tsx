@@ -4,6 +4,9 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 // Layout Component
 import MainLayout from '../components/layout/MainLayout';
 
+// Re-export ROUTES for backward compatibility
+export { ROUTES } from './routes';
+
 // Lazy-loaded Page Components (Code Splitting)
 import {
     LazyDashboardPage as DashboardPage,
@@ -73,24 +76,3 @@ export const router = createBrowserRouter([
         ],
     },
 ]);
-
-// Route helpers for navigation
-export const ROUTES = {
-    DASHBOARD: '/',
-    CONTRACTS: '/contracts',
-    CONTRACT_NEW: '/contracts/new',
-    CONTRACT_DETAIL: (id: string) => `/contracts/${id}`,
-    CONTRACT_EDIT: (id: string) => `/contracts/${id}/edit`,
-    PAYMENTS: '/payments',
-    ANALYTICS: '/analytics',
-    AI_ASSISTANT: '/ai-assistant',
-    PERSONNEL: '/personnel',
-    PERSONNEL_DETAIL: (id: string) => `/personnel/${id}`,
-    CUSTOMERS: '/customers',
-    CUSTOMER_DETAIL: (id: string) => `/customers/${id}`,
-    PRODUCTS: '/products',
-    PRODUCT_DETAIL: (id: string) => `/products/${id}`,
-    UNITS: '/units',
-    UNIT_DETAIL: (id: string) => `/units/${id}`,
-    SETTINGS: '/settings',
-} as const;
