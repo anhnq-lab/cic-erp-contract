@@ -59,6 +59,8 @@ export const AuditLogService = {
      */
     async create(log: Omit<AuditLog, 'id' | 'created_at' | 'user_name'>): Promise<AuditLog | null> {
         try {
+            console.log('[AuditLogService] Creating audit log:', log);
+
             const { data, error } = await supabase
                 .from('audit_logs')
                 .insert(log)
@@ -66,13 +68,15 @@ export const AuditLogService = {
                 .single();
 
             if (error) {
-                console.error('Error creating audit log:', error);
+                console.error('[AuditLogService] Error creating audit log:', error);
+                console.error('[AuditLogService] RLS or permission issue? Check audit_logs policies.');
                 return null;
             }
 
+            console.log('[AuditLogService] Successfully created audit log:', data?.id);
             return data;
         } catch (err) {
-            console.error('AuditLogService.create error:', err);
+            console.error('[AuditLogService] Exception in create:', err);
             return null;
         }
     },

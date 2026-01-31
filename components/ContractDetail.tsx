@@ -411,6 +411,9 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                   // Refresh contract data
                   const refreshed = await ContractService.getById(contract.id);
                   if (refreshed) setContract(refreshed);
+                  // Refresh audit logs to show new activity
+                  const logs = await AuditLogService.getByRecordId('contracts', contract.id);
+                  setAuditLogs(logs);
                 } else {
                   toast.error(result?.error?.message || 'Có lỗi xảy ra');
                 }
