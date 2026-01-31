@@ -89,5 +89,41 @@ export const DocumentService = {
         const { data, error } = await supabase.storage.from('contract_docs').download(filePath);
         if (error) throw error;
         return data;
+    },
+
+    /**
+     * Add external link (Google Drive/Doc/Sheet) as document
+     */
+    addLink: async (contractId: string, doc: { name: string; url: string; type: string }) => {
+        const { data, error } = await supabase.from('contract_documents').insert({
+            contract_id: contractId,
+            name: doc.name,
+            url: doc.url,
+            file_path: null, // No file path for external links
+            type: doc.type,
+            size: 0
+        }).select().single();
+
+        if (error) throw error;
+
+        return {
+            id: data.id,
+            contractId: data.contract_id,
+            name: data.name,
+            url: data.url,
+            filePath: data.file_path,
+            type: data.type,
+            size: data.size,
+            uploadedAt: data.uploaded_at
+        };
+    },
+
+    /**
+     * Delete link document (no storage cleanup needed)
+     */
+    deleteLink: async (id: string) => {
+        const { error } = await supabase.from('contract_documents').delete().eq('id', id);
+        if (error) throw error;
+        return true;
     }
 };

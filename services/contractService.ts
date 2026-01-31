@@ -42,7 +42,8 @@ const mapContract = (c: any): Contract => {
         // Map details from JSONB
         lineItems: c.details?.lineItems || [],
         adminCosts: c.details?.adminCosts || undefined,
-        documents: c.documents || []
+        documents: c.documents || [],
+        draft_url: c.draft_url || undefined
     };
 };
 

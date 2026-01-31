@@ -41,6 +41,7 @@ import ErrorBoundary from './ErrorBoundary';
 import { useAuth } from '../contexts/AuthContext';
 import { ContractReviewPanel } from './workflow/ContractReviewPanel';
 import { SubmitLegalDialog } from './workflow/SubmitLegalDialog';
+import { AddDocumentLinkDialog } from './workflow/AddDocumentLinkDialog';
 
 interface ContractDetailProps {
   contract?: Contract;
@@ -70,6 +71,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
   const [documents, setDocuments] = useState<ContractDocument[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [showLegalDialog, setShowLegalDialog] = useState(false);
+  const [showDocLinkDialog, setShowDocLinkDialog] = useState(false);
 
   useEffect(() => {
     if (initialContract) {
@@ -634,10 +636,12 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                     <Paperclip size={18} className="text-slate-400" />
                     Tài liệu hồ sơ
                   </h4>
-                  <label className="cursor-pointer bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 p-2 rounded-lg transition-colors flex items-center justify-center">
-                    {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-                    <input type="file" className="hidden" onChange={handleUpload} disabled={isUploading} />
-                  </label>
+                  <button
+                    onClick={() => setShowDocLinkDialog(true)}
+                    className="bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 p-2 rounded-lg transition-colors flex items-center justify-center"
+                  >
+                    <Plus size={16} />
+                  </button>
                 </div>
                 <div className="space-y-2">
                   {/* Draft URL - Dự thảo hợp đồng */}
@@ -663,29 +667,52 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                     </a>
                   )}
 
-                  {/* Uploaded documents */}
+                  {/* Document Links */}
                   {documents.length === 0 && !contract.draft_url && <p className="text-xs text-slate-400 italic text-center py-4">Chưa có tài liệu nào</p>}
-                  {documents.map((file) => (
-                    <div key={file.id} className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-all cursor-pointer group" onClick={() => handleDownloadDoc(file)}>
-                      <div className="flex items-center gap-3 overflow-hidden">
-                        <div className="p-2 bg-rose-50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 rounded-lg group-hover:bg-rose-100 transition-colors">
-                          <FileText size={16} />
+                  {documents.map((file) => {
+                    // Determine if it's an external link or uploaded file
+                    const isExternalLink = file.url && (file.url.includes('google.com') || file.url.includes('drive.google.com') || !file.filePath);
+                    const isGoogleDoc = file.url?.includes('docs.google.com/document');
+                    const isGoogleSheet = file.url?.includes('docs.google.com/spreadsheets');
+                    const isGoogleDrive = file.url?.includes('drive.google.com');
+
+                    // Icon color based on type
+                    const iconBg = isGoogleDoc ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-500'
+                      : isGoogleSheet ? 'bg-green-50 dark:bg-green-900/30 text-green-500'
+                        : isGoogleDrive ? 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-500'
+                          : 'bg-rose-50 dark:bg-rose-900/30 text-rose-500';
+
+                    const typeLabel = isGoogleDoc ? 'Google Doc' : isGoogleSheet ? 'Google Sheet' : isGoogleDrive ? 'Google Drive' : 'Tài liệu';
+
+                    return (
+                      <a
+                        key={file.id}
+                        href={isExternalLink ? file.url : '#'}
+                        target={isExternalLink ? '_blank' : '_self'}
+                        rel="noopener noreferrer"
+                        onClick={(e) => !isExternalLink && (e.preventDefault(), handleDownloadDoc(file))}
+                        className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-all cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          <div className={`p-2 rounded-lg group-hover:opacity-80 transition-colors ${iconBg}`}>
+                            <FileText size={16} />
+                          </div>
+                          <div className="overflow-hidden">
+                            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{file.name}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500">{typeLabel} • {new Date(file.uploadedAt).toLocaleDateString('vi-VN')}</p>
+                          </div>
                         </div>
-                        <div className="overflow-hidden">
-                          <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{file.name}</p>
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500">{((file.size || 0) / 1024).toFixed(0)} KB • {new Date(file.uploadedAt).toLocaleDateString('vi-VN')}</p>
+                        <div className="flex items-center gap-2">
+                          <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteDoc(file, e); }} className="p-1.5 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100">
+                            <Trash2 size={14} />
+                          </button>
+                          <div className="px-2 py-1 bg-indigo-600 text-white rounded-lg text-[10px] font-bold">
+                            Mở
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button onClick={(e) => handleDeleteDoc(file, e)} className="p-1.5 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100">
-                          <Trash2 size={14} />
-                        </button>
-                        <button className="p-1.5 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg text-slate-300 hover:text-indigo-600 transition-colors">
-                          <Download size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                      </a>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -734,6 +761,23 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
             }
           }}
           contractName={contract.id}
+        />
+      )}
+
+      {/* Add Document Link Dialog */}
+      {contract && (
+        <AddDocumentLinkDialog
+          isOpen={showDocLinkDialog}
+          onClose={() => setShowDocLinkDialog(false)}
+          onSubmit={async (doc) => {
+            try {
+              const newDoc = await DocumentService.addLink(contract.id, doc);
+              setDocuments(prev => [newDoc, ...prev]);
+              toast.success('Đã thêm tài liệu thành công!');
+            } catch (err: any) {
+              toast.error('Thêm tài liệu thất bại: ' + err.message);
+            }
+          }}
         />
       )}
     </ErrorBoundary>
