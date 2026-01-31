@@ -1,0 +1,143 @@
+import { supabase } from '../lib/supabase';
+
+export interface AuditLog {
+    id: string;
+    user_id: string | null;
+    table_name: string;
+    record_id: string;
+    action: string;
+    old_data: any | null;
+    new_data: any | null;
+    comment: string | null;
+    created_at: string;
+    // Joined fields
+    user_name?: string;
+}
+
+/**
+ * Service để quản lý Audit Logs - lịch sử tác động
+ */
+export const AuditLogService = {
+    /**
+     * Lấy danh sách audit logs cho một record cụ thể
+     * Include thông tin người thực hiện từ profiles
+     */
+    async getByRecordId(tableName: string, recordId: string): Promise<AuditLog[]> {
+        try {
+            // Query audit_logs and join with profiles to get user name
+            const { data, error } = await supabase
+                .from('audit_logs')
+                .select(`
+                    *,
+                    profiles:user_id (
+                        full_name
+                    )
+                `)
+                .eq('table_name', tableName)
+                .eq('record_id', recordId)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching audit logs:', error);
+                return [];
+            }
+
+            // Transform to include user_name directly
+            return (data || []).map((log: any) => ({
+                ...log,
+                user_name: log.profiles?.full_name || 'Hệ thống'
+            }));
+        } catch (err) {
+            console.error('AuditLogService.getByRecordId error:', err);
+            return [];
+        }
+    },
+
+    /**
+     * Tạo audit log entry mới
+     * Thường được gọi từ các service khác khi có action xảy ra
+     */
+    async create(log: Omit<AuditLog, 'id' | 'created_at' | 'user_name'>): Promise<AuditLog | null> {
+        try {
+            const { data, error } = await supabase
+                .from('audit_logs')
+                .insert(log)
+                .select()
+                .single();
+
+            if (error) {
+                console.error('Error creating audit log:', error);
+                return null;
+            }
+
+            return data;
+        } catch (err) {
+            console.error('AuditLogService.create error:', err);
+            return null;
+        }
+    },
+
+    /**
+     * Format action thành text tiếng Việt thân thiện
+     */
+    formatAction(action: string, oldData?: any, newData?: any): string {
+        switch (action) {
+            case 'INSERT':
+                return 'Tạo mới hợp đồng';
+            case 'UPDATE':
+                // Check specific field changes
+                if (oldData && newData) {
+                    if (oldData.status !== newData.status) {
+                        return `Cập nhật trạng thái: ${oldData.status} → ${newData.status}`;
+                    }
+                    if (oldData.stage !== newData.stage) {
+                        return `Chuyển giai đoạn: ${oldData.stage} → ${newData.stage}`;
+                    }
+                    if (oldData.review_status !== newData.review_status) {
+                        const statusMap: Record<string, string> = {
+                            'PENDING_LEGAL': 'Chờ Pháp lý duyệt',
+                            'LEGAL_APPROVED': 'Pháp lý đã duyệt',
+                            'PENDING_FINANCE': 'Chờ Tài chính duyệt',
+                            'FINANCE_APPROVED': 'Tài chính đã duyệt',
+                            'REJECTED': 'Từ chối'
+                        };
+                        return `Duyệt: ${statusMap[newData.review_status] || newData.review_status}`;
+                    }
+                    if (!oldData.draft_url && newData.draft_url) {
+                        return 'Gửi dự thảo cho Pháp lý xem xét';
+                    }
+                }
+                return 'Cập nhật thông tin';
+            case 'DELETE':
+                return 'Xóa hợp đồng';
+            case 'APPROVE_LEGAL':
+                return 'Pháp lý phê duyệt nội dung';
+            case 'APPROVE_FINANCE':
+                return 'Tài chính phê duyệt';
+            case 'REJECT':
+                return 'Từ chối phê duyệt';
+            case 'SUBMIT_LEGAL':
+                return 'Gửi duyệt Pháp lý';
+            default:
+                return action;
+        }
+    },
+
+    /**
+     * Format thời gian thành chuỗi ngày/giờ tiếng Việt
+     */
+    formatDateTime(dateString: string): { date: string; time: string } {
+        const date = new Date(dateString);
+        return {
+            date: date.toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            }),
+            time: date.toLocaleTimeString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+        };
+    }
+};

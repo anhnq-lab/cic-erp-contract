@@ -33,7 +33,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { Contract, Unit, Milestone, PaymentPhase, AdministrativeCosts, ContractDocument } from '../types';
-import { ContractService, UnitService, EmployeeService, CustomerService, DocumentService, WorkflowService } from '../services';
+import { ContractService, UnitService, EmployeeService, CustomerService, DocumentService, WorkflowService, AuditLogService, AuditLog } from '../services';
 import { analyzeContractWithDeepSeek } from '../services/openaiService';
 import Tooltip from './ui/Tooltip';
 import ContractBusinessPlanTab from './ContractBusinessPlanTab';
@@ -72,6 +72,9 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
   const [isUploading, setIsUploading] = useState(false);
   const [showLegalDialog, setShowLegalDialog] = useState(false);
   const [showDocLinkDialog, setShowDocLinkDialog] = useState(false);
+
+  // Audit Logs State
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
 
   useEffect(() => {
     if (initialContract) {
@@ -145,6 +148,15 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
       DocumentService.getByContractId(contract.id)
         .then(setDocuments)
         .catch(e => console.error("Load docs error", e));
+    }
+  }, [contract?.id]);
+
+  // Fetch Audit Logs
+  useEffect(() => {
+    if (contract?.id) {
+      AuditLogService.getByRecordId('contracts', contract.id)
+        .then(logs => setAuditLogs(logs))
+        .catch(e => console.error("Load audit logs error", e));
     }
   }, [contract?.id]);
 
@@ -722,21 +734,32 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                   Lịch sử tác động
                 </h4>
                 <div className="space-y-6 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100 dark:before:bg-slate-800">
-                  {[
-                    { date: '15/01/2024', event: 'Hợp đồng bắt đầu hiệu lực', status: 'done' },
-                    { date: '10/01/2024', event: 'Đã ký kết (Bên A & Bên B)', status: 'done' },
-                    { date: '05/01/2024', event: 'Phê duyệt nội dung bởi Ban Pháp chế', status: 'done' }
-                  ].map((item, i) => (
-                    <div key={i} className="flex gap-4 relative">
-                      <div className={`w-6 h-6 rounded-full border-4 border-white dark:border-slate-900 z-10 flex-shrink-0 flex items-center justify-center shadow-sm ${item.status === 'done' ? 'bg-indigo-600' : 'bg-slate-200'}`}>
-                        {item.status === 'done' && <ShieldCheck size={10} className="text-white" />}
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400">{item.date}</p>
-                        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">{item.event}</p>
-                      </div>
-                    </div>
-                  ))}
+                  {auditLogs.length > 0 ? (
+                    auditLogs.slice(0, 10).map((log, i) => {
+                      const { date, time } = AuditLogService.formatDateTime(log.created_at);
+                      const eventText = AuditLogService.formatAction(log.action, log.old_data, log.new_data);
+                      return (
+                        <div key={log.id} className="flex gap-4 relative">
+                          <div className="w-6 h-6 rounded-full border-4 border-white dark:border-slate-900 z-10 flex-shrink-0 flex items-center justify-center shadow-sm bg-indigo-600">
+                            <ShieldCheck size={10} className="text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <p className="text-[10px] font-bold text-slate-400">{date}</p>
+                              <span className="text-[10px] text-slate-300">•</span>
+                              <p className="text-[10px] text-slate-400">{time}</p>
+                            </div>
+                            <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">{eventText}</p>
+                            <p className="text-[10px] text-indigo-500 dark:text-indigo-400 font-medium mt-0.5">
+                              bởi {log.user_name || 'Hệ thống'}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-xs text-slate-400 text-center py-4">Chưa có lịch sử tác động</p>
+                  )}
                 </div>
               </div>
             </div>
