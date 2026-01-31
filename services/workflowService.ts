@@ -201,25 +201,46 @@ export const WorkflowService = {
      * @param draftUrl - URL to draft contract document (Google Doc) for legal review
      */
     async submitContractForReview(contractId: string, draftUrl?: string): Promise<{ success: boolean; error?: any }> {
+        console.log('[WorkflowService] submitContractForReview:', { contractId, draftUrl });
+
         const updateData: Record<string, any> = { status: 'Pending_Legal' };
         if (draftUrl) {
             updateData.draft_url = draftUrl;
         }
 
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('contracts')
             .update(updateData)
-            .eq('id', contractId);
+            .eq('id', contractId)
+            .select();
 
-        if (error) return { success: false, error };
+        console.log('[WorkflowService] Update result:', { data, error });
+
+        if (error) {
+            console.error('[WorkflowService] Update failed:', error);
+            return { success: false, error };
+        }
 
         // Log review action
-        await supabase.from('contract_reviews').insert({
+        const { error: reviewError } = await supabase.from('contract_reviews').insert({
             contract_id: contractId,
             role: 'NVKD',
             action: 'Submit',
             comment: draftUrl ? `Gửi duyệt pháp lý - Draft: ${draftUrl}` : 'Gửi duyệt pháp lý'
         });
+        console.log('[WorkflowService] contract_reviews insert:', { reviewError });
+
+        // Add audit log entry
+        const auditResult = await AuditLogService.create({
+            user_id: null,  // Will be null if no auth session
+            table_name: 'contracts',
+            record_id: contractId,
+            action: 'SUBMIT_LEGAL',
+            old_data: { status: 'Draft' },
+            new_data: { status: 'Pending_Legal', draft_url: draftUrl },
+            comment: 'Gửi duyệt pháp lý'
+        });
+        console.log('[WorkflowService] audit_log insert result:', auditResult);
 
         return { success: true };
     },
@@ -228,24 +249,30 @@ export const WorkflowService = {
      * Legal approves contract (Pending_Legal → Pending_Finance)
      */
     async approveContractLegal(contractId: string, reviewerId: string, comment?: string): Promise<{ success: boolean; error?: any }> {
-        const { error } = await supabase
+        console.log('[WorkflowService] approveContractLegal:', { contractId, reviewerId, comment });
+
+        const { data, error } = await supabase
             .from('contracts')
             .update({ status: 'Pending_Finance' })
             .eq('id', contractId)
-            .eq('status', 'Pending_Legal');
+            .eq('status', 'Pending_Legal')
+            .select();
+
+        console.log('[WorkflowService] Update result:', { data, error });
 
         if (error) return { success: false, error };
 
-        await supabase.from('contract_reviews').insert({
+        const { error: reviewError } = await supabase.from('contract_reviews').insert({
             contract_id: contractId,
             reviewer_id: reviewerId,
             role: 'Legal',
             action: 'Approve',
             comment: comment || 'Duyệt pháp lý'
         });
+        console.log('[WorkflowService] contract_reviews insert:', { reviewError });
 
         // Add audit log entry
-        await AuditLogService.create({
+        const auditResult = await AuditLogService.create({
             user_id: reviewerId,
             table_name: 'contracts',
             record_id: contractId,
@@ -254,6 +281,7 @@ export const WorkflowService = {
             new_data: { status: 'Pending_Finance' },
             comment: comment || 'Pháp lý phê duyệt hợp đồng'
         });
+        console.log('[WorkflowService] audit_log insert result:', auditResult);
 
         return { success: true };
     },
