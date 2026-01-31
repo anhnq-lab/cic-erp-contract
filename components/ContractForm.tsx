@@ -376,7 +376,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-w-7xl w-full mx-auto flex flex-col h-[92vh]">
+    <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-w-[1600px] w-full mx-auto flex flex-col h-[92vh]">
 
       {/* HEADER */}
       <div className="px-10 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
@@ -738,7 +738,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                             <th className="px-4 py-4 w-10"></th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800/50">
                           {lineItems.map((item, index) => {
                             const inputTotal = item.quantity * item.inputPrice;
                             const outputTotal = item.quantity * item.outputPrice;
@@ -746,7 +746,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                             const lineMarginRate = outputTotal > 0 ? (lineMargin / outputTotal) * 100 : 0;
 
                             return (
-                              <tr key={item.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                              <tr key={item.id} className="group hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                 <td className="px-4 py-3">
                                   <select
                                     value={products.find(p => p.name === item.name)?.id || ''}
@@ -763,7 +763,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                       }
                                       setLineItems(newList);
                                     }}
-                                    className="w-full bg-transparent font-black text-slate-700 dark:text-slate-200 outline-none"
+                                    className="w-full bg-transparent font-black text-slate-700 dark:text-slate-200 outline-none dark:bg-slate-800"
                                   >
                                     <option value="">-- Chọn SP --</option>
                                     {products.map(p => (
@@ -780,7 +780,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                       newList[index].quantity = Number(e.target.value);
                                       setLineItems(newList);
                                     }}
-                                    className="w-full bg-transparent font-black outline-none"
+                                    className="w-full bg-transparent font-black outline-none text-slate-800 dark:text-slate-200 dark:bg-slate-800"
                                   />
                                 </td>
                                 <td className="px-4 py-3">
@@ -791,7 +791,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                       newList[index].supplier = e.target.value;
                                       setLineItems(newList);
                                     }}
-                                    className="w-full bg-transparent font-medium text-slate-500 outline-none"
+                                    className="w-full bg-transparent font-medium text-slate-500 dark:text-slate-300 outline-none dark:bg-slate-800"
                                   >
                                     <option value="">-- Chọn NCC --</option>
                                     {suppliers.map(s => (
@@ -993,7 +993,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                   newSched[idx].date = e.target.value;
                                   setRevenueSchedules(newSched);
                                 }}
-                                className="w-full bg-transparent text-[11px] font-bold outline-none"
+                                className="w-full bg-transparent text-[11px] font-bold outline-none text-slate-800 dark:text-slate-200"
                               />
                             </div>
                             <div className="col-span-4 space-y-1">
@@ -1006,7 +1006,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                   newSched[idx].description = e.target.value;
                                   setRevenueSchedules(newSched);
                                 }}
-                                className="w-full bg-transparent text-[11px] font-bold outline-none"
+                                className="w-full bg-transparent text-[11px] font-bold outline-none text-slate-800 dark:text-slate-200"
                               />
                             </div>
                             <div className="col-span-4 space-y-1 text-right">
@@ -1021,7 +1021,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                     newSched[idx].amount = Number(e.target.value);
                                     setRevenueSchedules(newSched);
                                   }}
-                                  className="w-full bg-transparent text-[11px] font-black text-right outline-none"
+                                  className="w-full bg-transparent text-[11px] font-black text-right outline-none text-slate-800 dark:text-slate-200"
                                 />
                                 {revenueSchedules.length > 1 && (
                                   <button onClick={() => setRevenueSchedules(revenueSchedules.filter(r => r.id !== rev.id))} className="text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity">
