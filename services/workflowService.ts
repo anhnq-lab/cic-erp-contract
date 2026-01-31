@@ -1,5 +1,6 @@
 import { dataClient as supabase } from '../lib/dataClient';
 import { PlanStatus, UserRole } from '../types';
+import { AuditLogService } from './auditLogService';
 
 export const WorkflowService = {
     /**
@@ -243,6 +244,17 @@ export const WorkflowService = {
             comment: comment || 'Duyệt pháp lý'
         });
 
+        // Add audit log entry
+        await AuditLogService.create({
+            user_id: reviewerId,
+            table_name: 'contracts',
+            record_id: contractId,
+            action: 'APPROVE_LEGAL',
+            old_data: { status: 'Pending_Legal' },
+            new_data: { status: 'Pending_Finance' },
+            comment: comment || 'Pháp lý phê duyệt hợp đồng'
+        });
+
         return { success: true };
     },
 
@@ -263,6 +275,17 @@ export const WorkflowService = {
             role: 'Legal',
             action: 'Reject',
             comment: reason
+        });
+
+        // Add audit log entry
+        await AuditLogService.create({
+            user_id: reviewerId,
+            table_name: 'contracts',
+            record_id: contractId,
+            action: 'REJECT',
+            old_data: { status: 'Pending_Legal' },
+            new_data: { status: 'Draft' },
+            comment: `Pháp lý từ chối: ${reason}`
         });
 
         return { success: true };
@@ -288,6 +311,17 @@ export const WorkflowService = {
             comment: comment || 'Duyệt tài chính'
         });
 
+        // Add audit log entry
+        await AuditLogService.create({
+            user_id: reviewerId,
+            table_name: 'contracts',
+            record_id: contractId,
+            action: 'APPROVE_FINANCE',
+            old_data: { status: 'Pending_Finance' },
+            new_data: { status: 'Finance_Approved' },
+            comment: comment || 'Tài chính phê duyệt hợp đồng'
+        });
+
         return { success: true };
     },
 
@@ -308,6 +342,17 @@ export const WorkflowService = {
             role: 'Finance',
             action: 'Reject',
             comment: reason
+        });
+
+        // Add audit log entry
+        await AuditLogService.create({
+            user_id: reviewerId,
+            table_name: 'contracts',
+            record_id: contractId,
+            action: 'REJECT',
+            old_data: { status: 'Pending_Finance' },
+            new_data: { status: 'Draft' },
+            comment: `Tài chính từ chối: ${reason}`
         });
 
         return { success: true };
