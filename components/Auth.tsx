@@ -26,8 +26,15 @@ const Auth = () => {
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4">
             <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 p-8 md:p-12 text-center">
                 <div className="mb-8 flex justify-center">
-                    <div className="w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none rotate-3 hover:rotate-6 transition-transform">
-                        <span className="text-3xl font-black text-white">CIC</span>
+                    <div className="relative group">
+                        <img
+                            src="/cic-logo.png"
+                            alt="CIC Logo"
+                            className="w-32 h-auto filter drop-shadow-lg group-hover:scale-105 transition-all duration-300"
+                            style={{
+                                filter: 'drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.3))'
+                            }}
+                        />
                     </div>
                 </div>
 

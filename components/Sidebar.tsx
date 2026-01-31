@@ -71,8 +71,13 @@ const Sidebar: React.FC<SidebarProps> = ({
         {/* Header & Logo */}
         <div className={`p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between ${isCollapsed ? 'md:px-2 md:justify-center' : ''}`}>
           <div className={`flex items-center gap-2 overflow-hidden transition-all ${isCollapsed ? 'md:hidden' : 'w-auto'}`}>
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0">CIC</div>
-            <span className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight whitespace-nowrap">CIC ERP</span>
+            <img
+              src="/cic-logo.png"
+              alt="CIC"
+              className="h-8 w-auto flex-shrink-0"
+              style={{ filter: 'drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2))' }}
+            />
+            <span className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight whitespace-nowrap">ERP</span>
           </div>
 
           {/* Collapse Toggle Button - Top */}
