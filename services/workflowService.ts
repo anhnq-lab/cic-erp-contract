@@ -189,5 +189,188 @@ export const WorkflowService = {
         if (planStatus === 'Pending_Board' && currentRole === 'Leadership') return true;
 
         return false;
+    },
+
+    // ==================== CONTRACT REVIEW WORKFLOW ====================
+    // Flow: Draft → Pending_Legal → Legal_Approved → Pending_Finance → Finance_Approved → Pending_Sign → Signed → Active
+
+    /**
+     * Submit contract for legal review (Draft → Pending_Legal)
+     */
+    async submitContractForReview(contractId: string): Promise<{ success: boolean; error?: any }> {
+        const { error } = await supabase
+            .from('contracts')
+            .update({ status: 'Pending_Legal' })
+            .eq('id', contractId);
+
+        if (error) return { success: false, error };
+
+        // Log review action
+        await supabase.from('contract_reviews').insert({
+            contract_id: contractId,
+            role: 'NVKD',
+            action: 'Submit',
+            comment: 'Gửi duyệt pháp lý'
+        });
+
+        return { success: true };
+    },
+
+    /**
+     * Legal approves contract (Pending_Legal → Pending_Finance)
+     */
+    async approveContractLegal(contractId: string, reviewerId: string, comment?: string): Promise<{ success: boolean; error?: any }> {
+        const { error } = await supabase
+            .from('contracts')
+            .update({ status: 'Pending_Finance' })
+            .eq('id', contractId)
+            .eq('status', 'Pending_Legal');
+
+        if (error) return { success: false, error };
+
+        await supabase.from('contract_reviews').insert({
+            contract_id: contractId,
+            reviewer_id: reviewerId,
+            role: 'Legal',
+            action: 'Approve',
+            comment: comment || 'Duyệt pháp lý'
+        });
+
+        return { success: true };
+    },
+
+    /**
+     * Legal rejects contract (Pending_Legal → Draft)
+     */
+    async rejectContractLegal(contractId: string, reviewerId: string, reason: string): Promise<{ success: boolean; error?: any }> {
+        const { error } = await supabase
+            .from('contracts')
+            .update({ status: 'Draft' })
+            .eq('id', contractId);
+
+        if (error) return { success: false, error };
+
+        await supabase.from('contract_reviews').insert({
+            contract_id: contractId,
+            reviewer_id: reviewerId,
+            role: 'Legal',
+            action: 'Reject',
+            comment: reason
+        });
+
+        return { success: true };
+    },
+
+    /**
+     * Finance approves contract (Pending_Finance → Finance_Approved)
+     */
+    async approveContractFinance(contractId: string, reviewerId: string, comment?: string): Promise<{ success: boolean; error?: any }> {
+        const { error } = await supabase
+            .from('contracts')
+            .update({ status: 'Finance_Approved' })
+            .eq('id', contractId)
+            .eq('status', 'Pending_Finance');
+
+        if (error) return { success: false, error };
+
+        await supabase.from('contract_reviews').insert({
+            contract_id: contractId,
+            reviewer_id: reviewerId,
+            role: 'Finance',
+            action: 'Approve',
+            comment: comment || 'Duyệt tài chính'
+        });
+
+        return { success: true };
+    },
+
+    /**
+     * Finance rejects contract (Pending_Finance → Draft)
+     */
+    async rejectContractFinance(contractId: string, reviewerId: string, reason: string): Promise<{ success: boolean; error?: any }> {
+        const { error } = await supabase
+            .from('contracts')
+            .update({ status: 'Draft' })
+            .eq('id', contractId);
+
+        if (error) return { success: false, error };
+
+        await supabase.from('contract_reviews').insert({
+            contract_id: contractId,
+            reviewer_id: reviewerId,
+            role: 'Finance',
+            action: 'Reject',
+            comment: reason
+        });
+
+        return { success: true };
+    },
+
+    /**
+     * Submit for leadership signature (Finance_Approved → Pending_Sign)
+     */
+    async submitForSign(contractId: string): Promise<{ success: boolean; error?: any }> {
+        const { error } = await supabase
+            .from('contracts')
+            .update({ status: 'Pending_Sign' })
+            .eq('id', contractId)
+            .eq('status', 'Finance_Approved');
+
+        if (error) return { success: false, error };
+
+        await supabase.from('contract_reviews').insert({
+            contract_id: contractId,
+            role: 'Leadership',
+            action: 'Submit',
+            comment: 'Trình lãnh đạo ký'
+        });
+
+        return { success: true };
+    },
+
+    /**
+     * Sign contract (Pending_Sign → Signed → Active)
+     */
+    async signContract(contractId: string, signerId: string): Promise<{ success: boolean; error?: any }> {
+        const { error } = await supabase
+            .from('contracts')
+            .update({
+                status: 'Active',
+                signed_date: new Date().toISOString().split('T')[0]
+            })
+            .eq('id', contractId)
+            .eq('status', 'Pending_Sign');
+
+        if (error) return { success: false, error };
+
+        await supabase.from('contract_reviews').insert({
+            contract_id: contractId,
+            reviewer_id: signerId,
+            role: 'Leadership',
+            action: 'Sign',
+            comment: 'Ký hợp đồng'
+        });
+
+        return { success: true };
+    },
+
+    /**
+     * Check if user can perform contract review action
+     */
+    checkContractPermission(currentRole: UserRole, contractStatus: string): {
+        canReviewLegal: boolean;
+        canReviewFinance: boolean;
+        canSubmitSign: boolean;
+        canSign: boolean;
+    } {
+        const isLeadership = currentRole === 'Leadership' || currentRole === 'Admin';
+
+        return {
+            canReviewLegal: contractStatus === 'Pending_Legal' && (currentRole === 'Legal' || isLeadership),
+            canReviewFinance: contractStatus === 'Pending_Finance' &&
+                (currentRole === 'Accountant' || currentRole === 'ChiefAccountant' || isLeadership),
+            canSubmitSign: contractStatus === 'Finance_Approved' && isLeadership,
+            canSign: contractStatus === 'Pending_Sign' && isLeadership
+        };
     }
 };

@@ -39,6 +39,7 @@ import Tooltip from './ui/Tooltip';
 import ContractBusinessPlanTab from './ContractBusinessPlanTab';
 import ErrorBoundary from './ErrorBoundary';
 import { useAuth } from '../contexts/AuthContext';
+import { ContractReviewPanel } from './workflow/ContractReviewPanel';
 
 interface ContractDetailProps {
   contract?: Contract;
@@ -346,6 +347,53 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
             </button>
           </div>
         </div>
+
+        {/* CONTRACT REVIEW PANEL - Workflow actions based on status and role */}
+        {profile?.role && contract?.status && (
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+            <ContractReviewPanel
+              contractId={contract.id}
+              currentStatus={contract.status}
+              userRole={profile.role}
+              onAction={async (action) => {
+                const userId = profile?.id || '';
+                let result;
+                switch (action) {
+                  case 'ApproveLegal':
+                    result = await WorkflowService.approveContractLegal(contract.id, userId);
+                    break;
+                  case 'RejectLegal':
+                    const legalReason = prompt('Lý do từ chối pháp lý:');
+                    if (!legalReason) return;
+                    result = await WorkflowService.rejectContractLegal(contract.id, userId, legalReason);
+                    break;
+                  case 'ApproveFinance':
+                    result = await WorkflowService.approveContractFinance(contract.id, userId);
+                    break;
+                  case 'RejectFinance':
+                    const financeReason = prompt('Lý do từ chối tài chính:');
+                    if (!financeReason) return;
+                    result = await WorkflowService.rejectContractFinance(contract.id, userId, financeReason);
+                    break;
+                  case 'SubmitSign':
+                    result = await WorkflowService.submitForSign(contract.id);
+                    break;
+                  case 'Sign':
+                    result = await WorkflowService.signContract(contract.id, userId);
+                    break;
+                }
+                if (result?.success) {
+                  toast.success('Thao tác thành công!');
+                  // Refresh contract data
+                  const refreshed = await ContractService.getById(contract.id);
+                  if (refreshed) setContract(refreshed);
+                } else {
+                  toast.error(result?.error?.message || 'Có lỗi xảy ra');
+                }
+              }}
+            />
+          </div>
+        )}
 
         {/* TABS */}
         <div className="flex border-b border-slate-200 dark:border-slate-800">
