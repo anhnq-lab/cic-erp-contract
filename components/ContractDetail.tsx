@@ -154,8 +154,12 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
   // Fetch Audit Logs
   useEffect(() => {
     if (contract?.id) {
+      console.log('[ContractDetail] Fetching audit logs for contract:', contract.id);
       AuditLogService.getByRecordId('contracts', contract.id)
-        .then(logs => setAuditLogs(logs))
+        .then(logs => {
+          console.log('[ContractDetail] Audit logs received:', logs);
+          setAuditLogs(logs);
+        })
         .catch(e => console.error("Load audit logs error", e));
     }
   }, [contract?.id]);
