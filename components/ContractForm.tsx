@@ -19,6 +19,9 @@ import Modal from './ui/Modal';
 import SearchableSelect from './ui/SearchableSelect';
 import QuickAddCustomerDialog from './ui/QuickAddCustomerDialog';
 
+// Contract Form Sub-components
+import { StepIndicator, FinancialSummary, FormHeader, formatVND as formatVNDUtil } from './contract-form';
+
 interface ContractFormProps {
   contract?: Contract; // For edit mode
   isCloning?: boolean; // For clone mode
@@ -437,97 +440,11 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
       </div>
 
       {/* STEPPER PROGRESS */}
-      <div className="px-10 py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
-        <div className="flex items-center justify-between max-w-3xl mx-auto relative">
-          {/* Progress Bar Background */}
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-100 dark:bg-slate-800 -z-0 rounded-full"></div>
-          {/* Active Progress */}
-          <div
-            className="absolute top-1/2 left-0 h-1 bg-indigo-600 transition-all duration-300 -z-0 rounded-full"
-            style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
-          ></div>
-
-          {/* Steps */}
-          {[1, 2, 3].map((step) => {
-            const isActive = currentStep >= step;
-            const isCurrent = currentStep === step;
-            return (
-              <div key={step} className="relative z-10 flex flex-col items-center gap-2">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center font-black border-4 transition-all duration-300
-                    ${isActive
-                      ? 'bg-indigo-600 border-indigo-100 dark:border-indigo-900 text-white'
-                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400'
-                    }
-                    ${isCurrent ? 'scale-110 shadow-lg shadow-indigo-200 dark:shadow-none ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-slate-900' : ''}
-                  `}
-                >
-                  {step}
-                </div>
-                <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors duration-300 ${isActive ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400'}`}>
-                  {step === 1 ? 'Thông tin chung' : step === 2 ? 'Kinh doanh & Chi phí' : 'Tài chính & Hoàn tất'}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      <StepIndicator currentStep={currentStep} />
 
       {/* FINANCIAL SUMMARY (Only show in Step 2 & 3) */}
       {currentStep > 1 && (
-        <div className="px-10 pt-8 pb-4 shrink-0 z-10 bg-white dark:bg-slate-900 animate-in fade-in slide-in-from-top-4 duration-500">
-          <section className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-[32px] p-8 text-white shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-10">
-              <TrendingUp size={120} />
-            </div>
-
-            <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
-              {/* Header Vertical */}
-              <div className="flex items-center gap-4 border-r border-white/10 pr-8 min-w-[200px]">
-                <div className="p-3 bg-indigo-500/20 rounded-2xl">
-                  <ShieldCheck size={32} className="text-indigo-400" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-1">Báo cáo</h3>
-                  <p className="text-lg font-black text-white">Lợi nhuận dự kiến</p>
-                </div>
-              </div>
-
-              {/* Stats Grid */}
-              <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
-                {/* Total Value */}
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-1">Giá trị Ký kết (Tổng đầu ra)</p>
-                  <p className="text-lg font-black text-white leading-none truncate" title={formatVND(totals.signingValue)}>{formatVND(totals.signingValue)} <span className="text-xs font-medium text-slate-500">đ</span></p>
-                </div>
-
-                {/* Revenue */}
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-1">Doanh thu dự kiến (Trừ VAT)</p>
-                  <p className="text-lg font-black text-slate-200 truncate" title={formatVND(totals.estimatedRevenue)}>{formatVND(totals.estimatedRevenue)}</p>
-                </div>
-
-                {/* Costs */}
-                <div>
-                  <p className="text-[10px] font-bold text-rose-400/80 uppercase tracking-tighter mb-1">Tổng chi phí & Giá vốn</p>
-                  <p className="text-lg font-black text-rose-400 truncate" title={formatVND(totals.totalCosts)}>{formatVND(totals.totalCosts)}</p>
-                </div>
-
-                {/* Profit */}
-                <div className="relative group cursor-help">
-                  <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Lợi nhuận gộp</p>
-                  <div className="flex items-end gap-2">
-                    <p className="text-lg font-black text-emerald-400 leading-none truncate" title={formatVND(totals.grossProfit)}>{formatVND(totals.grossProfit)}</p>
-                    <span className="text-xs font-bold text-emerald-600 mb-0.5">({totals.profitMargin.toFixed(0)}%)</span>
-                  </div>
-                  <div className="absolute -bottom-2 left-0 w-full h-1 bg-white/10 rounded-full overflow-hidden mt-2">
-                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, totals.profitMargin)}%` }}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
+        <FinancialSummary totals={totals} formatVND={formatVND} />
       )}
 
       {/* BODY */}
