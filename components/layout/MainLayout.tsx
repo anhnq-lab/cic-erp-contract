@@ -6,6 +6,7 @@ import Sidebar from '../Sidebar';
 import Header from '../Header';
 import { RoleSwitcher } from '../RoleSwitcher';
 import DebugPanel from '../DebugPanel';
+import CommandPalette from '../ui/CommandPalette';
 import { useAuth } from '../../contexts/AuthContext';
 import Auth from '../Auth';
 import ErrorBoundary from '../ErrorBoundary';
@@ -128,6 +129,9 @@ const MainLayout: React.FC = () => {
                 {/* Development Tools */}
                 {profile?.role === 'Admin' && <RoleSwitcher />}
                 <DebugPanel />
+
+                {/* Global Search (Cmd+K) */}
+                <CommandPalette />
             </div>
         </ErrorBoundary>
     );
