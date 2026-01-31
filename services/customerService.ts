@@ -116,4 +116,24 @@ export const CustomerService = {
         if (error) throw error;
         return true;
     },
+
+    /**
+     * Lightweight search for dropdowns - returns max 20 results
+     * Debounce on frontend recommended (300ms)
+     */
+    search: async (query: string, limit: number = 20): Promise<Customer[]> => {
+        if (!query || query.length < 2) return [];
+
+        const { data, error } = await supabase
+            .from('customers')
+            .select('id, name, short_name, industry, type')
+            .or(`name.ilike.%${query}%,short_name.ilike.%${query}%`)
+            .limit(limit);
+
+        if (error) {
+            console.error('[CustomerService.search] Error:', error);
+            return [];
+        }
+        return (data || []).map(mapCustomer);
+    },
 };

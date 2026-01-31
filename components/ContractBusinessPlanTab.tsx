@@ -72,7 +72,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
             try {
                 const [productsData, customersRes] = await Promise.all([
                     ProductService.getAll(),
-                    CustomerService.getAll({ pageSize: 1000 })
+                    CustomerService.getAll({ pageSize: 200 }) // TODO: Optimize - only fetch suppliers with type filter
                 ]);
                 setProducts(productsData);
                 setCustomers(customersRes.data || []);

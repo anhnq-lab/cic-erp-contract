@@ -16,6 +16,7 @@ import {
 } from '../types';
 import { UnitService, CustomerService, ProductService, ContractService, EmployeeService } from '../services';
 import Modal from './ui/Modal';
+import SearchableSelect from './ui/SearchableSelect';
 
 interface ContractFormProps {
   contract?: Contract; // For edit mode
@@ -30,23 +31,25 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
   // Data Options State
   const [units, setUnits] = useState<Unit[]>([]);
   const [salespeople, setSalespeople] = useState<Employee[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  // Removed: const [customers, setCustomers] = useState<Customer[]>([]);
+  // Now using SearchableSelect with async search
   const [products, setProducts] = useState<Product[]>([]);
+  const [suppliers, setSuppliers] = useState<Customer[]>([]); // Only for supplier dropdown
 
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const [unitsData, peopleData, customersRes, productsData] = await Promise.all([
+        const [unitsData, peopleData, productsData, suppliersRes] = await Promise.all([
           UnitService.getAll(),
           EmployeeService.getAll(),
-          CustomerService.getAll({ pageSize: 1000 }), // Ensure we get enough for dropdown
-          ProductService.getAll()
+          // CustomerService removed - now using SearchableSelect
+          ProductService.getAll(),
+          CustomerService.getAll({ pageSize: 100, type: 'Supplier' }) // Only suppliers for dropdown
         ]);
         setUnits(unitsData);
         setSalespeople(peopleData);
-        // CustomerService.getAll returns { data, total }
-        setCustomers(customersRes.data || []);
         setProducts(productsData);
+        setSuppliers(suppliersRes.data?.filter(c => c.type === 'Supplier' || c.type === 'Both') || []);
 
         // Set default unit if creating new and no unit selected yet
         if (!isEditing && !unitId && unitsData.length > 0) {
@@ -397,12 +400,9 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
           {!isEditing && (
             <button
               onClick={() => {
-                // Auto-fill logic
+                // Auto-fill logic (for demo purposes)
                 if (units.length > 0) setUnitId(units[0].id);
-                if (customers.length > 0) {
-                  setCustomerId(customers[0].id);
-                  setClientName(customers[0].name);
-                }
+                // Customer auto-fill removed - use search instead
                 if (salespeople.length > 0) setSalespersonId(salespeople[0].id);
 
                 setTitle('Hợp đồng Tư vấn Giải pháp chuyển đổi số BIM');
@@ -623,28 +623,28 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold text-slate-500 uppercase ml-1">Tên khách hàng</label>
-                    <select
-                      value={customerId || ''}
-                      onChange={(e) => {
-                        const cId = e.target.value;
-                        setCustomerId(cId || null);
-                        const cust = customers.find(c => c.id === cId);
-                        if (cust) {
-                          setClientName(cust.name);
+                    <SearchableSelect
+                      label="Tên khách hàng"
+                      value={customerId}
+                      placeholder="Gõ để tìm khách hàng..."
+                      onChange={(cId) => {
+                        setCustomerId(cId);
+                        // Fetch customer name when selected
+                        if (cId) {
+                          CustomerService.getById(cId).then(cust => {
+                            if (cust) setClientName(cust.name);
+                          });
                         } else {
                           setClientName('');
                         }
                       }}
-                      className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none"
-                    >
-                      <option value="">-- Chọn khách hàng --</option>
-                      {customers
-                        .filter(c => !c.type || c.type === 'Customer' || c.type === 'Both')
-                        .map(c => (
-                          <option key={c.id} value={c.id}>{c.name}</option>
-                        ))}
-                    </select>
+                      onSearch={async (query) => {
+                        const results = await CustomerService.search(query, 20);
+                        return results
+                          .filter(c => !c.type || c.type === 'Customer' || c.type === 'Both')
+                          .map(c => ({ id: c.id, name: c.name, subText: c.industry }));
+                      }}
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[11px] font-bold text-slate-500 uppercase ml-1">Ngày ký kết</label>
@@ -794,8 +794,8 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                     className="w-full bg-transparent font-medium text-slate-500 outline-none"
                                   >
                                     <option value="">-- Chọn NCC --</option>
-                                    {customers.filter(c => c.type === 'Supplier' || c.type === 'Both').map(s => (
-                                      <option key={s.id} value={s.shortName}>{s.shortName}</option>
+                                    {suppliers.map(s => (
+                                      <option key={s.id} value={s.shortName || s.name}>{s.shortName || s.name}</option>
                                     ))}
                                   </select>
                                 </td>

@@ -70,8 +70,8 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                     status: statusFilter
                 }),
                 PaymentService.getStats({ type: typeFilter }),
-                customers.length === 0 ? CustomerService.getAll({ pageSize: 1000 }) : Promise.resolve({ data: customers })
-                // Fetch all customers for name mapping, or safe big limit.
+                customers.length === 0 ? CustomerService.getAll({ pageSize: 200 }) : Promise.resolve({ data: customers })
+                // TODO: Optimize - Backend should populate customer_name directly in payment response
             ]);
 
             setPayments(listRes.data);
