@@ -310,7 +310,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
         const payload = {
             contract_id: contract.id,
             version: plan ? plan.version + 1 : 1,
-            status: 'Draft',
+            status: 'Approved', // Auto-approved - PAKD workflow temporarily disabled
             financials: {
                 revenue: financials.revenue,
                 costs: financials.costs,
@@ -403,13 +403,14 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
     if (isLoading) return <div className="p-8 text-center text-slate-500">Đang tải phương án kinh doanh...</div>;
 
     // Permissions - check BOTH current status AND user permission
-    const canEditPlan = canEditResource('pakd', contract.unitId, plan?.status);
-    const showSubmit = plan?.status === 'Draft' && canEditResource('pakd', contract.unitId, 'Draft');
+    const canEditPlan = true; // Simplified - always allow edit since PAKD is auto-approved
 
-    // Only show approve button if CURRENT STATUS matches the expected stage AND user has permission
-    const showApproveUnit = plan?.status === 'Pending_Unit' && canApprove('pakd', 'Pending_Unit');
-    const showApproveFinance = plan?.status === 'Pending_Finance' && canApprove('pakd', 'Pending_Finance');
-    const showApproveBoard = plan?.status === 'Pending_Board' && canApprove('pakd', 'Pending_Board');
+    // TEMPORARILY DISABLED: PAKD approval workflow
+    // Will be moved to CRM module later
+    const showSubmit = false;
+    const showApproveUnit = false;
+    const showApproveFinance = false;
+    const showApproveBoard = false;
 
     // Explicitly check for Admin/Cost Adjustment roles
     const canAdjustCost = !!(profile?.role === 'Accountant' || profile?.role === 'ChiefAccountant' || profile?.role === 'Leadership' || profile?.role === 'Admin');
@@ -430,7 +431,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                             </span>
                         )}
                     </h3>
-                    <p className="text-slate-500 text-sm mt-1">Quản lý dòng tiền, lợi nhuận và phê duyệt nội bộ</p>
+                    <p className="text-slate-500 text-sm mt-1">Quản lý dòng tiền và lợi nhuận dự kiến</p>
                 </div>
 
                 <ActionPanel
@@ -973,16 +974,15 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                 </div>
             )}
 
-            {/* Workflow Steps & History */}
-            <div className="mt-8 border-t border-slate-100 dark:border-slate-800 pt-6">
+            {/* TEMPORARILY HIDDEN: PAKD Workflow Steps & History */}
+            {/* Will be re-enabled when PAKD approval moves to CRM module */}
+            {/* <div className="mt-8 border-t border-slate-100 dark:border-slate-800 pt-6">
                 <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Tiến độ Phê duyệt</h4>
-
                 {plan && <ApprovalStepper currentStatus={plan.status} reviews={reviews} />}
-
                 <div className="mt-6">
                     <ReviewLog reviews={reviews} />
                 </div>
-            </div>
+            </div> */}
 
             {/* Reject Dialog */}
             <RejectDialog
