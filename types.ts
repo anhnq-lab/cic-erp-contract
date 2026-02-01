@@ -135,6 +135,7 @@ export interface AdministrativeCosts {
   importFee: number;
   expertHiring: number;
   documentProcessing: number;
+  supplierDiscount?: number; // Chiết khấu thêm từ NCC
 }
 
 export interface Contract {

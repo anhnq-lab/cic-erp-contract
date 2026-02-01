@@ -27,6 +27,7 @@ export interface PAKDAdminCosts {
     importLogistics: number;  // Phí nhập khẩu/logistics
     expertFee: number;     // Phí thuê chuyên gia
     documentFee: number;   // Phí xử lý chứng từ
+    supplierDiscount: number; // Chiết khấu thêm từ NCC (Bentley, etc)
 }
 
 export interface PAKDFinancials {
@@ -127,9 +128,10 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
                     importLogistics: lineItems.reduce((sum, item) => sum + item.importFee, 0),
                     expertFee: 0, // Will be parsed from summary section if available
                     documentFee: 0,
+                    supplierDiscount: 0, // Chiết khấu thêm từ NCC
                 };
 
-                // Try to find expert fee and document fee from summary section
+                // Try to find expert fee, document fee and supplier discount from summary section
                 for (let i = DATA_START_ROW; i < jsonData.length; i++) {
                     const row = jsonData[i];
                     if (!row) continue;
@@ -140,6 +142,10 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
                     }
                     if (label.includes('phí thanh toán') || label.includes('chứng từ')) {
                         adminCosts.documentFee = Number(row[2] || row[3]) || 0;
+                    }
+                    // Parse supplier discount (Chiết khấu thêm của Bentley, etc)
+                    if (label.includes('chiết khấu') || label.includes('chiet khau')) {
+                        adminCosts.supplierDiscount = Number(row[2] || row[3]) || 0;
                     }
                 }
 

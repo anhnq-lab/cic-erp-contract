@@ -721,6 +721,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                             importFee: data.adminCosts.importLogistics || 0,
                             expertHiring: data.adminCosts.expertFee || 0,
                             documentProcessing: data.adminCosts.documentFee || 0,
+                            supplierDiscount: data.adminCosts.supplierDiscount || 0,
                           });
 
                           toast.dismiss();
@@ -914,13 +915,14 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     <h4 className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
                       <Calculator size={14} /> Chi phí quản lý hợp đồng
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
                       {[
                         { key: 'transferFee', label: 'Phí chuyển tiền / Ngân hàng' },
                         { key: 'contractorTax', label: 'Thuế nhà thầu (nếu có)' },
                         { key: 'importFee', label: 'Phí nhập khẩu / Logistics' },
                         { key: 'expertHiring', label: 'Chi phí thuê khoán chuyên môn' },
-                        { key: 'documentProcessing', label: 'Chi phí xử lý chứng từ' }
+                        { key: 'documentProcessing', label: 'Chi phí xử lý chứng từ' },
+                        { key: 'supplierDiscount', label: 'Chiết khấu từ NCC' }
                       ].map((cost) => (
                         <div key={cost.key} className="space-y-1.5">
                           <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">{cost.label}</label>
