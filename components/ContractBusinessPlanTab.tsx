@@ -402,8 +402,8 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
 
     if (isLoading) return <div className="p-8 text-center text-slate-500">Đang tải phương án kinh doanh...</div>;
 
-    // Permissions - check BOTH current status AND user permission
-    const canEditPlan = true; // Simplified - always allow edit since PAKD is auto-approved
+    // Permissions - PAKD is read-only in contract module
+    const canEditPlan = false; // Disabled - PAKD comes pre-approved
 
     // TEMPORARILY DISABLED: PAKD approval workflow
     // Will be moved to CRM module later
@@ -412,8 +412,8 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
     const showApproveFinance = false;
     const showApproveBoard = false;
 
-    // Explicitly check for Admin/Cost Adjustment roles
-    const canAdjustCost = !!(profile?.role === 'Accountant' || profile?.role === 'ChiefAccountant' || profile?.role === 'Leadership' || profile?.role === 'Admin');
+    // Editing disabled - PAKD is read-only
+    const canAdjustCost = false;
 
     return (
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -794,7 +794,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                         </div>
                         <div className="space-y-3">
                             {paymentSchedules.map((pay, idx) => (
-                                <div key={pay.id} className="grid grid-cols-12 gap-2 bg-emerald-50/50 dark:bg-emerald-900/20 p-3 rounded-2xl border border-emerald-100 dark:border-emerald-800">
+                                <div key={pay.id} className="grid grid-cols-12 gap-2 bg-emerald-100 dark:bg-emerald-900/40 p-3 rounded-2xl border border-emerald-200 dark:border-emerald-700">
                                     <div className="col-span-4 space-y-1">
                                         <label className="text-[9px] text-slate-400 font-bold uppercase">Ngày thanh toán</label>
                                         {isEditing ? (
@@ -885,7 +885,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                         </div>
                         <div className="space-y-3">
                             {supplierSchedules.map((pay, idx) => (
-                                <div key={pay.id} className="grid grid-cols-12 gap-2 bg-rose-50/50 dark:bg-rose-900/10 p-3 rounded-2xl border border-rose-100 dark:border-rose-800">
+                                <div key={pay.id} className="grid grid-cols-12 gap-2 bg-rose-100 dark:bg-rose-900/40 p-3 rounded-2xl border border-rose-200 dark:border-rose-700">
                                     <div className="col-span-4 space-y-1">
                                         <label className="text-[9px] text-slate-400 font-bold uppercase">Hạn thanh toán</label>
                                         {isEditing ? (
