@@ -4,12 +4,13 @@
  */
 import React, { useRef, useState } from 'react';
 import { Upload, FileSpreadsheet, Download, X, CheckCircle, AlertCircle } from 'lucide-react';
-import { parsePAKDExcel, generatePAKDTemplate, convertToFormData, ParsedPAKD } from '../../services/pakdExcelParser';
+import { parsePAKDExcel, generatePAKDTemplate, ParsedPAKD } from '../../services/pakdExcelParser';
 import { toast } from 'sonner';
 
 interface PAKDImportButtonProps {
-    onImport: (data: ReturnType<typeof convertToFormData>) => void;
+    onImport: (data: ParsedPAKD) => void;
     disabled?: boolean;
+    isImporting?: boolean;
 }
 
 export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) {
@@ -50,10 +51,9 @@ export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) 
     const handleConfirmImport = () => {
         if (!previewData) return;
 
-        const formData = convertToFormData(previewData);
-        onImport(formData);
+        // Pass raw parsed data to parent - parent will handle findOrCreate
+        onImport(previewData);
         setPreviewData(null);
-        toast.success('Đã import PAKD thành công!');
     };
 
     const handleDragOver = (e: React.DragEvent) => {

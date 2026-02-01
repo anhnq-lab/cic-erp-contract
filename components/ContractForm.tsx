@@ -651,34 +651,85 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
 
                     {/* PAKD Import Section */}
                     <PAKDImportButton
-                      onImport={(data) => {
-                        // Map imported data to form state
-                        const newLineItems = data.lineItems.map((item: any, idx: number) => ({
-                          id: `imported-${Date.now()}-${idx}`,
-                          name: item.name,
-                          supplier: item.supplierName || '',
-                          quantity: item.quantity,
-                          inputPrice: item.inputPrice,
-                          outputPrice: item.outputPrice,
-                          directCosts: (item.directCosts?.importFee || 0) + (item.directCosts?.contractorTax || 0) + (item.directCosts?.transferFee || 0),
-                          directCostDetails: [
-                            { id: `dc-import-${idx}`, name: 'Nhập khẩu', amount: item.directCosts?.importFee || 0 },
-                            { id: `dc-tax-${idx}`, name: 'Thuế nhà thầu', amount: item.directCosts?.contractorTax || 0 },
-                            { id: `dc-transfer-${idx}`, name: 'Chuyển tiền', amount: item.directCosts?.transferFee || 0 },
-                          ],
-                        }));
-                        setLineItems(newLineItems);
+                      onImport={async (data) => {
+                        toast.loading('Đang xử lý import PAKD...');
 
-                        // Map admin costs to correct type
-                        setAdminCosts({
-                          transferFee: data.adminCosts.bankFee || 0,
-                          contractorTax: data.adminCosts.subcontractorFee || 0,
-                          importFee: data.adminCosts.importLogistics || 0,
-                          expertHiring: data.adminCosts.expertFee || 0,
-                          documentProcessing: data.adminCosts.documentFee || 0,
-                        });
+                        try {
+                          // Process each line item - findOrCreate products and suppliers
+                          const processedItems: LineItem[] = [];
 
-                        toast.success('Đã import PAKD thành công!');
+                          for (let i = 0; i < data.lineItems.length; i++) {
+                            const item = data.lineItems[i];
+
+                            // Find or create product
+                            let productName = item.name;
+                            if (item.name && item.name.trim() !== '') {
+                              try {
+                                const product = await ProductService.findOrCreate(
+                                  item.name,
+                                  item.unitCost,
+                                  item.unitPrice
+                                );
+                                productName = product.name;
+                                // Refresh products list
+                                const allProducts = await ProductService.getAll();
+                                setProducts(allProducts);
+                              } catch (e) {
+                                console.warn('[PAKD Import] Could not create product:', e);
+                              }
+                            }
+
+                            // Find or create supplier
+                            let supplierName = item.supplier || '';
+                            if (item.supplier && item.supplier.trim() !== '') {
+                              try {
+                                const supplier = await CustomerService.findOrCreateSupplier(item.supplier);
+                                supplierName = supplier.name;
+                                // Refresh suppliers list  
+                                const allSuppliers = await CustomerService.getAll({ type: 'Supplier' });
+                                setSuppliers(allSuppliers.data);
+                              } catch (e) {
+                                console.warn('[PAKD Import] Could not create supplier:', e);
+                              }
+                            }
+
+                            // Calculate direct costs from individual fees
+                            const directCostsTotal = item.importFee + item.contractorTax + item.transferFee;
+
+                            processedItems.push({
+                              id: `imported-${Date.now()}-${i}`,
+                              name: productName,
+                              supplier: supplierName,
+                              quantity: item.quantity,
+                              inputPrice: item.unitCost,
+                              outputPrice: item.unitPrice,
+                              directCosts: directCostsTotal,
+                              directCostDetails: [
+                                { id: `dc-import-${i}`, name: 'Nhập khẩu', amount: item.importFee },
+                                { id: `dc-tax-${i}`, name: 'Thuế nhà thầu', amount: item.contractorTax },
+                                { id: `dc-transfer-${i}`, name: 'Chuyển tiền', amount: item.transferFee },
+                              ],
+                            });
+                          }
+
+                          setLineItems(processedItems);
+
+                          // Map admin costs
+                          setAdminCosts({
+                            transferFee: data.adminCosts.bankFee || 0,
+                            contractorTax: data.adminCosts.subcontractorFee || 0,
+                            importFee: data.adminCosts.importLogistics || 0,
+                            expertHiring: data.adminCosts.expertFee || 0,
+                            documentProcessing: data.adminCosts.documentFee || 0,
+                          });
+
+                          toast.dismiss();
+                          toast.success(`Đã import ${processedItems.length} hạng mục thành công!`);
+                        } catch (error: any) {
+                          toast.dismiss();
+                          toast.error('Lỗi import PAKD: ' + (error.message || 'Unknown error'));
+                          console.error('[PAKD Import] Error:', error);
+                        }
                       }}
                     />
 

@@ -116,4 +116,49 @@ export const ProductService = {
         if (error) throw error;
         return true;
     },
+
+    /**
+     * Find product by name or create new one
+     * Used for PAKD Excel import
+     */
+    findOrCreate: async (name: string, costPrice: number = 0, basePrice: number = 0): Promise<Product> => {
+        if (!name || name.trim() === '') {
+            throw new Error('Product name is required');
+        }
+
+        // Search by exact name match
+        const { data: existing, error: searchError } = await supabase
+            .from('products')
+            .select('*')
+            .ilike('name', name.trim())
+            .limit(1);
+
+        if (searchError) throw searchError;
+
+        if (existing && existing.length > 0) {
+            return mapProduct(existing[0]);
+        }
+
+        // Create new product
+        const newProduct = {
+            code: `IMPORT-${Date.now()}`,
+            name: name.trim(),
+            category: 'Software', // Default category
+            description: `Imported from PAKD Excel`,
+            unit: 'VNĐ',
+            base_price: basePrice,
+            cost_price: costPrice,
+            is_active: true,
+        };
+
+        const { data: created, error: createError } = await supabase
+            .from('products')
+            .insert(newProduct)
+            .select()
+            .single();
+
+        if (createError) throw createError;
+        console.log('[ProductService] Created new product:', created.name);
+        return mapProduct(created);
+    },
 };

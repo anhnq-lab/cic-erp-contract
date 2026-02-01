@@ -136,4 +136,50 @@ export const CustomerService = {
         }
         return (data || []).map(mapCustomer);
     },
+
+    /**
+     * Find supplier by name or create new one
+     * Used for PAKD Excel import
+     */
+    findOrCreateSupplier: async (name: string): Promise<Customer> => {
+        if (!name || name.trim() === '') {
+            throw new Error('Supplier name is required');
+        }
+
+        // Search by exact name match with type = Supplier
+        const { data: existing, error: searchError } = await supabase
+            .from('customers')
+            .select('*')
+            .ilike('name', name.trim())
+            .eq('type', 'Supplier')
+            .limit(1);
+
+        if (searchError) throw searchError;
+
+        if (existing && existing.length > 0) {
+            return mapCustomer(existing[0]);
+        }
+
+        // Create new supplier
+        const newSupplier = {
+            name: name.trim(),
+            short_name: name.trim().substring(0, 20),
+            industry: 'Technology',
+            type: 'Supplier',
+            contact_person: '',
+            phone: '',
+            email: '',
+            address: '',
+        };
+
+        const { data: created, error: createError } = await supabase
+            .from('customers')
+            .insert(newSupplier)
+            .select()
+            .single();
+
+        if (createError) throw createError;
+        console.log('[CustomerService] Created new supplier:', created.name);
+        return mapCustomer(created);
+    },
 };
