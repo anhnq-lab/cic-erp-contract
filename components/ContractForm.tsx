@@ -20,7 +20,7 @@ import SearchableSelect from './ui/SearchableSelect';
 import QuickAddCustomerDialog from './ui/QuickAddCustomerDialog';
 
 // Contract Form Sub-components
-import { StepIndicator, FinancialSummary, FormHeader, formatVND as formatVNDUtil } from './contract-form';
+import { StepIndicator, FinancialSummary, FormHeader, formatVND as formatVNDUtil, PAKDImportButton } from './contract-form';
 
 interface ContractFormProps {
   contract?: Contract; // For edit mode
@@ -642,10 +642,45 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                       <h4 className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
                         <Package size={14} /> Chi tiết Sản phẩm & Dịch vụ
                       </h4>
-                      <button onClick={addLineItem} className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 border border-emerald-100 dark:border-emerald-800 hover:bg-emerald-100 transition-colors">
-                        <Plus size={12} /> Thêm hạng mục
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button onClick={addLineItem} className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 border border-emerald-100 dark:border-emerald-800 hover:bg-emerald-100 transition-colors">
+                          <Plus size={12} /> Thêm hạng mục
+                        </button>
+                      </div>
                     </div>
+
+                    {/* PAKD Import Section */}
+                    <PAKDImportButton
+                      onImport={(data) => {
+                        // Map imported data to form state
+                        const newLineItems = data.lineItems.map((item: any, idx: number) => ({
+                          id: `imported-${Date.now()}-${idx}`,
+                          name: item.name,
+                          supplier: item.supplierName || '',
+                          quantity: item.quantity,
+                          inputPrice: item.inputPrice,
+                          outputPrice: item.outputPrice,
+                          directCosts: (item.directCosts?.importFee || 0) + (item.directCosts?.contractorTax || 0) + (item.directCosts?.transferFee || 0),
+                          directCostDetails: [
+                            { id: `dc-import-${idx}`, name: 'Nhập khẩu', amount: item.directCosts?.importFee || 0 },
+                            { id: `dc-tax-${idx}`, name: 'Thuế nhà thầu', amount: item.directCosts?.contractorTax || 0 },
+                            { id: `dc-transfer-${idx}`, name: 'Chuyển tiền', amount: item.directCosts?.transferFee || 0 },
+                          ],
+                        }));
+                        setLineItems(newLineItems);
+
+                        // Map admin costs to correct type
+                        setAdminCosts({
+                          transferFee: data.adminCosts.bankFee || 0,
+                          contractorTax: data.adminCosts.subcontractorFee || 0,
+                          importFee: data.adminCosts.importLogistics || 0,
+                          expertHiring: data.adminCosts.expertFee || 0,
+                          documentProcessing: data.adminCosts.documentFee || 0,
+                        });
+
+                        toast.success('Đã import PAKD thành công!');
+                      }}
+                    />
 
                     <div className="overflow-x-auto rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800">
                       <table className="w-full text-left text-xs min-w-[1200px]">
