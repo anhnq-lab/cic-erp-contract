@@ -774,7 +774,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
 
             {/* 2.3 Payment Schedules - Dòng tiền dự kiến */}
             <div className="bg-gradient-to-br from-slate-50 to-indigo-50/30 dark:from-slate-800/40 dark:to-indigo-900/10 p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 space-y-6 mb-8">
-                <h4 className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <h4 className="text-xs font-black text-slate-700 dark:text-white uppercase tracking-widest flex items-center gap-2">
                     <Wallet size={14} /> Dòng tiền dự kiến
                 </h4>
 
@@ -796,7 +796,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                             {paymentSchedules.map((pay, idx) => (
                                 <div key={pay.id} className="grid grid-cols-12 gap-2 bg-emerald-100 dark:bg-emerald-900/40 p-3 rounded-2xl border border-emerald-200 dark:border-emerald-700">
                                     <div className="col-span-4 space-y-1">
-                                        <label className="text-[9px] text-slate-400 font-bold uppercase">Ngày thanh toán</label>
+                                        <label className="text-[9px] text-slate-600 dark:text-emerald-300 font-bold uppercase">Ngày thanh toán</label>
                                         {isEditing ? (
                                             <input
                                                 type="date"
@@ -809,11 +809,11 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                 className="w-full bg-transparent text-[11px] font-bold outline-none"
                                             />
                                         ) : (
-                                            <p className="text-[11px] font-bold">{pay.date || '-'}</p>
+                                            <p className="text-[11px] font-bold text-slate-800 dark:text-white">{pay.date || '-'}</p>
                                         )}
                                     </div>
                                     <div className="col-span-4 space-y-1">
-                                        <label className="text-[9px] text-slate-400 font-bold uppercase">Nội dung</label>
+                                        <label className="text-[9px] text-slate-600 dark:text-emerald-300 font-bold uppercase">Nội dung</label>
                                         {isEditing ? (
                                             <input
                                                 placeholder="Tạm ứng, Đợt 1..."
@@ -826,11 +826,11 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                 className="w-full bg-transparent text-[11px] font-bold outline-none"
                                             />
                                         ) : (
-                                            <p className="text-[11px] font-bold">{pay.description || '-'}</p>
+                                            <p className="text-[11px] font-bold text-slate-800 dark:text-white">{pay.description || '-'}</p>
                                         )}
                                     </div>
                                     <div className="col-span-4 space-y-1 text-right">
-                                        <label className="text-[9px] text-slate-400 font-bold uppercase">Số tiền</label>
+                                        <label className="text-[9px] text-slate-600 dark:text-emerald-300 font-bold uppercase">Số tiền</label>
                                         <div className="flex items-center justify-end gap-2">
                                             {isEditing ? (
                                                 <>
@@ -863,7 +863,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                             {/* Total Thu */}
                             <div className="flex justify-end pt-2">
                                 <div className="text-right">
-                                    <p className="text-[9px] text-slate-400 uppercase font-bold">Tổng tiền về</p>
+                                    <p className="text-[9px] text-slate-600 dark:text-emerald-300 uppercase font-bold">Tổng tiền về</p>
                                     <p className="text-sm font-black text-emerald-600">{formatVND(paymentSchedules.reduce((acc, p) => acc + p.amount, 0))}</p>
                                 </div>
                             </div>
@@ -887,7 +887,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                             {supplierSchedules.map((pay, idx) => (
                                 <div key={pay.id} className="grid grid-cols-12 gap-2 bg-rose-100 dark:bg-rose-900/40 p-3 rounded-2xl border border-rose-200 dark:border-rose-700">
                                     <div className="col-span-4 space-y-1">
-                                        <label className="text-[9px] text-slate-400 font-bold uppercase">Hạn thanh toán</label>
+                                        <label className="text-[9px] text-slate-600 dark:text-rose-300 font-bold uppercase">Hạn thanh toán</label>
                                         {isEditing ? (
                                             <input
                                                 type="date"
@@ -900,11 +900,11 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                 className="w-full bg-transparent text-[11px] font-bold outline-none"
                                             />
                                         ) : (
-                                            <p className="text-[11px] font-bold">{pay.date || '-'}</p>
+                                            <p className="text-[11px] font-bold text-slate-800 dark:text-white">{pay.date || '-'}</p>
                                         )}
                                     </div>
                                     <div className="col-span-4 space-y-1">
-                                        <label className="text-[9px] text-slate-400 font-bold uppercase">Nội dung</label>
+                                        <label className="text-[9px] text-slate-600 dark:text-rose-300 font-bold uppercase">Nội dung</label>
                                         {isEditing ? (
                                             <input
                                                 placeholder="Thanh toán NCC..."
@@ -917,11 +917,11 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                 className="w-full bg-transparent text-[11px] font-bold outline-none"
                                             />
                                         ) : (
-                                            <p className="text-[11px] font-bold">{pay.description || '-'}</p>
+                                            <p className="text-[11px] font-bold text-slate-800 dark:text-white">{pay.description || '-'}</p>
                                         )}
                                     </div>
                                     <div className="col-span-4 space-y-1 text-right">
-                                        <label className="text-[9px] text-slate-400 font-bold uppercase">Số tiền</label>
+                                        <label className="text-[9px] text-slate-600 dark:text-rose-300 font-bold uppercase">Số tiền</label>
                                         <div className="flex items-center justify-end gap-2">
                                             {isEditing ? (
                                                 <>
@@ -954,7 +954,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                             {/* Total Chi */}
                             <div className="flex justify-end pt-2">
                                 <div className="text-right">
-                                    <p className="text-[9px] text-slate-400 uppercase font-bold">Tổng chi NCC</p>
+                                    <p className="text-[9px] text-slate-600 dark:text-rose-300 uppercase font-bold">Tổng chi NCC</p>
                                     <p className="text-sm font-black text-rose-500">{formatVND(supplierSchedules.reduce((acc, p) => acc + p.amount, 0))}</p>
                                 </div>
                             </div>
