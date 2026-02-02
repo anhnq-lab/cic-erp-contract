@@ -232,20 +232,25 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
                     </div>
                 ) : (
                     filteredUnits.map(unit => (
-                        <div key={unit.id} className="bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group relative">
+                        <div key={unit.id} className="bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg hover:border-indigo-200 dark:hover:border-indigo-800 transition-all group relative cursor-pointer" onClick={() => onSelectUnit?.(unit.id)}>
                             <div className="flex justify-between items-start mb-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center">
+                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none">
                                         <Building size={28} />
                                     </div>
                                     <div>
                                         <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">{unit.name}</h3>
-                                        <span className="inline-block px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[10px] font-bold uppercase text-slate-500 tracking-wider">
-                                            {unit.code}
-                                        </span>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="inline-block px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[10px] font-bold uppercase text-slate-500 tracking-wider">
+                                                {unit.code}
+                                            </span>
+                                            <span className={`inline-block px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase ${unit.type === 'Center' ? 'bg-emerald-100 text-emerald-700' : unit.type === 'Branch' ? 'bg-amber-100 text-amber-700' : 'bg-indigo-100 text-indigo-700'}`}>
+                                                {unit.type === 'Center' ? 'TT' : unit.type === 'Branch' ? 'CN' : 'CTY'}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
                                     <button
                                         onClick={() => handleEdit(unit)}
                                         className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-colors"
@@ -258,15 +263,18 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
                                     >
                                         <Trash2 size={18} />
                                     </button>
-                                    {onSelectUnit && (
-                                        <button
-                                            onClick={() => onSelectUnit(unit.id)}
-                                            className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-colors"
-                                            title="Xem chi tiết"
-                                        >
-                                            <Eye size={18} />
-                                        </button>
-                                    )}
+                                </div>
+                            </div>
+
+                            {/* Quick badges row */}
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                    <Users size={12} className="text-blue-600" />
+                                    <span className="text-xs font-bold text-blue-700 dark:text-blue-400">{(unit as any).employeeCount || '—'} NV</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                                    <FileText size={12} className="text-purple-600" />
+                                    <span className="text-xs font-bold text-purple-700 dark:text-purple-400">{(unit as any).contractCount || stats.unitStats.get(unit.id)?.signing ? '✓' : '—'} HĐ</span>
                                 </div>
                             </div>
 

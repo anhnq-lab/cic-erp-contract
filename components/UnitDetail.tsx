@@ -11,8 +11,13 @@ import {
     Pencil,
     Loader2,
     ChevronRight,
-    MapPin,
-    Hash
+    BarChart3,
+    Calendar,
+    DollarSign,
+    Clock,
+    Award,
+    Briefcase,
+    Activity
 } from 'lucide-react';
 import { UnitService, EmployeeService, ContractService } from '../services';
 import { Unit, KPIPlan, Employee, Contract } from '../types';
@@ -25,11 +30,13 @@ interface UnitDetailProps {
     onViewPersonnel: (id: string) => void;
 }
 
+type TabType = 'overview' | 'employees' | 'contracts' | 'history';
+
 const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract, onViewPersonnel }) => {
+    const [activeTab, setActiveTab] = useState<TabType>('overview');
     const [unit, setUnit] = useState<Unit | null>(null);
     const [contracts, setContracts] = useState<Contract[]>([]);
     const [staff, setStaff] = useState<Employee[]>([]);
-    // Define exact shape for stats state
     const [stats, setStats] = useState<{
         actualSigning: number;
         actualRevenue: number;
@@ -37,6 +44,8 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
         signingProgress: number;
         revenueProgress: number;
         adminProfitProgress: number;
+        contractCount: number;
+        cashReceived: number;
     } | null>(null);
 
     const [isLoading, setIsLoading] = useState(true);
@@ -45,33 +54,29 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            // Fetch Unit
             const unitData = await UnitService.getById(unitId);
             setUnit(unitData || null);
 
             if (unitData) {
-                // Optimized: Parallel fetch with focused data
-                // 1. Stats from RPC (Fast & Accurate)
-                // 2. Recent 5 contracts for list
-                // 3. Personnel list
-                // Optimized: Parallel fetch with focused data - resilient using Promise.allSettled
                 const results = await Promise.allSettled([
                     UnitService.getStats(unitId),
-                    ContractService.list({ unitId: unitId, limit: 10, page: 1 }),
-                    EmployeeService.list({ unitId: unitId })
+                    ContractService.list({ unitId: unitId, limit: 50, page: 1 }),
+                    EmployeeService.list({ unitId: unitId }),
+                    // PaymentService.listByUnit is not implemented yet - use empty array
+                    Promise.resolve([])
                 ]);
 
-                const statsData = results[0].status === 'fulfilled' ? results[0].value : { totalSigning: 0, totalRevenue: 0, totalProfit: 0 };
+                const statsData = results[0].status === 'fulfilled' ? results[0].value : { totalSigning: 0, totalRevenue: 0, totalProfit: 0, totalCash: 0 };
                 const contractsData = results[1].status === 'fulfilled' ? results[1].value : { data: [], count: 0 };
                 const staffData = results[2].status === 'fulfilled' ? results[2].value : [];
+                const paymentsData = results[3].status === 'fulfilled' ? results[3].value : [];
 
-                if (results[0].status === 'rejected') console.error("Unit Stats Error:", results[0].reason);
-
-                // Calculate progress percentages based on RPC data + Targets
                 const calculatedStats = {
                     actualSigning: statsData.totalSigning || 0,
                     actualRevenue: statsData.totalRevenue || 0,
                     adminProfit: statsData.totalProfit || 0,
+                    cashReceived: statsData.totalCash || 0,
+                    contractCount: contractsData.count || contractsData.data?.length || 0,
                     signingProgress: unitData.target.signing ? (statsData.totalSigning / unitData.target.signing) * 100 : 0,
                     revenueProgress: unitData.target.revenue ? (statsData.totalRevenue / unitData.target.revenue) * 100 : 0,
                     adminProfitProgress: unitData.target.adminProfit ? ((statsData.totalProfit || 0) / unitData.target.adminProfit) * 100 : 0
@@ -79,7 +84,6 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
 
                 setStats(calculatedStats);
                 setContracts(contractsData.data || []);
-
                 const people = Array.isArray(staffData) ? staffData : (staffData as any).data || [];
                 setStaff(people);
             }
@@ -114,11 +118,48 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
         return val.toLocaleString('vi-VN');
     };
 
-    // Memoized stats calculation removed in favor of Server-Side RPC
-    // const stats = useMemo(() => { ... }, [contracts, unit]);
+    // Contract stats by status
+    const contractStats = useMemo(() => {
+        const statusCount: Record<string, number> = {};
+        contracts.forEach(c => {
+            statusCount[c.status] = (statusCount[c.status] || 0) + 1;
+        });
+        return statusCount;
+    }, [contracts]);
 
-    // Alias for UI compatibility
-    const personnel = staff;
+    // Employee stats by position
+    const employeeStats = useMemo(() => {
+        const positionCount: Record<string, number> = {};
+        staff.forEach(e => {
+            const pos = e.position || 'Khác';
+            positionCount[pos] = (positionCount[pos] || 0) + 1;
+        });
+        return positionCount;
+    }, [staff]);
+
+    // Top performers (by contract value)
+    const topPerformers = useMemo(() => {
+        const employeeValues: Record<string, { name: string; value: number; count: number }> = {};
+        contracts.forEach(c => {
+            if (!employeeValues[c.salespersonId]) {
+                const emp = staff.find(s => s.id === c.salespersonId);
+                employeeValues[c.salespersonId] = { name: emp?.name || 'N/A', value: 0, count: 0 };
+            }
+            employeeValues[c.salespersonId].value += c.value || 0;
+            employeeValues[c.salespersonId].count += 1;
+        });
+        return Object.entries(employeeValues)
+            .map(([id, data]) => ({ id, ...data }))
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 5);
+    }, [contracts, staff]);
+
+    const tabs = [
+        { id: 'overview', label: 'Tổng quan', icon: BarChart3 },
+        { id: 'employees', label: `Nhân sự (${staff.length})`, icon: Users },
+        { id: 'contracts', label: `Hợp đồng (${contracts.length})`, icon: FileText },
+        { id: 'history', label: 'Lịch sử', icon: Clock }
+    ] as const;
 
     if (isLoading) {
         return (
@@ -137,182 +178,348 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
         );
     }
 
-    return (
-        <div className="space-y-6 animate-in fade-in duration-500 pb-12">
-            {/* Header */}
-            <div className="flex items-center gap-4">
-                <button
-                    onClick={onBack}
-                    className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                >
-                    <ArrowLeft size={20} className="text-slate-600 dark:text-slate-400" />
-                </button>
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100">{unit.name}</h1>
-                    <div className="flex items-center gap-2 mt-1">
-                        <span className="text-sm font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-xs uppercase">
-                            {unit.code}
-                        </span>
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded uppercase ${unit.type === 'Center' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                            {unit.type === 'Center' ? 'Trung tâm' : unit.type === 'Branch' ? 'Chi nhánh' : 'Công ty'}
-                        </span>
+    const renderOverviewTab = () => (
+        <div className="space-y-6">
+            {/* KPI Cards */}
+            {stats && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Signing */}
+                    <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-500/10 to-transparent rounded-bl-full"></div>
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
+                                <FileText size={18} className="text-indigo-600" />
+                            </div>
+                            <span className={`text-sm font-black ${stats.signingProgress >= 100 ? 'text-emerald-600' : 'text-slate-600 dark:text-slate-400'}`}>
+                                {stats.signingProgress.toFixed(0)}%
+                            </span>
+                        </div>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Ký kết</p>
+                        <p className="text-xl font-black text-slate-900 dark:text-slate-100 mt-1">{formatCurrency(stats.actualSigning)}</p>
+                        <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 rounded-full transition-all duration-1000" style={{ width: `${Math.min(stats.signingProgress, 100)}%` }}></div>
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-2">Mục tiêu: {formatCurrency(unit.target.signing)}</p>
+                    </div>
+
+                    {/* Revenue */}
+                    <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-bl-full"></div>
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
+                                <TrendingUp size={18} className="text-emerald-600" />
+                            </div>
+                            <span className={`text-sm font-black ${stats.revenueProgress >= 100 ? 'text-emerald-600' : 'text-slate-600 dark:text-slate-400'}`}>
+                                {stats.revenueProgress.toFixed(0)}%
+                            </span>
+                        </div>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Doanh thu</p>
+                        <p className="text-xl font-black text-slate-900 dark:text-slate-100 mt-1">{formatCurrency(stats.actualRevenue)}</p>
+                        <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-1000" style={{ width: `${Math.min(stats.revenueProgress, 100)}%` }}></div>
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-2">Mục tiêu: {formatCurrency(unit.target.revenue)}</p>
+                    </div>
+
+                    {/* Profit */}
+                    <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-500/10 to-transparent rounded-bl-full"></div>
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
+                                <Target size={18} className="text-purple-600" />
+                            </div>
+                            <span className={`text-sm font-black ${stats.adminProfitProgress >= 100 ? 'text-emerald-600' : 'text-slate-600 dark:text-slate-400'}`}>
+                                {stats.adminProfitProgress.toFixed(0)}%
+                            </span>
+                        </div>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">LNG Quản trị</p>
+                        <p className="text-xl font-black text-slate-900 dark:text-slate-100 mt-1">{formatCurrency(stats.adminProfit)}</p>
+                        <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full transition-all duration-1000" style={{ width: `${Math.min(stats.adminProfitProgress, 100)}%` }}></div>
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-2">Mục tiêu: {formatCurrency(unit.target.adminProfit)}</p>
+                    </div>
+
+                    {/* Contract Count */}
+                    <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-500/10 to-transparent rounded-bl-full"></div>
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
+                                <Briefcase size={18} className="text-amber-600" />
+                            </div>
+                        </div>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Số hợp đồng</p>
+                        <p className="text-xl font-black text-slate-900 dark:text-slate-100 mt-1">{stats.contractCount}</p>
+                        <div className="flex flex-wrap gap-1 mt-3">
+                            {Object.entries(contractStats).slice(0, 3).map(([status, count]) => (
+                                <span key={status} className="text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-slate-600 dark:text-slate-400">
+                                    {status}: {count}
+                                </span>
+                            ))}
+                        </div>
                     </div>
                 </div>
-                <button
-                    onClick={() => setIsEditing(true)}
-                    className="ml-auto p-2 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-100 transition-colors"
-                >
-                    <Pencil size={20} />
-                </button>
-            </div>
+            )}
 
-            {/* Functions & Duties */}
+            {/* Functions */}
             {unit.functions && (
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-[24px] border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                        <Target size={20} className="text-indigo-500" /> Chức năng - Nhiệm vụ
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+                        <Target size={16} className="text-indigo-500" /> Chức năng - Nhiệm vụ
                     </h3>
-                    <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 whitespace-pre-line">
+                    <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 text-sm whitespace-pre-line">
                         {unit.functions}
                     </div>
                 </div>
             )}
 
-            {/* Stats Overview */}
-            {stats && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-[24px] border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
-                        <div className="flex justify-between items-start mb-4 relative z-10">
-                            <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl text-indigo-600">
-                                <FileText size={24} />
-                            </div>
-                            <span className={`text-lg font-black ${stats.signingProgress >= 100 ? 'text-emerald-600' : 'text-indigo-600'}`}>
-                                {stats.signingProgress.toFixed(1)}%
-                            </span>
-                        </div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Doanh số Ký kết</p>
-                        <p className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-2">
-                            {formatCurrency(stats.actualSigning)}
-                        </p>
-                        <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                            <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${Math.min(stats.signingProgress, 100)}%` }}></div>
-                        </div>
-                        <p className="text-xs text-slate-500 mt-2 text-right">Mục tiêu: {formatCurrency(unit.target.signing)}</p>
-                    </div>
-
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-[24px] border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
-                        <div className="flex justify-between items-start mb-4 relative z-10">
-                            <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl text-emerald-600">
-                                <TrendingUp size={24} />
-                            </div>
-                            <span className={`text-lg font-black ${stats.revenueProgress >= 100 ? 'text-emerald-600' : 'text-emerald-600'}`}>
-                                {stats.revenueProgress.toFixed(1)}%
-                            </span>
-                        </div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Doanh thu Thực tế</p>
-                        <p className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-2">
-                            {formatCurrency(stats.actualRevenue)}
-                        </p>
-                        <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(stats.revenueProgress, 100)}%` }}></div>
-                        </div>
-                        <p className="text-xs text-slate-500 mt-2 text-right">Mục tiêu: {formatCurrency(unit.target.revenue)}</p>
-                    </div>
-
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-[24px] border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
-                        <div className="flex justify-between items-start mb-4 relative z-10">
-                            <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-2xl text-purple-600">
-                                <Target size={24} />
-                            </div>
-                            <span className={`text-lg font-black ${stats.adminProfitProgress >= 100 ? 'text-emerald-600' : 'text-purple-600'}`}>
-                                {stats.adminProfitProgress.toFixed(1)}%
-                            </span>
-                        </div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">LNG Quản trị</p>
-                        <p className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-2">
-                            {formatCurrency(stats.adminProfit)}
-                        </p>
-                        <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                            <div className="h-full bg-purple-500 rounded-full" style={{ width: `${Math.min(stats.adminProfitProgress, 100)}%` }}></div>
-                        </div>
-                        <p className="text-xs text-slate-500 mt-2 text-right">Mục tiêu: {formatCurrency(unit.target.adminProfit)}</p>
-                    </div>
-                </div>
-            )}
-
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                {/* Personnel List */}
-                <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-200 dark:border-slate-800 p-6">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                            <Users size={20} className="text-indigo-500" /> Nhân sự ({personnel.length})
-                        </h3>
-                    </div>
+            {/* Top Performers & Quick Stats */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Top Performers */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+                    <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                        <Award size={16} className="text-amber-500" /> Top Performers
+                    </h3>
                     <div className="space-y-3">
-                        {personnel.length === 0 ? (
-                            <p className="text-slate-500 text-center py-4">Chưa có nhân sự nào thuộc đơn vị này.</p>
+                        {topPerformers.length === 0 ? (
+                            <p className="text-slate-500 text-sm text-center py-4">Chưa có dữ liệu</p>
                         ) : (
-                            personnel.map(p => (
-                                <div key={p.id} onClick={() => onViewPersonnel(p.id)} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer group">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden flex items-center justify-center font-bold text-slate-500">
-                                            {p.avatar ? <img src={p.avatar} alt={p.name} className="w-full h-full object-cover" /> : p.name.charAt(0)}
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-slate-900 dark:text-slate-100">{p.name}</p>
-                                            <p className="text-xs text-slate-500">{p.position || 'N/A'}</p>
-                                        </div>
+                            topPerformers.map((p, idx) => (
+                                <div key={p.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer" onClick={() => onViewPersonnel(p.id)}>
+                                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black ${idx === 0 ? 'bg-amber-100 text-amber-700' : idx === 1 ? 'bg-slate-200 text-slate-600' : idx === 2 ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-500'}`}>
+                                        {idx + 1}
                                     </div>
-                                    <ChevronRight size={16} className="text-slate-300 group-hover:text-indigo-500 transition-colors" />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">{p.name}</p>
+                                        <p className="text-xs text-slate-500">{p.count} HĐ</p>
+                                    </div>
+                                    <p className="text-sm font-black text-indigo-600">{formatCurrency(p.value)}</p>
                                 </div>
                             ))
                         )}
                     </div>
                 </div>
 
-                {/* Recent Contracts */}
-                <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-200 dark:border-slate-800 p-6">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                            <FileText size={20} className="text-emerald-500" /> Hợp đồng gần đây ({contracts.length})
-                        </h3>
-                    </div>
-                    <div className="space-y-3">
-                        {contracts.length === 0 ? (
-                            <p className="text-slate-500 text-center py-4">Chưa có hợp đồng nào.</p>
-                        ) : (
-                            contracts.slice(0, 5).map(c => (
-                                <div key={c.id} onClick={() => onViewContract(c.id)} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer group">
-                                    <div className="min-w-0">
-                                        <p className="font-bold text-slate-900 dark:text-slate-100 truncate">{c.partyA}</p>
-                                        <p className="text-xs text-slate-500">Giá trị: {formatCurrency(c.value)}</p>
-                                    </div>
-                                    <div className="text-right shrink-0">
-                                        <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase ${c.status === 'Active' ? 'bg-emerald-100 text-emerald-700' :
-                                            c.status === 'Completed' ? 'bg-blue-100 text-blue-700' :
-                                                'bg-slate-100 text-slate-700'
-                                            }`}>
-                                            {c.status}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                        {contracts.length > 5 && (
-                            <button className="w-full py-2 text-sm font-bold text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
-                                Xem tất cả hợp đồng
-                            </button>
+                {/* Quick Employee Stats */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+                    <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                        <Users size={16} className="text-indigo-500" /> Phân bổ Nhân sự
+                    </h3>
+                    <div className="space-y-2">
+                        {Object.entries(employeeStats).slice(0, 5).map(([pos, count]) => (
+                            <div key={pos} className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
+                                <span className="text-sm text-slate-600 dark:text-slate-400">{pos}</span>
+                                <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{count}</span>
+                            </div>
+                        ))}
+                        {Object.keys(employeeStats).length === 0 && (
+                            <p className="text-slate-500 text-sm text-center py-4">Chưa có nhân sự</p>
                         )}
                     </div>
                 </div>
             </div>
 
-            <UnitForm
-                isOpen={isEditing}
-                onClose={() => setIsEditing(false)}
-                onSave={handleEditSave}
-                unit={unit}
-            />
+            {/* Recent Contracts */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+                <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                    <FileText size={16} className="text-emerald-500" /> Hợp đồng gần đây
+                </h3>
+                <div className="space-y-2">
+                    {contracts.slice(0, 5).map(c => (
+                        <div key={c.id} onClick={() => onViewContract(c.id)} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer group">
+                            <div className="min-w-0 flex-1">
+                                <p className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">{c.partyA}</p>
+                                <p className="text-xs text-slate-500">{formatCurrency(c.value)}</p>
+                            </div>
+                            <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase ${c.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : c.status === 'Completed' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700'}`}>
+                                {c.status}
+                            </span>
+                        </div>
+                    ))}
+                    {contracts.length === 0 && (
+                        <p className="text-slate-500 text-sm text-center py-4">Chưa có hợp đồng</p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderEmployeesTab = () => (
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="overflow-x-auto">
+                <table className="w-full">
+                    <thead className="bg-slate-50 dark:bg-slate-800">
+                        <tr>
+                            <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase">Nhân viên</th>
+                            <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase">Chức vụ</th>
+                            <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase">Email</th>
+                            <th className="text-right px-4 py-3 text-xs font-bold text-slate-500 uppercase">Số HĐ</th>
+                            <th className="text-right px-4 py-3 text-xs font-bold text-slate-500 uppercase"></th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {staff.map(e => {
+                            const empContracts = contracts.filter(c => c.salespersonId === e.id);
+                            return (
+                                <tr key={e.id} onClick={() => onViewPersonnel(e.id)} className="hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+                                    <td className="px-4 py-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-sm text-slate-500">
+                                                {e.avatar ? <img src={e.avatar} alt="" className="w-full h-full rounded-full object-cover" /> : e.name.charAt(0)}
+                                            </div>
+                                            <span className="font-bold text-sm text-slate-900 dark:text-slate-100">{e.name}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{e.position || '—'}</td>
+                                    <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{e.email || '—'}</td>
+                                    <td className="px-4 py-3 text-sm text-right font-bold text-slate-900 dark:text-slate-100">{empContracts.length}</td>
+                                    <td className="px-4 py-3 text-right">
+                                        <ChevronRight size={16} className="text-slate-300" />
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+                {staff.length === 0 && (
+                    <div className="text-center py-12 text-slate-500">
+                        <Users size={40} className="mx-auto mb-3 opacity-50" />
+                        <p>Chưa có nhân sự thuộc đơn vị này</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+
+    const renderContractsTab = () => (
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="overflow-x-auto">
+                <table className="w-full">
+                    <thead className="bg-slate-50 dark:bg-slate-800">
+                        <tr>
+                            <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase">Khách hàng</th>
+                            <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase">Trạng thái</th>
+                            <th className="text-right px-4 py-3 text-xs font-bold text-slate-500 uppercase">Giá trị</th>
+                            <th className="text-right px-4 py-3 text-xs font-bold text-slate-500 uppercase">Doanh thu</th>
+                            <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase">Ngày ký</th>
+                            <th className="text-right px-4 py-3 text-xs font-bold text-slate-500 uppercase"></th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {contracts.map(c => (
+                            <tr key={c.id} onClick={() => onViewContract(c.id)} className="hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+                                <td className="px-4 py-3">
+                                    <p className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate max-w-[200px]">{c.partyA}</p>
+                                </td>
+                                <td className="px-4 py-3">
+                                    <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase ${c.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : c.status === 'Completed' ? 'bg-blue-100 text-blue-700' : c.status === 'Pending' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'}`}>
+                                        {c.status}
+                                    </span>
+                                </td>
+                                <td className="px-4 py-3 text-sm text-right font-bold text-slate-900 dark:text-slate-100">{formatCurrency(c.value)}</td>
+                                <td className="px-4 py-3 text-sm text-right text-slate-600 dark:text-slate-400">{formatCurrency(c.actualRevenue)}</td>
+                                <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{c.signedDate ? new Date(c.signedDate).toLocaleDateString('vi-VN') : '—'}</td>
+                                <td className="px-4 py-3 text-right">
+                                    <ChevronRight size={16} className="text-slate-300" />
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                {contracts.length === 0 && (
+                    <div className="text-center py-12 text-slate-500">
+                        <FileText size={40} className="mx-auto mb-3 opacity-50" />
+                        <p>Chưa có hợp đồng nào</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+
+    const renderHistoryTab = () => (
+        <div className="space-y-6">
+            {/* Placeholder for monthly/quarterly charts */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                    <Activity size={16} className="text-indigo-500" /> Lịch sử KPI theo tháng
+                </h3>
+                <div className="h-48 flex items-center justify-center text-slate-400">
+                    <div className="text-center">
+                        <BarChart3 size={40} className="mx-auto mb-3 opacity-50" />
+                        <p className="text-sm">Biểu đồ KPI theo thời gian</p>
+                        <p className="text-xs mt-1">(Tính năng đang phát triển)</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Year over Year comparison placeholder */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                    <Calendar size={16} className="text-emerald-500" /> So sánh năm
+                </h3>
+                <div className="grid grid-cols-3 gap-4">
+                    <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                        <p className="text-xs text-slate-500 mb-1">Năm nay</p>
+                        <p className="text-lg font-black text-slate-900 dark:text-slate-100">{formatCurrency(stats?.actualSigning || 0)}</p>
+                    </div>
+                    <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                        <p className="text-xs text-slate-500 mb-1">Năm trước</p>
+                        <p className="text-lg font-black text-slate-900 dark:text-slate-100">{formatCurrency(unit.lastYearActual?.signing || 0)}</p>
+                    </div>
+                    <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                        <p className="text-xs text-slate-500 mb-1">Tăng trưởng</p>
+                        <p className="text-lg font-black text-emerald-600">
+                            {unit.lastYearActual?.signing ? `${(((stats?.actualSigning || 0) / unit.lastYearActual.signing - 1) * 100).toFixed(0)}%` : 'N/A'}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="space-y-6 animate-in fade-in duration-500 pb-12">
+            {/* Header */}
+            <div className="flex items-center gap-4">
+                <button onClick={onBack} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    <ArrowLeft size={20} className="text-slate-600 dark:text-slate-400" />
+                </button>
+                <div className="flex-1 min-w-0">
+                    <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-slate-100 truncate">{unit.name}</h1>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded uppercase">{unit.code}</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${unit.type === 'Center' ? 'bg-emerald-100 text-emerald-700' : unit.type === 'Branch' ? 'bg-amber-100 text-amber-700' : 'bg-indigo-100 text-indigo-700'}`}>
+                            {unit.type === 'Center' ? 'Trung tâm' : unit.type === 'Branch' ? 'Chi nhánh' : 'Công ty'}
+                        </span>
+                        <span className="text-[10px] text-slate-400">{staff.length} nhân viên • {contracts.length} hợp đồng</span>
+                    </div>
+                </div>
+                <button onClick={() => setIsEditing(true)} className="p-2.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+                    <Pencil size={18} />
+                </button>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl overflow-x-auto">
+                {tabs.map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab.id ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    >
+                        <tab.icon size={16} />
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* Tab Content */}
+            {activeTab === 'overview' && renderOverviewTab()}
+            {activeTab === 'employees' && renderEmployeesTab()}
+            {activeTab === 'contracts' && renderContractsTab()}
+            {activeTab === 'history' && renderHistoryTab()}
+
+            <UnitForm isOpen={isEditing} onClose={() => setIsEditing(false)} onSave={handleEditSave} unit={unit} />
         </div>
     );
 };
