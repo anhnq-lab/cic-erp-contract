@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Save, Loader2, X } from 'lucide-react';
 import Modal from './ui/Modal';
+import NumberInput from './ui/NumberInput';
 import { Unit, KPIPlan } from '../types';
 
 
@@ -74,13 +75,12 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleTargetChange = (field: keyof KPIPlan, value: string) => {
-        const numValue = parseFloat(value) || 0;
+    const handleTargetChange = (field: keyof KPIPlan, value: number) => {
         setFormData(prev => ({
             ...prev,
             target: {
                 ...prev.target,
-                [field]: numValue
+                [field]: value
             }
         }));
     };
@@ -148,30 +148,27 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
 
                     <div>
                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Chỉ tiêu Ký kết</label>
-                        <input
-                            type="number"
+                        <NumberInput
                             value={formData.target.signing}
-                            onChange={(e) => handleTargetChange('signing', e.target.value)}
+                            onChange={(value) => handleTargetChange('signing', value)}
                             className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                         />
                     </div>
 
                     <div>
                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Chỉ tiêu Doanh thu</label>
-                        <input
-                            type="number"
+                        <NumberInput
                             value={formData.target.revenue}
-                            onChange={(e) => handleTargetChange('revenue', e.target.value)}
+                            onChange={(value) => handleTargetChange('revenue', value)}
                             className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                         />
                     </div>
 
                     <div>
                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Chỉ tiêu LNG Quản trị</label>
-                        <input
-                            type="number"
+                        <NumberInput
                             value={formData.target.adminProfit}
-                            onChange={(e) => handleTargetChange('adminProfit', e.target.value)}
+                            onChange={(value) => handleTargetChange('adminProfit', value)}
                             className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                         />
                     </div>

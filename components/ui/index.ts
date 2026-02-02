@@ -39,3 +39,4 @@ export { default as Tooltip } from './Tooltip';
 // Form Components
 export { default as SearchableSelect } from './SearchableSelect';
 export { default as QuickAddCustomerDialog } from './QuickAddCustomerDialog';
+export { default as NumberInput } from './NumberInput';

@@ -10,7 +10,9 @@ import {
     Hash
 } from 'lucide-react';
 import { Payment, PaymentStatus, PaymentMethod, Contract, Customer } from '../types';
-import { ContractService, CustomerService } from '../services'; // Updated imports
+import { ContractService, CustomerService } from '../services';
+import NumberInput from './ui/NumberInput';
+import { formatNumber } from '../lib/utils';
 
 interface PaymentFormProps {
     payment?: Payment;
@@ -83,7 +85,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
         onSave(paymentData as any);
     };
 
-    const formatCurrency = (val: number) => new Intl.NumberFormat('vi-VN').format(val);
+    const formatCurrency = (val: number) => formatNumber(val);
 
     const statuses: PaymentStatus[] = ['Chờ xuất HĐ', 'Đã xuất HĐ', 'Tiền về', 'Quá hạn'];
     const methods: PaymentMethod[] = ['Chuyển khoản', 'Tiền mặt', 'LC', 'Khác'];
@@ -217,10 +219,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                             <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1">
                                 <DollarSign size={12} /> Số tiền *
                             </label>
-                            <input
-                                type="number"
+                            <NumberInput
                                 value={amount}
-                                onChange={(e) => setAmount(Number(e.target.value))}
+                                onChange={(value) => setAmount(value)}
                                 placeholder="0"
                                 className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
@@ -232,10 +233,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                             <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1">
                                 <DollarSign size={12} /> Đã thu
                             </label>
-                            <input
-                                type="number"
+                            <NumberInput
                                 value={paidAmount}
-                                onChange={(e) => setPaidAmount(Number(e.target.value))}
+                                onChange={(value) => setPaidAmount(value)}
                                 placeholder="0"
                                 className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             />
