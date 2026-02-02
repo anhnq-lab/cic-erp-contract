@@ -19,9 +19,22 @@ const mapUnit = (u: any): Unit => {
         code: u.code || 'UNK',
         target: u.target || { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 },
         lastYearActual: u.last_year_actual || { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 },
-        functions: u.functions || ''
+        functions: u.functions || '',
+        // Phase 2 fields
+        managerId: u.manager_id,
+        logoUrl: u.logo_url,
+        address: u.address,
+        phone: u.phone,
+        email: u.email,
+        description: u.description,
+        parentId: u.parent_id,
+        sortOrder: u.sort_order ?? 0,
+        isActive: u.is_active ?? true,
+        createdAt: u.created_at,
+        updatedAt: u.updated_at
     };
 };
+
 
 export const UnitService = {
     getAll: async (): Promise<Unit[]> => {
@@ -45,12 +58,24 @@ export const UnitService = {
     },
 
     create: async (data: Omit<Unit, 'id'>): Promise<Unit> => {
-        const payload = {
+        const payload: any = {
             name: data.name,
             type: data.type,
             code: data.code,
             target: data.target
         };
+        // Add Phase 2 fields if provided
+        if (data.functions !== undefined) payload.functions = data.functions;
+        if (data.managerId) payload.manager_id = data.managerId;
+        if (data.logoUrl) payload.logo_url = data.logoUrl;
+        if (data.address) payload.address = data.address;
+        if (data.phone) payload.phone = data.phone;
+        if (data.email) payload.email = data.email;
+        if (data.description) payload.description = data.description;
+        if (data.parentId) payload.parent_id = data.parentId;
+        if (data.sortOrder !== undefined) payload.sort_order = data.sortOrder;
+        if (data.isActive !== undefined) payload.is_active = data.isActive;
+
         const { data: res, error } = await supabase.from('units').insert(payload).select().single();
         if (error) throw error;
         return mapUnit(res);
@@ -63,6 +88,18 @@ export const UnitService = {
         if (data.code) payload.code = data.code;
         if (data.target) payload.target = data.target;
         if (data.functions !== undefined) payload.functions = data.functions;
+        // Phase 2 fields
+        if (data.managerId !== undefined) payload.manager_id = data.managerId || null;
+        if (data.logoUrl !== undefined) payload.logo_url = data.logoUrl || null;
+        if (data.address !== undefined) payload.address = data.address || null;
+        if (data.phone !== undefined) payload.phone = data.phone || null;
+        if (data.email !== undefined) payload.email = data.email || null;
+        if (data.description !== undefined) payload.description = data.description || null;
+        if (data.parentId !== undefined) payload.parent_id = data.parentId || null;
+        if (data.sortOrder !== undefined) payload.sort_order = data.sortOrder;
+        if (data.isActive !== undefined) payload.is_active = data.isActive;
+        // Always update updated_at
+        payload.updated_at = new Date().toISOString();
 
         const { data: res, error } = await supabase.from('units').update(payload).eq('id', id).select().single();
         if (error) throw error;

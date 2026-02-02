@@ -51,6 +51,18 @@ export interface Unit {
   target: KPIPlan;
   lastYearActual?: KPIPlan; // Dữ liệu năm trước để so sánh YoY
   functions?: string; // Chức năng nhiệm vụ
+  // New fields from Phase 2 enhancement
+  managerId?: string; // ID of unit manager (references employees)
+  logoUrl?: string; // URL to unit logo/avatar
+  address?: string;
+  phone?: string;
+  email?: string;
+  description?: string;
+  parentId?: string; // Parent unit for org chart hierarchy
+  sortOrder?: number;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 /**
