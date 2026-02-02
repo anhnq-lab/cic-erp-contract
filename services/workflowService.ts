@@ -203,6 +203,15 @@ export const WorkflowService = {
     async submitContractForReview(contractId: string, draftUrl?: string): Promise<{ success: boolean; error?: any }> {
         console.log('[WorkflowService] submitContractForReview:', { contractId, draftUrl });
 
+        // Get current contract status for audit log
+        const { data: currentContract } = await supabase
+            .from('contracts')
+            .select('status')
+            .eq('id', contractId)
+            .single();
+
+        const oldStatus = currentContract?.status || 'Draft';
+
         const updateData: Record<string, any> = { status: 'Pending_Legal' };
         if (draftUrl) {
             updateData.draft_url = draftUrl;
@@ -230,7 +239,17 @@ export const WorkflowService = {
         });
         console.log('[WorkflowService] contract_reviews insert:', { reviewError });
 
-        // NOTE: Audit log is created automatically by database trigger on UPDATE
+        // Explicitly create audit log (don't rely on DB trigger)
+        const currentUser = (await supabase.auth.getUser()).data.user;
+        await AuditLogService.create({
+            user_id: currentUser?.id || null,
+            table_name: 'contracts',
+            record_id: contractId,
+            action: 'UPDATE',
+            old_data: { status: oldStatus },
+            new_data: { status: 'Pending_Legal', draft_url: draftUrl },
+            comment: 'Gửi duyệt Pháp lý'
+        });
 
         return { success: true };
     },

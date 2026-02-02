@@ -85,6 +85,28 @@ export const AuditLogService = {
      * Format action thành text tiếng Việt thân thiện
      */
     formatAction(action: string, oldData?: any, newData?: any): string {
+        // Status translation map
+        const statusLabels: Record<string, string> = {
+            'Active': 'Đang hiệu lực',
+            'Pending': 'Chờ xử lý',
+            'Reviewing': 'Đang xem xét',
+            'Expired': 'Hết hạn',
+            'Draft': 'Nháp',
+            'Liquidated': 'Đã thanh lý',
+            'Completed': 'Hoàn thành',
+            'Terminated': 'Đã chấm dứt',
+            'Pending_Legal': 'Chờ Pháp lý duyệt',
+            'Pending_Finance': 'Chờ Tài chính duyệt',
+            'Finance_Approved': 'Tài chính đã duyệt',
+            'Pending_Sign': 'Chờ ký hợp đồng',
+            'Pending_Unit': 'Chờ Đơn vị duyệt',
+            'Pending_Board': 'Chờ Ban Lãnh đạo duyệt',
+            'Approved': 'Đã phê duyệt',
+            'Rejected': 'Từ chối'
+        };
+
+        const translateStatus = (status: string) => statusLabels[status] || status;
+
         switch (action) {
             case 'INSERT':
                 return 'Tạo mới hợp đồng';
@@ -92,7 +114,7 @@ export const AuditLogService = {
                 // Check specific field changes
                 if (oldData && newData) {
                     if (oldData.status !== newData.status) {
-                        return `Cập nhật trạng thái: ${oldData.status} → ${newData.status}`;
+                        return `Cập nhật trạng thái: ${translateStatus(oldData.status)} → ${translateStatus(newData.status)}`;
                     }
                     if (oldData.stage !== newData.stage) {
                         return `Chuyển giai đoạn: ${oldData.stage} → ${newData.stage}`;
