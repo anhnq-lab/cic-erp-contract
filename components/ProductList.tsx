@@ -12,11 +12,13 @@ import {
     XCircle,
     Loader2,
     Pencil,
-    Trash2
+    Trash2,
+    Upload
 } from 'lucide-react';
 import { ProductService, UnitService } from '../services';
 import { Product, ProductCategory, Unit } from '../types';
 import ProductForm from './ProductForm';
+import ImportProductModal from './ImportProductModal';
 
 interface ProductListProps {
     onSelectProduct?: (id: string) => void;
@@ -41,6 +43,7 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
     // CRUD state
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
+    const [isImportOpen, setIsImportOpen] = useState(false);
     const [actionMenuId, setActionMenuId] = useState<string | null>(null);
 
     const categories: ProductCategory[] = ['Phần mềm', 'Tư vấn', 'Thiết kế', 'Thi công', 'Bảo trì', 'Đào tạo'];
@@ -231,6 +234,15 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
                         />
                     </div>
 
+                    {/* Import Button */}
+                    <button
+                        onClick={() => setIsImportOpen(true)}
+                        className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl font-medium text-sm hover:border-indigo-400 transition-colors"
+                    >
+                        <Upload size={18} />
+                        <span className="hidden md:inline">Import</span>
+                    </button>
+
                     {/* Add Button */}
                     <button
                         onClick={handleAdd}
@@ -248,6 +260,19 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
                 onClose={() => { setIsFormOpen(false); setEditingProduct(undefined); }}
                 onSave={handleSave}
                 product={editingProduct}
+            />
+
+            {/* Import Modal */}
+            <ImportProductModal
+                isOpen={isImportOpen}
+                onClose={() => setIsImportOpen(false)}
+                units={units}
+                onSuccess={() => {
+                    setCurrentPage(1);
+                    // Trigger re-fetch
+                    setSearchQuery(prev => prev + ' ');
+                    setTimeout(() => setSearchQuery(prev => prev.trim()), 10);
+                }}
             />
 
             {/* Stats */}
