@@ -189,7 +189,7 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ customerId, onBack, onV
             {/* Profile Card */}
             <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                 {/* Header gradient */}
-                <div className="h-20 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 relative">
+                <div className="h-28 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 relative">
                     {stats.contractCount >= 10 && (
                         <div className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-xl text-white">
                             <TrendingUp size={16} />
