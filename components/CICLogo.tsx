@@ -10,9 +10,10 @@ interface CICLogoProps {
 }
 
 /**
- * CIC ERP Logo Component - Authentic Design with Curved C Letters
+ * CIC ERP Logo Component - EXACT Replica of Original
  * 
- * Original CIC logo with thick stripes and properly curved C letters
+ * Thick horizontal stripes forming CIC letters
+ * C letters have curved appearance through varying bar lengths
  */
 const CICLogo: React.FC<CICLogoProps> = ({
     size = 'md',
@@ -21,93 +22,112 @@ const CICLogo: React.FC<CICLogoProps> = ({
 }) => {
     // Size configurations
     const sizeConfig = {
-        xs: { scale: 0.35, erpSize: 10, gap: 4 },
-        sm: { scale: 0.45, erpSize: 13, gap: 6 },
-        md: { scale: 0.6, erpSize: 16, gap: 8 },
-        lg: { scale: 0.8, erpSize: 20, gap: 10 },
-        xl: { scale: 1.0, erpSize: 26, gap: 14 },
+        xs: { scale: 0.32, erpSize: 9, gap: 3 },
+        sm: { scale: 0.42, erpSize: 12, gap: 5 },
+        md: { scale: 0.55, erpSize: 15, gap: 7 },
+        lg: { scale: 0.75, erpSize: 19, gap: 9 },
+        xl: { scale: 0.95, erpSize: 24, gap: 12 },
     };
 
     const config = sizeConfig[size];
-    const baseWidth = 120;
-    const baseHeight = 85;
+    const baseWidth = 130;
+    const baseHeight = 95;
 
     return (
         <div className={`inline-flex items-center ${className}`} style={{ gap: config.gap }}>
-            {/* CIC Logo - Curved C with thick stripes */}
+            {/* CIC Logo - EXACT replica with thick stripes */}
             <svg
                 width={baseWidth * config.scale}
                 height={baseHeight * config.scale}
-                viewBox="0 0 120 85"
+                viewBox="0 0 130 95"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
                 className="flex-shrink-0"
             >
-                {/* Outer Border - Dark Red */}
+                {/* Outer Border - Red */}
                 <rect
-                    x="1"
-                    y="1"
-                    width="118"
-                    height="83"
-                    rx="4"
+                    x="2"
+                    y="2"
+                    width="126"
+                    height="91"
+                    rx="3"
                     fill="none"
                     stroke="#C53030"
-                    strokeWidth="2.5"
+                    strokeWidth="3"
                 />
 
                 {/* Inner Background */}
                 <rect
-                    x="4"
-                    y="4"
-                    width="112"
-                    height="77"
-                    rx="2"
+                    x="5"
+                    y="5"
+                    width="120"
+                    height="85"
+                    rx="1"
                     className="fill-white dark:fill-slate-900"
                 />
 
-                {/* ===== CIC Letters - Using paths for curved C ===== */}
+                {/* ===== CIC LETTERS - THICK STRIPES ===== */}
+                {/* Each bar is 8px tall with 1px gap = very thick and tight */}
 
-                {/* Letter C (Left) - Curved shape with thick strokes */}
-                <path
-                    d="M32 12 L14 12 C10 12 8 14 8 18 L8 50 C8 54 10 56 14 56 L32 56"
-                    fill="none"
-                    stroke="#E85D04"
-                    strokeWidth="8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
+                {/* === LETTER C (LEFT) === */}
+                {/* Top bar - full width */}
+                <rect x="12" y="12" width="30" height="8" fill="#E85D04" rx="1" />
+                {/* Row 2 - curved (shorter on right) */}
+                <rect x="12" y="21" width="22" height="8" fill="#E85D04" rx="1" />
+                {/* Row 3 - curved (even shorter) */}
+                <rect x="12" y="30" width="16" height="8" fill="#E85D04" rx="1" />
+                {/* Row 4 - curved (shortest - middle) */}
+                <rect x="12" y="39" width="14" height="8" fill="#E85D04" rx="1" />
+                {/* Row 5 - curved (even shorter) */}
+                <rect x="12" y="48" width="16" height="8" fill="#E85D04" rx="1" />
+                {/* Row 6 - curved (shorter on right) */}
+                <rect x="12" y="57" width="22" height="8" fill="#E85D04" rx="1" />
+                {/* Bottom bar - full width */}
+                <rect x="12" y="66" width="30" height="8" fill="#E85D04" rx="1" />
 
-                {/* Letter I (Center) - Thick strokes */}
-                <g stroke="#E85D04" strokeWidth="8" strokeLinecap="round">
-                    {/* Top bar */}
-                    <line x1="46" y1="12" x2="74" y2="12" />
-                    {/* Vertical stem */}
-                    <line x1="60" y1="12" x2="60" y2="56" />
-                    {/* Bottom bar */}
-                    <line x1="46" y1="56" x2="74" y2="56" />
-                </g>
+                {/* === LETTER I (CENTER) === */}
+                {/* Top bar - wide */}
+                <rect x="48" y="12" width="34" height="8" fill="#E85D04" rx="1" />
+                {/* Row 2 - stem only */}
+                <rect x="57" y="21" width="16" height="8" fill="#E85D04" rx="1" />
+                {/* Row 3 - stem */}
+                <rect x="57" y="30" width="16" height="8" fill="#E85D04" rx="1" />
+                {/* Row 4 - stem */}
+                <rect x="57" y="39" width="16" height="8" fill="#E85D04" rx="1" />
+                {/* Row 5 - stem */}
+                <rect x="57" y="48" width="16" height="8" fill="#E85D04" rx="1" />
+                {/* Row 6 - stem */}
+                <rect x="57" y="57" width="16" height="8" fill="#E85D04" rx="1" />
+                {/* Bottom bar - wide */}
+                <rect x="48" y="66" width="34" height="8" fill="#E85D04" rx="1" />
 
-                {/* Letter C (Right) - Curved shape with thick strokes */}
-                <path
-                    d="M112 12 L94 12 C90 12 88 14 88 18 L88 50 C88 54 90 56 94 56 L112 56"
-                    fill="none"
-                    stroke="#E85D04"
-                    strokeWidth="8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
+                {/* === LETTER C (RIGHT) === */}
+                {/* Top bar - full width */}
+                <rect x="88" y="12" width="30" height="8" fill="#E85D04" rx="1" />
+                {/* Row 2 - curved */}
+                <rect x="88" y="21" width="22" height="8" fill="#E85D04" rx="1" />
+                {/* Row 3 - curved */}
+                <rect x="88" y="30" width="16" height="8" fill="#E85D04" rx="1" />
+                {/* Row 4 - curved (middle) */}
+                <rect x="88" y="39" width="14" height="8" fill="#E85D04" rx="1" />
+                {/* Row 5 - curved */}
+                <rect x="88" y="48" width="16" height="8" fill="#E85D04" rx="1" />
+                {/* Row 6 - curved */}
+                <rect x="88" y="57" width="22" height="8" fill="#E85D04" rx="1" />
+                {/* Bottom bar - full width */}
+                <rect x="88" y="66" width="30" height="8" fill="#E85D04" rx="1" />
 
                 {/* SINCE 1990 Text */}
                 <text
-                    x="60"
-                    y="72"
+                    x="65"
+                    y="84"
                     textAnchor="middle"
                     fill="#C53030"
                     style={{
-                        fontSize: '10px',
+                        fontSize: '9px',
                         fontWeight: 700,
                         fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
-                        letterSpacing: '1px',
+                        letterSpacing: '1.5px',
                     }}
                 >
                     SINCE 1990
@@ -133,79 +153,79 @@ const CICLogo: React.FC<CICLogoProps> = ({
 export default CICLogo;
 
 /**
- * Compact CIC Icon for collapsed sidebar - Curved C version
+ * Compact CIC Icon for collapsed sidebar - EXACT replica
  */
 export const CICLogoIcon: React.FC<{ size?: number; className?: string }> = ({
-    size = 40,
+    size = 44,
     className = ''
 }) => (
     <svg
         width={size}
-        height={size * 0.71}
-        viewBox="0 0 120 85"
+        height={size * 0.73}
+        viewBox="0 0 130 95"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className={className}
     >
         {/* Border */}
         <rect
-            x="1"
-            y="1"
-            width="118"
-            height="83"
-            rx="4"
+            x="2"
+            y="2"
+            width="126"
+            height="91"
+            rx="3"
             fill="none"
             stroke="#C53030"
-            strokeWidth="2.5"
+            strokeWidth="3"
         />
         {/* Background */}
         <rect
-            x="4"
-            y="4"
-            width="112"
-            height="77"
-            rx="2"
+            x="5"
+            y="5"
+            width="120"
+            height="85"
+            rx="1"
             className="fill-white dark:fill-slate-900"
         />
 
-        {/* Letter C (Left) */}
-        <path
-            d="M32 12 L14 12 C10 12 8 14 8 18 L8 50 C8 54 10 56 14 56 L32 56"
-            fill="none"
-            stroke="#E85D04"
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        />
+        {/* C LEFT - curved stripes */}
+        <rect x="12" y="12" width="30" height="8" fill="#E85D04" rx="1" />
+        <rect x="12" y="21" width="22" height="8" fill="#E85D04" rx="1" />
+        <rect x="12" y="30" width="16" height="8" fill="#E85D04" rx="1" />
+        <rect x="12" y="39" width="14" height="8" fill="#E85D04" rx="1" />
+        <rect x="12" y="48" width="16" height="8" fill="#E85D04" rx="1" />
+        <rect x="12" y="57" width="22" height="8" fill="#E85D04" rx="1" />
+        <rect x="12" y="66" width="30" height="8" fill="#E85D04" rx="1" />
 
-        {/* Letter I (Center) */}
-        <g stroke="#E85D04" strokeWidth="8" strokeLinecap="round">
-            <line x1="46" y1="12" x2="74" y2="12" />
-            <line x1="60" y1="12" x2="60" y2="56" />
-            <line x1="46" y1="56" x2="74" y2="56" />
-        </g>
+        {/* I CENTER */}
+        <rect x="48" y="12" width="34" height="8" fill="#E85D04" rx="1" />
+        <rect x="57" y="21" width="16" height="8" fill="#E85D04" rx="1" />
+        <rect x="57" y="30" width="16" height="8" fill="#E85D04" rx="1" />
+        <rect x="57" y="39" width="16" height="8" fill="#E85D04" rx="1" />
+        <rect x="57" y="48" width="16" height="8" fill="#E85D04" rx="1" />
+        <rect x="57" y="57" width="16" height="8" fill="#E85D04" rx="1" />
+        <rect x="48" y="66" width="34" height="8" fill="#E85D04" rx="1" />
 
-        {/* Letter C (Right) */}
-        <path
-            d="M112 12 L94 12 C90 12 88 14 88 18 L88 50 C88 54 90 56 94 56 L112 56"
-            fill="none"
-            stroke="#E85D04"
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        />
+        {/* C RIGHT - curved stripes */}
+        <rect x="88" y="12" width="30" height="8" fill="#E85D04" rx="1" />
+        <rect x="88" y="21" width="22" height="8" fill="#E85D04" rx="1" />
+        <rect x="88" y="30" width="16" height="8" fill="#E85D04" rx="1" />
+        <rect x="88" y="39" width="14" height="8" fill="#E85D04" rx="1" />
+        <rect x="88" y="48" width="16" height="8" fill="#E85D04" rx="1" />
+        <rect x="88" y="57" width="22" height="8" fill="#E85D04" rx="1" />
+        <rect x="88" y="66" width="30" height="8" fill="#E85D04" rx="1" />
 
         {/* SINCE 1990 */}
         <text
-            x="60"
-            y="72"
+            x="65"
+            y="84"
             textAnchor="middle"
             fill="#C53030"
             style={{
-                fontSize: '10px',
+                fontSize: '9px',
                 fontWeight: 700,
                 fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
-                letterSpacing: '1px',
+                letterSpacing: '1.5px',
             }}
         >
             SINCE 1990
