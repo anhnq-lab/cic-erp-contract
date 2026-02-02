@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, UserCheck, X, Search, Shield, ChevronDown, Check } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '../../lib/supabase';
+import { dataClient as supabase } from '../../lib/dataClient';
 import { UserProfile, UserRole, DEFAULT_ROLE_PERMISSIONS, PermissionResource } from '../../types';
 import { useImpersonation } from '../../contexts/ImpersonationContext';
 import { ROLE_LABELS } from '../../constants';
@@ -50,10 +50,11 @@ const UserImpersonator: React.FC = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             setLoading(true);
+            // Sử dụng column 'name' thay vì 'full_name' theo DB schema
             const { data, error } = await supabase
                 .from('employees')
-                .select('id, email, full_name, position, unit_id, units(name)')
-                .order('full_name');
+                .select('id, email, name, position, unit_id, units(name)')
+                .order('name');
 
             if (error) {
                 console.error('[UserImpersonator] Error:', error);
@@ -63,10 +64,11 @@ const UserImpersonator: React.FC = () => {
             }
 
             if (data) {
+                console.log('[UserImpersonator] Loaded', data.length, 'employees');
                 setUsers(data.map(u => ({
                     id: u.id,
                     email: u.email || '',
-                    fullName: u.full_name,
+                    fullName: u.name, // DB column is 'name', not 'full_name'
                     role: mapPositionToRole(u.position),
                     unitId: u.unit_id,
                     position: u.position,
