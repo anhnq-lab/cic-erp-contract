@@ -377,7 +377,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
         </div>
 
         {/* STICKY FILTER BAR - Filters + Metric Tabs */}
-        <div className="sticky top-0 z-30 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-sm -mx-6 px-6 py-4 border-b border-slate-200/50 dark:border-slate-800/50">
+        <div className="sticky top-0 z-30 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-sm py-4 border-b border-slate-200/50 dark:border-slate-800/50">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             {/* Left: Filters */}
             <div className="flex flex-wrap items-center gap-3">
