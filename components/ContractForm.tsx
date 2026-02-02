@@ -271,11 +271,19 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
     }
   }, []);
 
-  // Filter sales based on selected unit
+  // Filter sales based on selected unit, but always include current salesperson in edit mode
   const filteredSales = useMemo(() => {
     if (!unitId) return salespeople;
-    return salespeople.filter(s => s.unitId === unitId);
-  }, [salespeople, unitId]);
+    const filtered = salespeople.filter(s => s.unitId === unitId);
+    // Always include current salesperson even if from different unit (for edit mode)
+    if (salespersonId && !filtered.some(s => s.id === salespersonId)) {
+      const currentSalesperson = salespeople.find(s => s.id === salespersonId);
+      if (currentSalesperson) {
+        filtered.unshift(currentSalesperson);
+      }
+    }
+    return filtered;
+  }, [salespeople, unitId, salespersonId]);
 
   // Auto-generate Supplier Schedules from Line Items
   const generateSupplierSchedules = () => {
