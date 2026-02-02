@@ -11,11 +11,13 @@ import {
     Plus,
     Pencil,
     Trash2,
-    MoreVertical
+    MoreVertical,
+    Upload
 } from 'lucide-react';
 import { Customer } from '../types';
 import { CustomerService } from '../services';
 import CustomerForm from './CustomerForm';
+import ImportCustomerModal from './ImportCustomerModal';
 
 interface CustomerListProps {
     onSelectCustomer?: (id: string) => void;
@@ -38,6 +40,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>(undefined);
     const [actionMenuId, setActionMenuId] = useState<string | null>(null);
+    const [isImportOpen, setIsImportOpen] = useState(false);
 
     // Fetch Data
     useEffect(() => {
@@ -172,6 +175,13 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                     />
                 </div>
                 <button
+                    onClick={() => setIsImportOpen(true)}
+                    className="flex items-center gap-2 px-5 py-3 bg-emerald-600 text-white rounded-2xl font-bold text-sm hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-200 dark:shadow-none"
+                >
+                    <Upload size={18} />
+                    <span className="hidden md:inline">Import</span>
+                </button>
+                <button
                     onClick={handleAdd}
                     className="flex items-center gap-2 px-5 py-3 bg-indigo-600 text-white rounded-2xl font-bold text-sm hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 dark:shadow-none"
                 >
@@ -186,6 +196,16 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                 onClose={() => { setIsFormOpen(false); setEditingCustomer(undefined); }}
                 onSave={handleSave}
                 customer={editingCustomer}
+            />
+
+            {/* Import Modal */}
+            <ImportCustomerModal
+                isOpen={isImportOpen}
+                onClose={() => setIsImportOpen(false)}
+                onSuccess={() => {
+                    setCurrentPage(1);
+                    setIsImportOpen(false);
+                }}
             />
 
             {/* Partner Type Tabs */}
