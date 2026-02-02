@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, UserCheck, X, Search, Shield } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { UserProfile, DEFAULT_ROLE_PERMISSIONS, PermissionResource, PermissionAction } from '../../types';
+import { UserProfile, UserRole, DEFAULT_ROLE_PERMISSIONS, PermissionResource, PermissionAction } from '../../types';
 import { useImpersonation } from '../../contexts/ImpersonationContext';
 import { ROLE_LABELS } from '../../constants';
 
@@ -17,8 +17,30 @@ const RESOURCE_LABELS: Record<PermissionResource, string> = {
     permissions: 'Phân quyền',
 };
 
+// Map position/title to UserRole for permission lookup
+function mapPositionToRole(position: string | null): UserRole {
+    if (!position) return 'NVKD';
+    const pos = position.toLowerCase();
+    if (pos.includes('tổng giám đốc')) return 'Leadership';
+    if (pos.includes('phó tổng giám đốc')) return 'Leadership';
+    if (pos.includes('giám đốc')) return 'UnitLeader';
+    if (pos.includes('trưởng phòng') || pos.includes('trưởng tt')) return 'UnitLeader';
+    if (pos.includes('kế toán trưởng')) return 'ChiefAccountant';
+    if (pos.includes('kế toán')) return 'Accountant';
+    if (pos.includes('ban lãnh đạo')) return 'Leadership';
+    if (pos.includes('pháp lý') || pos.includes('pháp chế')) return 'Legal';
+    if (pos.includes('admin')) return 'Admin';
+    return 'NVKD';
+}
+
+// Extended user profile with employee info
+interface EmployeeUser extends UserProfile {
+    position?: string;
+    unitName?: string;
+}
+
 const UserImpersonator: React.FC = () => {
-    const [users, setUsers] = useState<UserProfile[]>([]);
+    const [users, setUsers] = useState<EmployeeUser[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const { impersonatedUser, isImpersonating, startImpersonation, stopImpersonation } = useImpersonation();
@@ -26,18 +48,22 @@ const UserImpersonator: React.FC = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             setLoading(true);
+            // Lấy từ employees table (danh sách nhân sự đầy đủ)
             const { data, error } = await supabase
-                .from('profiles')
-                .select('id, email, full_name, role, unit_id')
+                .from('employees')
+                .select('id, email, full_name, position, unit_id, units!inner(name)')
                 .order('full_name');
 
             if (!error && data) {
                 setUsers(data.map(u => ({
                     id: u.id,
-                    email: u.email,
+                    email: u.email || '',
                     fullName: u.full_name,
-                    role: u.role,
+                    // Map position to role for permission lookup
+                    role: mapPositionToRole(u.position),
                     unitId: u.unit_id,
+                    position: u.position,
+                    unitName: (u.units as any)?.name,
                 })));
             }
             setLoading(false);
@@ -48,6 +74,8 @@ const UserImpersonator: React.FC = () => {
     const filteredUsers = users.filter(user =>
         user.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.position?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.unitName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.role?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -141,8 +169,8 @@ const UserImpersonator: React.FC = () => {
                                 onClick={() => startImpersonation(user)}
                                 disabled={impersonatedUser?.id === user.id}
                                 className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${impersonatedUser?.id === user.id
-                                        ? 'bg-amber-50 border-amber-400 dark:bg-amber-900/20'
-                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
+                                    ? 'bg-amber-50 border-amber-400 dark:bg-amber-900/20'
+                                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
                                     }`}
                             >
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold">
@@ -150,7 +178,8 @@ const UserImpersonator: React.FC = () => {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="font-semibold text-slate-800 dark:text-slate-200 truncate">{user.fullName}</p>
-                                    <p className="text-xs text-slate-500 truncate">{ROLE_LABELS[user.role] || user.role}</p>
+                                    <p className="text-xs text-slate-500 truncate">{user.position || ROLE_LABELS[user.role] || user.role}</p>
+                                    {user.unitName && <p className="text-xs text-indigo-500 truncate">{user.unitName}</p>}
                                 </div>
                                 {impersonatedUser?.id === user.id && (
                                     <UserCheck size={18} className="text-amber-500" />
