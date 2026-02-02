@@ -76,6 +76,21 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
   const [clientName, setClientName] = useState(contract?.partyA || '');
   const [signedDate, setSignedDate] = useState(contract?.signedDate || new Date().toISOString().split('T')[0]);
 
+  // CRITICAL FIX: Sync state when contract prop changes (for edit mode)
+  // useState only reads initial value once on mount, so we need useEffect to update
+  useEffect(() => {
+    if (contract) {
+      setContractType(contract.contractType || 'HĐ');
+      setUnitId(contract.unitId || '');
+      setCoordinatingUnitId(contract.coordinatingUnitId || '');
+      setSalespersonId(contract.salespersonId || '');
+      setCustomerId(contract.customerId || null);
+      setTitle(contract.title || '');
+      setClientName(contract.partyA || '');
+      setSignedDate(contract.signedDate || new Date().toISOString().split('T')[0]);
+    }
+  }, [contract]);
+
   // Fetch customer name on edit mode (so SearchableSelect shows correct display value)
   useEffect(() => {
     if (isEditing && contract?.customerId && !clientName) {
