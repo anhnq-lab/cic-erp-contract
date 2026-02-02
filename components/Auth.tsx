@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Loader2 } from 'lucide-react';
+import CICLogo from './CICLogo';
 
 const Auth = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -26,19 +27,11 @@ const Auth = () => {
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4">
             <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 p-8 md:p-12 text-center">
                 <div className="mb-8 flex justify-center">
-                    <div className="relative group">
-                        <img
-                            src="/cic-logo.png"
-                            alt="CIC Logo"
-                            className="w-32 h-auto filter drop-shadow-lg group-hover:scale-105 transition-all duration-300"
-                            style={{
-                                filter: 'drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.3))'
-                            }}
-                        />
+                    <div className="relative group hover:scale-105 transition-all duration-300">
+                        <CICLogo size="xl" variant="full" />
                     </div>
                 </div>
 
-                <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white mb-3">CIC ERP System</h1>
                 <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium">Hệ thống Quản trị Doanh nghiệp Tổng thể</p>
 
                 <button

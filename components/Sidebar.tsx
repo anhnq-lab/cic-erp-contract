@@ -2,6 +2,7 @@
 import React from 'react';
 import { NAV_ITEMS } from '../constants';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import CICLogo, { CICLogoIcon } from './CICLogo';
 
 interface SidebarProps {
   activeTab: string;
@@ -70,14 +71,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       `}>
         {/* Header & Logo */}
         <div className={`p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between ${isCollapsed ? 'md:px-2 md:justify-center' : ''}`}>
-          <div className={`flex items-center gap-2 overflow-hidden transition-all ${isCollapsed ? 'md:hidden' : 'w-auto'}`}>
-            <img
-              src="/cic-logo.png"
-              alt="CIC"
-              className="h-8 w-auto flex-shrink-0"
-              style={{ filter: 'drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2))' }}
-            />
-            <span className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight whitespace-nowrap">ERP</span>
+          <div className={`flex items-center overflow-hidden transition-all ${isCollapsed ? 'md:hidden' : 'w-auto'}`}>
+            <CICLogo size="sm" variant="full" />
+          </div>
+
+          {/* Collapsed state - show icon only */}
+          <div className={`hidden ${isCollapsed ? 'md:flex justify-center' : ''}`}>
+            <CICLogoIcon size={36} />
           </div>
 
           {/* Collapse Toggle Button - Top */}
