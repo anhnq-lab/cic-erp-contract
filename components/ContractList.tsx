@@ -435,7 +435,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                 { label: 'STT', align: 'center', width: 'w-12' },
                 { label: 'Mã hiệu / Loại', align: 'left' },
                 { label: 'Nội dung thực hiện', align: 'left' },
-                { label: 'Phụ trách (Sale)', align: 'left' },
+                { label: 'Phụ trách kinh doanh', align: 'left' },
                 { label: 'Giá trị ký', align: 'right' },
                 { label: 'Tiền về', align: 'right' },
                 { label: 'Lợi nhuận', align: 'right', color: 'text-emerald-700 dark:text-emerald-400' },

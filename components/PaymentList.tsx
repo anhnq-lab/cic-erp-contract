@@ -204,13 +204,13 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                         onClick={() => { setTypeFilter('Revenue'); setPage(1); }}
                         className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${typeFilter === 'Revenue' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
-                        Khoản Thu (Revenue)
+                        Khoản Thu
                     </button>
                     <button
                         onClick={() => { setTypeFilter('Expense'); setPage(1); }}
                         className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${typeFilter === 'Expense' ? 'bg-white dark:bg-slate-700 text-rose-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
-                        Khoản Chi (Expense)
+                        Khoản Chi
                     </button>
                 </div>
                 <button

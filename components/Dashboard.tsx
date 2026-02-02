@@ -462,8 +462,8 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
 
         {/* Main KPI Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          <KPIItem title="Ký kết (Signing)" metric="signing" stats={stats.actual} target={safeUnit?.target || { signing: 0 }} yoy={getYoY('signing')} color="indigo" icon={<FileText size={20} />} />
-          <KPIItem title="Doanh thu (Revenue)" metric="revenue" stats={stats.actual} target={safeUnit?.target || { revenue: 0 }} yoy={getYoY('revenue')} color="emerald" icon={<CreditCard size={20} />} />
+          <KPIItem title="Ký kết" metric="signing" stats={stats.actual} target={safeUnit?.target || { signing: 0 }} yoy={getYoY('signing')} color="indigo" icon={<FileText size={20} />} />
+          <KPIItem title="Doanh thu" metric="revenue" stats={stats.actual} target={safeUnit?.target || { revenue: 0 }} yoy={getYoY('revenue')} color="emerald" icon={<CreditCard size={20} />} />
           <KPIItem title="LNG Quản trị" metric="adminProfit" stats={stats.actual} target={safeUnit?.target || { adminProfit: 0 }} yoy={getYoY('adminProfit')} color="purple" icon={<TrendingUp size={20} />} />
           <KPIItem title="LNG ĐT" metric="revProfit" stats={stats.actual} target={safeUnit?.target || { revProfit: 0 }} yoy={getYoY('revProfit')} color="amber" icon={<Target size={20} />} />
           <KPIItem title="Dòng tiền ròng" metric="netCashflow" stats={stats.actual} target={{ netCashflow: 0 }} yoy={{ value: '0', isUp: true }} color="cyan" icon={<Wallet size={20} />} />
