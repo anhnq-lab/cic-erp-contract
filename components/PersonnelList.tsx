@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Search, User, Building, ChevronDown, Loader2, Plus, Pencil, Trash2, MoreVertical, Phone, Mail, Calendar, GraduationCap, MapPin, CreditCard, Eye } from 'lucide-react';
+import { Search, User, Building, ChevronDown, Loader2, Plus, Pencil, Trash2, MoreVertical, Phone, Mail, Calendar, GraduationCap, MapPin, CreditCard, Eye, Upload, Download } from 'lucide-react';
 import { EmployeeService, UnitService } from '../services';
 import { Employee, Unit } from '../types';
 import PersonnelForm from './PersonnelForm';
 import EmployeeDetailModal from './EmployeeDetailModal';
+import ImportEmployeeModal from './ImportEmployeeModal';
 
 interface PersonnelListProps {
     selectedUnit: Unit;
@@ -33,6 +34,9 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
     // Detail modal state
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
+
+    // Import modal state
+    const [isImportOpen, setIsImportOpen] = useState(false);
 
     // Fetch data
     useEffect(() => {
@@ -251,6 +255,25 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                         />
                     </div>
 
+                    {/* Import Button */}
+                    <button
+                        onClick={() => setIsImportOpen(true)}
+                        className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-2xl text-sm font-medium hover:border-indigo-300 transition-all"
+                    >
+                        <Upload size={18} />
+                        <span className="hidden sm:inline">Import</span>
+                    </button>
+
+                    {/* Download Template */}
+                    <a
+                        href="/templates/employeeImportTemplate.xlsx"
+                        download
+                        className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-2xl text-sm font-medium hover:border-emerald-300 transition-all"
+                    >
+                        <Download size={18} />
+                        <span className="hidden sm:inline">Template</span>
+                    </a>
+
                     {/* Add Button */}
                     <button
                         onClick={() => { setEditingPerson(undefined); setIsFormOpen(true); }}
@@ -278,6 +301,18 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                 unit={units.find(u => u.id === selectedEmployee?.unitId)}
                 onEdit={(emp) => { setEditingPerson(emp); setIsFormOpen(true); }}
                 onDelete={handleDelete}
+            />
+
+            {/* Import Employee Modal */}
+            <ImportEmployeeModal
+                isOpen={isImportOpen}
+                onClose={() => setIsImportOpen(false)}
+                units={units}
+                onSuccess={async () => {
+                    const employeesData = await EmployeeService.getAll();
+                    setAllPersonnel(employeesData);
+                    toast.success('Import nhân sự thành công!');
+                }}
             />
 
             {/* Summary Stats - HR focused */}
