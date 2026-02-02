@@ -31,9 +31,11 @@ export interface Employee {
   gender?: 'male' | 'female' | 'other';
   address?: string; // Địa chỉ
   education?: string; // Trình độ học vấn
+  specialization?: string; // Chuyên ngành
+  certificates?: string; // Chứng chỉ
   idNumber?: string; // CCCD/CMND
-  bankAccount?: string; // Số tài khoản
-  bankName?: string; // Tên ngân hàng
+  bankAccount?: string; // Số tài khoản (thuộc hợp đồng)
+  bankName?: string; // Tên ngân hàng (thuộc hợp đồng)
   maritalStatus?: 'single' | 'married' | 'divorced' | 'widowed';
   emergencyContact?: string; // Người liên hệ khẩn cấp
   emergencyPhone?: string; // SĐT khẩn cấp

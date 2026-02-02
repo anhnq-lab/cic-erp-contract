@@ -146,14 +146,8 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({ isOpen, onClo
                     {activeTab === 'education' && (
                         <div className="space-y-1">
                             <InfoRow label="Trình độ học vấn" value={employee.education || ''} icon={GraduationCap} />
-                            <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-                                <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
-                                    <CreditCard size={16} className="text-emerald-400" />
-                                    Thông tin ngân hàng
-                                </h4>
-                                <InfoRow label="Số tài khoản" value={employee.bankAccount || ''} icon={CreditCard} />
-                                <InfoRow label="Ngân hàng" value={employee.bankName || ''} icon={Building} />
-                            </div>
+                            <InfoRow label="Chuyên ngành" value={employee.specialization || ''} icon={GraduationCap} />
+                            <InfoRow label="Chứng chỉ" value={employee.certificates || ''} icon={GraduationCap} />
                         </div>
                     )}
 
@@ -163,6 +157,14 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({ isOpen, onClo
                             <InfoRow label="Loại hợp đồng" value={employee.contractType || ''} icon={Building} />
                             <InfoRow label="Ngày hết hạn HĐ" value={formatDate(employee.contractEndDate)} icon={Calendar} />
                             <InfoRow label="Đơn vị" value={unit?.name || ''} icon={Building} />
+                            <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                                <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
+                                    <CreditCard size={16} className="text-emerald-400" />
+                                    Thông tin ngân hàng
+                                </h4>
+                                <InfoRow label="Số tài khoản" value={employee.bankAccount || ''} icon={CreditCard} />
+                                <InfoRow label="Ngân hàng" value={employee.bankName || ''} icon={Building} />
+                            </div>
                         </div>
                     )}
                 </div>

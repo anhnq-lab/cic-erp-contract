@@ -26,6 +26,8 @@ interface ImportRow {
     idNumber?: string;
     address?: string;
     education?: string;
+    specialization?: string;
+    certificates?: string;
     dateJoined?: string;
     contractType?: string;
     bankAccount?: string;
@@ -161,10 +163,12 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
                         idNumber: row[10] ? String(row[10]).trim() : undefined,
                         address: row[11] ? String(row[11]).trim() : undefined,
                         education: row[12] ? String(row[12]).trim() : undefined,
-                        dateJoined: parseDate(row[13]),
-                        contractType: row[14] ? String(row[14]).trim() : undefined,
-                        bankAccount: row[15] ? String(row[15]).trim() : undefined,
-                        bankName: row[16] ? String(row[16]).trim() : undefined,
+                        specialization: row[13] ? String(row[13]).trim() : undefined,
+                        certificates: row[14] ? String(row[14]).trim() : undefined,
+                        dateJoined: parseDate(row[15]),
+                        contractType: row[16] ? String(row[16]).trim() : undefined,
+                        bankAccount: row[17] ? String(row[17]).trim() : undefined,
+                        bankName: row[18] ? String(row[18]).trim() : undefined,
                     };
 
                     const validatedRow = validateRow(importRow, index + 2, existingEmails);
@@ -230,6 +234,8 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
                     id_number: row.idNumber,
                     address: row.address,
                     education: row.education,
+                    specialization: row.specialization,
+                    certificates: row.certificates,
                     date_joined: row.dateJoined,
                     contract_type: row.contractType,
                     bank_account: row.bankAccount,
