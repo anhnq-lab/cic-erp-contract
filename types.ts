@@ -331,3 +331,105 @@ export interface ContractReview {
   comment?: string;
   createdAt: string;
 }
+
+// ============================================
+// PERMISSIONS (RBAC)
+// ============================================
+
+export type PermissionAction = 'view' | 'create' | 'update' | 'delete';
+export type PermissionResource =
+  | 'contracts'
+  | 'employees'
+  | 'units'
+  | 'customers'
+  | 'products'
+  | 'payments'
+  | 'settings'
+  | 'permissions';
+
+export interface UserPermission {
+  id?: string;
+  userId: string;
+  resource: PermissionResource;
+  actions: PermissionAction[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Default permissions by role
+export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Partial<Record<PermissionResource, PermissionAction[]>>> = {
+  Admin: {
+    contracts: ['view', 'create', 'update', 'delete'],
+    employees: ['view', 'create', 'update', 'delete'],
+    units: ['view', 'create', 'update', 'delete'],
+    customers: ['view', 'create', 'update', 'delete'],
+    products: ['view', 'create', 'update', 'delete'],
+    payments: ['view', 'create', 'update', 'delete'],
+    settings: ['view', 'create', 'update', 'delete'],
+    permissions: ['view', 'create', 'update', 'delete'],
+  },
+  Leadership: {
+    contracts: ['view', 'create', 'update', 'delete'],
+    employees: ['view', 'create', 'update', 'delete'],
+    units: ['view', 'create', 'update', 'delete'],
+    customers: ['view', 'create', 'update', 'delete'],
+    products: ['view', 'create', 'update', 'delete'],
+    payments: ['view', 'create', 'update', 'delete'],
+    settings: ['view'],
+    permissions: ['view'],
+  },
+  AdminUnit: {
+    contracts: ['view', 'create', 'update', 'delete'],
+    employees: ['view', 'create', 'update', 'delete'],
+    units: ['view'],
+    customers: ['view', 'create', 'update', 'delete'],
+    products: ['view'],
+    payments: ['view', 'create', 'update', 'delete'],
+    settings: ['view'],
+  },
+  UnitLeader: {
+    contracts: ['view', 'create', 'update', 'delete'],
+    employees: ['view'],
+    units: ['view'],
+    customers: ['view', 'create', 'update', 'delete'],
+    products: ['view'],
+    payments: ['view'],
+    settings: ['view'],
+  },
+  NVKD: {
+    contracts: ['view', 'create', 'update'],
+    employees: ['view'],
+    units: ['view'],
+    customers: ['view', 'create', 'update'],
+    products: ['view'],
+    payments: ['view'],
+    settings: ['view'],
+  },
+  Accountant: {
+    contracts: ['view'],
+    employees: ['view'],
+    units: ['view'],
+    customers: ['view'],
+    products: ['view'],
+    payments: ['view', 'create', 'update', 'delete'],
+    settings: ['view'],
+  },
+  ChiefAccountant: {
+    contracts: ['view', 'create', 'update'],
+    employees: ['view'],
+    units: ['view'],
+    customers: ['view'],
+    products: ['view'],
+    payments: ['view', 'create', 'update', 'delete'],
+    settings: ['view'],
+  },
+  Legal: {
+    contracts: ['view', 'create', 'update'],
+    employees: ['view'],
+    units: ['view'],
+    customers: ['view'],
+    products: ['view'],
+    payments: ['view'],
+    settings: ['view'],
+  },
+};
