@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Save, X, Loader2 } from 'lucide-react';
 import Modal from './ui/Modal';
+import NumberInput from './ui/NumberInput';
 import { Product, ProductCategory, Unit } from '../types';
 import { UnitService } from '../services';
 
@@ -75,13 +76,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
         }
     };
 
-    const formatCurrencyInput = (value: number) => {
-        return value.toLocaleString('vi-VN');
-    };
 
-    const parseCurrencyInput = (value: string) => {
-        return parseInt(value.replace(/[^\d]/g, '')) || 0;
-    };
 
     const [units, setUnits] = useState<Unit[]>([]);
     useEffect(() => {
@@ -176,22 +171,20 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Đơn giá bán (VNĐ) *</label>
-                        <input
-                            type="text"
-                            required
-                            value={formatCurrencyInput(formData.basePrice)}
-                            onChange={e => setFormData(prev => ({ ...prev, basePrice: parseCurrencyInput(e.target.value) }))}
-                            placeholder="VD: 500,000,000"
+                        <NumberInput
+                            value={formData.basePrice}
+                            onChange={(value) => setFormData(prev => ({ ...prev, basePrice: value }))}
+                            placeholder="VD: 500.000.000"
                             className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                            required
                         />
                     </div>
                     <div>
                         <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Giá vốn (VNĐ)</label>
-                        <input
-                            type="text"
-                            value={formatCurrencyInput(formData.costPrice)}
-                            onChange={e => setFormData(prev => ({ ...prev, costPrice: parseCurrencyInput(e.target.value) }))}
-                            placeholder="VD: 150,000,000"
+                        <NumberInput
+                            value={formData.costPrice}
+                            onChange={(value) => setFormData(prev => ({ ...prev, costPrice: value }))}
+                            placeholder="VD: 150.000.000"
                             className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                         />
                     </div>

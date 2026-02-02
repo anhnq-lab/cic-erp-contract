@@ -4,7 +4,7 @@ import * as XLSX from 'xlsx';
 import { Search, Filter, Plus, MoreVertical, ExternalLink, User, Loader2, DollarSign, Briefcase, TrendingUp, Calendar, Building2, ChevronLeft, ChevronRight, Download, Upload, Copy } from 'lucide-react';
 import { ContractService, EmployeeService, UnitService } from '../services';
 import { ContractStatus, Unit, Contract, Employee } from '../types';
-// import { useDebounce } from '../hooks/useDebounce'; // Inline implementation used instead
+import { useImpersonation } from '../contexts/ImpersonationContext';
 
 // Inline debounce hook if not exists, but better to check. 
 // For now, I'll use a simple useEffect debounce logic.
@@ -17,6 +17,9 @@ interface ContractListProps {
 }
 
 const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContract, onAdd, onClone }) => {
+  // Impersonation - để filter theo đơn vị của user đang giả làm
+  const { impersonatedUser, isImpersonating } = useImpersonation();
+
   // Params state
   const [statusFilter, setStatusFilter] = useState<ContractStatus | 'All'>('All');
   const [yearFilter, setYearFilter] = useState<string>('All');
@@ -68,9 +71,14 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
     const fetchContracts = async () => {
       setLoading(true);
       try {
-        // Resolve effective unit ID (Global > Local > All)
+        // IMPERSONATION OVERRIDE: Khi đang giả làm user khác, chỉ hiển thị hợp đồng của đơn vị user đó
         let effectiveUnitId = 'All';
-        if (selectedUnit && selectedUnit.id !== 'all') {
+
+        if (isImpersonating && impersonatedUser?.unitId) {
+          // 🔒 Force filter theo đơn vị của user đang giả làm
+          effectiveUnitId = impersonatedUser.unitId;
+          console.log('[ContractList] Impersonation filter:', impersonatedUser.unitId);
+        } else if (selectedUnit && selectedUnit.id !== 'all') {
           effectiveUnitId = selectedUnit.id;
         } else if (unitFilter !== 'All') {
           effectiveUnitId = unitFilter;
@@ -101,7 +109,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
       }
     };
     fetchContracts();
-  }, [page, limit, debouncedSearch, statusFilter, yearFilter, unitFilter, selectedUnit]);
+  }, [page, limit, debouncedSearch, statusFilter, yearFilter, unitFilter, selectedUnit, isImpersonating, impersonatedUser]);
 
   // Extract unique years (We can keep this separate or hardcode for now since we don't have all data to derive from)
   // For server-side, it's better to verify available years from API, but for now fallback to static range or keeping simple
@@ -198,6 +206,23 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
 
   return (
     <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500 pb-12">
+      {/* Impersonation Warning Banner */}
+      {isImpersonating && impersonatedUser && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-300 dark:border-amber-700 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-white">
+            <User size={20} />
+          </div>
+          <div className="flex-1">
+            <p className="font-bold text-amber-800 dark:text-amber-300">
+              🔒 Đang xem với quyền: {impersonatedUser.fullName}
+            </p>
+            <p className="text-xs text-amber-600 dark:text-amber-400">
+              Chỉ hiển thị hợp đồng thuộc đơn vị của nhân viên này
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Hợp đồng & Vụ việc</h1>
