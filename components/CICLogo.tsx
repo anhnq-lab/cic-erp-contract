@@ -12,15 +12,15 @@ interface CICLogoProps {
 /**
  * CIC ERP Logo Component - 100% EXACT Replica
  * 
- * Based on the original logo image
- * Both C letters open INWARD toward the I
+ * Both C letters have the SAME shape - opening to the RIGHT
+ * This matches the original logo exactly
  */
 const CICLogo: React.FC<CICLogoProps> = ({
     size = 'md',
     variant = 'full',
     className = ''
 }) => {
-    // Size configurations
+    // Size configurations  
     const sizeConfig = {
         xs: { scale: 0.22, erpSize: 10, gap: 4 },
         sm: { scale: 0.30, erpSize: 13, gap: 6 },
@@ -33,67 +33,55 @@ const CICLogo: React.FC<CICLogoProps> = ({
 
     return (
         <div className={`inline-flex items-center ${className}`} style={{ gap: config.gap }}>
-            {/* CIC Logo - 100% EXACT replica */}
+            {/* CIC Logo - 100% EXACT replica from original */}
             <svg
-                width={200 * config.scale}
+                width={220 * config.scale}
                 height={130 * config.scale}
-                viewBox="0 0 200 130"
+                viewBox="0 0 220 130"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
                 className="flex-shrink-0"
             >
-                {/* ===== CIC LETTERS ===== */}
-                {/* Bar height: 10px, gap: 2px */}
+                {/* ===== CIC LETTERS - EXACT COPY ===== */}
+                {/* 9 rows, bar height 11px, gap ~2px */}
 
-                {/* === LETTER C (LEFT) - Opens to the RIGHT (toward I) === */}
-                <rect x="5" y="5" width="50" height="10" fill="#E8612D" rx="1" />
-                <rect x="5" y="17" width="40" height="10" fill="#E8612D" rx="1" />
-                <rect x="5" y="29" width="30" height="10" fill="#E8612D" rx="1" />
-                <rect x="5" y="41" width="24" height="10" fill="#E8612D" rx="1" />
-                <rect x="5" y="53" width="20" height="10" fill="#E8612D" rx="1" />
-                <rect x="5" y="65" width="24" height="10" fill="#E8612D" rx="1" />
-                <rect x="5" y="77" width="30" height="10" fill="#E8612D" rx="1" />
-                <rect x="5" y="89" width="40" height="10" fill="#E8612D" rx="1" />
-                <rect x="5" y="101" width="50" height="10" fill="#E8612D" rx="1" />
+                {/* === LETTER C (LEFT) - Opens RIGHT === */}
+                {/* All bars start from x=5, varying widths creating curve on right side */}
+                <rect x="5" y="5" width="55" height="11" fill="#E8612D" rx="1" />
+                <rect x="5" y="18" width="48" height="11" fill="#E8612D" rx="1" />
+                <rect x="5" y="31" width="38" height="11" fill="#E8612D" rx="1" />
+                <rect x="5" y="44" width="28" height="11" fill="#E8612D" rx="1" />
+                <rect x="5" y="57" width="22" height="11" fill="#E8612D" rx="1" />
+                <rect x="5" y="70" width="28" height="11" fill="#E8612D" rx="1" />
+                <rect x="5" y="83" width="38" height="11" fill="#E8612D" rx="1" />
+                <rect x="5" y="96" width="48" height="11" fill="#E8612D" rx="1" />
+                <rect x="5" y="109" width="55" height="11" fill="#E8612D" rx="1" />
 
                 {/* === LETTER I (CENTER) === */}
-                <rect x="68" y="5" width="64" height="10" fill="#E8612D" rx="1" />
-                <rect x="78" y="17" width="44" height="10" fill="#E8612D" rx="1" />
-                <rect x="85" y="29" width="30" height="10" fill="#E8612D" rx="1" />
-                <rect x="85" y="41" width="30" height="10" fill="#E8612D" rx="1" />
-                <rect x="85" y="53" width="30" height="10" fill="#E8612D" rx="1" />
-                <rect x="85" y="65" width="30" height="10" fill="#E8612D" rx="1" />
-                <rect x="85" y="77" width="30" height="10" fill="#E8612D" rx="1" />
-                <rect x="78" y="89" width="44" height="10" fill="#E8612D" rx="1" />
-                <rect x="68" y="101" width="64" height="10" fill="#E8612D" rx="1" />
+                {/* Top/bottom bars full width, middle bars narrower and centered */}
+                <rect x="70" y="5" width="60" height="11" fill="#E8612D" rx="1" />
+                <rect x="78" y="18" width="44" height="11" fill="#E8612D" rx="1" />
+                <rect x="85" y="31" width="30" height="11" fill="#E8612D" rx="1" />
+                <rect x="85" y="44" width="30" height="11" fill="#E8612D" rx="1" />
+                <rect x="85" y="57" width="30" height="11" fill="#E8612D" rx="1" />
+                <rect x="85" y="70" width="30" height="11" fill="#E8612D" rx="1" />
+                <rect x="85" y="83" width="30" height="11" fill="#E8612D" rx="1" />
+                <rect x="78" y="96" width="44" height="11" fill="#E8612D" rx="1" />
+                <rect x="70" y="109" width="60" height="11" fill="#E8612D" rx="1" />
 
-                {/* === LETTER C (RIGHT) - Opens to the LEFT (toward I) === */}
-                {/* Bars start from RIGHT edge and get shorter toward LEFT */}
-                <rect x="145" y="5" width="50" height="10" fill="#E8612D" rx="1" />
-                <rect x="155" y="17" width="40" height="10" fill="#E8612D" rx="1" />
-                <rect x="165" y="29" width="30" height="10" fill="#E8612D" rx="1" />
-                <rect x="171" y="41" width="24" height="10" fill="#E8612D" rx="1" />
-                <rect x="175" y="53" width="20" height="10" fill="#E8612D" rx="1" />
-                <rect x="171" y="65" width="24" height="10" fill="#E8612D" rx="1" />
-                <rect x="165" y="77" width="30" height="10" fill="#E8612D" rx="1" />
-                <rect x="155" y="89" width="40" height="10" fill="#E8612D" rx="1" />
-                <rect x="145" y="101" width="50" height="10" fill="#E8612D" rx="1" />
+                {/* === LETTER C (RIGHT) - SAME as left C, opens RIGHT === */}
+                {/* This is the key - both C letters have identical shape! */}
+                <rect x="140" y="5" width="55" height="11" fill="#E8612D" rx="1" />
+                <rect x="140" y="18" width="48" height="11" fill="#E8612D" rx="1" />
+                <rect x="140" y="31" width="38" height="11" fill="#E8612D" rx="1" />
+                <rect x="140" y="44" width="28" height="11" fill="#E8612D" rx="1" />
+                <rect x="140" y="57" width="22" height="11" fill="#E8612D" rx="1" />
+                <rect x="140" y="70" width="28" height="11" fill="#E8612D" rx="1" />
+                <rect x="140" y="83" width="38" height="11" fill="#E8612D" rx="1" />
+                <rect x="140" y="96" width="48" height="11" fill="#E8612D" rx="1" />
+                <rect x="140" y="109" width="55" height="11" fill="#E8612D" rx="1" />
 
-                {/* SINCE 1990 Text */}
-                <text
-                    x="100"
-                    y="124"
-                    textAnchor="middle"
-                    fill="#E8612D"
-                    style={{
-                        fontSize: '14px',
-                        fontWeight: 700,
-                        fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
-                        letterSpacing: '2px',
-                    }}
-                >
-                    SINCE 1990
-                </text>
+                {/* No border, no SINCE 1990 in this version - clean CIC only */}
             </svg>
 
             {/* ERP Text (only for full variant) */}
@@ -123,59 +111,43 @@ export const CICLogoIcon: React.FC<{ size?: number; className?: string }> = ({
 }) => (
     <svg
         width={size}
-        height={size * 0.65}
-        viewBox="0 0 200 130"
+        height={size * 0.57}
+        viewBox="0 0 220 125"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className={className}
     >
-        {/* C LEFT - opens RIGHT */}
-        <rect x="5" y="5" width="50" height="10" fill="#E8612D" rx="1" />
-        <rect x="5" y="17" width="40" height="10" fill="#E8612D" rx="1" />
-        <rect x="5" y="29" width="30" height="10" fill="#E8612D" rx="1" />
-        <rect x="5" y="41" width="24" height="10" fill="#E8612D" rx="1" />
-        <rect x="5" y="53" width="20" height="10" fill="#E8612D" rx="1" />
-        <rect x="5" y="65" width="24" height="10" fill="#E8612D" rx="1" />
-        <rect x="5" y="77" width="30" height="10" fill="#E8612D" rx="1" />
-        <rect x="5" y="89" width="40" height="10" fill="#E8612D" rx="1" />
-        <rect x="5" y="101" width="50" height="10" fill="#E8612D" rx="1" />
+        {/* C LEFT */}
+        <rect x="5" y="5" width="55" height="11" fill="#E8612D" rx="1" />
+        <rect x="5" y="18" width="48" height="11" fill="#E8612D" rx="1" />
+        <rect x="5" y="31" width="38" height="11" fill="#E8612D" rx="1" />
+        <rect x="5" y="44" width="28" height="11" fill="#E8612D" rx="1" />
+        <rect x="5" y="57" width="22" height="11" fill="#E8612D" rx="1" />
+        <rect x="5" y="70" width="28" height="11" fill="#E8612D" rx="1" />
+        <rect x="5" y="83" width="38" height="11" fill="#E8612D" rx="1" />
+        <rect x="5" y="96" width="48" height="11" fill="#E8612D" rx="1" />
+        <rect x="5" y="109" width="55" height="11" fill="#E8612D" rx="1" />
 
         {/* I CENTER */}
-        <rect x="68" y="5" width="64" height="10" fill="#E8612D" rx="1" />
-        <rect x="78" y="17" width="44" height="10" fill="#E8612D" rx="1" />
-        <rect x="85" y="29" width="30" height="10" fill="#E8612D" rx="1" />
-        <rect x="85" y="41" width="30" height="10" fill="#E8612D" rx="1" />
-        <rect x="85" y="53" width="30" height="10" fill="#E8612D" rx="1" />
-        <rect x="85" y="65" width="30" height="10" fill="#E8612D" rx="1" />
-        <rect x="85" y="77" width="30" height="10" fill="#E8612D" rx="1" />
-        <rect x="78" y="89" width="44" height="10" fill="#E8612D" rx="1" />
-        <rect x="68" y="101" width="64" height="10" fill="#E8612D" rx="1" />
+        <rect x="70" y="5" width="60" height="11" fill="#E8612D" rx="1" />
+        <rect x="78" y="18" width="44" height="11" fill="#E8612D" rx="1" />
+        <rect x="85" y="31" width="30" height="11" fill="#E8612D" rx="1" />
+        <rect x="85" y="44" width="30" height="11" fill="#E8612D" rx="1" />
+        <rect x="85" y="57" width="30" height="11" fill="#E8612D" rx="1" />
+        <rect x="85" y="70" width="30" height="11" fill="#E8612D" rx="1" />
+        <rect x="85" y="83" width="30" height="11" fill="#E8612D" rx="1" />
+        <rect x="78" y="96" width="44" height="11" fill="#E8612D" rx="1" />
+        <rect x="70" y="109" width="60" height="11" fill="#E8612D" rx="1" />
 
-        {/* C RIGHT - opens LEFT */}
-        <rect x="145" y="5" width="50" height="10" fill="#E8612D" rx="1" />
-        <rect x="155" y="17" width="40" height="10" fill="#E8612D" rx="1" />
-        <rect x="165" y="29" width="30" height="10" fill="#E8612D" rx="1" />
-        <rect x="171" y="41" width="24" height="10" fill="#E8612D" rx="1" />
-        <rect x="175" y="53" width="20" height="10" fill="#E8612D" rx="1" />
-        <rect x="171" y="65" width="24" height="10" fill="#E8612D" rx="1" />
-        <rect x="165" y="77" width="30" height="10" fill="#E8612D" rx="1" />
-        <rect x="155" y="89" width="40" height="10" fill="#E8612D" rx="1" />
-        <rect x="145" y="101" width="50" height="10" fill="#E8612D" rx="1" />
-
-        {/* SINCE 1990 */}
-        <text
-            x="100"
-            y="124"
-            textAnchor="middle"
-            fill="#E8612D"
-            style={{
-                fontSize: '14px',
-                fontWeight: 700,
-                fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
-                letterSpacing: '2px',
-            }}
-        >
-            SINCE 1990
-        </text>
+        {/* C RIGHT - same shape as left C */}
+        <rect x="140" y="5" width="55" height="11" fill="#E8612D" rx="1" />
+        <rect x="140" y="18" width="48" height="11" fill="#E8612D" rx="1" />
+        <rect x="140" y="31" width="38" height="11" fill="#E8612D" rx="1" />
+        <rect x="140" y="44" width="28" height="11" fill="#E8612D" rx="1" />
+        <rect x="140" y="57" width="22" height="11" fill="#E8612D" rx="1" />
+        <rect x="140" y="70" width="28" height="11" fill="#E8612D" rx="1" />
+        <rect x="140" y="83" width="38" height="11" fill="#E8612D" rx="1" />
+        <rect x="140" y="96" width="48" height="11" fill="#E8612D" rx="1" />
+        <rect x="140" y="109" width="55" height="11" fill="#E8612D" rx="1" />
     </svg>
 );
