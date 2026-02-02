@@ -10,10 +10,10 @@ interface CICLogoProps {
 }
 
 /**
- * CIC ERP Logo Component - EXACT Replica
+ * CIC ERP Logo Component - 100% EXACT Replica
  * 
- * Based on the original logo image provided by user
- * Thick horizontal stripes with curved C shapes
+ * Based on the original logo image
+ * Both C letters open INWARD toward the I
  */
 const CICLogo: React.FC<CICLogoProps> = ({
     size = 'md',
@@ -22,18 +22,18 @@ const CICLogo: React.FC<CICLogoProps> = ({
 }) => {
     // Size configurations
     const sizeConfig = {
-        xs: { scale: 0.22, erpSize: 10, gap: 4, sinceSize: 6 },
-        sm: { scale: 0.30, erpSize: 13, gap: 6, sinceSize: 8 },
-        md: { scale: 0.40, erpSize: 16, gap: 8, sinceSize: 10 },
-        lg: { scale: 0.55, erpSize: 20, gap: 10, sinceSize: 12 },
-        xl: { scale: 0.70, erpSize: 26, gap: 14, sinceSize: 14 },
+        xs: { scale: 0.22, erpSize: 10, gap: 4 },
+        sm: { scale: 0.30, erpSize: 13, gap: 6 },
+        md: { scale: 0.40, erpSize: 16, gap: 8 },
+        lg: { scale: 0.55, erpSize: 20, gap: 10 },
+        xl: { scale: 0.70, erpSize: 26, gap: 14 },
     };
 
     const config = sizeConfig[size];
 
     return (
         <div className={`inline-flex items-center ${className}`} style={{ gap: config.gap }}>
-            {/* CIC Logo - EXACT replica from original image */}
+            {/* CIC Logo - 100% EXACT replica */}
             <svg
                 width={200 * config.scale}
                 height={130 * config.scale}
@@ -42,73 +42,47 @@ const CICLogo: React.FC<CICLogoProps> = ({
                 xmlns="http://www.w3.org/2000/svg"
                 className="flex-shrink-0"
             >
-                {/* ===== CIC LETTERS - THICK HORIZONTAL STRIPES ===== */}
-                {/* Bar height: 10px, gap: 2px - very thick and tight */}
+                {/* ===== CIC LETTERS ===== */}
+                {/* Bar height: 10px, gap: 2px */}
 
-                {/* === LETTER C (LEFT) - Curved shape === */}
-                {/* Row 1 - Top curve */}
-                <rect x="10" y="5" width="50" height="10" fill="#E8612D" rx="2" />
-                {/* Row 2 */}
-                <rect x="5" y="17" width="42" height="10" fill="#E8612D" rx="2" />
-                {/* Row 3 */}
-                <rect x="3" y="29" width="32" height="10" fill="#E8612D" rx="2" />
-                {/* Row 4 */}
-                <rect x="2" y="41" width="25" height="10" fill="#E8612D" rx="2" />
-                {/* Row 5 - Middle (shortest) */}
-                <rect x="2" y="53" width="22" height="10" fill="#E8612D" rx="2" />
-                {/* Row 6 */}
-                <rect x="2" y="65" width="25" height="10" fill="#E8612D" rx="2" />
-                {/* Row 7 */}
-                <rect x="3" y="77" width="32" height="10" fill="#E8612D" rx="2" />
-                {/* Row 8 */}
-                <rect x="5" y="89" width="42" height="10" fill="#E8612D" rx="2" />
-                {/* Row 9 - Bottom curve */}
-                <rect x="10" y="101" width="50" height="10" fill="#E8612D" rx="2" />
+                {/* === LETTER C (LEFT) - Opens to the RIGHT (toward I) === */}
+                <rect x="5" y="5" width="50" height="10" fill="#E8612D" rx="1" />
+                <rect x="5" y="17" width="40" height="10" fill="#E8612D" rx="1" />
+                <rect x="5" y="29" width="30" height="10" fill="#E8612D" rx="1" />
+                <rect x="5" y="41" width="24" height="10" fill="#E8612D" rx="1" />
+                <rect x="5" y="53" width="20" height="10" fill="#E8612D" rx="1" />
+                <rect x="5" y="65" width="24" height="10" fill="#E8612D" rx="1" />
+                <rect x="5" y="77" width="30" height="10" fill="#E8612D" rx="1" />
+                <rect x="5" y="89" width="40" height="10" fill="#E8612D" rx="1" />
+                <rect x="5" y="101" width="50" height="10" fill="#E8612D" rx="1" />
 
                 {/* === LETTER I (CENTER) === */}
-                {/* Row 1 - Top bar (full width) */}
-                <rect x="68" y="5" width="64" height="10" fill="#E8612D" rx="2" />
-                {/* Row 2 */}
-                <rect x="80" y="17" width="40" height="10" fill="#E8612D" rx="2" />
-                {/* Row 3 - Stem */}
-                <rect x="85" y="29" width="30" height="10" fill="#E8612D" rx="2" />
-                {/* Row 4 - Stem */}
-                <rect x="85" y="41" width="30" height="10" fill="#E8612D" rx="2" />
-                {/* Row 5 - Stem */}
-                <rect x="85" y="53" width="30" height="10" fill="#E8612D" rx="2" />
-                {/* Row 6 - Stem */}
-                <rect x="85" y="65" width="30" height="10" fill="#E8612D" rx="2" />
-                {/* Row 7 - Stem */}
-                <rect x="85" y="77" width="30" height="10" fill="#E8612D" rx="2" />
-                {/* Row 8 */}
-                <rect x="80" y="89" width="40" height="10" fill="#E8612D" rx="2" />
-                {/* Row 9 - Bottom bar (full width) */}
-                <rect x="68" y="101" width="64" height="10" fill="#E8612D" rx="2" />
+                <rect x="68" y="5" width="64" height="10" fill="#E8612D" rx="1" />
+                <rect x="78" y="17" width="44" height="10" fill="#E8612D" rx="1" />
+                <rect x="85" y="29" width="30" height="10" fill="#E8612D" rx="1" />
+                <rect x="85" y="41" width="30" height="10" fill="#E8612D" rx="1" />
+                <rect x="85" y="53" width="30" height="10" fill="#E8612D" rx="1" />
+                <rect x="85" y="65" width="30" height="10" fill="#E8612D" rx="1" />
+                <rect x="85" y="77" width="30" height="10" fill="#E8612D" rx="1" />
+                <rect x="78" y="89" width="44" height="10" fill="#E8612D" rx="1" />
+                <rect x="68" y="101" width="64" height="10" fill="#E8612D" rx="1" />
 
-                {/* === LETTER C (RIGHT) - Curved shape === */}
-                {/* Row 1 - Top curve */}
-                <rect x="140" y="5" width="50" height="10" fill="#E8612D" rx="2" />
-                {/* Row 2 */}
-                <rect x="153" y="17" width="42" height="10" fill="#E8612D" rx="2" />
-                {/* Row 3 */}
-                <rect x="165" y="29" width="32" height="10" fill="#E8612D" rx="2" />
-                {/* Row 4 */}
-                <rect x="173" y="41" width="25" height="10" fill="#E8612D" rx="2" />
-                {/* Row 5 - Middle (shortest) */}
-                <rect x="176" y="53" width="22" height="10" fill="#E8612D" rx="2" />
-                {/* Row 6 */}
-                <rect x="173" y="65" width="25" height="10" fill="#E8612D" rx="2" />
-                {/* Row 7 */}
-                <rect x="165" y="77" width="32" height="10" fill="#E8612D" rx="2" />
-                {/* Row 8 */}
-                <rect x="153" y="89" width="42" height="10" fill="#E8612D" rx="2" />
-                {/* Row 9 - Bottom curve */}
-                <rect x="140" y="101" width="50" height="10" fill="#E8612D" rx="2" />
+                {/* === LETTER C (RIGHT) - Opens to the LEFT (toward I) === */}
+                {/* Bars start from RIGHT edge and get shorter toward LEFT */}
+                <rect x="145" y="5" width="50" height="10" fill="#E8612D" rx="1" />
+                <rect x="155" y="17" width="40" height="10" fill="#E8612D" rx="1" />
+                <rect x="165" y="29" width="30" height="10" fill="#E8612D" rx="1" />
+                <rect x="171" y="41" width="24" height="10" fill="#E8612D" rx="1" />
+                <rect x="175" y="53" width="20" height="10" fill="#E8612D" rx="1" />
+                <rect x="171" y="65" width="24" height="10" fill="#E8612D" rx="1" />
+                <rect x="165" y="77" width="30" height="10" fill="#E8612D" rx="1" />
+                <rect x="155" y="89" width="40" height="10" fill="#E8612D" rx="1" />
+                <rect x="145" y="101" width="50" height="10" fill="#E8612D" rx="1" />
 
                 {/* SINCE 1990 Text */}
                 <text
                     x="100"
-                    y="125"
+                    y="124"
                     textAnchor="middle"
                     fill="#E8612D"
                     style={{
@@ -155,43 +129,43 @@ export const CICLogoIcon: React.FC<{ size?: number; className?: string }> = ({
         xmlns="http://www.w3.org/2000/svg"
         className={className}
     >
-        {/* C LEFT */}
-        <rect x="10" y="5" width="50" height="10" fill="#E8612D" rx="2" />
-        <rect x="5" y="17" width="42" height="10" fill="#E8612D" rx="2" />
-        <rect x="3" y="29" width="32" height="10" fill="#E8612D" rx="2" />
-        <rect x="2" y="41" width="25" height="10" fill="#E8612D" rx="2" />
-        <rect x="2" y="53" width="22" height="10" fill="#E8612D" rx="2" />
-        <rect x="2" y="65" width="25" height="10" fill="#E8612D" rx="2" />
-        <rect x="3" y="77" width="32" height="10" fill="#E8612D" rx="2" />
-        <rect x="5" y="89" width="42" height="10" fill="#E8612D" rx="2" />
-        <rect x="10" y="101" width="50" height="10" fill="#E8612D" rx="2" />
+        {/* C LEFT - opens RIGHT */}
+        <rect x="5" y="5" width="50" height="10" fill="#E8612D" rx="1" />
+        <rect x="5" y="17" width="40" height="10" fill="#E8612D" rx="1" />
+        <rect x="5" y="29" width="30" height="10" fill="#E8612D" rx="1" />
+        <rect x="5" y="41" width="24" height="10" fill="#E8612D" rx="1" />
+        <rect x="5" y="53" width="20" height="10" fill="#E8612D" rx="1" />
+        <rect x="5" y="65" width="24" height="10" fill="#E8612D" rx="1" />
+        <rect x="5" y="77" width="30" height="10" fill="#E8612D" rx="1" />
+        <rect x="5" y="89" width="40" height="10" fill="#E8612D" rx="1" />
+        <rect x="5" y="101" width="50" height="10" fill="#E8612D" rx="1" />
 
         {/* I CENTER */}
-        <rect x="68" y="5" width="64" height="10" fill="#E8612D" rx="2" />
-        <rect x="80" y="17" width="40" height="10" fill="#E8612D" rx="2" />
-        <rect x="85" y="29" width="30" height="10" fill="#E8612D" rx="2" />
-        <rect x="85" y="41" width="30" height="10" fill="#E8612D" rx="2" />
-        <rect x="85" y="53" width="30" height="10" fill="#E8612D" rx="2" />
-        <rect x="85" y="65" width="30" height="10" fill="#E8612D" rx="2" />
-        <rect x="85" y="77" width="30" height="10" fill="#E8612D" rx="2" />
-        <rect x="80" y="89" width="40" height="10" fill="#E8612D" rx="2" />
-        <rect x="68" y="101" width="64" height="10" fill="#E8612D" rx="2" />
+        <rect x="68" y="5" width="64" height="10" fill="#E8612D" rx="1" />
+        <rect x="78" y="17" width="44" height="10" fill="#E8612D" rx="1" />
+        <rect x="85" y="29" width="30" height="10" fill="#E8612D" rx="1" />
+        <rect x="85" y="41" width="30" height="10" fill="#E8612D" rx="1" />
+        <rect x="85" y="53" width="30" height="10" fill="#E8612D" rx="1" />
+        <rect x="85" y="65" width="30" height="10" fill="#E8612D" rx="1" />
+        <rect x="85" y="77" width="30" height="10" fill="#E8612D" rx="1" />
+        <rect x="78" y="89" width="44" height="10" fill="#E8612D" rx="1" />
+        <rect x="68" y="101" width="64" height="10" fill="#E8612D" rx="1" />
 
-        {/* C RIGHT */}
-        <rect x="140" y="5" width="50" height="10" fill="#E8612D" rx="2" />
-        <rect x="153" y="17" width="42" height="10" fill="#E8612D" rx="2" />
-        <rect x="165" y="29" width="32" height="10" fill="#E8612D" rx="2" />
-        <rect x="173" y="41" width="25" height="10" fill="#E8612D" rx="2" />
-        <rect x="176" y="53" width="22" height="10" fill="#E8612D" rx="2" />
-        <rect x="173" y="65" width="25" height="10" fill="#E8612D" rx="2" />
-        <rect x="165" y="77" width="32" height="10" fill="#E8612D" rx="2" />
-        <rect x="153" y="89" width="42" height="10" fill="#E8612D" rx="2" />
-        <rect x="140" y="101" width="50" height="10" fill="#E8612D" rx="2" />
+        {/* C RIGHT - opens LEFT */}
+        <rect x="145" y="5" width="50" height="10" fill="#E8612D" rx="1" />
+        <rect x="155" y="17" width="40" height="10" fill="#E8612D" rx="1" />
+        <rect x="165" y="29" width="30" height="10" fill="#E8612D" rx="1" />
+        <rect x="171" y="41" width="24" height="10" fill="#E8612D" rx="1" />
+        <rect x="175" y="53" width="20" height="10" fill="#E8612D" rx="1" />
+        <rect x="171" y="65" width="24" height="10" fill="#E8612D" rx="1" />
+        <rect x="165" y="77" width="30" height="10" fill="#E8612D" rx="1" />
+        <rect x="155" y="89" width="40" height="10" fill="#E8612D" rx="1" />
+        <rect x="145" y="101" width="50" height="10" fill="#E8612D" rx="1" />
 
         {/* SINCE 1990 */}
         <text
             x="100"
-            y="125"
+            y="124"
             textAnchor="middle"
             fill="#E8612D"
             style={{
