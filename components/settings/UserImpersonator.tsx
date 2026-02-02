@@ -49,12 +49,20 @@ const UserImpersonator: React.FC = () => {
         const fetchUsers = async () => {
             setLoading(true);
             // Lấy từ employees table (danh sách nhân sự đầy đủ)
+            // Dùng left join với units (không dùng !inner để bao gồm cả employees không có unit)
             const { data, error } = await supabase
                 .from('employees')
-                .select('id, email, full_name, position, unit_id, units!inner(name)')
+                .select('id, email, full_name, position, unit_id, units(name)')
                 .order('full_name');
 
-            if (!error && data) {
+            if (error) {
+                console.error('[UserImpersonator] Error fetching employees:', error);
+                setLoading(false);
+                return;
+            }
+
+            if (data) {
+                console.log('[UserImpersonator] Loaded', data.length, 'employees');
                 setUsers(data.map(u => ({
                     id: u.id,
                     email: u.email || '',
