@@ -10,6 +10,7 @@ export interface ContractTotals {
     totalInput: number;
     totalDirectCosts: number;
     adminSum: number;
+    supplierDiscount: number; // Chiết khấu từ NCC (giảm chi phí)
 }
 
 export interface UseContractCalculationsProps {
@@ -46,19 +47,20 @@ export function useContractCalculations({
             0
         );
 
-        // Sum of administrative costs
-        const adminSum = (Object.values(adminCosts) as number[]).reduce(
-            (acc: number, val: number) => acc + val,
+        // Sum of administrative costs (EXCLUDING supplierDiscount)
+        const { supplierDiscount = 0, ...otherAdminCosts } = adminCosts;
+        const adminSum = (Object.values(otherAdminCosts) as number[]).reduce(
+            (acc: number, val: number) => acc + (typeof val === 'number' ? val : 0),
             0
         );
 
         // Revenue after VAT deduction
         const estimatedRevenue = signingValue / (1 + vatRate);
 
-        // Total costs
-        const totalCosts = totalInput + totalDirectCosts + adminSum;
+        // Total costs (supplierDiscount REDUCES costs, so we subtract it)
+        const totalCosts = totalInput + totalDirectCosts + adminSum - supplierDiscount;
 
-        // Gross profit and margin
+        // Gross profit and margin (supplierDiscount adds to profit)
         const grossProfit = signingValue - totalCosts;
         const profitMargin = signingValue > 0 ? (grossProfit / signingValue) * 100 : 0;
 
@@ -70,7 +72,8 @@ export function useContractCalculations({
             profitMargin,
             totalInput,
             totalDirectCosts,
-            adminSum,
+            adminSum, // This is admin costs WITHOUT supplierDiscount
+            supplierDiscount, // Export separately for display
         };
     }, [lineItems, adminCosts, vatRate]);
 }
