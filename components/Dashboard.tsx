@@ -369,25 +369,29 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
   return (
     <ErrorBoundary>
       <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500 pb-12">
-        {/* HEADER */}
-        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-          <div className="space-y-4">
-            <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-3">
-              Tổng quan Quản trị
-            </h1>
+        {/* HEADER - Title Only */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+            Tổng quan Quản trị
+          </h1>
+        </div>
 
+        {/* STICKY FILTER BAR - Filters + Metric Tabs */}
+        <div className="sticky top-0 z-30 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-sm -mx-6 px-6 py-4 border-b border-slate-200/50 dark:border-slate-800/50">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            {/* Left: Filters */}
             <div className="flex flex-wrap items-center gap-3">
               {/* Unit Filter Button */}
               <div className="relative z-20">
                 <button
                   onClick={() => setShowUnitSelector(!showUnitSelector)}
-                  className="flex items-center gap-2.5 px-5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group"
+                  className="flex items-center gap-2.5 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group"
                 >
-                  <Building2 size={18} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
-                  <span className="text-sm font-bold text-slate-700 dark:text-slate-200 min-w-[100px] text-left truncate max-w-[200px]">
+                  <Building2 size={16} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[140px]">
                     {safeUnit.name}
                   </span>
-                  <ChevronDown size={16} className={`text-slate-400 transition-transform duration-300 ${showUnitSelector ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={14} className={`text-slate-400 transition-transform duration-300 ${showUnitSelector ? 'rotate-180' : ''}`} />
                 </button>
 
                 {showUnitSelector && (
@@ -417,12 +421,12 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
 
               {/* Year Filter Button */}
               <div className="relative z-10">
-                <div className="flex items-center gap-2.5 px-5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group cursor-pointer relative">
-                  <Calendar size={18} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group cursor-pointer relative">
+                  <Calendar size={16} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
                   <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
                     {yearFilter === 'All' ? 'Tất cả năm' : `Năm ${yearFilter}`}
                   </span>
-                  <ChevronDown size={16} className="text-slate-400" />
+                  <ChevronDown size={14} className="text-slate-400" />
 
                   <select
                     value={yearFilter}
@@ -437,22 +441,22 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Metric Tabs */}
-          <div className="flex bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto no-scrollbar">
-            {metricTabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveMetric(tab.id as keyof KPIPlan)}
-                className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${activeMetric === tab.id
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200 dark:shadow-none'
-                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
-                  }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+            {/* Right: Metric Tabs */}
+            <div className="flex bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto no-scrollbar">
+              {metricTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveMetric(tab.id as keyof KPIPlan)}
+                  className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${activeMetric === tab.id
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200 dark:shadow-none'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
