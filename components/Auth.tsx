@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Loader2 } from 'lucide-react';
+import CICLogo from './CICLogo';
 
 /**
  * Modern Auth Component with Glassmorphism Design
@@ -68,30 +69,9 @@ const Auth = () => {
 
                     {/* Logo Section */}
                     <div className="text-center mb-8">
-                        {/* CIC Logo - Modern Clean Style */}
-                        <div className="inline-flex items-center gap-3 mb-4">
-                            {/* CIC Text with Gradient */}
-                            <div className="relative">
-                                <span className="text-5xl md:text-6xl font-black tracking-tight bg-gradient-to-r from-orange-500 via-orange-600 to-red-600 bg-clip-text text-transparent"
-                                    style={{ fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif" }}>
-                                    CIC
-                                </span>
-                                {/* Subtle shadow for depth */}
-                                <span className="absolute inset-0 text-5xl md:text-6xl font-black tracking-tight text-orange-500/10 dark:text-orange-400/5 blur-sm -z-10"
-                                    style={{ fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif" }}>
-                                    CIC
-                                </span>
-                            </div>
-
-                            {/* ERP Badge */}
-                            <div className="flex flex-col items-start">
-                                <span className="text-xl md:text-2xl font-bold text-slate-700 dark:text-slate-200 tracking-wide">
-                                    ERP
-                                </span>
-                                <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 tracking-[0.2em] uppercase">
-                                    Since 1990
-                                </span>
-                            </div>
+                        {/* CIC Logo - Authentic Striped Style */}
+                        <div className="flex justify-center mb-4">
+                            <CICLogo size="xl" variant="full" />
                         </div>
 
                         {/* Subtitle */}
