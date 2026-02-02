@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { dataClient as supabase } from '../lib/dataClient';
 
 export interface AuditLog {
     id: string;

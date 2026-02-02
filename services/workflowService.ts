@@ -1,4 +1,5 @@
 import { dataClient as supabase } from '../lib/dataClient';
+import { supabase as authClient } from '../lib/supabase';
 import { PlanStatus, UserRole } from '../types';
 import { AuditLogService } from './auditLogService';
 
@@ -240,7 +241,7 @@ export const WorkflowService = {
         console.log('[WorkflowService] contract_reviews insert:', { reviewError });
 
         // Explicitly create audit log (don't rely on DB trigger)
-        const currentUser = (await supabase.auth.getUser()).data.user;
+        const currentUser = (await authClient.auth.getUser()).data.user;
         await AuditLogService.create({
             user_id: currentUser?.id || null,
             table_name: 'contracts',
