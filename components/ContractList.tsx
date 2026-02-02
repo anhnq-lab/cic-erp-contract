@@ -5,6 +5,7 @@ import { Search, Filter, Plus, MoreVertical, ExternalLink, User, Loader2, Dollar
 import { ContractService, EmployeeService, UnitService } from '../services';
 import { ContractStatus, Unit, Contract, Employee } from '../types';
 import { useImpersonation } from '../contexts/ImpersonationContext';
+import ImportContractModal from './ImportContractModal';
 
 // Inline debounce hook if not exists, but better to check. 
 // For now, I'll use a simple useEffect debounce logic.
@@ -38,6 +39,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState({ totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0 });
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // Debounce search
   useEffect(() => {
@@ -239,7 +241,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
             accept=".xlsx, .xls"
           />
           <button
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => setIsImportModalOpen(true)}
             className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-5 py-3 rounded-2xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
           >
             <Upload size={20} /> Nhập Excel
@@ -622,6 +624,17 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
           </button>
         </div>
       </div>
+
+      {/* Import Modal */}
+      <ImportContractModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => {
+          setPage(1);
+          setDebouncedSearch(prev => prev + ' ');
+          setIsImportModalOpen(false);
+        }}
+      />
     </div>
   );
 };
