@@ -177,6 +177,7 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                                 <option value="Company">Công ty</option>
                                 <option value="Branch">Chi nhánh</option>
                                 <option value="Center">Trung tâm</option>
+                                <option value="BackOffice">Phòng ban</option>
                             </select>
                         </div>
 
