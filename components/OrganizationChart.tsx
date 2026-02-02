@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Building2, Users, ChevronDown, ChevronRight, Crown, User, Target, TrendingUp, Edit2 } from 'lucide-react';
+import { Building2, Users, ChevronDown, ChevronUp, Crown, Edit2, Plus, Minus } from 'lucide-react';
 import { Unit, Employee } from '../types';
 import { UnitService, EmployeeService } from '../services';
-import { formatVND } from '../lib/utils';
 
 interface OrgNode extends Unit {
     children: OrgNode[];
     manager?: Employee;
     employeeCount?: number;
-    contractCount?: number;
 }
 
 interface OrganizationChartProps {
@@ -19,8 +17,9 @@ interface OrganizationChartProps {
 const OrganizationChart: React.FC<OrganizationChartProps> = ({ onSelectUnit, onEditUnit }) => {
     const [units, setUnits] = useState<Unit[]>([]);
     const [employees, setEmployees] = useState<Employee[]>([]);
-    const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+    const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
+    const [zoom, setZoom] = useState(100);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -33,9 +32,6 @@ const OrganizationChart: React.FC<OrganizationChartProps> = ({ onSelectUnit, onE
                 setUnits(unitsData);
                 const empList = Array.isArray(employeesData) ? employeesData : (employeesData as any).data || [];
                 setEmployees(empList);
-                // Expand root nodes by default
-                const rootIds = unitsData.filter(u => !u.parentId || u.parentId === 'all').map(u => u.id);
-                setExpandedNodes(new Set(rootIds));
             } catch (error) {
                 console.error('Error fetching org data:', error);
             } finally {
@@ -83,8 +79,8 @@ const OrganizationChart: React.FC<OrganizationChartProps> = ({ onSelectUnit, onE
         return rootNodes;
     }, [units, employees]);
 
-    const toggleExpand = (id: string) => {
-        setExpandedNodes(prev => {
+    const toggleCollapse = (id: string) => {
+        setCollapsedNodes(prev => {
             const next = new Set(prev);
             if (next.has(id)) {
                 next.delete(id);
@@ -95,195 +91,262 @@ const OrganizationChart: React.FC<OrganizationChartProps> = ({ onSelectUnit, onE
         });
     };
 
-    const expandAll = () => {
-        setExpandedNodes(new Set(units.map(u => u.id)));
-    };
-
-    const collapseAll = () => {
-        setExpandedNodes(new Set());
-    };
-
-    const getTypeStyles = (type: string) => {
+    const getTypeColor = (type: string) => {
         switch (type) {
             case 'Company':
-                return {
-                    bg: 'bg-gradient-to-br from-amber-500 to-orange-600',
-                    border: 'border-amber-400',
-                    badge: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
-                };
+                return 'from-amber-500 to-orange-600 border-amber-400';
             case 'Branch':
-                return {
-                    bg: 'bg-gradient-to-br from-blue-500 to-indigo-600',
-                    border: 'border-blue-400',
-                    badge: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-                };
+                return 'from-blue-500 to-indigo-600 border-blue-400';
             default:
-                return {
-                    bg: 'bg-gradient-to-br from-emerald-500 to-teal-600',
-                    border: 'border-emerald-400',
-                    badge: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'
-                };
+                return 'from-emerald-500 to-teal-600 border-emerald-400';
         }
     };
 
-    const renderNode = (node: OrgNode, level: number = 0) => {
-        const isExpanded = expandedNodes.has(node.id);
+    const getTypeBadge = (type: string) => {
+        switch (type) {
+            case 'Company':
+                return { text: 'CTY', bg: 'bg-amber-100 text-amber-800' };
+            case 'Branch':
+                return { text: 'CN', bg: 'bg-blue-100 text-blue-800' };
+            default:
+                return { text: 'TT', bg: 'bg-emerald-100 text-emerald-800' };
+        }
+    };
+
+    // Render a single node box
+    const renderNodeBox = (node: OrgNode) => {
         const hasChildren = node.children.length > 0;
-        const styles = getTypeStyles(node.type);
-        const signingProgress = node.target?.signing ? Math.min(100, Math.round((node.employeeCount || 0) * 10)) : 0;
+        const isCollapsed = collapsedNodes.has(node.id);
+        const badge = getTypeBadge(node.type);
+        const colorClass = getTypeColor(node.type);
 
         return (
-            <div key={node.id} className="relative">
-                {/* Connection lines */}
-                {level > 0 && (
-                    <div className="absolute left-[-20px] top-0 w-5 h-8 border-l-2 border-b-2 border-slate-300 dark:border-slate-600 rounded-bl-lg" />
-                )}
-
-                {/* Node card */}
-                <div
-                    className={`relative group mb-3 ml-${level > 0 ? '8' : '0'}`}
-                    style={{ marginLeft: level > 0 ? `${level * 32}px` : 0 }}
-                >
-                    <div className={`p-4 rounded-xl bg-white dark:bg-slate-800 border-2 ${styles.border} shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer`}
-                        onClick={() => onSelectUnit?.(node)}>
-                        <div className="flex items-start gap-3">
-                            {/* Expand/Collapse button */}
-                            {hasChildren && (
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }}
-                                    className="mt-1 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                                >
-                                    {isExpanded ? (
-                                        <ChevronDown className="w-5 h-5 text-slate-500" />
-                                    ) : (
-                                        <ChevronRight className="w-5 h-5 text-slate-500" />
-                                    )}
-                                </button>
-                            )}
-                            {!hasChildren && <div className="w-7" />}
-
-                            {/* Icon */}
-                            <div className={`p-3 rounded-xl ${styles.bg} shadow-lg`}>
-                                <Building2 className="w-6 h-6 text-white" />
-                            </div>
-
-                            {/* Content */}
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="font-bold text-slate-800 dark:text-white truncate">{node.name}</h3>
-                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${styles.badge}`}>
-                                        {node.type === 'Company' ? 'CTY' : node.type === 'Branch' ? 'CN' : 'TT'}
-                                    </span>
-                                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                                        {node.code}
-                                    </span>
-                                </div>
-
-                                {/* Manager info */}
-                                {node.manager && (
-                                    <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 mb-2">
-                                        <Crown className="w-4 h-4 text-amber-500" />
-                                        <span className="font-medium">{node.manager.name}</span>
-                                        <span className="text-slate-400">({node.manager.position || 'Trưởng ĐV'})</span>
-                                    </div>
-                                )}
-
-                                {/* Stats row */}
-                                <div className="flex items-center gap-4 text-sm">
-                                    <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
-                                        <Users className="w-4 h-4" />
-                                        <span>{node.employeeCount || 0} NV</span>
-                                    </div>
-                                    <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
-                                        <Target className="w-4 h-4" />
-                                        <span>{formatVND(node.target?.signing || 0)}</span>
-                                    </div>
-                                    {hasChildren && (
-                                        <div className="flex items-center gap-1 text-indigo-500">
-                                            <Building2 className="w-4 h-4" />
-                                            <span>{node.children.length} ĐV con</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Action buttons */}
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                                {onEditUnit && (
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); onEditUnit(node); }}
-                                        className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 hover:text-indigo-600"
-                                    >
-                                        <Edit2 className="w-4 h-4" />
-                                    </button>
-                                )}
-                            </div>
+            <div
+                className={`relative bg-gradient-to-br ${colorClass} text-white rounded-xl shadow-lg min-w-[160px] max-w-[200px] cursor-pointer hover:scale-105 transition-transform group`}
+                onClick={() => onSelectUnit?.(node)}
+            >
+                {/* Main content */}
+                <div className="px-4 py-3 text-center">
+                    <div className="font-bold text-sm leading-tight mb-1 line-clamp-2">{node.name}</div>
+                    <div className="flex items-center justify-center gap-1 text-xs opacity-90">
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${badge.bg}`}>
+                            {badge.text}
+                        </span>
+                        <span className="opacity-75">{node.code}</span>
+                    </div>
+                    {node.manager && (
+                        <div className="mt-2 pt-2 border-t border-white/20 text-xs opacity-90 flex items-center justify-center gap-1">
+                            <Crown size={12} />
+                            <span className="truncate">{node.manager.name}</span>
                         </div>
+                    )}
+                    <div className="text-[10px] opacity-75 mt-1">
+                        <Users size={10} className="inline mr-1" />
+                        {node.employeeCount || 0} NV
                     </div>
                 </div>
 
-                {/* Children */}
-                {hasChildren && isExpanded && (
-                    <div className="relative">
-                        {node.children.map(child => renderNode(child, level + 1))}
-                    </div>
+                {/* Collapse/Expand button */}
+                {hasChildren && (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); toggleCollapse(node.id); }}
+                        className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center text-slate-600 hover:bg-slate-100 z-10"
+                    >
+                        {isCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+                    </button>
                 )}
+
+                {/* Edit button (on hover) */}
+                {onEditUnit && (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onEditUnit(node); }}
+                        className="absolute top-1 right-1 p-1 rounded bg-white/20 hover:bg-white/40 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                        <Edit2 size={12} />
+                    </button>
+                )}
+            </div>
+        );
+    };
+
+    // Recursively render tree with connecting lines
+    const renderTree = (nodes: OrgNode[]) => {
+        if (nodes.length === 0) return null;
+
+        return (
+            <div className="flex flex-col items-center">
+                {/* Horizontal row of sibling nodes */}
+                <div className="flex gap-8 relative">
+                    {nodes.map((node, index) => {
+                        const hasChildren = node.children.length > 0;
+                        const isCollapsed = collapsedNodes.has(node.id);
+                        const showChildren = hasChildren && !isCollapsed;
+
+                        return (
+                            <div key={node.id} className="flex flex-col items-center">
+                                {/* Vertical line from parent (for non-root nodes) */}
+                                {nodes.length > 1 && (
+                                    <div className="absolute top-0 left-0 right-0 h-0 flex justify-center">
+                                        {/* Horizontal connector line */}
+                                    </div>
+                                )}
+
+                                {/* The node box */}
+                                {renderNodeBox(node)}
+
+                                {/* Children section */}
+                                {showChildren && (
+                                    <div className="flex flex-col items-center mt-8">
+                                        {/* Vertical line down to children */}
+                                        <div className="w-0.5 h-6 bg-slate-300"></div>
+
+                                        {/* Horizontal line connecting children */}
+                                        {node.children.length > 1 && (
+                                            <div className="relative w-full flex justify-center">
+                                                <div
+                                                    className="absolute h-0.5 bg-slate-300"
+                                                    style={{
+                                                        left: `calc(50% - ${(node.children.length - 1) * 104}px)`,
+                                                        right: `calc(50% - ${(node.children.length - 1) * 104}px)`,
+                                                    }}
+                                                ></div>
+                                            </div>
+                                        )}
+
+                                        {/* Render children */}
+                                        <div className="flex gap-8 mt-0">
+                                            {node.children.map((child, childIndex) => (
+                                                <div key={child.id} className="flex flex-col items-center">
+                                                    {/* Vertical line from horizontal connector */}
+                                                    <div className="w-0.5 h-6 bg-slate-300"></div>
+                                                    {renderTree([child])}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         );
     };
 
     if (loading) {
         return (
-            <div className="p-8 flex items-center justify-center">
+            <div className="p-8 flex items-center justify-center min-h-[400px]">
                 <div className="animate-pulse flex flex-col items-center gap-4">
-                    <div className="w-16 h-16 rounded-xl bg-slate-200 dark:bg-slate-700" />
-                    <div className="h-4 w-48 rounded bg-slate-200 dark:bg-slate-700" />
+                    <div className="w-32 h-20 rounded-xl bg-slate-200 dark:bg-slate-700" />
+                    <div className="w-0.5 h-8 bg-slate-200 dark:bg-slate-700" />
+                    <div className="flex gap-4">
+                        <div className="w-24 h-16 rounded-xl bg-slate-200 dark:bg-slate-700" />
+                        <div className="w-24 h-16 rounded-xl bg-slate-200 dark:bg-slate-700" />
+                        <div className="w-24 h-16 rounded-xl bg-slate-200 dark:bg-slate-700" />
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-2xl">
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-3">
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
-                        <Building2 className="w-6 h-6 text-white" />
+                    <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
+                        <Building2 className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-slate-800 dark:text-white">Sơ đồ Tổ chức</h2>
-                        <p className="text-sm text-slate-500">{units.length} đơn vị · {employees.length} nhân viên</p>
+                        <h2 className="text-lg font-bold text-slate-800 dark:text-white">Sơ đồ Tổ chức</h2>
+                        <p className="text-xs text-slate-500">{units.length} đơn vị · {employees.length} nhân viên</p>
                     </div>
                 </div>
 
-                <div className="flex gap-2">
+                {/* Zoom controls */}
+                <div className="flex items-center gap-2">
                     <button
-                        onClick={expandAll}
-                        className="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                        onClick={() => setZoom(Math.max(50, zoom - 10))}
+                        className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500"
                     >
-                        Mở tất cả
+                        <Minus size={16} />
                     </button>
+                    <span className="text-sm font-medium text-slate-600 w-12 text-center">{zoom}%</span>
                     <button
-                        onClick={collapseAll}
-                        className="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                        onClick={() => setZoom(Math.min(150, zoom + 10))}
+                        className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500"
                     >
-                        Thu gọn
+                        <Plus size={16} />
                     </button>
                 </div>
             </div>
 
-            {/* Tree view */}
-            <div className="space-y-2">
-                {orgTree.length === 0 ? (
-                    <div className="text-center py-12 text-slate-500">
-                        <Building2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                        <p>Chưa có dữ liệu sơ đồ tổ chức</p>
-                        <p className="text-sm">Hãy thiết lập parent_id cho các đơn vị</p>
-                    </div>
-                ) : (
-                    orgTree.map(node => renderNode(node, 0))
-                )}
+            {/* Chart area with scroll */}
+            <div className="overflow-auto p-8 min-h-[500px]" style={{ maxHeight: '70vh' }}>
+                <div
+                    className="inline-block min-w-full"
+                    style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
+                >
+                    {orgTree.length === 0 ? (
+                        <div className="text-center py-12 text-slate-500">
+                            <Building2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                            <p className="font-medium">Chưa có dữ liệu sơ đồ tổ chức</p>
+                            <p className="text-sm">Thiết lập parent_id cho các đơn vị để hiển thị cây tổ chức</p>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center gap-8">
+                            {orgTree.map(node => (
+                                <div key={node.id} className="flex flex-col items-center">
+                                    {renderNodeBox(node)}
+
+                                    {node.children.length > 0 && !collapsedNodes.has(node.id) && (
+                                        <div className="flex flex-col items-center mt-6">
+                                            {/* Vertical line down */}
+                                            <div className="w-0.5 h-6 bg-slate-300 dark:bg-slate-600"></div>
+
+                                            {/* Horizontal connector for multiple children */}
+                                            {node.children.length > 1 && (
+                                                <div className="flex items-start">
+                                                    <div className="h-0.5 bg-slate-300 dark:bg-slate-600"
+                                                        style={{ width: `${(node.children.length - 1) * 200 + 100}px` }}></div>
+                                                </div>
+                                            )}
+
+                                            {/* Children row */}
+                                            <div className="flex gap-4">
+                                                {node.children.map(child => (
+                                                    <div key={child.id} className="flex flex-col items-center">
+                                                        <div className="w-0.5 h-6 bg-slate-300 dark:bg-slate-600"></div>
+                                                        {renderNodeBox(child)}
+
+                                                        {/* Grandchildren */}
+                                                        {child.children.length > 0 && !collapsedNodes.has(child.id) && (
+                                                            <div className="flex flex-col items-center mt-6">
+                                                                <div className="w-0.5 h-6 bg-slate-300 dark:bg-slate-600"></div>
+                                                                {child.children.length > 1 && (
+                                                                    <div className="h-0.5 bg-slate-300 dark:bg-slate-600"
+                                                                        style={{ width: `${(child.children.length - 1) * 180 + 80}px` }}></div>
+                                                                )}
+                                                                <div className="flex gap-3">
+                                                                    {child.children.map(grandchild => (
+                                                                        <div key={grandchild.id} className="flex flex-col items-center">
+                                                                            <div className="w-0.5 h-6 bg-slate-300 dark:bg-slate-600"></div>
+                                                                            {renderNodeBox(grandchild)}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
