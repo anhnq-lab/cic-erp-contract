@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Users, Check, X, Loader2, Search } from 'lucide-react';
 import { toast } from 'sonner';
-import { PermissionAction, PermissionResource, UserProfile, DEFAULT_ROLE_PERMISSIONS } from '../../types';
+import { PermissionAction, PermissionResource, UserProfile, UserRole, DEFAULT_ROLE_PERMISSIONS } from '../../types';
 import { useAllPermissions, useUpdatePermission } from '../../hooks';
-import { supabase } from '../../lib/supabase';
+import { dataClient } from '../../lib/dataClient';
 
 // Resource labels in Vietnamese
 const RESOURCE_LABELS: Record<PermissionResource, string> = {
@@ -27,8 +27,30 @@ const ACTION_LABELS: Record<PermissionAction, string> = {
 const ACTIONS: PermissionAction[] = ['view', 'create', 'update', 'delete'];
 const RESOURCES: PermissionResource[] = ['contracts', 'employees', 'units', 'customers', 'products', 'payments', 'settings', 'permissions'];
 
+// Map position to UserRole for permission lookup
+function mapPositionToRole(position: string | null): UserRole {
+    if (!position) return 'NVKD';
+    const pos = position.toLowerCase();
+    if (pos.includes('tổng giám đốc')) return 'Leadership';
+    if (pos.includes('phó tổng giám đốc')) return 'Leadership';
+    if (pos.includes('giám đốc')) return 'UnitLeader';
+    if (pos.includes('trưởng phòng') || pos.includes('trưởng tt')) return 'UnitLeader';
+    if (pos.includes('kế toán trưởng')) return 'ChiefAccountant';
+    if (pos.includes('kế toán')) return 'Accountant';
+    if (pos.includes('ban lãnh đạo')) return 'Leadership';
+    if (pos.includes('pháp lý') || pos.includes('pháp chế')) return 'Legal';
+    if (pos.includes('admin')) return 'Admin';
+    return 'NVKD';
+}
+
+// Extended user profile with employee info
+interface EmployeeUser extends UserProfile {
+    position?: string;
+    unitName?: string;
+}
+
 const PermissionManager: React.FC = () => {
-    const [users, setUsers] = useState<UserProfile[]>([]);
+    const [users, setUsers] = useState<EmployeeUser[]>([]);
     const [selectedUserId, setSelectedUserId] = useState<string>('');
     const [userPermissions, setUserPermissions] = useState<Record<PermissionResource, PermissionAction[]>>({} as any);
     const [loading, setLoading] = useState(true);
@@ -37,22 +59,32 @@ const PermissionManager: React.FC = () => {
     const { data: allPermissions, isLoading: permLoading } = useAllPermissions();
     const updatePermission = useUpdatePermission();
 
-    // Fetch users
+    // Fetch users from employees table (not profiles)
     useEffect(() => {
         const fetchUsers = async () => {
             setLoading(true);
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('id, email, full_name, role, unit_id')
-                .order('full_name');
+            const { data, error } = await dataClient
+                .from('employees')
+                .select('id, email, name, position, unit_id, units(name)')
+                .order('name');
 
-            if (!error && data) {
+            if (error) {
+                console.error('[PermissionManager] Error:', error);
+                toast.error('Không thể tải danh sách nhân viên');
+                setLoading(false);
+                return;
+            }
+
+            if (data) {
+                console.log('[PermissionManager] Loaded', data.length, 'employees');
                 setUsers(data.map(u => ({
                     id: u.id,
-                    email: u.email,
-                    fullName: u.full_name,
-                    role: u.role,
+                    email: u.email || '',
+                    fullName: u.name,
+                    role: mapPositionToRole(u.position),
                     unitId: u.unit_id,
+                    position: u.position,
+                    unitName: (u.units as any)?.name,
                 })));
             }
             setLoading(false);
@@ -119,7 +151,8 @@ const PermissionManager: React.FC = () => {
     const filteredUsers = users.filter(user =>
         user.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.role?.toLowerCase().includes(searchTerm.toLowerCase())
+        user.position?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.unitName?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     if (loading || permLoading) {
@@ -142,7 +175,7 @@ const PermissionManager: React.FC = () => {
                             type="text"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
-                            placeholder="Tên, email hoặc role..."
+                            placeholder="Tên, chức vụ hoặc đơn vị..."
                             className="w-full pl-9 pr-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
                         />
                     </div>
@@ -157,7 +190,7 @@ const PermissionManager: React.FC = () => {
                         <option value="">-- Chọn nhân viên --</option>
                         {filteredUsers.map(user => (
                             <option key={user.id} value={user.id}>
-                                {user.fullName} ({user.role}) - {user.email}
+                                {user.fullName} ({user.position || 'Nhân viên'}) - {user.unitName || 'Chưa phân đơn vị'}
                             </option>
                         ))}
                     </select>
@@ -172,7 +205,7 @@ const PermissionManager: React.FC = () => {
                     </div>
                     <div>
                         <p className="font-semibold text-slate-800 dark:text-slate-200">{selectedUser.fullName}</p>
-                        <p className="text-xs text-slate-500">{selectedUser.email} • {selectedUser.role}</p>
+                        <p className="text-xs text-slate-500">{selectedUser.position || 'Nhân viên'} • {selectedUser.unitName || selectedUser.email}</p>
                     </div>
                 </div>
             )}
@@ -207,8 +240,8 @@ const PermissionManager: React.FC = () => {
                                                     onClick={() => handleToggle(resource, action)}
                                                     disabled={updatePermission.isPending}
                                                     className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${hasAction
-                                                            ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
-                                                            : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600'
+                                                        ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+                                                        : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600'
                                                         } hover:scale-110`}
                                                 >
                                                     {hasAction ? <Check size={16} /> : <X size={16} />}
