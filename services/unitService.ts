@@ -137,6 +137,7 @@ export const UnitService = {
 
             return data.map((u: any) => ({
                 ...mapUnit(u),
+                functions: u.functions || '',
                 stats: {
                     contractCount: u.contract_count,
                     totalSigning: u.total_signing,
