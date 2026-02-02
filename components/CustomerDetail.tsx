@@ -202,7 +202,7 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ customerId, onBack, onV
                 <div className="px-6 py-5">
                     <div className="flex flex-col sm:flex-row gap-4">
                         {/* Logo/Avatar */}
-                        <div className="w-20 h-20 -mt-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 font-black text-xl shadow-xl border-4 border-white dark:border-slate-900 flex-shrink-0">
+                        <div className="w-20 h-20 -mt-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 font-black text-xl shadow-xl border-4 border-white dark:border-slate-900 flex-shrink-0 relative z-10">
                             {customer.shortName.substring(0, 3)}
                         </div>
 
