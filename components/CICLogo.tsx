@@ -10,10 +10,9 @@ interface CICLogoProps {
 }
 
 /**
- * CIC ERP Logo Component - Authentic Thick Striped Design
+ * CIC ERP Logo Component - Authentic Design with Curved C Letters
  * 
- * Original CIC logo with THICK horizontal stripes
- * matching the company's original logo perfectly
+ * Original CIC logo with thick stripes and properly curved C letters
  */
 const CICLogo: React.FC<CICLogoProps> = ({
     size = 'md',
@@ -35,7 +34,7 @@ const CICLogo: React.FC<CICLogoProps> = ({
 
     return (
         <div className={`inline-flex items-center ${className}`} style={{ gap: config.gap }}>
-            {/* CIC Logo - Thick Striped Style like Original */}
+            {/* CIC Logo - Curved C with thick stripes */}
             <svg
                 width={baseWidth * config.scale}
                 height={baseHeight * config.scale}
@@ -50,7 +49,7 @@ const CICLogo: React.FC<CICLogoProps> = ({
                     y="1"
                     width="118"
                     height="83"
-                    rx="3"
+                    rx="4"
                     fill="none"
                     stroke="#C53030"
                     strokeWidth="2.5"
@@ -62,47 +61,46 @@ const CICLogo: React.FC<CICLogoProps> = ({
                     y="4"
                     width="112"
                     height="77"
-                    rx="1"
+                    rx="2"
                     className="fill-white dark:fill-slate-900"
                 />
 
-                {/* ===== CIC Letters - THICK Horizontal Stripes ===== */}
-                {/* Letter heights: 7px bars with 1px gaps = very thick like original */}
+                {/* ===== CIC Letters - Using paths for curved C ===== */}
 
-                {/* Letter C (Left) - Thick stripes */}
-                <g fill="#E85D04">
-                    <rect x="10" y="10" width="28" height="7" rx="0.5" />
-                    <rect x="10" y="18" width="12" height="7" rx="0.5" />
-                    <rect x="10" y="26" width="12" height="7" rx="0.5" />
-                    <rect x="10" y="34" width="12" height="7" rx="0.5" />
-                    <rect x="10" y="42" width="12" height="7" rx="0.5" />
-                    <rect x="10" y="50" width="28" height="7" rx="0.5" />
+                {/* Letter C (Left) - Curved shape with thick strokes */}
+                <path
+                    d="M32 12 L14 12 C10 12 8 14 8 18 L8 50 C8 54 10 56 14 56 L32 56"
+                    fill="none"
+                    stroke="#E85D04"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                />
+
+                {/* Letter I (Center) - Thick strokes */}
+                <g stroke="#E85D04" strokeWidth="8" strokeLinecap="round">
+                    {/* Top bar */}
+                    <line x1="46" y1="12" x2="74" y2="12" />
+                    {/* Vertical stem */}
+                    <line x1="60" y1="12" x2="60" y2="56" />
+                    {/* Bottom bar */}
+                    <line x1="46" y1="56" x2="74" y2="56" />
                 </g>
 
-                {/* Letter I (Center) - Thick stripes */}
-                <g fill="#E85D04">
-                    <rect x="42" y="10" width="36" height="7" rx="0.5" />
-                    <rect x="52" y="18" width="16" height="7" rx="0.5" />
-                    <rect x="52" y="26" width="16" height="7" rx="0.5" />
-                    <rect x="52" y="34" width="16" height="7" rx="0.5" />
-                    <rect x="52" y="42" width="16" height="7" rx="0.5" />
-                    <rect x="42" y="50" width="36" height="7" rx="0.5" />
-                </g>
-
-                {/* Letter C (Right) - Thick stripes */}
-                <g fill="#E85D04">
-                    <rect x="82" y="10" width="28" height="7" rx="0.5" />
-                    <rect x="82" y="18" width="12" height="7" rx="0.5" />
-                    <rect x="82" y="26" width="12" height="7" rx="0.5" />
-                    <rect x="82" y="34" width="12" height="7" rx="0.5" />
-                    <rect x="82" y="42" width="12" height="7" rx="0.5" />
-                    <rect x="82" y="50" width="28" height="7" rx="0.5" />
-                </g>
+                {/* Letter C (Right) - Curved shape with thick strokes */}
+                <path
+                    d="M112 12 L94 12 C90 12 88 14 88 18 L88 50 C88 54 90 56 94 56 L112 56"
+                    fill="none"
+                    stroke="#E85D04"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                />
 
                 {/* SINCE 1990 Text */}
                 <text
                     x="60"
-                    y="70"
+                    y="72"
                     textAnchor="middle"
                     fill="#C53030"
                     style={{
@@ -135,7 +133,7 @@ const CICLogo: React.FC<CICLogoProps> = ({
 export default CICLogo;
 
 /**
- * Compact CIC Icon for collapsed sidebar - Thick stripes version
+ * Compact CIC Icon for collapsed sidebar - Curved C version
  */
 export const CICLogoIcon: React.FC<{ size?: number; className?: string }> = ({
     size = 40,
@@ -155,7 +153,7 @@ export const CICLogoIcon: React.FC<{ size?: number; className?: string }> = ({
             y="1"
             width="118"
             height="83"
-            rx="3"
+            rx="4"
             fill="none"
             stroke="#C53030"
             strokeWidth="2.5"
@@ -166,41 +164,41 @@ export const CICLogoIcon: React.FC<{ size?: number; className?: string }> = ({
             y="4"
             width="112"
             height="77"
-            rx="1"
+            rx="2"
             className="fill-white dark:fill-slate-900"
         />
 
-        {/* CIC Letters - THICK Stripes */}
-        <g fill="#E85D04">
-            {/* C Left */}
-            <rect x="10" y="10" width="28" height="7" rx="0.5" />
-            <rect x="10" y="18" width="12" height="7" rx="0.5" />
-            <rect x="10" y="26" width="12" height="7" rx="0.5" />
-            <rect x="10" y="34" width="12" height="7" rx="0.5" />
-            <rect x="10" y="42" width="12" height="7" rx="0.5" />
-            <rect x="10" y="50" width="28" height="7" rx="0.5" />
+        {/* Letter C (Left) */}
+        <path
+            d="M32 12 L14 12 C10 12 8 14 8 18 L8 50 C8 54 10 56 14 56 L32 56"
+            fill="none"
+            stroke="#E85D04"
+            strokeWidth="8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
 
-            {/* I Center */}
-            <rect x="42" y="10" width="36" height="7" rx="0.5" />
-            <rect x="52" y="18" width="16" height="7" rx="0.5" />
-            <rect x="52" y="26" width="16" height="7" rx="0.5" />
-            <rect x="52" y="34" width="16" height="7" rx="0.5" />
-            <rect x="52" y="42" width="16" height="7" rx="0.5" />
-            <rect x="42" y="50" width="36" height="7" rx="0.5" />
-
-            {/* C Right */}
-            <rect x="82" y="10" width="28" height="7" rx="0.5" />
-            <rect x="82" y="18" width="12" height="7" rx="0.5" />
-            <rect x="82" y="26" width="12" height="7" rx="0.5" />
-            <rect x="82" y="34" width="12" height="7" rx="0.5" />
-            <rect x="82" y="42" width="12" height="7" rx="0.5" />
-            <rect x="82" y="50" width="28" height="7" rx="0.5" />
+        {/* Letter I (Center) */}
+        <g stroke="#E85D04" strokeWidth="8" strokeLinecap="round">
+            <line x1="46" y1="12" x2="74" y2="12" />
+            <line x1="60" y1="12" x2="60" y2="56" />
+            <line x1="46" y1="56" x2="74" y2="56" />
         </g>
+
+        {/* Letter C (Right) */}
+        <path
+            d="M112 12 L94 12 C90 12 88 14 88 18 L88 50 C88 54 90 56 94 56 L112 56"
+            fill="none"
+            stroke="#E85D04"
+            strokeWidth="8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
 
         {/* SINCE 1990 */}
         <text
             x="60"
-            y="70"
+            y="72"
             textAnchor="middle"
             fill="#C53030"
             style={{
