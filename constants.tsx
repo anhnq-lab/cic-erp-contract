@@ -38,7 +38,18 @@ export const CONTRACT_STATUS_LABELS: Record<string, string> = {
   'Reviewing': 'Đang xem xét',
   'Expired': 'Hết hạn',
   'Draft': 'Nháp',
-  'Liquidated': 'Đã thanh lý'
+  'Liquidated': 'Đã thanh lý',
+  'Completed': 'Hoàn thành',
+  'Terminated': 'Đã chấm dứt',
+  // Workflow statuses
+  'Pending_Legal': 'Chờ Pháp lý duyệt',
+  'Pending_Finance': 'Chờ Tài chính duyệt',
+  'Finance_Approved': 'Tài chính đã duyệt',
+  'Pending_Sign': 'Chờ ký hợp đồng',
+  'Pending_Unit': 'Chờ Đơn vị duyệt',
+  'Pending_Board': 'Chờ Ban Lãnh đạo duyệt',
+  'Approved': 'Đã phê duyệt',
+  'Rejected': 'Từ chối'
 };
 
 export const MOCK_UNITS: Unit[] = [

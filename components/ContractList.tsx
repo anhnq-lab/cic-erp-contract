@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx';
 import { Search, Filter, Plus, MoreVertical, ExternalLink, User, Loader2, DollarSign, Briefcase, TrendingUp, Calendar, Building2, ChevronLeft, ChevronRight, Download, Upload, Copy } from 'lucide-react';
 import { ContractService, EmployeeService, UnitService } from '../services';
 import { ContractStatus, Unit, Contract, Employee } from '../types';
+import { CONTRACT_STATUS_LABELS } from '../constants';
 import { useImpersonation } from '../contexts/ImpersonationContext';
 import ImportContractModal from './ImportContractModal';
 
@@ -549,7 +550,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                   </td>
                   <td className="px-4 py-5 text-center bg-white dark:bg-slate-900">
                     <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase shadow-sm ${getStatusColor(contract.status)} inline-block min-w-[80px]`}>
-                      {contract.status}
+                      {CONTRACT_STATUS_LABELS[contract.status] || contract.status}
                     </span>
                   </td>
                   <td className="px-4 py-5 text-right bg-white dark:bg-slate-900">
