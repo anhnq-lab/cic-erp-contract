@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Save, Loader2, Upload, X, User, Building, Calendar, Mail, Phone, MapPin, GraduationCap, CreditCard, Users, Heart } from 'lucide-react';
+import { Save, Loader2, Upload, X, User, Building, Calendar, Mail, Phone, MapPin, GraduationCap, CreditCard, Users, Heart, Send } from 'lucide-react';
 import { EmployeeService, UnitService } from '../services';
 import { Employee, Unit } from '../types';
 import { supabase } from '../lib/supabase';
@@ -25,6 +25,7 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, initialD
         position: '',
         email: '',
         phone: '',
+        telegram: '',
         dateJoined: '',
         avatar_url: '',
         // HR fields
@@ -70,6 +71,7 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, initialD
                 position: initialData.position || '',
                 email: initialData.email || '',
                 phone: initialData.phone || '',
+                telegram: initialData.telegram || '',
                 dateJoined: initialData.dateJoined || '',
                 dateOfBirth: initialData.dateOfBirth || '',
                 gender: (initialData.gender as any) || '',
@@ -95,6 +97,7 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, initialD
                 position: '',
                 email: '',
                 phone: '',
+                telegram: '',
                 dateJoined: new Date().toISOString().split('T')[0],
                 avatar_url: '',
                 dateOfBirth: '',
@@ -399,6 +402,19 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, initialD
                                     className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
                                     placeholder="0912345678"
                                 />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-slate-500 mb-1">Telegram</label>
+                                <div className="relative">
+                                    <Send size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                                    <input
+                                        type="text"
+                                        value={formData.telegram}
+                                        onChange={e => setFormData({ ...formData, telegram: e.target.value })}
+                                        className="w-full pl-9 pr-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                                        placeholder="@username"
+                                    />
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-xs text-slate-500 mb-1">Người liên hệ khẩn cấp</label>

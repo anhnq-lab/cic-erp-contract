@@ -103,8 +103,8 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({ isOpen, onClo
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id
-                                    ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
-                                    : 'border-transparent text-slate-500 hover:text-slate-700'
+                                ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                                : 'border-transparent text-slate-500 hover:text-slate-700'
                                 }`}
                         >
                             <tab.icon size={16} />
@@ -131,6 +131,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({ isOpen, onClo
                         <div className="space-y-1">
                             <InfoRow label="Email" value={employee.email || ''} icon={Mail} />
                             <InfoRow label="Số điện thoại" value={employee.phone || ''} icon={Phone} />
+                            <InfoRow label="Telegram" value={employee.telegram || ''} icon={Mail} />
                             <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
                                 <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
                                     <Heart size={16} className="text-red-400" />

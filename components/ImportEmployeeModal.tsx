@@ -17,6 +17,7 @@ interface ImportRow {
     name: string;
     email: string;
     phone?: string;
+    telegram?: string;
     unitId: string;
     position?: string;
     roleCode: string;
@@ -151,18 +152,19 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
                         name: String(row[1] || '').trim(),
                         email: String(row[2] || '').trim().toLowerCase(),
                         phone: row[3] ? String(row[3]).trim() : undefined,
-                        unitId: String(row[4] || '').trim().toLowerCase(),
-                        position: row[5] ? String(row[5]).trim() : undefined,
-                        roleCode: String(row[6] || '').trim(),
-                        dateOfBirth: parseDate(row[7]),
-                        gender: parseGender(row[8] ? String(row[8]) : undefined),
-                        idNumber: row[9] ? String(row[9]).trim() : undefined,
-                        address: row[10] ? String(row[10]).trim() : undefined,
-                        education: row[11] ? String(row[11]).trim() : undefined,
-                        dateJoined: parseDate(row[12]),
-                        contractType: row[13] ? String(row[13]).trim() : undefined,
-                        bankAccount: row[14] ? String(row[14]).trim() : undefined,
-                        bankName: row[15] ? String(row[15]).trim() : undefined,
+                        telegram: row[4] ? String(row[4]).trim() : undefined,
+                        unitId: String(row[5] || '').trim().toLowerCase(),
+                        position: row[6] ? String(row[6]).trim() : undefined,
+                        roleCode: String(row[7] || '').trim(),
+                        dateOfBirth: parseDate(row[8]),
+                        gender: parseGender(row[9] ? String(row[9]) : undefined),
+                        idNumber: row[10] ? String(row[10]).trim() : undefined,
+                        address: row[11] ? String(row[11]).trim() : undefined,
+                        education: row[12] ? String(row[12]).trim() : undefined,
+                        dateJoined: parseDate(row[13]),
+                        contractType: row[14] ? String(row[14]).trim() : undefined,
+                        bankAccount: row[15] ? String(row[15]).trim() : undefined,
+                        bankName: row[16] ? String(row[16]).trim() : undefined,
                     };
 
                     const validatedRow = validateRow(importRow, index + 2, existingEmails);
@@ -219,6 +221,7 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
                     name: row.name,
                     email: row.email,
                     phone: row.phone,
+                    telegram: row.telegram,
                     unit_id: row.unitId,
                     position: row.position,
                     role_code: row.roleCode,
@@ -307,8 +310,8 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
                                 onDragLeave={() => setDragOver(false)}
                                 onDrop={handleDrop}
                                 className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors ${dragOver
-                                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                                        : 'border-slate-300 dark:border-slate-600 hover:border-indigo-400'
+                                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+                                    : 'border-slate-300 dark:border-slate-600 hover:border-indigo-400'
                                     }`}
                             >
                                 <Upload className="mx-auto text-slate-400 mb-4" size={48} />

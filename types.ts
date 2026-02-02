@@ -20,6 +20,7 @@ export interface Employee {
   // General info
   email?: string;
   phone?: string;
+  telegram?: string; // Tài khoản Telegram
   position?: string; // Chức vụ
   department?: string; // Phòng ban / Khối
   roleCode?: string; // Mã role hệ thống
