@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Moon, Sun, Shield, Settings2, FlaskConical } from 'lucide-react';
+import { Moon, Sun, Shield, Settings2, FlaskConical, Users } from 'lucide-react';
 import DataSeeder from './admin/DataSeeder';
 import PilotRunner from './admin/PilotRunner';
 import PermissionManager from './settings/PermissionManager';
+import UserImpersonator from './settings/UserImpersonator';
 import { useLayoutContext } from './layout/MainLayout';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -38,8 +39,8 @@ const Settings: React.FC = () => {
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex-1 justify-center ${activeTab === tab.id
-                                ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                            ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                            : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                             }`}
                     >
                         {tab.icon}
@@ -105,17 +106,39 @@ const Settings: React.FC = () => {
                 )}
 
                 {activeTab === 'testing' && (
-                    <div>
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                                <FlaskConical size={20} className="text-white" />
-                            </div>
+                    <div className="space-y-8">
+                        {/* User Impersonation - Admin Only */}
+                        {isAdmin && (
                             <div>
-                                <h3 className="font-bold text-slate-800 dark:text-slate-200">Kiểm thử hệ thống</h3>
-                                <p className="text-xs text-slate-500">Chạy các bài test tự động</p>
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+                                        <Users size={20} className="text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-slate-800 dark:text-slate-200">Giả làm người dùng</h3>
+                                        <p className="text-xs text-slate-500">Test phân quyền bằng cách đóng vai user khác</p>
+                                    </div>
+                                </div>
+                                <UserImpersonator />
                             </div>
+                        )}
+
+                        {/* Separator if admin */}
+                        {isAdmin && <div className="border-t border-slate-200 dark:border-slate-700" />}
+
+                        {/* Pilot Runner */}
+                        <div>
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                                    <FlaskConical size={20} className="text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-slate-800 dark:text-slate-200">Kiểm thử tự động</h3>
+                                    <p className="text-xs text-slate-500">Chạy các bài test hệ thống</p>
+                                </div>
+                            </div>
+                            <PilotRunner />
                         </div>
-                        <PilotRunner />
                     </div>
                 )}
             </div>

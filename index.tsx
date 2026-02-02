@@ -5,6 +5,7 @@ import { RouterProvider } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { router } from './routes/AppRoutes';
 import { AuthProvider } from './contexts/AuthContext';
+import { ImpersonationProvider } from './contexts/ImpersonationContext';
 import { queryClient } from './lib/queryClient';
 
 const rootElement = document.getElementById('root');
@@ -17,7 +18,9 @@ root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <RouterProvider router={router} />
+        <ImpersonationProvider>
+          <RouterProvider router={router} />
+        </ImpersonationProvider>
       </AuthProvider>
     </QueryClientProvider>
   </React.StrictMode>
