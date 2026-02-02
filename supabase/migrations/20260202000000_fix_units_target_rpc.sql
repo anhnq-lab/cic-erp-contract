@@ -2,6 +2,9 @@
 -- Bug: Previous version hardcoded target values (signing=0, adminProfit=0)
 -- instead of returning actual JSONB stored in units.target column
 
+-- Drop existing function first to allow return type change
+DROP FUNCTION IF EXISTS get_units_with_stats(INTEGER);
+
 CREATE OR REPLACE FUNCTION get_units_with_stats(p_year INTEGER DEFAULT NULL)
 RETURNS TABLE (
     id TEXT,
