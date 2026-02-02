@@ -1,10 +1,11 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Search, Building, Plus, Pencil, Trash2, Target, TrendingUp, Users, Eye, FileText } from 'lucide-react';
+import { Search, Building, Plus, Pencil, Trash2, Target, TrendingUp, Users, Eye, FileText, LayoutGrid, Network } from 'lucide-react';
 import { UnitService, ContractService } from '../services';
 import { Unit, Contract } from '../types';
 import UnitForm from './UnitForm';
+import OrganizationChart from './OrganizationChart';
 import { NON_BUSINESS_UNIT_CODES } from '../constants';
 
 interface UnitListProps {
@@ -16,6 +17,7 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
     const [contracts, setContracts] = useState<Contract[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [viewMode, setViewMode] = useState<'grid' | 'orgchart'>('grid');
 
     // CRUD State
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -199,144 +201,178 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
             </div>
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t border-slate-200 dark:border-slate-800">
-                <div>
+                <div className="flex items-center gap-4">
                     <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Danh sách Đơn vị</h2>
+
+                    {/* View Mode Toggle */}
+                    <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
+                        <button
+                            onClick={() => setViewMode('grid')}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === 'grid'
+                                ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700'
+                                }`}
+                        >
+                            <LayoutGrid size={16} />
+                            Grid
+                        </button>
+                        <button
+                            onClick={() => setViewMode('orgchart')}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === 'orgchart'
+                                ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700'
+                                }`}
+                        >
+                            <Network size={16} />
+                            Sơ đồ
+                        </button>
+                    </div>
                 </div>
                 <button
                     onClick={handleAdd}
                     className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-5 py-3 rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 dark:shadow-none"
                 >
-                    <Plus size={20} /> Thêm Đơn vị
+                    <Building size={20} /> Thêm Đơn vị
                 </button>
             </div>
 
-            {/* Search Bar */}
-            <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div className="relative">
-                    <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                        type="text"
-                        placeholder="Tìm kiếm tên đơn vị hoặc mã đơn vị..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-slate-100 font-medium transition-all"
-                    />
-                </div>
-            </div>
-
-            {/* Units Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredUnits.length === 0 ? (
-                    <div className="col-span-full py-12 text-center text-slate-400">
-                        Không tìm thấy đơn vị nào phù hợp.
+            {/* Conditional View */}
+            {viewMode === 'orgchart' ? (
+                <OrganizationChart
+                    onSelectUnit={(unit) => onSelectUnit?.(unit.id)}
+                    onEditUnit={handleEdit}
+                />
+            ) : (
+                <>
+                    {/* Search Bar */}
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div className="relative">
+                            <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm tên đơn vị hoặc mã đơn vị..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-slate-100 font-medium transition-all"
+                            />
+                        </div>
                     </div>
-                ) : (
-                    filteredUnits.map(unit => (
-                        <div key={unit.id} className="bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg hover:border-indigo-200 dark:hover:border-indigo-800 transition-all group relative cursor-pointer" onClick={() => onSelectUnit?.(unit.id)}>
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none">
-                                        <Building size={28} />
+
+                    {/* Units Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {filteredUnits.length === 0 ? (
+                            <div className="col-span-full py-12 text-center text-slate-400">
+                                Không tìm thấy đơn vị nào phù hợp.
+                            </div>
+                        ) : (
+                            filteredUnits.map(unit => (
+                                <div key={unit.id} className="bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg hover:border-indigo-200 dark:hover:border-indigo-800 transition-all group relative cursor-pointer" onClick={() => onSelectUnit?.(unit.id)}>
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none">
+                                                <Building size={28} />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">{unit.name}</h3>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="inline-block px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[10px] font-bold uppercase text-slate-500 tracking-wider">
+                                                        {unit.code}
+                                                    </span>
+                                                    <span className={`inline-block px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase ${unit.type === 'Center' ? 'bg-emerald-100 text-emerald-700' : unit.type === 'Branch' ? 'bg-amber-100 text-amber-700' : 'bg-indigo-100 text-indigo-700'}`}>
+                                                        {unit.type === 'Center' ? 'TT' : unit.type === 'Branch' ? 'CN' : 'CTY'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                                            <button
+                                                onClick={() => handleEdit(unit)}
+                                                className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-colors"
+                                            >
+                                                <Pencil size={18} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(unit.id)}
+                                                className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-colors"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">{unit.name}</h3>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <span className="inline-block px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[10px] font-bold uppercase text-slate-500 tracking-wider">
-                                                {unit.code}
-                                            </span>
-                                            <span className={`inline-block px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase ${unit.type === 'Center' ? 'bg-emerald-100 text-emerald-700' : unit.type === 'Branch' ? 'bg-amber-100 text-amber-700' : 'bg-indigo-100 text-indigo-700'}`}>
-                                                {unit.type === 'Center' ? 'TT' : unit.type === 'Branch' ? 'CN' : 'CTY'}
-                                            </span>
+
+                                    {/* Quick badges row */}
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                            <Users size={12} className="text-blue-600" />
+                                            <span className="text-xs font-bold text-blue-700 dark:text-blue-400">{(unit as any).employeeCount || '—'} NV</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                                            <FileText size={12} className="text-purple-600" />
+                                            <span className="text-xs font-bold text-purple-700 dark:text-purple-400">{(unit as any).contractCount || stats.unitStats.get(unit.id)?.signing ? '✓' : '—'} HĐ</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-4">
+                                            {[
+                                                {
+                                                    label: 'Ký kết',
+                                                    icon: FileText,
+                                                    val: stats.unitStats.get(unit.id)?.signing || 0,
+                                                    target: unit.target.signing,
+                                                    color: 'text-indigo-600',
+                                                    barColor: 'bg-indigo-500'
+                                                },
+                                                {
+                                                    label: 'Doanh thu',
+                                                    icon: TrendingUp,
+                                                    val: stats.unitStats.get(unit.id)?.revenue || 0,
+                                                    target: unit.target.revenue,
+                                                    color: 'text-emerald-600',
+                                                    barColor: 'bg-emerald-500'
+                                                },
+                                                {
+                                                    label: 'LNG Quản trị',
+                                                    icon: Target,
+                                                    val: stats.unitStats.get(unit.id)?.profit || 0,
+                                                    target: unit.target.adminProfit,
+                                                    color: 'text-purple-600',
+                                                    barColor: 'bg-purple-500'
+                                                }
+                                            ].map((metric, idx) => {
+                                                const pct = metric.target > 0 ? (metric.val / metric.target) * 100 : 0;
+                                                return (
+                                                    <div key={idx} className="space-y-1">
+                                                        <div className="flex justify-between items-center text-xs">
+                                                            <span className="font-bold text-slate-500 flex items-center gap-1.5">
+                                                                <metric.icon size={12} /> {metric.label}
+                                                            </span>
+                                                            <span className={`font-black ${pct >= 100 ? 'text-emerald-600' : 'text-slate-700 dark:text-slate-300'}`}>
+                                                                {pct.toFixed(0)}%
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex justify-between items-end">
+                                                            <span className={`text-sm font-black ${metric.color}`}>
+                                                                {formatCurrency(metric.val)}
+                                                            </span>
+                                                            <span className="text-[10px] font-bold text-slate-400">
+                                                                / {formatCurrency(metric.target)}
+                                                            </span>
+                                                        </div>
+                                                        <div className="w-full bg-white dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                                                            <div className={`h-full rounded-full ${pct >= 100 ? 'bg-emerald-500' : metric.barColor}`} style={{ width: `${Math.min(pct, 100)}%` }}></div>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
-                                    <button
-                                        onClick={() => handleEdit(unit)}
-                                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-colors"
-                                    >
-                                        <Pencil size={18} />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(unit.id)}
-                                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-colors"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Quick badges row */}
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                                    <Users size={12} className="text-blue-600" />
-                                    <span className="text-xs font-bold text-blue-700 dark:text-blue-400">{(unit as any).employeeCount || '—'} NV</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                                    <FileText size={12} className="text-purple-600" />
-                                    <span className="text-xs font-bold text-purple-700 dark:text-purple-400">{(unit as any).contractCount || stats.unitStats.get(unit.id)?.signing ? '✓' : '—'} HĐ</span>
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-4">
-                                    {[
-                                        {
-                                            label: 'Ký kết',
-                                            icon: FileText,
-                                            val: stats.unitStats.get(unit.id)?.signing || 0,
-                                            target: unit.target.signing,
-                                            color: 'text-indigo-600',
-                                            barColor: 'bg-indigo-500'
-                                        },
-                                        {
-                                            label: 'Doanh thu',
-                                            icon: TrendingUp,
-                                            val: stats.unitStats.get(unit.id)?.revenue || 0,
-                                            target: unit.target.revenue,
-                                            color: 'text-emerald-600',
-                                            barColor: 'bg-emerald-500'
-                                        },
-                                        {
-                                            label: 'LNG Quản trị',
-                                            icon: Target,
-                                            val: stats.unitStats.get(unit.id)?.profit || 0,
-                                            target: unit.target.adminProfit,
-                                            color: 'text-purple-600',
-                                            barColor: 'bg-purple-500'
-                                        }
-                                    ].map((metric, idx) => {
-                                        const pct = metric.target > 0 ? (metric.val / metric.target) * 100 : 0;
-                                        return (
-                                            <div key={idx} className="space-y-1">
-                                                <div className="flex justify-between items-center text-xs">
-                                                    <span className="font-bold text-slate-500 flex items-center gap-1.5">
-                                                        <metric.icon size={12} /> {metric.label}
-                                                    </span>
-                                                    <span className={`font-black ${pct >= 100 ? 'text-emerald-600' : 'text-slate-700 dark:text-slate-300'}`}>
-                                                        {pct.toFixed(0)}%
-                                                    </span>
-                                                </div>
-                                                <div className="flex justify-between items-end">
-                                                    <span className={`text-sm font-black ${metric.color}`}>
-                                                        {formatCurrency(metric.val)}
-                                                    </span>
-                                                    <span className="text-[10px] font-bold text-slate-400">
-                                                        / {formatCurrency(metric.target)}
-                                                    </span>
-                                                </div>
-                                                <div className="w-full bg-white dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                                                    <div className={`h-full rounded-full ${pct >= 100 ? 'bg-emerald-500' : metric.barColor}`} style={{ width: `${Math.min(pct, 100)}%` }}></div>
-                                                </div>
-                                            </div>
-                                        )
-                                    })}
-                                </div>
-                            </div>
-                        </div>
-                    ))
-                )}
-            </div>
+                            ))
+                        )}
+                    </div>
+                </>
+            )}
 
             <UnitForm
                 isOpen={isFormOpen}
@@ -344,8 +380,9 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
                 onSave={handleSave}
                 unit={editingUnit}
             />
-        </div >
+        </div>
     );
 };
 
 export default UnitList;
+
