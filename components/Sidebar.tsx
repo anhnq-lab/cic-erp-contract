@@ -69,28 +69,36 @@ const Sidebar: React.FC<SidebarProps> = ({
         ${isCollapsed ? 'md:w-20' : 'md:w-64'} 
         ${isOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0'}
       `}>
-        {/* Header & Logo */}
-        <div className={`p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between ${isCollapsed ? 'md:px-2 md:justify-center' : ''}`}>
-          <div className={`flex items-center overflow-hidden transition-all ${isCollapsed ? 'md:hidden' : 'w-auto'}`}>
+        {/* Header & Logo - Modern Professional Style */}
+        <div className={`relative p-4 flex items-center justify-between ${isCollapsed ? 'md:px-3 md:justify-center' : ''}`}>
+          {/* Subtle gradient accent line at bottom */}
+          <div className="absolute bottom-0 left-4 right-4 h-[1px] bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent" />
+
+          {/* Logo - Expanded state */}
+          <div className={`flex items-center overflow-hidden transition-all duration-300 ${isCollapsed ? 'md:hidden' : 'w-auto'}`}>
             <CICLogo size="sm" variant="full" />
           </div>
 
-          {/* Collapsed state - show icon only */}
-          <div className={`hidden ${isCollapsed ? 'md:flex justify-center' : ''}`}>
-            <CICLogoIcon size={36} />
+          {/* Logo - Collapsed state (icon only) */}
+          <div className={`hidden transition-all duration-300 ${isCollapsed ? 'md:flex justify-center' : ''}`}>
+            <CICLogoIcon size={40} />
           </div>
 
-          {/* Collapse Toggle Button - Top */}
+          {/* Collapse Toggle Button */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className={`hidden md:flex p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-all ${isCollapsed ? 'w-full justify-center' : ''}`}
+            className={`hidden md:flex p-2 text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl transition-all duration-200 ${isCollapsed ? 'w-full justify-center mt-2' : ''}`}
+            title={isCollapsed ? 'Mở rộng' : 'Thu gọn'}
           >
-            {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
 
           {/* Mobile Close */}
           <div className="flex items-center gap-1 md:hidden">
-            <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600">
+            <button
+              onClick={onClose}
+              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+            >
               <X size={20} />
             </button>
           </div>
