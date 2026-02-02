@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
-import { Save, Loader2, X } from 'lucide-react';
+import { Save, Loader2, X, Building, User, Phone, Mail, MapPin, Search } from 'lucide-react';
 import Modal from './ui/Modal';
 import NumberInput from './ui/NumberInput';
-import { Unit, KPIPlan } from '../types';
-
+import { Unit, KPIPlan, Employee } from '../types';
+import { EmployeeService } from '../services';
 
 interface UnitFormProps {
     isOpen: boolean;
@@ -16,6 +16,10 @@ interface UnitFormProps {
 
 const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [employees, setEmployees] = useState<Employee[]>([]);
+    const [managerSearch, setManagerSearch] = useState('');
+    const [showManagerDropdown, setShowManagerDropdown] = useState(false);
+
     const [formData, setFormData] = useState({
         name: '',
         type: 'Center' as 'Company' | 'Branch' | 'Center',
@@ -28,7 +32,40 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
             cash: 0,
         } as KPIPlan,
         functions: '',
+        // Phase 2 fields
+        managerId: '',
+        address: '',
+        phone: '',
+        email: '',
+        description: '',
     });
+
+    // Fetch employees for manager selector
+    useEffect(() => {
+        const fetchEmployees = async () => {
+            try {
+                const data = await EmployeeService.list({ page: 1, pageSize: 100 });
+                const empList = Array.isArray(data) ? data : (data as any).data || [];
+                setEmployees(empList);
+            } catch (error) {
+                console.error('Error fetching employees:', error);
+            }
+        };
+        if (isOpen) fetchEmployees();
+    }, [isOpen]);
+
+    // Filter employees for manager dropdown
+    const filteredManagers = useMemo(() => {
+        if (!managerSearch) return employees.slice(0, 10);
+        const search = managerSearch.toLowerCase();
+        return employees.filter(e =>
+            e.name.toLowerCase().includes(search) ||
+            e.position?.toLowerCase().includes(search)
+        ).slice(0, 10);
+    }, [employees, managerSearch]);
+
+    const selectedManager = employees.find(e => e.id === formData.managerId);
+
 
     useEffect(() => {
         if (unit) {
@@ -38,7 +75,14 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                 code: unit.code,
                 target: { ...unit.target },
                 functions: unit.functions || '',
+                // Phase 2 fields
+                managerId: unit.managerId || '',
+                address: unit.address || '',
+                phone: unit.phone || '',
+                email: unit.email || '',
+                description: unit.description || '',
             });
+            setManagerSearch('');
         } else {
             setFormData({
                 name: '',
@@ -52,7 +96,13 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                     cash: 0,
                 },
                 functions: '',
+                managerId: '',
+                address: '',
+                phone: '',
+                email: '',
+                description: '',
             });
+            setManagerSearch('');
         }
     }, [unit, isOpen]);
 
@@ -129,14 +179,114 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                                 <option value="Center">Trung tâm</option>
                             </select>
                         </div>
+
+                        {/* Manager Selector */}
+                        <div className="relative">
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                <User className="inline w-4 h-4 mr-1" />Trưởng đơn vị
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={managerSearch || selectedManager?.name || ''}
+                                    onChange={(e) => {
+                                        setManagerSearch(e.target.value);
+                                        setShowManagerDropdown(true);
+                                    }}
+                                    onFocus={() => setShowManagerDropdown(true)}
+                                    className="w-full px-4 py-2 pl-10 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                    placeholder="Tìm nhân viên..."
+                                />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                            </div>
+                            {showManagerDropdown && (
+                                <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-48 overflow-auto">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            handleChange('managerId', '');
+                                            setManagerSearch('');
+                                            setShowManagerDropdown(false);
+                                        }}
+                                        className="w-full px-4 py-2 text-left text-sm text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                    >
+                                        -- Không chọn --
+                                    </button>
+                                    {filteredManagers.map(emp => (
+                                        <button
+                                            key={emp.id}
+                                            type="button"
+                                            onClick={() => {
+                                                handleChange('managerId', emp.id);
+                                                setManagerSearch('');
+                                                setShowManagerDropdown(false);
+                                            }}
+                                            className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 ${formData.managerId === emp.id ? 'bg-indigo-50 dark:bg-indigo-900/30' : ''}`}
+                                        >
+                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
+                                                {emp.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-slate-800 dark:text-slate-200">{emp.name}</p>
+                                                <p className="text-xs text-slate-500">{emp.position || 'Nhân viên'}</p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Contact Info - Right Column */}
+                    <div className="space-y-4">
+                        <h3 className="font-bold text-slate-800 dark:text-slate-200 border-b pb-2">Thông tin liên hệ</h3>
+
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                <MapPin className="inline w-4 h-4 mr-1" />Địa chỉ
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.address}
+                                onChange={(e) => handleChange('address', e.target.value)}
+                                className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                placeholder="Địa chỉ đơn vị"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                <Phone className="inline w-4 h-4 mr-1" />Số điện thoại
+                            </label>
+                            <input
+                                type="tel"
+                                value={formData.phone}
+                                onChange={(e) => handleChange('phone', e.target.value)}
+                                className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                placeholder="0xxx xxx xxx"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                <Mail className="inline w-4 h-4 mr-1" />Email
+                            </label>
+                            <input
+                                type="email"
+                                value={formData.email}
+                                onChange={(e) => handleChange('email', e.target.value)}
+                                className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                placeholder="email@company.com"
+                            />
+                        </div>
                     </div>
 
                     <div className="md:col-span-2">
                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Chức năng - Nhiệm vụ</label>
                         <textarea
-                            value={(formData as any).functions || ''}
+                            value={formData.functions || ''}
                             onChange={(e) => handleChange('functions', e.target.value)}
-                            className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all min-h-[100px]"
+                            className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all min-h-[80px]"
                             placeholder="Mô tả chức năng, nhiệm vụ của đơn vị..."
                         />
                     </div>
