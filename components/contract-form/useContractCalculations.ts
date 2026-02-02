@@ -16,6 +16,7 @@ export interface ContractTotals {
 export interface UseContractCalculationsProps {
     lineItems: LineItem[];
     adminCosts: AdministrativeCosts;
+    supplierDiscount?: number; // Chiết khấu từ NCC - separate from admin costs
     vatRate?: number; // Default 10%
 }
 
@@ -26,14 +27,19 @@ export interface UseContractCalculationsProps {
 export function useContractCalculations({
     lineItems,
     adminCosts,
+    supplierDiscount = 0,
     vatRate = 0.1,
 }: UseContractCalculationsProps): ContractTotals {
     return useMemo(() => {
-        // Sum of all output prices (signing value)
-        const signingValue = lineItems.reduce(
+        // Sum of all output prices (signing value from line items)
+        const lineItemsOutput = lineItems.reduce(
             (acc, item) => acc + (item.quantity * item.outputPrice),
             0
         );
+
+        // TOTAL SIGNING VALUE = Line items output + Supplier Discount
+        // Supplier discount ADDS to revenue
+        const signingValue = lineItemsOutput + supplierDiscount;
 
         // Sum of all input prices
         const totalInput = lineItems.reduce(
@@ -47,9 +53,8 @@ export function useContractCalculations({
             0
         );
 
-        // Sum of administrative costs (EXCLUDING supplierDiscount)
-        const { supplierDiscount = 0, ...otherAdminCosts } = adminCosts;
-        const adminSum = (Object.values(otherAdminCosts) as number[]).reduce(
+        // Sum of administrative costs (pure admin costs, no supplierDiscount)
+        const adminSum = (Object.values(adminCosts) as number[]).reduce(
             (acc: number, val: number) => acc + (typeof val === 'number' ? val : 0),
             0
         );
@@ -57,10 +62,10 @@ export function useContractCalculations({
         // Revenue after VAT deduction
         const estimatedRevenue = signingValue / (1 + vatRate);
 
-        // Total costs (supplierDiscount REDUCES costs, so we subtract it)
-        const totalCosts = totalInput + totalDirectCosts + adminSum - supplierDiscount;
+        // Total costs = input + direct + admin (supplier discount is NOT here anymore)
+        const totalCosts = totalInput + totalDirectCosts + adminSum;
 
-        // Gross profit and margin (supplierDiscount adds to profit)
+        // Gross profit = revenue (incl supplier discount) - costs
         const grossProfit = signingValue - totalCosts;
         const profitMargin = signingValue > 0 ? (grossProfit / signingValue) * 100 : 0;
 
@@ -72,10 +77,10 @@ export function useContractCalculations({
             profitMargin,
             totalInput,
             totalDirectCosts,
-            adminSum, // This is admin costs WITHOUT supplierDiscount
-            supplierDiscount, // Export separately for display
+            adminSum,
+            supplierDiscount,
         };
-    }, [lineItems, adminCosts, vatRate]);
+    }, [lineItems, adminCosts, supplierDiscount, vatRate]);
 }
 
 /**

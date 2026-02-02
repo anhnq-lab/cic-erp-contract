@@ -131,6 +131,9 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
     transferFee: 0, contractorTax: 0, importFee: 0, expertHiring: 0, documentProcessing: 0
   });
 
+  // Supplier Discount - separate from admin costs, ADDS to revenue
+  const [supplierDiscount, setSupplierDiscount] = useState<number>(0);
+
   // 6. Direct Costs Modal State
   const [activeCostModalIndex, setActiveCostModalIndex] = useState<number | null>(null);
   const [tempCostDetails, setTempCostDetails] = useState<DirectCostDetail[]>([]);
@@ -319,11 +322,16 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
 
   // Logic tính toán chuyên sâu
   const totals = useMemo(() => {
-    const signingValue = lineItems.reduce((acc, item) => acc + (item.quantity * item.outputPrice), 0);
+    // Line items output (giá đầu ra từ sản phẩm)
+    const lineItemsOutput = lineItems.reduce((acc, item) => acc + (item.quantity * item.outputPrice), 0);
+
+    // SIGNING VALUE = Line items + Supplier Discount (chiết khấu từ NCC cộng vào doanh thu)
+    const signingValue = lineItemsOutput + supplierDiscount;
+
     const totalInput = lineItems.reduce((acc, item) => acc + (item.quantity * item.inputPrice), 0);
     const totalDirectCosts = lineItems.reduce((acc, item) => acc + item.directCosts, 0);
 
-    // Explicit typing for admin costs sum
+    // Admin costs (không bao gồm supplierDiscount)
     const adminSum = (Object.values(adminCosts) as number[]).reduce((acc: number, val: number) => acc + val, 0);
 
     const estimatedRevenue = signingValue / 1.1; // Giá trị ký kết trừ thuế VAT (giả định 10%)
@@ -331,8 +339,8 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
     const grossProfit = signingValue - totalCosts;
     const profitMargin = signingValue > 0 ? (grossProfit / signingValue) * 100 : 0;
 
-    return { signingValue, estimatedRevenue, totalCosts, grossProfit, profitMargin, totalInput, totalDirectCosts, adminSum };
-  }, [lineItems, adminCosts]);
+    return { signingValue, estimatedRevenue, totalCosts, grossProfit, profitMargin, totalInput, totalDirectCosts, adminSum, supplierDiscount };
+  }, [lineItems, adminCosts, supplierDiscount]);
 
   const formatVND = (val: number) => new Intl.NumberFormat('vi-VN').format(Math.round(val));
 
@@ -714,15 +722,17 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
 
                           setLineItems(processedItems);
 
-                          // Map admin costs
+                          // Map admin costs (without supplierDiscount)
                           setAdminCosts({
                             transferFee: data.adminCosts.bankFee || 0,
                             contractorTax: data.adminCosts.subcontractorFee || 0,
                             importFee: data.adminCosts.importLogistics || 0,
                             expertHiring: data.adminCosts.expertFee || 0,
                             documentProcessing: data.adminCosts.documentFee || 0,
-                            supplierDiscount: data.adminCosts.supplierDiscount || 0,
                           });
+
+                          // Supplier discount - separate, adds to revenue
+                          setSupplierDiscount(data.adminCosts.supplierDiscount || 0);
 
                           toast.dismiss();
                           toast.success(`Đã import ${processedItems.length} hạng mục thành công!`);
@@ -915,14 +925,13 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     <h4 className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
                       <Calculator size={14} /> Chi phí quản lý hợp đồng
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                       {[
                         { key: 'transferFee', label: 'Phí chuyển tiền / Ngân hàng' },
                         { key: 'contractorTax', label: 'Thuế nhà thầu (nếu có)' },
                         { key: 'importFee', label: 'Phí nhập khẩu / Logistics' },
                         { key: 'expertHiring', label: 'Chi phí thuê khoán chuyên môn' },
-                        { key: 'documentProcessing', label: 'Chi phí xử lý chứng từ' },
-                        { key: 'supplierDiscount', label: 'Chiết khấu từ NCC' }
+                        { key: 'documentProcessing', label: 'Chi phí xử lý chứng từ' }
                       ].map((cost) => (
                         <div key={cost.key} className="space-y-1.5">
                           <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">{cost.label}</label>
@@ -968,6 +977,32 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                           </div>
                         </div>
                       ))}
+                    </div>
+                  </div>
+
+                  {/* 3.3 CHIẾT KHẤU TỪ NHÀ CUNG CẤP - Separate section, CỘNG VÀO DOANH THU */}
+                  <div className="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-[24px] border border-emerald-200 dark:border-emerald-800 space-y-4">
+                    <h4 className="text-xs font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest flex items-center gap-2">
+                      <TrendingUp size={14} /> Chiết khấu từ nhà cung cấp (Cộng vào Doanh thu)
+                    </h4>
+                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400">
+                      Chiết khấu từ NCC như Bentley, CSI... sẽ được cộng vào giá trị ký kết, tăng doanh thu hợp đồng.
+                    </p>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1 relative">
+                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" size={16} />
+                        <input
+                          type="text"
+                          value={supplierDiscount ? formatVND(supplierDiscount) : '0'}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/\./g, '');
+                            if (!/^\d*$/.test(raw)) return;
+                            setSupplierDiscount(Number(raw));
+                          }}
+                          className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-700 border-2 border-emerald-300 dark:border-emerald-600 rounded-xl text-sm font-black text-emerald-700 dark:text-emerald-300 focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-right"
+                        />
+                      </div>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">VNĐ</span>
                     </div>
                   </div>
                 </div>
