@@ -76,6 +76,15 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
   const [clientName, setClientName] = useState(contract?.partyA || '');
   const [signedDate, setSignedDate] = useState(contract?.signedDate || new Date().toISOString().split('T')[0]);
 
+  // Fetch customer name on edit mode (so SearchableSelect shows correct display value)
+  useEffect(() => {
+    if (isEditing && contract?.customerId && !clientName) {
+      CustomerService.getById(contract.customerId).then(cust => {
+        if (cust) setClientName(cust.name);
+      }).catch(err => console.error('Failed to fetch customer:', err));
+    }
+  }, [isEditing, contract?.customerId]);
+
   // Quick Add Customer Dialog
   const [showAddCustomerDialog, setShowAddCustomerDialog] = useState(false);
 
@@ -556,6 +565,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                       label="Tên khách hàng"
                       value={customerId}
                       placeholder="Gõ để tìm khách hàng..."
+                      getDisplayValue={(id) => id === customerId ? clientName : undefined}
                       onChange={(cId) => {
                         setCustomerId(cId);
                         // Fetch customer name when selected
