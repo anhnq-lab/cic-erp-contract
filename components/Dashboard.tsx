@@ -376,10 +376,26 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
           </h1>
         </div>
 
-        {/* STICKY FILTER BAR - Filters + Metric Tabs */}
+        {/* STICKY FILTER BAR - Metric Tabs + Filters */}
         <div className="sticky top-0 z-30 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-sm py-4 border-b border-slate-200/50 dark:border-slate-800/50">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            {/* Left: Filters */}
+            {/* Left: Metric Tabs */}
+            <div className="flex bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto no-scrollbar">
+              {metricTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveMetric(tab.id as keyof KPIPlan)}
+                  className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${activeMetric === tab.id
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200 dark:shadow-none'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Right: Filters */}
             <div className="flex flex-wrap items-center gap-3">
               {/* Unit Filter Button */}
               <div className="relative z-20">
@@ -397,7 +413,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
                 {showUnitSelector && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowUnitSelector(false)} />
-                    <div className="absolute top-full left-0 mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-20 py-2 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+                    <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-20 py-2 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
                       <div className="max-h-[320px] overflow-y-auto">
                         {[{ id: 'all', name: 'Toàn công ty', type: 'Company' } as Unit, ...allUnits.filter(u => u.name !== 'Toàn công ty')].map((u) => (
                           <button
@@ -440,22 +456,6 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
                   </select>
                 </div>
               </div>
-            </div>
-
-            {/* Right: Metric Tabs */}
-            <div className="flex bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto no-scrollbar">
-              {metricTabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveMetric(tab.id as keyof KPIPlan)}
-                  className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${activeMetric === tab.id
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200 dark:shadow-none'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
-                    }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
             </div>
           </div>
         </div>
