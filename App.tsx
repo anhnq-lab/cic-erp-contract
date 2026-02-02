@@ -1,5 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/queryClient';
 import { Toaster, toast } from 'sonner';
 import { RoleSwitcher } from './components/RoleSwitcher';
 import DataSeeder from './components/admin/DataSeeder';
@@ -25,7 +26,6 @@ import { MOCK_CONTRACTS } from './constants';
 import { Unit, Contract, Product } from './types';
 import { ContractService } from './services';
 import { Moon, Sun } from 'lucide-react';
-// import { supabase } from './lib/supabase'; // logic moved to context
 import { Session } from '@supabase/supabase-js';
 import Auth from './components/Auth';
 import { useAuth } from './contexts/AuthContext';
@@ -339,41 +339,43 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col transition-colors duration-300">
-      <Sidebar
-        activeTab={activeTab === 'contract-detail' ? 'contracts' : activeTab}
-        setActiveTab={setActiveTab}
-        isOpen={isSidebarOpen}
-        isCollapsed={isSidebarCollapsed}
-        setIsCollapsed={setIsSidebarCollapsed}
-        onClose={() => setIsSidebarOpen(false)}
-      />
-      <Header
-        onMenuClick={() => setIsSidebarOpen(true)}
-        isSidebarCollapsed={isSidebarCollapsed}
-        user={session?.user}
-      />
+    <QueryClientProvider client={queryClient}>
+      <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col transition-colors duration-300">
+        <Sidebar
+          activeTab={activeTab === 'contract-detail' ? 'contracts' : activeTab}
+          setActiveTab={setActiveTab}
+          isOpen={isSidebarOpen}
+          isCollapsed={isSidebarCollapsed}
+          setIsCollapsed={setIsSidebarCollapsed}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+        <Header
+          onMenuClick={() => setIsSidebarOpen(true)}
+          isSidebarCollapsed={isSidebarCollapsed}
+          user={session?.user}
+        />
 
-      {/* 
+        {/* 
           QUAN TRỌNG: Loại bỏ padding khỏi main để con có thể bám sticky sát Header.
           Padding sẽ được áp dụng cho div bên trong.
       */}
-      <main className={`flex-1 ${mainMarginClass} overflow-auto transition-all duration-300 ease-in-out`}>
-        <div className={`mx-auto ${contentMaxWidthClass} p-4 md:p-8 transition-all duration-500 ease-in-out`}>
-          {renderContent()}
-        </div>
-      </main>
+        <main className={`flex-1 ${mainMarginClass} overflow-auto transition-all duration-300 ease-in-out`}>
+          <div className={`mx-auto ${contentMaxWidthClass} p-4 md:p-8 transition-all duration-500 ease-in-out`}>
+            {renderContent()}
+          </div>
+        </main>
 
-      <button
-        onClick={() => setIsCreating(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-transform z-40 md:hidden"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
-      </button>
-      {import.meta.env.DEV && <DebugPanel />}
-      <Toaster richColors position="top-center" />
-      <RoleSwitcher />
-    </div>
+        <button
+          onClick={() => setIsCreating(true)}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-transform z-40 md:hidden"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
+        </button>
+        {import.meta.env.DEV && <DebugPanel />}
+        <Toaster richColors position="top-center" />
+        <RoleSwitcher />
+      </div>
+    </QueryClientProvider>
   );
 };
 
