@@ -525,7 +525,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                       <div>
                         <p className="text-sm font-black text-slate-900 dark:text-slate-100 leading-none">{contract.id}</p>
                         <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tighter">
-                          {contract.signedDate}
+                          {contract.signedDate ? new Date(contract.signedDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Chưa ký'}
                         </p>
                       </div>
                     </div>
