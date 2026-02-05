@@ -236,7 +236,7 @@ export const WorkflowService = {
             return { success: false, error };
         }
 
-        // Log review action
+        // Log review action to contract_reviews
         const { error: reviewError } = await supabase.from('contract_reviews').insert({
             contract_id: contractId,
             role: 'NVKD',
@@ -245,17 +245,8 @@ export const WorkflowService = {
         });
         console.log('[WorkflowService] contract_reviews insert:', { reviewError });
 
-        // Explicitly create audit log
-        const currentUser = (await authClient.auth.getUser()).data.user;
-        await AuditLogService.create({
-            user_id: currentUser?.id || null,
-            table_name: 'contracts',
-            record_id: contractId,
-            action: 'UPDATE',
-            old_data: { status: oldStatus },
-            new_data: { status: 'Pending_Review', draft_url: draftUrl },
-            comment: 'Gửi duyệt (Pháp lý + Tài chính song song)'
-        });
+        // NOTE: Audit log is automatically created by database trigger (audit_contracts_trigger)
+        // No need to manually create AuditLogService.create() here
 
         return { success: true };
     },

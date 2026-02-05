@@ -130,6 +130,24 @@ export const AuditLogService = {
             case 'UPDATE':
                 // Check specific field changes
                 if (oldData && newData) {
+                    // PRIORITY: Check for parallel approval actions FIRST
+                    // Legal approval: legal_approved changed from false/null to true
+                    if (!oldData.legal_approved && newData.legal_approved === true) {
+                        return '✅ Pháp lý đã duyệt';
+                    }
+                    // Finance approval: finance_approved changed from false/null to true
+                    if (!oldData.finance_approved && newData.finance_approved === true) {
+                        return '✅ Tài chính đã duyệt';
+                    }
+                    // Submit for review: Draft -> Pending_Review with draft_url
+                    if (oldData.status === 'Draft' && newData.status === 'Pending_Review') {
+                        return '📤 Gửi duyệt (Pháp lý + Tài chính song song)';
+                    }
+                    // Both approved -> automatically advances
+                    if (oldData.status === 'Pending_Review' && newData.status === 'Both_Approved') {
+                        return '🎉 Cả hai bên đã duyệt xong';
+                    }
+                    // Other status changes
                     if (oldData.status !== newData.status) {
                         return `Cập nhật trạng thái: ${translateStatus(oldData.status)} → ${translateStatus(newData.status)}`;
                     }
