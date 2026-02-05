@@ -1,6 +1,16 @@
 import { dataClient as supabase } from '../lib/dataClient';
 import { Contract } from '../types';
 
+// Error messages in Vietnamese for better UX
+const ERROR_MESSAGES = {
+    FETCH_FAILED: 'Không thể tải danh sách hợp đồng. Vui lòng thử lại.',
+    NOT_FOUND: 'Không tìm thấy hợp đồng.',
+    CREATE_FAILED: 'Không thể tạo hợp đồng mới. Vui lòng kiểm tra thông tin.',
+    UPDATE_FAILED: 'Không thể cập nhật hợp đồng. Vui lòng thử lại.',
+    DELETE_FAILED: 'Không thể xóa hợp đồng. Vui lòng thử lại.',
+    VALIDATION_ERROR: 'Dữ liệu không hợp lệ.',
+};
+
 // Helper to map DB Contract to Frontend Contract
 const mapContract = (c: any): Contract => {
     if (!c) return {
@@ -49,16 +59,30 @@ const mapContract = (c: any): Contract => {
 
 export const ContractService = {
     getAll: async (): Promise<Contract[]> => {
-        const { data, error } = await supabase.from('contracts').select('*').order('created_at', { ascending: false });
-        if (error) throw error;
+        const { data, error } = await supabase
+            .from('contracts')
+            .select('id, title, contract_type, party_a, party_b, customer_id, unit_id, value, status, stage, signed_date, created_at')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('ContractService.getAll:', error.message);
+            throw new Error(ERROR_MESSAGES.FETCH_FAILED);
+        }
         return data.map(mapContract);
     },
 
     getById: async (id: string): Promise<Contract | undefined> => {
-        // 1. Fetch Contract
-        const { data: contractData, error: contractError } = await supabase.from('contracts').select('*').eq('id', id).single();
+        if (!id) return undefined;
+
+        const { data: contractData, error: contractError } = await supabase
+            .from('contracts')
+            .select('*')
+            .eq('id', id)
+            .single();
+
         if (contractError) {
-            console.error("API: getById error", contractError);
+            if (contractError.code === 'PGRST116') return undefined; // Not found
+            console.error('ContractService.getById:', contractError.message);
             return undefined;
         }
 
@@ -574,8 +598,13 @@ export const ContractService = {
     },
 
     delete: async (id: string): Promise<boolean> => {
+        if (!id) throw new Error(ERROR_MESSAGES.VALIDATION_ERROR);
+
         const { error } = await supabase.from('contracts').delete().eq('id', id);
-        if (error) throw error;
+        if (error) {
+            console.error('ContractService.delete:', error.message);
+            throw new Error(ERROR_MESSAGES.DELETE_FAILED);
+        }
         return true;
     },
 
