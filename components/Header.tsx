@@ -1,8 +1,11 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Menu, LogOut, ChevronDown, User } from 'lucide-react';
+import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
+import { Search, Bell, Menu, LogOut, ChevronDown, HelpCircle } from 'lucide-react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { useAuth } from '../contexts/AuthContext';
+
+// Lazy load UserGuide
+const UserGuide = lazy(() => import('./UserGuide'));
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -14,6 +17,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed, user }
   const marginClass = isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64';
   const { signOut } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showUserGuide, setShowUserGuide] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
@@ -58,6 +62,14 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed, user }
       </div>
 
       <div className="flex items-center gap-1 sm:gap-4 ml-2">
+        {/* Help Button */}
+        <button
+          onClick={() => setShowUserGuide(true)}
+          className="p-2 text-slate-500 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-400 rounded-full transition-colors"
+          title="Hướng dẫn sử dụng"
+        >
+          <HelpCircle size={20} />
+        </button>
         <button className="relative p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
           <Bell size={20} />
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
@@ -112,6 +124,13 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed, user }
           )}
         </div>
       </div>
+
+      {/* User Guide Modal */}
+      {showUserGuide && (
+        <Suspense fallback={<div className="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center"><div className="text-white">Đang tải...</div></div>}>
+          <UserGuide onClose={() => setShowUserGuide(false)} />
+        </Suspense>
+      )}
     </header>
   );
 };
