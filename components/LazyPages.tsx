@@ -71,6 +71,7 @@ export const LazyContractListPage: React.FC = () => {
             onSelectContract={(id) => navigate(ROUTES.CONTRACT_DETAIL(encodeURIComponent(id)))}
             onAdd={() => navigate(ROUTES.CONTRACT_NEW)}
             onClone={(contract) => navigate(ROUTES.CONTRACT_NEW, { state: { cloneFrom: contract } })}
+            onEdit={(id) => navigate(ROUTES.CONTRACT_EDIT(encodeURIComponent(id)))}  // Quick edit
         />
     );
 };

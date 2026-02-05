@@ -16,9 +16,10 @@ interface ContractListProps {
   onSelectContract: (id: string) => void;
   onAdd: () => void;
   onClone?: (contract: Contract) => void;
+  onEdit?: (id: string) => void;  // New: Quick edit
 }
 
-const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContract, onAdd, onClone }) => {
+const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContract, onAdd, onClone, onEdit }) => {
   // Impersonation - để filter theo đơn vị của user đang giả làm
   const { impersonatedUser, isImpersonating } = useImpersonation();
 
@@ -58,6 +59,13 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
       if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
         e.preventDefault();
         onAdd();
+      }
+      // / : Focus search (like GitHub)
+      if (e.key === '/' && !e.ctrlKey && !e.metaKey &&
+        !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+        searchInput?.focus();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -512,7 +520,9 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                 <tr
                   key={contract.id}
                   onClick={() => onSelectContract(contract.id)}
+                  onDoubleClick={() => onEdit?.(contract.id)}  // Double-click to edit
                   className="group hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-all cursor-pointer"
+                  title="Click: Xem chi tiết | Double-click: Sửa nhanh"
                 >
                   <td className="px-4 py-5 text-center text-xs font-bold text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900">
                     {stt.toString().padStart(2, '0')}
@@ -523,7 +533,15 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                         {contract.contractType}
                       </div>
                       <div>
-                        <p className="text-sm font-black text-slate-900 dark:text-slate-100 leading-none">{contract.id}</p>
+                        <p
+                          className="text-sm font-black text-slate-900 dark:text-slate-100 leading-none hover:text-indigo-600 cursor-pointer transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(contract.id);
+                            toast.success(`Đã copy: ${contract.id}`);
+                          }}
+                          title="Click để copy mã hợp đồng"
+                        >{contract.id}</p>
                         <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tighter">
                           {contract.signedDate ? new Date(contract.signedDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Chưa ký'}
                         </p>
