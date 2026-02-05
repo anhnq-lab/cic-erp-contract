@@ -450,25 +450,96 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
           {!isEditing && (
             <button
               onClick={() => {
-                // Auto-fill logic (for demo purposes)
+                // === STEP 1: Đơn vị & Nhân sự ===
                 if (units.length > 0) setUnitId(units[0].id);
-                // Customer auto-fill removed - use search instead
+                if (units.length > 1) setCoordinatingUnitId(units[1].id);
                 if (salespeople.length > 0) setSalespersonId(salespeople[0].id);
 
-                setTitle('Hợp đồng Tư vấn Giải pháp chuyển đổi số BIM');
-                setTitle('Hợp đồng Tư vấn Giải pháp chuyển đổi số BIM');
-                // setManualValue(150000000); // Removed
+                // Tiêu đề và ngày ký
+                setTitle('Hợp đồng Tư vấn Giải pháp chuyển đổi số BIM - Dự án Trụ sở ABC');
+                setSignedDate(new Date().toISOString().split('T')[0]);
+
+                // Liên hệ khách hàng
+                setContacts([
+                  { id: 'c1', name: 'Nguyễn Văn An', role: 'Giám đốc dự án' },
+                  { id: 'c2', name: 'Trần Thị Bình', role: 'Phòng Mua sắm' }
+                ]);
+
+                // === STEP 2: Kinh doanh & Chi phí ===
+                // Sản phẩm/Dịch vụ chi tiết
                 setLineItems([
-                  { id: 'sample-1', name: 'Tư vấn BIM Setup', quantity: 1, supplier: '', inputPrice: 0, outputPrice: 50000000, directCosts: 0 },
-                  { id: 'sample-2', name: 'Đào tạo Revit Arch', quantity: 2, supplier: 'CTV_ABC', inputPrice: 5000000, outputPrice: 15000000, directCosts: 10000000, directCostDetails: [{ id: 'd1', name: 'Thuê giảng viên', amount: 10000000 }] }
+                  {
+                    id: 'item-1',
+                    name: 'Tư vấn BIM Execution Plan',
+                    quantity: 1,
+                    supplier: '',
+                    inputPrice: 0,
+                    outputPrice: 50000000,
+                    directCosts: 0
+                  },
+                  {
+                    id: 'item-2',
+                    name: 'Phần mềm Autodesk Revit (Bản quyền 1 năm)',
+                    quantity: 5,
+                    supplier: 'Autodesk',
+                    inputPrice: 8000000,
+                    outputPrice: 12000000,
+                    directCosts: 0
+                  },
+                  {
+                    id: 'item-3',
+                    name: 'Đào tạo BIM cho đội ngũ kỹ sư',
+                    quantity: 2,
+                    supplier: 'CTV_GiangVien',
+                    inputPrice: 5000000,
+                    outputPrice: 15000000,
+                    directCosts: 10000000,
+                    directCostDetails: [
+                      { id: 'd1', name: 'Thuê giảng viên', amount: 8000000 },
+                      { id: 'd2', name: 'Tài liệu đào tạo', amount: 2000000 }
+                    ]
+                  }
                 ]);
+
+                // Chi phí quản lý
                 setAdminCosts({
-                  transferFee: 50000, contractorTax: 0, importFee: 0, expertHiring: 2000000, documentProcessing: 100000
+                  transferFee: 50000,
+                  contractorTax: 0,
+                  importFee: 500000,
+                  expertHiring: 3000000,
+                  documentProcessing: 150000
                 });
-                setPaymentSchedules([
-                  { id: 'p1', date: new Date().toISOString().split('T')[0], amount: 50000000, description: 'Tạm ứng 30%', type: 'Revenue', status: 'Pending' },
-                  { id: 'p2', date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], amount: 100000000, description: 'Nghiệm thu', type: 'Revenue', status: 'Pending' }
+
+                // Chiết khấu NCC (% x tổng đầu vào)
+                setSupplierDiscount(5); // 5%
+
+                // === STEP 3: Tài chính & Hoàn tất ===
+                const today = new Date();
+                const in30Days = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+                const in60Days = new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000);
+                const in90Days = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
+
+                // Lịch xuất hóa đơn doanh thu
+                setRevenueSchedules([
+                  { id: 'rev-1', date: today.toISOString().split('T')[0], amount: 40000000, description: 'Đợt 1 - Tạm ứng' },
+                  { id: 'rev-2', date: in60Days.toISOString().split('T')[0], amount: 60000000, description: 'Đợt 2 - Nghiệm thu' },
+                  { id: 'rev-3', date: in90Days.toISOString().split('T')[0], amount: 40000000, description: 'Đợt 3 - Hoàn tất' }
                 ]);
+
+                // Lịch thu tiền từ khách hàng
+                setPaymentSchedules([
+                  { id: 'pay-1', date: today.toISOString().split('T')[0], amount: 40000000, description: 'Tạm ứng 30%', type: 'Revenue', status: 'Pending' },
+                  { id: 'pay-2', date: in30Days.toISOString().split('T')[0], amount: 50000000, description: 'Thanh toán đợt 2', type: 'Revenue', status: 'Pending' },
+                  { id: 'pay-3', date: in90Days.toISOString().split('T')[0], amount: 50000000, description: 'Thanh toán nghiệm thu', type: 'Revenue', status: 'Pending' }
+                ]);
+
+                // Lịch thanh toán cho NCC
+                setSupplierSchedules([
+                  { id: 'sup-1', date: in30Days.toISOString().split('T')[0], amount: 40000000, description: 'Thanh toán Autodesk', type: 'Expense', status: 'Pending' },
+                  { id: 'sup-2', date: in60Days.toISOString().split('T')[0], amount: 10000000, description: 'Thanh toán giảng viên', type: 'Expense', status: 'Pending' }
+                ]);
+
+                toast.success('Đã điền dữ liệu mẫu đầy đủ cho tất cả các bước!');
               }}
               className="p-3 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-2xl font-bold text-xs uppercase transition-all flex items-center gap-2"
               title="Điền dữ liệu mẫu"
