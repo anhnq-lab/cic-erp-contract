@@ -94,6 +94,7 @@ export const LazyContractDetailPage: React.FC = () => {
 // Contract Form
 import { ContractService } from '../services';
 import { toast } from 'sonner';
+import { Contract } from '../types';
 export const LazyContractFormPage: React.FC = () => {
     const navigate = useNavigate();
     const { id: rawId } = useParams<{ id: string }>();
@@ -101,15 +102,53 @@ export const LazyContractFormPage: React.FC = () => {
     const location = useLocation();
     const cloneFrom = location.state?.cloneFrom;
 
+    // State for editing mode - fetch contract from DB
+    const [editingContract, setEditingContract] = React.useState<Contract | null>(null);
+    const [isLoading, setIsLoading] = React.useState(!!id && !cloneFrom);
+
+    // Fetch contract when editing (id exists and not cloning)
+    React.useEffect(() => {
+        if (id && !cloneFrom) {
+            setIsLoading(true);
+            ContractService.getById(id)
+                .then(contract => {
+                    if (contract) {
+                        setEditingContract(contract);
+                    } else {
+                        toast.error('Không tìm thấy hợp đồng');
+                        navigate(ROUTES.CONTRACTS);
+                    }
+                })
+                .catch(err => {
+                    console.error('Failed to fetch contract:', err);
+                    toast.error('Lỗi tải dữ liệu hợp đồng');
+                    navigate(ROUTES.CONTRACTS);
+                })
+                .finally(() => setIsLoading(false));
+        }
+    }, [id, cloneFrom, navigate]);
+
+    // Show loading while fetching
+    if (isLoading) {
+        return (
+            <div className="fixed inset-0 z-[100] bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                    <p className="text-slate-600 dark:text-slate-300 font-medium">Đang tải dữ liệu hợp đồng...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="fixed inset-0 z-[100] bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4">
             {withSuspense(
                 <ContractForm
-                    contract={cloneFrom}
+                    contract={cloneFrom || editingContract || undefined}
                     isCloning={!!cloneFrom}
                     onSave={async (data) => {
                         try {
-                            if (id) {
+                            if (id && !cloneFrom) {
                                 await ContractService.update(id, data);
                                 toast.success("Cập nhật hợp đồng thành công!");
                             } else {
