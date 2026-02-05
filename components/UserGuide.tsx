@@ -100,13 +100,57 @@ const UserGuide: React.FC = () => {
                 { title: 'Lọc & Xuất Excel', steps: ['Dùng bộ lọc: Năm, Đơn vị, Trạng thái', 'Click tiêu đề cột để sắp xếp', 'Nhấn "Xuất Excel"'] },
             ],
             workflow: {
-                title: 'Quy trình phê duyệt hợp đồng',
+                title: '📋 Quy trình phê duyệt hợp đồng',
+                description: 'Hợp đồng phải qua 6 bước duyệt trước khi có hiệu lực',
                 steps: [
-                    { status: 'Nháp', desc: 'HĐ mới tạo, chưa gửi duyệt', icon: <Edit size={16} /> },
-                    { status: 'Chờ duyệt', desc: 'Đã gửi, chờ cấp trên duyệt', icon: <Clock size={16} /> },
-                    { status: 'Duyệt pháp lý', desc: 'Bộ phận pháp lý xem xét', icon: <Scale size={16} /> },
-                    { status: 'Đang thực hiện', desc: 'HĐ đã được duyệt, đang triển khai', icon: <Play size={16} /> },
-                    { status: 'Hoàn thành', desc: 'HĐ đã hoàn tất tất cả điều khoản', icon: <CheckCircle2 size={16} /> },
+                    {
+                        status: 'Draft (Nháp)',
+                        desc: 'HĐ mới tạo, chưa gửi duyệt',
+                        who: 'NVKD tạo',
+                        action: 'Nhấn "Gửi duyệt pháp lý"',
+                        condition: 'Đã điền đầy đủ thông tin bắt buộc',
+                        icon: <Edit size={16} />
+                    },
+                    {
+                        status: 'Pending_Legal (Chờ Pháp lý)',
+                        desc: 'Bộ phận Pháp lý xem xét hợp đồng',
+                        who: 'Legal / Lãnh đạo duyệt',
+                        action: 'Duyệt hoặc Từ chối (trả về Nháp)',
+                        condition: 'Nội dung HĐ hợp lệ, đúng mẫu',
+                        icon: <Scale size={16} />
+                    },
+                    {
+                        status: 'Pending_Finance (Chờ Tài chính)',
+                        desc: 'Kế toán kiểm tra giá trị, điều khoản thanh toán',
+                        who: 'Kế toán / KTT duyệt',
+                        action: 'Duyệt hoặc Từ chối',
+                        condition: 'Giá trị, lịch thu chi hợp lệ',
+                        icon: <CreditCard size={16} />
+                    },
+                    {
+                        status: 'Finance_Approved (Tài chính đã duyệt)',
+                        desc: 'Đã qua Tài chính, chờ trình ký',
+                        who: 'Lãnh đạo trình ký',
+                        action: 'Nhấn "Trình ký"',
+                        condition: 'Tự động sau khi TC duyệt',
+                        icon: <FileCheck size={16} />
+                    },
+                    {
+                        status: 'Pending_Sign (Chờ ký)',
+                        desc: 'Đang chờ lãnh đạo ký',
+                        who: 'Lãnh đạo ký',
+                        action: 'Nhấn "Ký hợp đồng"',
+                        condition: 'Bản cứng đã in, sẵn sàng ký',
+                        icon: <Send size={16} />
+                    },
+                    {
+                        status: 'Active (Có hiệu lực)',
+                        desc: 'HĐ đã ký, đang thực hiện',
+                        who: 'Tự động',
+                        action: 'Theo dõi thanh toán',
+                        condition: 'Sau khi ký xong',
+                        icon: <CheckCircle2 size={16} />
+                    },
                 ]
             }
         },
@@ -253,8 +297,8 @@ const UserGuide: React.FC = () => {
                                 key={step.id}
                                 onClick={() => handleStepClick(step)}
                                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${completedSteps.includes(step.id)
-                                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-                                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30'
+                                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30'
                                     }`}
                             >
                                 {completedSteps.includes(step.id) ? <CheckCircle2 size={12} /> : <Circle size={12} />}
@@ -292,23 +336,62 @@ const UserGuide: React.FC = () => {
                                 <div className="p-4 bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700">
                                     {/* Workflow (if exists) */}
                                     {module.workflow && (
-                                        <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                                            <h5 className="font-bold text-xs text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
-                                                <ClipboardCheck size={14} /> {module.workflow.title}
+                                        <div className="mb-4 p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700/50 dark:to-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-600">
+                                            <h5 className="font-bold text-sm text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-2">
+                                                <ClipboardCheck size={16} className={colorClasses[module.color].text} /> {module.workflow.title}
                                             </h5>
-                                            <div className="flex flex-wrap items-center gap-2">
+                                            {module.workflow.description && (
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{module.workflow.description}</p>
+                                            )}
+
+                                            {/* Flow Diagram */}
+                                            <div className="flex flex-wrap items-center gap-1 mb-4 p-2 bg-white dark:bg-slate-800 rounded-lg">
                                                 {module.workflow.steps.map((step, i) => (
                                                     <React.Fragment key={i}>
-                                                        <div className="flex items-center gap-1.5 px-2 py-1 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600">
-                                                            <span className={`${colorClasses[module.color].text}`}>{step.icon}</span>
-                                                            <div>
-                                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{step.status}</span>
-                                                            </div>
+                                                        <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold ${colorClasses[module.color].bg} ${colorClasses[module.color].text}`}>
+                                                            {step.icon}
+                                                            <span className="hidden sm:inline">{step.status.split(' ')[0]}</span>
                                                         </div>
                                                         {i < module.workflow.steps.length - 1 && (
-                                                            <ArrowRightCircle size={14} className="text-slate-300 dark:text-slate-600" />
+                                                            <ArrowRightCircle size={12} className="text-slate-300 dark:text-slate-600 flex-shrink-0" />
                                                         )}
                                                     </React.Fragment>
+                                                ))}
+                                            </div>
+
+                                            {/* Detailed Steps Table */}
+                                            <div className="space-y-2">
+                                                {module.workflow.steps.map((step, i) => (
+                                                    <div key={i} className="flex items-start gap-3 p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
+                                                        <div className={`p-1.5 rounded-lg flex-shrink-0 ${colorClasses[module.color].bg} ${colorClasses[module.color].text}`}>
+                                                            {step.icon}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <span className="font-bold text-xs text-slate-800 dark:text-slate-200">{step.status}</span>
+                                                                {step.who && (
+                                                                    <span className="px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded text-[10px] font-medium">
+                                                                        👤 {step.who}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-1">{step.desc}</p>
+                                                            {(step.action || step.condition) && (
+                                                                <div className="flex flex-wrap gap-2 text-[10px]">
+                                                                    {step.action && (
+                                                                        <span className="text-emerald-600 dark:text-emerald-400">
+                                                                            ▶ {step.action}
+                                                                        </span>
+                                                                    )}
+                                                                    {step.condition && (
+                                                                        <span className="text-amber-600 dark:text-amber-400">
+                                                                            ⚡ {step.condition}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 ))}
                                             </div>
                                         </div>
@@ -445,7 +528,15 @@ interface ModuleGuideData {
     guides: { title: string; steps: string[] }[];
     workflow?: {
         title: string;
-        steps: { status: string; desc: string; icon: React.ReactNode }[];
+        description?: string;
+        steps: {
+            status: string;
+            desc: string;
+            icon: React.ReactNode;
+            who?: string;
+            action?: string;
+            condition?: string;
+        }[];
     };
 }
 
