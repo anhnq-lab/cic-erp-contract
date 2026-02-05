@@ -36,6 +36,7 @@ const ProductDetail = lazy(() => import('./ProductDetail'));
 const UnitList = lazy(() => import('./UnitList'));
 const UnitDetail = lazy(() => import('./UnitDetail'));
 const Settings = lazy(() => import('./Settings'));
+const UserGuide = lazy(() => import('./UserGuide'));
 
 // Helper wrapper for Suspense
 const withSuspense = (Component: React.ReactNode) => (
@@ -290,3 +291,6 @@ export const LazyUnitDetailPage: React.FC = () => {
 
 // Settings
 export const LazySettingsPage: React.FC = () => withSuspense(<Settings />);
+
+// User Guide
+export const LazyUserGuidePage: React.FC = () => withSuspense(<UserGuide />);

@@ -25,6 +25,7 @@ import {
     LazyUnitListPage as UnitListPage,
     LazyUnitDetailPage as UnitDetailPage,
     LazySettingsPage as SettingsPage,
+    LazyUserGuidePage as UserGuidePage,
 } from '../components/LazyPages';
 
 // Route Configuration
@@ -70,6 +71,9 @@ export const router = createBrowserRouter([
 
             // Settings
             { path: 'settings', element: <SettingsPage /> },
+
+            // User Guide
+            { path: 'user-guide', element: <UserGuidePage /> },
 
             // 404 Fallback
             { path: '*', element: <Navigate to="/" replace /> },
