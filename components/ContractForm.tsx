@@ -80,6 +80,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
   // useState only reads initial value once on mount, so we need useEffect to update
   useEffect(() => {
     if (contract) {
+      // Step 1 fields
       setContractType(contract.contractType || 'HĐ');
       setUnitId(contract.unitId || '');
       setCoordinatingUnitId(contract.coordinatingUnitId || '');
@@ -88,6 +89,21 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
       setTitle(contract.title || '');
       setClientName(contract.partyA || '');
       setSignedDate(contract.signedDate || new Date().toISOString().split('T')[0]);
+
+      // Contacts
+      if (contract.contacts && contract.contacts.length > 0) {
+        setContacts(contract.contacts);
+      }
+
+      // Step 2 fields - Line Items
+      if (contract.lineItems && contract.lineItems.length > 0) {
+        setLineItems(contract.lineItems);
+      }
+
+      // Admin Costs
+      if (contract.adminCosts) {
+        setAdminCosts(contract.adminCosts);
+      }
     }
   }, [contract]);
 
