@@ -42,14 +42,19 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed, user }
           <Menu size={24} />
         </button>
 
-        <div className="flex items-center bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl w-full max-w-[120px] sm:max-w-xs md:max-w-md border border-transparent focus-within:border-indigo-300 dark:focus-within:border-indigo-900/50 transition-all">
-          <Search size={18} className="text-slate-400 mr-2 flex-shrink-0" />
-          <input
-            type="text"
-            placeholder="Tìm kiếm..."
-            className="bg-transparent border-none outline-none text-sm w-full text-slate-700 dark:text-slate-200"
-          />
-        </div>
+        <button
+          onClick={() => {
+            // Trigger CommandPalette
+            window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }));
+          }}
+          className="flex items-center bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl w-full max-w-[120px] sm:max-w-xs md:max-w-md border border-transparent hover:border-orange-300 dark:hover:border-orange-700 transition-all cursor-pointer group"
+        >
+          <Search size={18} className="text-slate-400 mr-2 flex-shrink-0 group-hover:text-orange-500 transition-colors" />
+          <span className="text-sm text-slate-400 text-left flex-1 truncate">Tìm kiếm...</span>
+          <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 bg-white dark:bg-slate-700 text-[10px] font-bold text-slate-400 rounded border border-slate-200 dark:border-slate-600 ml-2">
+            Ctrl+K
+          </kbd>
+        </button>
       </div>
 
       <div className="flex items-center gap-1 sm:gap-4 ml-2">

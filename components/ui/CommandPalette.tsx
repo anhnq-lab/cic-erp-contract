@@ -45,8 +45,21 @@ const CommandPalette: React.FC = () => {
     const [results, setResults] = useState<SearchResult[]>(staticPages);
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
+    const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+        try {
+            return JSON.parse(localStorage.getItem('recentSearches') || '[]');
+        } catch { return []; }
+    });
     const inputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
+
+    // Save recent search
+    const saveRecentSearch = (term: string) => {
+        if (!term.trim()) return;
+        const updated = [term, ...recentSearches.filter(s => s !== term)].slice(0, 5);
+        setRecentSearches(updated);
+        localStorage.setItem('recentSearches', JSON.stringify(updated));
+    };
 
     // Keyboard shortcut to open (Cmd+K or Ctrl+K)
     useEffect(() => {
@@ -74,7 +87,7 @@ const CommandPalette: React.FC = () => {
         }
     }, [isOpen]);
 
-    // Search logic
+    // Search logic - Optimized with parallel calls
     const performSearch = useCallback(async (searchQuery: string) => {
         if (!searchQuery.trim()) {
             setResults(staticPages);
@@ -89,55 +102,90 @@ const CommandPalette: React.FC = () => {
             p.title.toLowerCase().includes(q)
         );
 
-        // Search dynamic data (debounced effect will handle this)
         const dynamicResults: SearchResult[] = [];
 
         try {
+            // Parallel API calls for better performance
+            const [contracts, customersRes, personnel, products, units] = await Promise.all([
+                ContractService.getAll().catch(() => []),
+                CustomerService.getAll().catch(() => ({ data: [] })),
+                EmployeeService.getAll().catch(() => []),
+                ProductService.getAll().catch(() => []),
+                UnitService.getAll().catch(() => []),
+            ]);
+
             // Search contracts
-            const contracts = await ContractService.getAll();
             contracts
-                .filter(c => c.id?.toLowerCase().includes(q) || c.title?.toLowerCase().includes(q))
-                .slice(0, 3)
+                .filter(c => c.id?.toLowerCase().includes(q) || c.title?.toLowerCase().includes(q) || c.partyA?.toLowerCase().includes(q))
+                .slice(0, 5)
                 .forEach(c => {
                     dynamicResults.push({
                         id: c.id,
                         type: 'contract',
-                        title: c.title || c.id,
-                        subtitle: c.id,
+                        title: c.id,
+                        subtitle: c.title || c.partyA || '',
                         icon: <FileText size={16} className="text-orange-500" />,
                         route: ROUTES.CONTRACT_DETAIL(encodeURIComponent(c.id)),
                     });
                 });
 
             // Search customers
-            const customersRes = await CustomerService.getAll();
-            customersRes.data
-                .filter(c => c.name?.toLowerCase().includes(q))
+            (customersRes.data || [])
+                .filter(c => c.name?.toLowerCase().includes(q) || c.taxCode?.includes(q))
                 .slice(0, 3)
                 .forEach(c => {
                     dynamicResults.push({
                         id: c.id,
                         type: 'customer',
                         title: c.name,
-                        subtitle: c.industry || '',
+                        subtitle: c.industry || c.taxCode || '',
                         icon: <Building2 size={16} className="text-blue-500" />,
                         route: ROUTES.CUSTOMER_DETAIL(c.id),
                     });
                 });
 
             // Search personnel
-            const personnel = await EmployeeService.getAll();
             personnel
-                .filter(p => p.name?.toLowerCase().includes(q))
+                .filter(p => p.name?.toLowerCase().includes(q) || p.employeeCode?.toLowerCase().includes(q))
                 .slice(0, 3)
                 .forEach(p => {
                     dynamicResults.push({
                         id: p.id,
                         type: 'personnel',
                         title: p.name,
-                        subtitle: p.position || '',
+                        subtitle: p.position || p.employeeCode || '',
                         icon: <Users size={16} className="text-emerald-500" />,
                         route: ROUTES.PERSONNEL_DETAIL(p.id),
+                    });
+                });
+
+            // Search products
+            products
+                .filter(p => p.name?.toLowerCase().includes(q) || p.code?.toLowerCase().includes(q))
+                .slice(0, 3)
+                .forEach(p => {
+                    dynamicResults.push({
+                        id: p.id,
+                        type: 'product',
+                        title: p.name,
+                        subtitle: p.code || '',
+                        icon: <Package size={16} className="text-purple-500" />,
+                        route: ROUTES.PRODUCT_DETAIL(p.id),
+                    });
+                });
+
+            // Search units
+            units
+                .filter(u => u.name?.toLowerCase().includes(q) || u.code?.toLowerCase().includes(q))
+                .slice(0, 3)
+                .forEach(u => {
+                    dynamicResults.push({
+                        id: u.id,
+                        type: 'unit',
+                        title: u.name,
+                        subtitle: u.code || '',
+                        icon: <Building2 size={16} className="text-cyan-500" />,
+                        route: ROUTES.UNIT_DETAIL(u.id),
                     });
                 });
 
@@ -158,9 +206,10 @@ const CommandPalette: React.FC = () => {
 
     // Navigate to result
     const handleSelect = useCallback((result: SearchResult) => {
+        saveRecentSearch(result.title);
         navigate(result.route);
         setIsOpen(false);
-    }, [navigate]);
+    }, [navigate, saveRecentSearch]);
 
     // Keyboard navigation
     const handleKeyDown = (e: React.KeyboardEvent) => {
