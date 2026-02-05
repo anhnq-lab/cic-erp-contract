@@ -151,11 +151,18 @@ export const LazyContractFormPage: React.FC = () => {
                             if (id && !cloneFrom) {
                                 await ContractService.update(id, data);
                                 toast.success("Cập nhật hợp đồng thành công!");
+                                // Navigate to contract detail after editing
+                                navigate(ROUTES.CONTRACT_DETAIL(encodeURIComponent(id)));
                             } else {
-                                await ContractService.create(data);
+                                const newContract = await ContractService.create(data);
                                 toast.success(cloneFrom ? "Nhân bản hợp đồng thành công!" : "Tạo hợp đồng thành công!");
+                                // Navigate to new contract detail or list
+                                if (newContract?.id) {
+                                    navigate(ROUTES.CONTRACT_DETAIL(encodeURIComponent(newContract.id)));
+                                } else {
+                                    navigate(ROUTES.CONTRACTS);
+                                }
                             }
-                            navigate(ROUTES.CONTRACTS);
                         } catch (e: any) {
                             toast.error("Lỗi: " + (e.message || e));
                         }
