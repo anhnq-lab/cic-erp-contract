@@ -77,7 +77,7 @@ const UserGuide: React.FC = () => {
         { id: 'edit', q: 'Làm sao sửa hợp đồng?', a: 'Double-click vào hợp đồng trong danh sách, hoặc mở chi tiết rồi nhấn "Chỉnh sửa".' },
         { id: 'copy', q: 'Làm sao copy mã hợp đồng?', a: 'Click trực tiếp vào mã hợp đồng (ví dụ: HD_001/...). Hệ thống tự copy vào clipboard.' },
         { id: 'search', q: 'Làm sao tìm hợp đồng nhanh?', a: 'Nhấn Ctrl+K để mở tìm kiếm toàn cục, gõ mã HĐ hoặc tên khách hàng.' },
-        { id: 'approval', q: 'Quy trình phê duyệt hợp đồng?', a: 'Nháp → Chờ duyệt → Phê duyệt pháp lý → Đang thực hiện. Xem chi tiết ở mục "Hợp đồng".' },
+        { id: 'approval', q: 'Quy trình phê duyệt hợp đồng?', a: 'Nháp → Chờ duyệt (Pháp lý + Tài chính SONG SONG) → Đã duyệt → Chờ ký → Có hiệu lực. Xem chi tiết ở mục "Hợp đồng".' },
         { id: 'export', q: 'Làm sao xuất Excel?', a: 'Ở danh sách hợp đồng, nhấn nút "Xuất Excel" ở góc phải.' },
     ];
 
@@ -100,39 +100,31 @@ const UserGuide: React.FC = () => {
                 { title: 'Lọc & Xuất Excel', steps: ['Dùng bộ lọc: Năm, Đơn vị, Trạng thái', 'Click tiêu đề cột để sắp xếp', 'Nhấn "Xuất Excel"'] },
             ],
             workflow: {
-                title: '📋 Quy trình phê duyệt hợp đồng',
-                description: 'Hợp đồng phải qua 6 bước duyệt trước khi có hiệu lực',
+                title: '📋 Quy trình phê duyệt hợp đồng (Song song)',
+                description: 'Pháp lý và Tài chính duyệt ĐỒNG THỜI. Khi cả 2 đã duyệt → trình ký lãnh đạo',
                 steps: [
                     {
                         status: 'Draft (Nháp)',
                         desc: 'HĐ mới tạo, chưa gửi duyệt',
                         who: 'NVKD tạo',
-                        action: 'Nhấn "Gửi duyệt pháp lý"',
+                        action: 'Nhấn "Gửi duyệt"',
                         condition: 'Đã điền đầy đủ thông tin bắt buộc',
                         icon: <Edit size={16} />
                     },
                     {
-                        status: 'Pending_Legal (Chờ Pháp lý)',
-                        desc: 'Bộ phận Pháp lý xem xét hợp đồng',
-                        who: 'Legal / Lãnh đạo duyệt',
-                        action: 'Duyệt hoặc Từ chối (trả về Nháp)',
-                        condition: 'Nội dung HĐ hợp lệ, đúng mẫu',
-                        icon: <Scale size={16} />
+                        status: 'Pending_Review (Chờ duyệt)',
+                        desc: '⚡ SONG SONG: Pháp lý + Tài chính duyệt cùng lúc',
+                        who: 'Legal + Kế toán (đồng thời)',
+                        action: 'Mỗi bên duyệt độc lập',
+                        condition: 'Cả 2 phải duyệt mới qua bước tiếp',
+                        icon: <Users size={16} />
                     },
                     {
-                        status: 'Pending_Finance (Chờ Tài chính)',
-                        desc: 'Kế toán kiểm tra giá trị, điều khoản thanh toán',
-                        who: 'Kế toán / KTT duyệt',
-                        action: 'Duyệt hoặc Từ chối',
-                        condition: 'Giá trị, lịch thu chi hợp lệ',
-                        icon: <CreditCard size={16} />
-                    },
-                    {
-                        status: 'Finance_Approved (Tài chính đã duyệt)',
-                        desc: 'Đã qua Tài chính, chờ trình ký',
+                        status: 'Both_Approved (Đã duyệt)',
+                        desc: 'Cả Pháp lý và Tài chính đã duyệt xong',
                         who: 'Lãnh đạo trình ký',
                         action: 'Nhấn "Trình ký"',
-                        condition: 'Tự động sau khi TC duyệt',
+                        condition: 'Tự động khi cả 2 duyệt xong',
                         icon: <FileCheck size={16} />
                     },
                     {
