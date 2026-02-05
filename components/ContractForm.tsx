@@ -4,7 +4,7 @@ import {
   X, Save, Calendar, User, FileText,
   DollarSign, Calculator, Building2,
   Plus, Trash2, Users, Briefcase,
-  TrendingUp, CreditCard, Receipt,
+  TrendingUp, TrendingDown, CreditCard, Receipt,
   Info, Package, ShieldCheck, Wallet,
   MapPin, UserCheck, Hash, Percent
 } from 'lucide-react';
@@ -357,8 +357,8 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
     // Line items output (giá đầu ra từ sản phẩm)
     const lineItemsOutput = lineItems.reduce((acc, item) => acc + (item.quantity * item.outputPrice), 0);
 
-    // SIGNING VALUE = Line items + Supplier Discount (chiết khấu từ NCC cộng vào doanh thu)
-    const signingValue = lineItemsOutput + supplierDiscount;
+    // SIGNING VALUE = Line items output (không cộng chiết khấu nữa)
+    const signingValue = lineItemsOutput;
 
     const totalInput = lineItems.reduce((acc, item) => acc + (item.quantity * item.inputPrice), 0);
     const totalDirectCosts = lineItems.reduce((acc, item) => acc + item.directCosts, 0);
@@ -366,12 +366,15 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
     // Admin costs (không bao gồm supplierDiscount)
     const adminSum = (Object.values(adminCosts) as number[]).reduce((acc: number, val: number) => acc + val, 0);
 
+    // Supplier Discount = hệ số % x tổng đầu vào => GIẢM chi phí
+    const supplierDiscountAmount = totalInput * (supplierDiscount / 100);
+
     const estimatedRevenue = signingValue / 1.1; // Giá trị ký kết trừ thuế VAT (giả định 10%)
-    const totalCosts = totalInput + totalDirectCosts + adminSum;
+    const totalCosts = totalInput + totalDirectCosts + adminSum - supplierDiscountAmount; // Trừ chiết khấu NCC
     const grossProfit = signingValue - totalCosts;
     const profitMargin = signingValue > 0 ? (grossProfit / signingValue) * 100 : 0;
 
-    return { signingValue, estimatedRevenue, totalCosts, grossProfit, profitMargin, totalInput, totalDirectCosts, adminSum, supplierDiscount };
+    return { signingValue, estimatedRevenue, totalCosts, grossProfit, profitMargin, totalInput, totalDirectCosts, adminSum, supplierDiscount, supplierDiscountAmount };
   }, [lineItems, adminCosts, supplierDiscount]);
 
   const formatVND = (val: number) => new Intl.NumberFormat('vi-VN').format(Math.round(val));
@@ -1010,32 +1013,43 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                           </div>
                         </div>
                       ))}
-                    </div>
-                  </div>
 
-                  {/* 3.3 CHIẾT KHẤU TỪ NHÀ CUNG CẤP - Separate section, CỘNG VÀO DOANH THU */}
-                  <div className="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-[24px] border border-emerald-200 dark:border-emerald-800 space-y-4">
-                    <h4 className="text-xs font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest flex items-center gap-2">
-                      <TrendingUp size={14} /> Chiết khấu từ nhà cung cấp (Cộng vào Doanh thu)
-                    </h4>
-                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400">
-                      Chiết khấu từ NCC như Bentley, CSI... sẽ được cộng vào giá trị ký kết, tăng doanh thu hợp đồng.
-                    </p>
-                    <div className="flex items-center gap-4">
-                      <div className="flex-1 relative">
-                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" size={16} />
-                        <input
-                          type="text"
-                          value={supplierDiscount ? formatVND(supplierDiscount) : '0'}
-                          onChange={(e) => {
-                            const raw = e.target.value.replace(/\./g, '');
-                            if (!/^\d*$/.test(raw)) return;
-                            setSupplierDiscount(Number(raw));
-                          }}
-                          className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-700 border-2 border-emerald-300 dark:border-emerald-600 rounded-xl text-sm font-black text-emerald-700 dark:text-emerald-300 focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-right"
-                        />
+                      {/* Chiết khấu NCC - Inline compact */}
+                      <div className="space-y-1.5 lg:col-span-2">
+                        <label className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase ml-1 flex items-center gap-1">
+                          <TrendingDown size={10} /> Chiết khấu từ NCC (Giảm chi phí)
+                        </label>
+                        <div className="grid grid-cols-12 gap-2">
+                          <div className="col-span-3 relative">
+                            <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
+                              <Percent size={10} className="text-emerald-500" />
+                            </div>
+                            <input
+                              type="number"
+                              step="0.1"
+                              min="0"
+                              max="100"
+                              placeholder="%"
+                              value={supplierDiscount || ''}
+                              onChange={(e) => setSupplierDiscount(Number(e.target.value))}
+                              className="w-full pl-6 pr-1 py-2 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-300 dark:border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 dark:text-emerald-300 focus:ring-2 focus:ring-emerald-500 outline-none text-center"
+                            />
+                          </div>
+                          <div className="col-span-5 relative">
+                            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400" size={12} />
+                            <input
+                              type="text"
+                              readOnly
+                              value={formatVND(totals.supplierDiscountAmount || 0)}
+                              className="w-full pl-8 pr-2 py-2 bg-emerald-100 dark:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-700 rounded-xl text-xs font-black text-emerald-700 dark:text-emerald-300 text-right cursor-not-allowed"
+                              title="Tự động tính = % x Tổng giá đầu vào"
+                            />
+                          </div>
+                          <div className="col-span-4 flex items-center text-[9px] text-emerald-600 dark:text-emerald-400 italic">
+                            x {formatVND(totals.totalInput)} đầu vào
+                          </div>
+                        </div>
                       </div>
-                      <span className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">VNĐ</span>
                     </div>
                   </div>
                 </div>
