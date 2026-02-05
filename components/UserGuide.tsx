@@ -151,8 +151,8 @@ const UserGuide: React.FC = () => {
                                     key={step.id}
                                     onClick={() => handleStepClick(step)}
                                     className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${isComplete
-                                            ? 'bg-white/50 dark:bg-slate-800/50'
-                                            : 'bg-white dark:bg-slate-800 hover:shadow-md hover:scale-[1.01]'
+                                        ? 'bg-white/50 dark:bg-slate-800/50'
+                                        : 'bg-white dark:bg-slate-800 hover:shadow-md hover:scale-[1.01]'
                                         }`}
                                 >
                                     {isComplete ? (
@@ -259,15 +259,69 @@ const UserGuide: React.FC = () => {
                     Các module trong hệ thống
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    <ModuleLink icon={<LayoutDashboard />} label="Dashboard" path={ROUTES.DASHBOARD} color="indigo" />
-                    <ModuleLink icon={<FileText />} label="Hợp đồng" path={ROUTES.CONTRACTS} color="orange" />
-                    <ModuleLink icon={<CreditCard />} label="Thanh toán" path={ROUTES.PAYMENTS} color="emerald" />
-                    <ModuleLink icon={<BarChart3 />} label="Phân tích" path={ROUTES.ANALYTICS} color="purple" />
-                    <ModuleLink icon={<Users />} label="Nhân sự" path={ROUTES.PERSONNEL} color="cyan" />
-                    <ModuleLink icon={<Building2 />} label="Khách hàng" path={ROUTES.CUSTOMERS} color="blue" />
-                    <ModuleLink icon={<Package />} label="Sản phẩm" path={ROUTES.PRODUCTS} color="rose" />
-                    <ModuleLink icon={<Bot />} label="AI Assistant" path={ROUTES.AI_ASSISTANT} color="violet" />
-                    <ModuleLink icon={<Settings />} label="Cài đặt" path={ROUTES.SETTINGS} color="slate" />
+                    <ModuleLink
+                        icon={<LayoutDashboard />}
+                        label="Dashboard"
+                        path={ROUTES.DASHBOARD}
+                        color="indigo"
+                        features={['Xem KPI tổng quan', 'Biểu đồ doanh thu theo tháng', 'So sánh năm trước/năm nay', 'Phân tích theo đơn vị, nhân sự', 'Cảnh báo hợp đồng sắp đến hạn']}
+                    />
+                    <ModuleLink
+                        icon={<FileText />}
+                        label="Hợp đồng"
+                        path={ROUTES.CONTRACTS}
+                        color="orange"
+                        features={['Tạo, sửa, xóa hợp đồng', 'Nhân bản hợp đồng', 'Theo dõi trạng thái', 'Lịch thu chi tiền', 'Xuất Excel', 'Tìm kiếm & lọc nâng cao']}
+                    />
+                    <ModuleLink
+                        icon={<CreditCard />}
+                        label="Thanh toán"
+                        path={ROUTES.PAYMENTS}
+                        color="emerald"
+                        features={['Theo dõi đợt thanh toán', 'Ghi nhận tiền về', 'Cảnh báo quá hạn', 'Lịch thanh toán', 'Báo cáo công nợ']}
+                    />
+                    <ModuleLink
+                        icon={<BarChart3 />}
+                        label="Phân tích"
+                        path={ROUTES.ANALYTICS}
+                        color="purple"
+                        features={['Báo cáo chi tiết', 'Phân tích xu hướng', 'So sánh hiệu suất', 'Xuất báo cáo PDF/Excel', 'Biểu đồ tương tác']}
+                    />
+                    <ModuleLink
+                        icon={<Users />}
+                        label="Nhân sự"
+                        path={ROUTES.PERSONNEL}
+                        color="cyan"
+                        features={['Danh sách nhân viên', 'Thông tin cá nhân', 'Chức vụ & đơn vị', 'Hợp đồng phụ trách', 'Thống kê hiệu suất']}
+                    />
+                    <ModuleLink
+                        icon={<Building2 />}
+                        label="Khách hàng"
+                        path={ROUTES.CUSTOMERS}
+                        color="blue"
+                        features={['Danh bạ khách hàng', 'Thông tin liên hệ', 'Lịch sử hợp đồng', 'Phân loại khách hàng', 'Ghi chú & đánh giá']}
+                    />
+                    <ModuleLink
+                        icon={<Package />}
+                        label="Sản phẩm"
+                        path={ROUTES.PRODUCTS}
+                        color="rose"
+                        features={['Danh mục sản phẩm/dịch vụ', 'Giá & đơn vị tính', 'Phân loại danh mục', 'Tìm kiếm nhanh', 'Import/Export']}
+                    />
+                    <ModuleLink
+                        icon={<Bot />}
+                        label="AI Assistant"
+                        path={ROUTES.AI_ASSISTANT}
+                        color="violet"
+                        features={['Hỏi đáp thông minh', 'Phân tích dữ liệu', 'Gợi ý hành động', 'Tóm tắt báo cáo', 'Hỗ trợ tìm kiếm']}
+                    />
+                    <ModuleLink
+                        icon={<Settings />}
+                        label="Cài đặt"
+                        path={ROUTES.SETTINGS}
+                        color="slate"
+                        features={['Cấu hình hệ thống', 'Quản lý người dùng', 'Quyền truy cập', 'Giao diện & theme', 'Sao lưu dữ liệu']}
+                    />
                 </div>
             </div>
 
@@ -427,13 +481,16 @@ const TopicCard = ({ icon, title, steps, action }: {
     </div>
 );
 
-const ModuleLink = ({ icon, label, path, color }: {
+const ModuleLink = ({ icon, label, path, color, features }: {
     icon: React.ReactNode;
     label: string;
     path: string;
     color: string;
+    features?: string[];
 }) => {
     const navigate = useNavigate();
+    const [showTooltip, setShowTooltip] = useState(false);
+
     const colorClasses: Record<string, string> = {
         indigo: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30',
         orange: 'text-orange-500 bg-orange-50 dark:bg-orange-900/30',
@@ -446,19 +503,63 @@ const ModuleLink = ({ icon, label, path, color }: {
         slate: 'text-slate-500 bg-slate-100 dark:bg-slate-700/50',
     };
 
+    const borderColors: Record<string, string> = {
+        indigo: 'border-indigo-200 dark:border-indigo-800',
+        orange: 'border-orange-200 dark:border-orange-800',
+        emerald: 'border-emerald-200 dark:border-emerald-800',
+        purple: 'border-purple-200 dark:border-purple-800',
+        cyan: 'border-cyan-200 dark:border-cyan-800',
+        blue: 'border-blue-200 dark:border-blue-800',
+        rose: 'border-rose-200 dark:border-rose-800',
+        violet: 'border-violet-200 dark:border-violet-800',
+        slate: 'border-slate-300 dark:border-slate-700',
+    };
+
     return (
-        <button
-            onClick={() => navigate(path)}
-            className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-md hover:scale-[1.02] transition-all text-left group"
+        <div
+            className="relative"
+            onMouseEnter={() => setShowTooltip(true)}
+            onMouseLeave={() => setShowTooltip(false)}
         >
-            <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
-                {React.cloneElement(icon as React.ReactElement, { size: 18 })}
-            </div>
-            <span className="font-medium text-sm text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                {label}
-            </span>
-            <ChevronRight size={16} className="ml-auto text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 transition-colors" />
-        </button>
+            <button
+                onClick={() => navigate(path)}
+                className="w-full flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:scale-[1.02] transition-all text-left group"
+            >
+                <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
+                    {React.cloneElement(icon as React.ReactElement<{ size: number }>, { size: 18 })}
+                </div>
+                <span className="font-medium text-sm text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    {label}
+                </span>
+                <ChevronRight size={16} className="ml-auto text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 transition-colors" />
+            </button>
+
+            {/* Tooltip with features */}
+            {showTooltip && features && features.length > 0 && (
+                <div className={`absolute z-50 left-0 right-0 top-full mt-2 p-4 bg-white dark:bg-slate-900 rounded-xl shadow-xl border-2 ${borderColors[color]} animate-in fade-in slide-in-from-top-2 duration-200`}>
+                    <div className="flex items-center gap-2 mb-3">
+                        <div className={`p-1.5 rounded-lg ${colorClasses[color]}`}>
+                            {React.cloneElement(icon as React.ReactElement<{ size: number }>, { size: 16 })}
+                        </div>
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">{label}</h4>
+                    </div>
+                    <ul className="space-y-1.5">
+                        {features.map((feature, i) => (
+                            <li key={i} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
+                                <span className="text-emerald-500 mt-0.5">✓</span>
+                                {feature}
+                            </li>
+                        ))}
+                    </ul>
+                    <button
+                        onClick={() => navigate(path)}
+                        className={`w-full mt-3 py-2 rounded-lg text-xs font-bold transition-colors ${colorClasses[color]} hover:opacity-80`}
+                    >
+                        Đi đến {label} →
+                    </button>
+                </div>
+            )}
+        </div>
     );
 };
 
