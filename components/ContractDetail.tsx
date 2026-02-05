@@ -382,12 +382,14 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
               contractId={contract.id}
               currentStatus={contract.status}
               userRole={profile.role}
+              legalApproved={(contract as any).legal_approved || false}
+              financeApproved={(contract as any).finance_approved || false}
               onAction={async (action) => {
                 const userId = profile?.id || '';
                 let result;
                 switch (action) {
-                  case 'SubmitLegal':
-                    // Open dialog to get draft URL
+                  case 'SubmitReview':
+                    // Open dialog to get draft URL (reuse existing dialog)
                     setShowLegalDialog(true);
                     return; // Don't continue, dialog will handle submission
                   case 'ApproveLegal':
@@ -803,7 +805,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
           onSubmit={async (draftUrl, draftName) => {
             const result = await WorkflowService.submitContractForReview(contract.id, draftUrl);
             if (result.success) {
-              toast.success('Đã gửi duyệt pháp lý thành công!');
+              toast.success('Đã gửi duyệt! Pháp lý + Tài chính sẽ xem xét song song.');
               setShowLegalDialog(false);
               const refreshed = await ContractService.getById(contract.id);
               if (refreshed) setContract(refreshed);
