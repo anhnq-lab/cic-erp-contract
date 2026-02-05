@@ -301,123 +301,123 @@ const UserGuide: React.FC = () => {
                 </div>
             )}
 
-            {/* Module Guides - Collapsible Accordion */}
+            {/* Module Guides - Tab Layout */}
             <div>
                 <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
                     <Lightbulb size={16} className="text-amber-500" /> Hướng dẫn theo module
                 </h3>
-                <div className="space-y-2">
+
+                {/* Tab Headers */}
+                <div className="flex overflow-x-auto gap-1 mb-4 pb-2 border-b border-slate-200 dark:border-slate-700 scrollbar-thin">
                     {moduleGuides.map((module) => (
-                        <div key={module.id} className={`rounded-xl border overflow-hidden ${colorClasses[module.color].border}`}>
-                            {/* Module Header */}
-                            <button
-                                onClick={() => setExpandedModule(expandedModule === module.id ? null : module.id)}
-                                className={`w-full flex items-center gap-3 p-3 text-left transition-colors ${expandedModule === module.id ? colorClasses[module.color].bg : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50'
-                                    }`}
-                            >
-                                <div className={`p-1.5 rounded-lg ${colorClasses[module.color].bg} ${colorClasses[module.color].text}`}>
-                                    {module.icon}
-                                </div>
-                                <span className={`font-bold text-sm flex-1 ${colorClasses[module.color].text}`}>{module.title}</span>
-                                <span className="text-xs text-slate-400">{module.guides.length} hướng dẫn</span>
-                                <ChevronDown size={16} className={`text-slate-400 transition-transform ${expandedModule === module.id ? 'rotate-180' : ''}`} />
-                            </button>
+                        <button
+                            key={module.id}
+                            onClick={() => setExpandedModule(module.id)}
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-medium whitespace-nowrap transition-all border-b-2 ${expandedModule === module.id
+                                    ? `${colorClasses[module.color].bg} ${colorClasses[module.color].text} border-current`
+                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-200 dark:hover:bg-slate-700'
+                                }`}
+                        >
+                            <span className={expandedModule === module.id ? '' : 'opacity-60'}>{module.icon}</span>
+                            {module.title}
+                        </button>
+                    ))}
+                </div>
 
-                            {/* Module Content */}
-                            {expandedModule === module.id && (
-                                <div className="p-4 bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700">
-                                    {/* Workflow (if exists) */}
-                                    {module.workflow && (
-                                        <div className="mb-4 p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700/50 dark:to-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-600">
-                                            <h5 className="font-bold text-sm text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-2">
-                                                <ClipboardCheck size={16} className={colorClasses[module.color].text} /> {module.workflow.title}
-                                            </h5>
-                                            {module.workflow.description && (
-                                                <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{module.workflow.description}</p>
-                                            )}
-
-                                            {/* Flow Diagram */}
-                                            <div className="flex flex-wrap items-center gap-2 mb-4 p-3 bg-white dark:bg-slate-800 rounded-lg">
-                                                {module.workflow.steps.map((step, i) => (
-                                                    <React.Fragment key={i}>
-                                                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${colorClasses[module.color].bg} ${colorClasses[module.color].text}`}>
-                                                            {step.icon}
-                                                            <span>{step.status}</span>
-                                                        </div>
-                                                        {i < module.workflow.steps.length - 1 && (
-                                                            <ArrowRightCircle size={14} className="text-slate-300 dark:text-slate-600 flex-shrink-0" />
-                                                        )}
-                                                    </React.Fragment>
-                                                ))}
-                                            </div>
-
-                                            {/* Detailed Steps Table */}
-                                            <div className="space-y-2">
-                                                {module.workflow.steps.map((step, i) => (
-                                                    <div key={i} className="flex items-start gap-3 p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
-                                                        <div className={`p-1.5 rounded-lg flex-shrink-0 ${colorClasses[module.color].bg} ${colorClasses[module.color].text}`}>
-                                                            {step.icon}
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center gap-2 mb-1">
-                                                                <span className="font-bold text-xs text-slate-800 dark:text-slate-200">{step.status}</span>
-                                                                {step.who && (
-                                                                    <span className="px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded text-[10px] font-medium">
-                                                                        👤 {step.who}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-1">{step.desc}</p>
-                                                            {(step.action || step.condition) && (
-                                                                <div className="flex flex-wrap gap-2 text-[10px]">
-                                                                    {step.action && (
-                                                                        <span className="text-emerald-600 dark:text-emerald-400">
-                                                                            ▶ {step.action}
-                                                                        </span>
-                                                                    )}
-                                                                    {step.condition && (
-                                                                        <span className="text-amber-600 dark:text-amber-400">
-                                                                            ⚡ {step.condition}
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                {/* Tab Content */}
+                {moduleGuides.map((module) => (
+                    expandedModule === module.id && (
+                        <div key={module.id} className={`p-4 rounded-xl border ${colorClasses[module.color].border} bg-white dark:bg-slate-800`}>
+                            {/* Workflow (if exists) */}
+                            {module.workflow && (
+                                <div className="mb-4 p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700/50 dark:to-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-600">
+                                    <h5 className="font-bold text-sm text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-2">
+                                        <ClipboardCheck size={16} className={colorClasses[module.color].text} /> {module.workflow.title}
+                                    </h5>
+                                    {module.workflow.description && (
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{module.workflow.description}</p>
                                     )}
 
-                                    {/* Guides Grid */}
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {module.guides.map((guide, i) => (
-                                            <div key={i} className="p-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg">
-                                                <h5 className="font-bold text-xs text-slate-800 dark:text-slate-200 mb-2">{guide.title}</h5>
-                                                <ol className="space-y-1">
-                                                    {guide.steps.map((step, j) => (
-                                                        <li key={j} className="flex items-start gap-1.5 text-[11px] text-slate-600 dark:text-slate-400">
-                                                            <span className="bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-400 px-1 rounded text-[10px] font-bold">{j + 1}</span>
-                                                            {step}
-                                                        </li>
-                                                    ))}
-                                                </ol>
-                                            </div>
+                                    {/* Flow Diagram */}
+                                    <div className="flex flex-wrap items-center gap-2 mb-4 p-3 bg-white dark:bg-slate-800 rounded-lg">
+                                        {module.workflow.steps.map((step, i) => (
+                                            <React.Fragment key={i}>
+                                                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${colorClasses[module.color].bg} ${colorClasses[module.color].text}`}>
+                                                    {step.icon}
+                                                    <span>{step.status}</span>
+                                                </div>
+                                                {i < module.workflow!.steps.length - 1 && (
+                                                    <ArrowRightCircle size={14} className="text-slate-300 dark:text-slate-600 flex-shrink-0" />
+                                                )}
+                                            </React.Fragment>
                                         ))}
                                     </div>
 
-                                    {/* Go to module button */}
-                                    <button
-                                        onClick={() => navigate(module.path)}
-                                        className={`w-full mt-3 py-2 rounded-lg text-xs font-bold transition-colors ${colorClasses[module.color].bg} ${colorClasses[module.color].text} hover:opacity-80`}
-                                    >
-                                        Đi đến {module.title} →
-                                    </button>
+                                    {/* Detailed Steps Table */}
+                                    <div className="space-y-2">
+                                        {module.workflow.steps.map((step, i) => (
+                                            <div key={i} className="flex items-start gap-3 p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
+                                                <div className={`p-1.5 rounded-lg flex-shrink-0 ${colorClasses[module.color].bg} ${colorClasses[module.color].text}`}>
+                                                    {step.icon}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="font-bold text-xs text-slate-800 dark:text-slate-200">{step.status}</span>
+                                                        {step.who && (
+                                                            <span className="px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded text-[10px] font-medium">
+                                                                👤 {step.who}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-1">{step.desc}</p>
+                                                    {(step.action || step.condition) && (
+                                                        <div className="flex flex-wrap gap-2 text-[10px]">
+                                                            {step.action && (
+                                                                <span className="text-emerald-600 dark:text-emerald-400">
+                                                                    ▶ {step.action}
+                                                                </span>
+                                                            )}
+                                                            {step.condition && (
+                                                                <span className="text-amber-600 dark:text-amber-400">
+                                                                    ⚡ {step.condition}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
+
+                            {/* Guides Grid */}
+                            <div className="grid grid-cols-2 gap-3">
+                                {module.guides.map((guide, i) => (
+                                    <div key={i} className="p-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg">
+                                        <h5 className="font-bold text-xs text-slate-800 dark:text-slate-200 mb-2">{guide.title}</h5>
+                                        <ol className="space-y-1">
+                                            {guide.steps.map((step, j) => (
+                                                <li key={j} className="flex items-start gap-1.5 text-[11px] text-slate-600 dark:text-slate-400">
+                                                    <span className="bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-400 px-1 rounded text-[10px] font-bold">{j + 1}</span>
+                                                    {step}
+                                                </li>
+                                            ))}
+                                        </ol>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Go to module button */}
+                            <button
+                                onClick={() => navigate(module.path)}
+                                className={`w-full mt-3 py-2 rounded-lg text-xs font-bold transition-colors ${colorClasses[module.color].bg} ${colorClasses[module.color].text} hover:opacity-80`}
+                            >
+                                Đi đến {module.title} →
+                            </button>
                         </div>
-                    ))}
-                </div>
+                    )
+                ))}
             </div>
 
             {/* FAQ - Compact */}
