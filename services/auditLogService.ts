@@ -85,8 +85,9 @@ export const AuditLogService = {
      * Format action thành text tiếng Việt thân thiện
      */
     formatAction(action: string, oldData?: any, newData?: any): string {
-        // Status translation map
+        // Status translation map - Vietnamese
         const statusLabels: Record<string, string> = {
+            // Contract workflow statuses
             'Active': 'Đang hiệu lực',
             'Pending': 'Chờ xử lý',
             'Reviewing': 'Đang xem xét',
@@ -95,6 +96,10 @@ export const AuditLogService = {
             'Liquidated': 'Đã thanh lý',
             'Completed': 'Hoàn thành',
             'Terminated': 'Đã chấm dứt',
+            // Parallel approval workflow
+            'Pending_Review': 'Chờ Pháp lý + Tài chính duyệt',
+            'Both_Approved': 'Pháp lý + Tài chính đã duyệt',
+            // Legacy sequential workflow
             'Pending_Legal': 'Chờ Pháp lý duyệt',
             'Pending_Finance': 'Chờ Tài chính duyệt',
             'Finance_Approved': 'Tài chính đã duyệt',
@@ -105,7 +110,19 @@ export const AuditLogService = {
             'Rejected': 'Từ chối'
         };
 
+        // Stage translation map - Vietnamese
+        const stageLabels: Record<string, string> = {
+            'Signed': 'Đã ký',
+            'Advanced': 'Đã tạm ứng',
+            'Guaranteed': 'Đã bảo lãnh',
+            'InputOrdered': 'Đã đặt hàng đầu vào',
+            'Implementation': 'Đang triển khai',
+            'Completed': 'Hoàn thành',
+            'Invoiced': 'Đã xuất hóa đơn'
+        };
+
         const translateStatus = (status: string) => statusLabels[status] || status;
+        const translateStage = (stage: string) => stageLabels[stage] || stage;
 
         switch (action) {
             case 'INSERT':
@@ -117,7 +134,7 @@ export const AuditLogService = {
                         return `Cập nhật trạng thái: ${translateStatus(oldData.status)} → ${translateStatus(newData.status)}`;
                     }
                     if (oldData.stage !== newData.stage) {
-                        return `Chuyển giai đoạn: ${oldData.stage} → ${newData.stage}`;
+                        return `Chuyển giai đoạn: ${translateStage(oldData.stage)} → ${translateStage(newData.stage)}`;
                     }
                     if (oldData.review_status !== newData.review_status) {
                         const statusMap: Record<string, string> = {
