@@ -55,9 +55,9 @@ const EmptyState: React.FC<EmptyStateProps> = ({
     const config = defaultConfigs[type];
 
     return (
-        <div className={`flex flex-col items-center justify-center py-12 px-4 ${className}`}>
+        <div className={`flex flex-col items-center justify-center py-12 px-4 animate-in fade-in zoom-in-95 duration-300 ${className}`}>
             {/* Icon */}
-            <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 mb-4">
+            <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 mb-4 animate-bounce-slow">
                 {icon || config.icon}
             </div>
 

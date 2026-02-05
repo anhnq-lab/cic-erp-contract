@@ -110,9 +110,9 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
           }
         }
 
-        // Employee
-        if (contract.employeeId) {
-          const emp = await EmployeeService.getById(contract.employeeId);
+        // Employee/Salesperson
+        if (contract.salespersonId) {
+          const emp = await EmployeeService.getById(contract.salespersonId);
           setSalesName(emp?.name || 'Unknown');
         }
 
@@ -311,9 +311,16 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
             </button>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded uppercase tracking-wider">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(contract?.id || '');
+                    toast.success('Đã copy mã hợp đồng!');
+                  }}
+                  title="Click để copy mã hợp đồng"
+                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded uppercase tracking-wider hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors cursor-pointer"
+                >
                   {contract?.id}
-                </span>
+                </button>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getStatusColor(contract?.status || '')} uppercase`}>
                   {CONTRACT_STATUS_LABELS[contract?.status || ''] || contract?.status}
                 </span>
