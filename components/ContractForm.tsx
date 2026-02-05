@@ -433,7 +433,16 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
       content: title, // Simplified
       contacts: contacts,
       milestones: [],
-      paymentPhases: [...paymentSchedules, ...supplierSchedules],
+      // Map PaymentSchedule (date, description) → PaymentPhase (dueDate, name)
+      paymentPhases: [...paymentSchedules, ...supplierSchedules].map(p => ({
+        id: p.id,
+        name: p.description || '',
+        dueDate: p.date || '',
+        amount: p.amount || 0,
+        status: p.status || 'Pending',
+        percentage: p.percentage || 0,
+        type: p.type
+      })),
       lineItems: lineItems,
       adminCosts: adminCosts
     };
