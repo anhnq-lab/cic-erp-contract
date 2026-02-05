@@ -1,5 +1,5 @@
-import React from 'react';
-import { Check, X, Gavel, Calculator, Signature, Send, Eye } from 'lucide-react';
+import React, { useState } from 'react';
+import { Check, X, Gavel, Calculator, Signature, Send, Eye, Loader2 } from 'lucide-react';
 
 interface ContractReviewPanelProps {
     contractId: string;
@@ -24,8 +24,17 @@ export const ContractReviewPanel: React.FC<ContractReviewPanelProps> = ({
     userRole,
     onAction
 }) => {
-    // Debug log
-    console.log('[ContractReviewPanel] userRole:', userRole, 'currentStatus:', currentStatus);
+    // Loading state for buttons
+    const [loadingAction, setLoadingAction] = useState<string | null>(null);
+
+    const handleAction = async (action: Parameters<typeof onAction>[0]) => {
+        setLoadingAction(action);
+        try {
+            await onAction(action);
+        } finally {
+            setLoadingAction(null);
+        }
+    };
 
     // Admin/Leadership có quyền thấy và thao tác tất cả
     const isAdmin = userRole === 'Admin' || userRole === 'Leadership';
@@ -79,10 +88,12 @@ export const ContractReviewPanel: React.FC<ContractReviewPanelProps> = ({
             {/* SUBMIT FOR LEGAL REVIEW (Draft/Pending → Pending_Legal) */}
             {showSubmitLegal && (
                 <button
-                    onClick={() => onAction('SubmitLegal')}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-medium text-sm flex items-center gap-2 transition-colors shadow-lg shadow-blue-200"
+                    onClick={() => handleAction('SubmitLegal')}
+                    disabled={!!loadingAction}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-medium text-sm flex items-center gap-2 transition-colors shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <Send size={16} /> Gửi duyệt Pháp lý
+                    {loadingAction === 'SubmitLegal' ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                    Gửi duyệt Pháp lý
                 </button>
             )}
 
@@ -94,16 +105,18 @@ export const ContractReviewPanel: React.FC<ContractReviewPanelProps> = ({
                         Duyệt Pháp lý
                     </span>
                     <button
-                        onClick={() => onAction('RejectLegal')}
-                        className="px-3 py-1.5 bg-white text-rose-600 rounded-lg hover:bg-rose-50 font-bold text-xs shadow-sm border border-slate-200 transition-colors flex items-center gap-1"
+                        onClick={() => handleAction('RejectLegal')}
+                        disabled={!!loadingAction}
+                        className="px-3 py-1.5 bg-white text-rose-600 rounded-lg hover:bg-rose-50 font-bold text-xs shadow-sm border border-slate-200 transition-colors flex items-center gap-1 disabled:opacity-50"
                     >
-                        <X size={12} /> Từ chối
+                        {loadingAction === 'RejectLegal' ? <Loader2 size={12} className="animate-spin" /> : <X size={12} />} Từ chối
                     </button>
                     <button
-                        onClick={() => onAction('ApproveLegal')}
-                        className="px-3 py-1.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 font-bold text-xs shadow-sm flex items-center gap-1 transition-colors"
+                        onClick={() => handleAction('ApproveLegal')}
+                        disabled={!!loadingAction}
+                        className="px-3 py-1.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 font-bold text-xs shadow-sm flex items-center gap-1 transition-colors disabled:opacity-50"
                     >
-                        <Check size={12} /> Duyệt
+                        {loadingAction === 'ApproveLegal' ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />} Duyệt
                     </button>
                 </div>
             )}
@@ -116,16 +129,18 @@ export const ContractReviewPanel: React.FC<ContractReviewPanelProps> = ({
                         Duyệt Tài chính
                     </span>
                     <button
-                        onClick={() => onAction('RejectFinance')}
-                        className="px-3 py-1.5 bg-white text-rose-600 rounded-lg hover:bg-rose-50 font-bold text-xs shadow-sm border border-slate-200 transition-colors flex items-center gap-1"
+                        onClick={() => handleAction('RejectFinance')}
+                        disabled={!!loadingAction}
+                        className="px-3 py-1.5 bg-white text-rose-600 rounded-lg hover:bg-rose-50 font-bold text-xs shadow-sm border border-slate-200 transition-colors flex items-center gap-1 disabled:opacity-50"
                     >
-                        <X size={12} /> Từ chối
+                        {loadingAction === 'RejectFinance' ? <Loader2 size={12} className="animate-spin" /> : <X size={12} />} Từ chối
                     </button>
                     <button
-                        onClick={() => onAction('ApproveFinance')}
-                        className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-bold text-xs shadow-sm flex items-center gap-1 transition-colors"
+                        onClick={() => handleAction('ApproveFinance')}
+                        disabled={!!loadingAction}
+                        className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-bold text-xs shadow-sm flex items-center gap-1 transition-colors disabled:opacity-50"
                     >
-                        <Check size={12} /> Duyệt
+                        {loadingAction === 'ApproveFinance' ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />} Duyệt
                     </button>
                 </div>
             )}
@@ -133,20 +148,24 @@ export const ContractReviewPanel: React.FC<ContractReviewPanelProps> = ({
             {/* SUBMIT FOR SIGNATURE */}
             {showSubmitSign && (
                 <button
-                    onClick={() => onAction('SubmitSign')}
-                    className="px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700 font-medium text-sm flex items-center gap-2 transition-colors shadow-lg shadow-amber-200"
+                    onClick={() => handleAction('SubmitSign')}
+                    disabled={!!loadingAction}
+                    className="px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700 font-medium text-sm flex items-center gap-2 transition-colors shadow-lg shadow-amber-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <Signature size={16} /> Trình ký
+                    {loadingAction === 'SubmitSign' ? <Loader2 size={16} className="animate-spin" /> : <Signature size={16} />}
+                    Trình ký
                 </button>
             )}
 
             {/* SIGN */}
             {showSign && (
                 <button
-                    onClick={() => onAction('Sign')}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 font-medium text-sm flex items-center gap-2 transition-colors shadow-lg shadow-purple-200"
+                    onClick={() => handleAction('Sign')}
+                    disabled={!!loadingAction}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 font-medium text-sm flex items-center gap-2 transition-colors shadow-lg shadow-purple-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <Signature size={16} /> Ký hợp đồng
+                    {loadingAction === 'Sign' ? <Loader2 size={16} className="animate-spin" /> : <Signature size={16} />}
+                    Ký hợp đồng
                 </button>
             )}
         </div>
