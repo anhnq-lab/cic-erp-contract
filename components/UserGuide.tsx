@@ -104,7 +104,7 @@ const UserGuide: React.FC = () => {
                 description: 'Pháp lý và Tài chính duyệt ĐỒNG THỜI. Khi cả 2 đã duyệt → trình ký lãnh đạo',
                 steps: [
                     {
-                        status: 'Draft (Nháp)',
+                        status: 'Nháp',
                         desc: 'HĐ mới tạo, chưa gửi duyệt',
                         who: 'NVKD tạo',
                         action: 'Nhấn "Gửi duyệt"',
@@ -112,7 +112,7 @@ const UserGuide: React.FC = () => {
                         icon: <Edit size={16} />
                     },
                     {
-                        status: 'Pending_Review (Chờ duyệt)',
+                        status: 'Chờ duyệt',
                         desc: '⚡ SONG SONG: Pháp lý + Tài chính duyệt cùng lúc',
                         who: 'Legal + Kế toán (đồng thời)',
                         action: 'Mỗi bên duyệt độc lập',
@@ -120,7 +120,7 @@ const UserGuide: React.FC = () => {
                         icon: <Users size={16} />
                     },
                     {
-                        status: 'Both_Approved (Đã duyệt)',
+                        status: 'Đã duyệt',
                         desc: 'Cả Pháp lý và Tài chính đã duyệt xong',
                         who: 'Lãnh đạo trình ký',
                         action: 'Nhấn "Trình ký"',
@@ -128,7 +128,7 @@ const UserGuide: React.FC = () => {
                         icon: <FileCheck size={16} />
                     },
                     {
-                        status: 'Pending_Sign (Chờ ký)',
+                        status: 'Chờ ký',
                         desc: 'Đang chờ lãnh đạo ký',
                         who: 'Lãnh đạo ký',
                         action: 'Nhấn "Ký hợp đồng"',
@@ -136,7 +136,7 @@ const UserGuide: React.FC = () => {
                         icon: <Send size={16} />
                     },
                     {
-                        status: 'Active (Có hiệu lực)',
+                        status: 'Có hiệu lực',
                         desc: 'HĐ đã ký, đang thực hiện',
                         who: 'Tự động',
                         action: 'Theo dõi thanh toán',
