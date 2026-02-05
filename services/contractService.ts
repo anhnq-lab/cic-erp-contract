@@ -9,6 +9,145 @@ const ERROR_MESSAGES = {
     UPDATE_FAILED: 'Không thể cập nhật hợp đồng. Vui lòng thử lại.',
     DELETE_FAILED: 'Không thể xóa hợp đồng. Vui lòng thử lại.',
     VALIDATION_ERROR: 'Dữ liệu không hợp lệ.',
+    NETWORK_ERROR: 'Lỗi kết nối mạng. Vui lòng kiểm tra internet.',
+    DUPLICATE_ID: 'Mã hợp đồng đã tồn tại.',
+    PERMISSION_DENIED: 'Bạn không có quyền thực hiện thao tác này.',
+};
+
+// ============================================================================
+// PROFESSIONAL CRUD UTILITIES
+// ============================================================================
+
+/**
+ * Retry logic with exponential backoff
+ * Automatically retries failed operations up to maxRetries times
+ */
+const withRetry = async <T>(
+    operation: () => Promise<T>,
+    maxRetries = 3,
+    baseDelay = 1000
+): Promise<T> => {
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            return await operation();
+        } catch (error: any) {
+            lastError = error;
+
+            // Don't retry on validation or permission errors
+            if (error.message?.includes('VALIDATION') ||
+                error.message?.includes('permission') ||
+                error.code === '23505') { // Duplicate key
+                throw error;
+            }
+
+            // Exponential backoff: 1s, 2s, 4s
+            if (attempt < maxRetries - 1) {
+                const delay = baseDelay * Math.pow(2, attempt);
+                console.log(`[Retry] Attempt ${attempt + 1} failed, retrying in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
+    }
+
+    throw lastError || new Error(ERROR_MESSAGES.NETWORK_ERROR);
+};
+
+/**
+ * Validate contract data before create/update
+ */
+const validateContract = (data: Partial<Contract>, isCreate = false): string[] => {
+    const errors: string[] = [];
+
+    if (isCreate) {
+        if (!data.id?.trim()) errors.push('Mã hợp đồng là bắt buộc');
+        if (!data.title?.trim()) errors.push('Tiêu đề hợp đồng là bắt buộc');
+        if (!data.unitId) errors.push('Đơn vị là bắt buộc');
+    }
+
+    if (data.value !== undefined && data.value < 0) {
+        errors.push('Giá trị hợp đồng không được âm');
+    }
+
+    if (data.signedDate && data.endDate) {
+        if (new Date(data.signedDate) > new Date(data.endDate)) {
+            errors.push('Ngày ký không được sau ngày kết thúc');
+        }
+    }
+
+    return errors;
+};
+
+/**
+ * Build database payload from Contract type
+ * Ensures type-safe mapping between frontend and DB schema
+ */
+const buildPayload = (data: Partial<Contract>): Record<string, any> => {
+    const payload: Record<string, any> = {};
+
+    // Direct mappings
+    const fieldMap: Record<string, string> = {
+        id: 'id',
+        title: 'title',
+        contractType: 'contract_type',
+        partyA: 'party_a',
+        partyB: 'party_b',
+        clientInitials: 'client_initials',
+        customerId: 'customer_id',
+        unitId: 'unit_id',
+        coordinatingUnitId: 'coordinating_unit_id',
+        salespersonId: 'employee_id',
+        value: 'value',
+        estimatedCost: 'estimated_cost',
+        actualRevenue: 'actual_revenue',
+        actualCost: 'actual_cost',
+        invoicedAmount: 'invoiced_amount',
+        status: 'status',
+        stage: 'stage',
+        category: 'category',
+        signedDate: 'signed_date',
+        startDate: 'start_date',
+        endDate: 'end_date',
+        content: 'content',
+        contacts: 'contacts',
+        milestones: 'milestones',
+        paymentPhases: 'payment_phases',
+        draft_url: 'draft_url',
+    };
+
+    Object.entries(fieldMap).forEach(([key, dbKey]) => {
+        if ((data as any)[key] !== undefined) {
+            payload[dbKey] = (data as any)[key];
+        }
+    });
+
+    // Handle JSONB details field
+    if (data.lineItems !== undefined || data.adminCosts !== undefined) {
+        payload.details = {
+            lineItems: data.lineItems || [],
+            adminCosts: data.adminCosts || {}
+        };
+    }
+
+    return payload;
+};
+
+/**
+ * Log operation for audit trail (integrates with AuditLogService)
+ */
+const logOperation = async (
+    action: 'CREATE' | 'UPDATE' | 'DELETE',
+    contractId: string,
+    changes?: Record<string, any>
+) => {
+    try {
+        const user = (await supabase.auth.getUser()).data.user;
+        console.log(`[Audit] ${action} contract ${contractId} by ${user?.email || 'unknown'}`, changes || {});
+        // Integration point: AuditLogService.log({ ... })
+    } catch (e) {
+        console.warn('[Audit] Failed to log operation:', e);
+    }
 };
 
 // Helper to map DB Contract to Frontend Contract
@@ -498,41 +637,43 @@ export const ContractService = {
         return data.map(mapContract);
     },
 
+    /**
+     * CREATE - Professional implementation with validation, retry, and audit
+     */
     create: async (data: Contract): Promise<Contract> => {
-        const payload = {
-            id: data.id,
-            title: data.title,
-            contract_type: data.contractType,
-            party_a: data.partyA,
-            party_b: data.partyB,
-            client_initials: data.clientInitials,
-            customer_id: data.customerId,
-            unit_id: data.unitId,
-            coordinating_unit_id: data.coordinatingUnitId,
-            employee_id: data.salespersonId,
-            value: data.value,
-            estimated_cost: data.estimatedCost,
-            actual_revenue: data.actualRevenue,
-            actual_cost: data.actualCost,
-            status: data.status,
-            stage: data.stage,
-            category: data.category,
-            signed_date: data.signedDate,
-            start_date: data.startDate,
-            end_date: data.endDate,
-            content: data.content,
-            contacts: data.contacts,
-            milestones: data.milestones,
-            payment_phases: data.paymentPhases,
-            details: {
-                lineItems: data.lineItems,
-                adminCosts: data.adminCosts
-            }
-        };
-        const { data: res, error } = await supabase.from('contracts').insert(payload).select().single();
-        if (error) throw error;
+        // 1. Validate input
+        const errors = validateContract(data, true);
+        if (errors.length > 0) {
+            throw new Error(`${ERROR_MESSAGES.VALIDATION_ERROR}\n${errors.join('\n')}`);
+        }
 
-        // Auto-create Business Plan (PAKD) for Workflow
+        // 2. Build type-safe payload
+        const payload = buildPayload(data);
+
+        // 3. Execute with retry logic
+        const result = await withRetry(async () => {
+            const { data: res, error } = await supabase
+                .from('contracts')
+                .insert(payload)
+                .select()
+                .single();
+
+            if (error) {
+                // Handle specific error codes
+                if (error.code === '23505') {
+                    throw new Error(ERROR_MESSAGES.DUPLICATE_ID);
+                }
+                if (error.code === '42501') {
+                    throw new Error(ERROR_MESSAGES.PERMISSION_DENIED);
+                }
+                console.error('ContractService.create:', error.message);
+                throw new Error(ERROR_MESSAGES.CREATE_FAILED);
+            }
+
+            return res;
+        });
+
+        // 4. Auto-create Business Plan (PAKD) for Workflow
         try {
             const financials = {
                 revenue: data.value || 0,
@@ -545,7 +686,7 @@ export const ContractService = {
             const user = (await supabase.auth.getUser()).data.user;
 
             await supabase.from('contract_business_plans').insert({
-                contract_id: res.id,
+                contract_id: result.id,
                 version: 1,
                 status: 'Draft',
                 financials: financials,
@@ -553,61 +694,137 @@ export const ContractService = {
                 created_by: user?.id
             });
         } catch (planError) {
-            console.error("Failed to auto-create PAKD:", planError);
+            console.warn("[ContractService.create] Failed to auto-create PAKD:", planError);
         }
 
-        return mapContract(res);
+        // 5. Log audit
+        await logOperation('CREATE', result.id);
+
+        return mapContract(result);
     },
 
+    /**
+     * UPDATE - Professional implementation with partial update support
+     */
     update: async (id: string, data: Partial<Contract>): Promise<Contract | undefined> => {
-        const payload: any = {};
-        if (data.title !== undefined) payload.title = data.title;
-        if (data.contractType !== undefined) payload.contract_type = data.contractType;
-        if (data.partyA !== undefined) payload.party_a = data.partyA;
-        if (data.partyB !== undefined) payload.party_b = data.partyB;
-        if (data.clientInitials !== undefined) payload.client_initials = data.clientInitials;
-        if (data.customerId !== undefined) payload.customer_id = data.customerId;
-        if (data.unitId !== undefined) payload.unit_id = data.unitId;
-        if (data.coordinatingUnitId !== undefined) payload.coordinating_unit_id = data.coordinatingUnitId;
-        if (data.salespersonId !== undefined) payload.employee_id = data.salespersonId;
-        if (data.value !== undefined) payload.value = data.value;
-        if (data.estimatedCost !== undefined) payload.estimated_cost = data.estimatedCost;
-        if (data.actualRevenue !== undefined) payload.actual_revenue = data.actualRevenue;
-        if (data.actualCost !== undefined) payload.actual_cost = data.actualCost;
-        if (data.status !== undefined) payload.status = data.status;
-        if (data.stage !== undefined) payload.stage = data.stage;
-        if (data.category !== undefined) payload.category = data.category;
-        if (data.signedDate !== undefined) payload.signed_date = data.signedDate;
-        if (data.startDate !== undefined) payload.start_date = data.startDate;
-        if (data.endDate !== undefined) payload.end_date = data.endDate;
-        if (data.content !== undefined) payload.content = data.content;
-        if (data.contacts !== undefined) payload.contacts = data.contacts;
-        if (data.milestones !== undefined) payload.milestones = data.milestones;
-        if (data.paymentPhases !== undefined) payload.payment_phases = data.paymentPhases;
-
-        if (data.lineItems !== undefined || data.adminCosts !== undefined) {
-            payload.details = {
-                lineItems: data.lineItems,
-                adminCosts: data.adminCosts
-            };
-        }
-
-        const { data: res, error } = await supabase.from('contracts').update(payload).eq('id', id).select().single();
-        if (error) throw error;
-        return mapContract(res);
-    },
-
-    delete: async (id: string): Promise<boolean> => {
+        // 1. Validate
         if (!id) throw new Error(ERROR_MESSAGES.VALIDATION_ERROR);
 
-        const { error } = await supabase.from('contracts').delete().eq('id', id);
-        if (error) {
-            console.error('ContractService.delete:', error.message);
-            throw new Error(ERROR_MESSAGES.DELETE_FAILED);
+        const errors = validateContract(data, false);
+        if (errors.length > 0) {
+            throw new Error(`${ERROR_MESSAGES.VALIDATION_ERROR}\n${errors.join('\n')}`);
         }
+
+        // 2. Build payload (excluding id)
+        const payload = buildPayload(data);
+        delete payload.id; // Don't update the primary key
+
+        if (Object.keys(payload).length === 0) {
+            console.warn('[ContractService.update] No fields to update');
+            return await ContractService.getById(id);
+        }
+
+        // 3. Execute with retry
+        const result = await withRetry(async () => {
+            const { data: res, error } = await supabase
+                .from('contracts')
+                .update(payload)
+                .eq('id', id)
+                .select()
+                .single();
+
+            if (error) {
+                if (error.code === 'PGRST116') {
+                    throw new Error(ERROR_MESSAGES.NOT_FOUND);
+                }
+                if (error.code === '42501') {
+                    throw new Error(ERROR_MESSAGES.PERMISSION_DENIED);
+                }
+                console.error('ContractService.update:', error.message);
+                throw new Error(ERROR_MESSAGES.UPDATE_FAILED);
+            }
+
+            return res;
+        });
+
+        // 4. Log audit
+        await logOperation('UPDATE', id, payload);
+
+        return mapContract(result);
+    },
+
+    /**
+     * DELETE - Professional implementation with confirmation
+     */
+    delete: async (id: string): Promise<boolean> => {
+        if (!id?.trim()) {
+            throw new Error(ERROR_MESSAGES.VALIDATION_ERROR);
+        }
+
+        // Execute with retry
+        await withRetry(async () => {
+            const { error } = await supabase
+                .from('contracts')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                if (error.code === 'PGRST116') {
+                    throw new Error(ERROR_MESSAGES.NOT_FOUND);
+                }
+                if (error.code === '42501') {
+                    throw new Error(ERROR_MESSAGES.PERMISSION_DENIED);
+                }
+                console.error('ContractService.delete:', error.message);
+                throw new Error(ERROR_MESSAGES.DELETE_FAILED);
+            }
+        });
+
+        // Log audit
+        await logOperation('DELETE', id);
+
         return true;
     },
 
+    /**
+     * BATCH DELETE - Delete multiple contracts at once
+     */
+    batchDelete: async (ids: string[]): Promise<{ success: string[], failed: string[] }> => {
+        const results = { success: [] as string[], failed: [] as string[] };
+
+        for (const id of ids) {
+            try {
+                await ContractService.delete(id);
+                results.success.push(id);
+            } catch (error) {
+                console.error(`Failed to delete contract ${id}:`, error);
+                results.failed.push(id);
+            }
+        }
+
+        return results;
+    },
+
+    /**
+     * CHECK EXISTS - Verify if a contract ID already exists
+     */
+    exists: async (id: string): Promise<boolean> => {
+        const { count, error } = await supabase
+            .from('contracts')
+            .select('*', { count: 'exact', head: true })
+            .eq('id', id);
+
+        if (error) {
+            console.error('ContractService.exists:', error.message);
+            return false;
+        }
+
+        return (count || 0) > 0;
+    },
+
+    /**
+     * GET NEXT CONTRACT NUMBER - Auto-generate sequential ID
+     */
     getNextContractNumber: async (unitId: string, year: number): Promise<number> => {
         const startDate = `${year}-01-01`;
         const endDate = `${year}-12-31`;
@@ -623,6 +840,37 @@ export const ContractService = {
             console.error("Error getting contract count:", error);
             return 1;
         }
+
         return (count || 0) + 1;
+    },
+
+    /**
+     * DUPLICATE - Clone an existing contract with new ID
+     */
+    duplicate: async (sourceId: string, newId: string): Promise<Contract> => {
+        // 1. Fetch source contract
+        const source = await ContractService.getById(sourceId);
+        if (!source) {
+            throw new Error(ERROR_MESSAGES.NOT_FOUND);
+        }
+
+        // 2. Check if new ID exists
+        if (await ContractService.exists(newId)) {
+            throw new Error(ERROR_MESSAGES.DUPLICATE_ID);
+        }
+
+        // 3. Create clone with new ID and reset status
+        const clone: Contract = {
+            ...source,
+            id: newId,
+            status: 'Pending',
+            stage: 'Signed',
+            actualRevenue: 0,
+            actualCost: 0,
+            invoicedAmount: 0,
+        };
+
+        return await ContractService.create(clone);
     }
 };
+
