@@ -1,11 +1,8 @@
 
-import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
-import { Search, Bell, Menu, LogOut, ChevronDown, HelpCircle } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, Bell, Menu, LogOut, ChevronDown } from 'lucide-react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { useAuth } from '../contexts/AuthContext';
-
-// Lazy load UserGuide
-const UserGuide = lazy(() => import('./UserGuide'));
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -17,7 +14,6 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed, user }
   const marginClass = isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64';
   const { signOut } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showUserGuide, setShowUserGuide] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
@@ -32,20 +28,24 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed, user }
   }, []);
 
   const handleSignOut = async () => {
-    setShowUserMenu(false);
     await signOut();
+    setShowUserMenu(false);
   };
 
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const initials = displayName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
+
   return (
-    <header className={`h-16 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-4 md:px-8 sticky top-0 z-30 transition-all duration-300 ${marginClass}`}>
-      <div className="flex items-center gap-4 flex-1">
+    <header className={`fixed top-0 left-0 right-0 h-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 ${marginClass} z-30 flex items-center justify-between px-4 transition-all duration-300`}>
+      <div className="flex items-center gap-2 sm:gap-4">
         <button
           onClick={onMenuClick}
-          className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg md:hidden"
+          className="md:hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
         >
-          <Menu size={24} />
+          <Menu size={20} />
         </button>
 
+        {/* Search Trigger - Opens CommandPalette */}
         <button
           onClick={() => {
             // Trigger CommandPalette
@@ -62,14 +62,6 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed, user }
       </div>
 
       <div className="flex items-center gap-1 sm:gap-4 ml-2">
-        {/* Help Button */}
-        <button
-          onClick={() => setShowUserGuide(true)}
-          className="p-2 text-slate-500 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-400 rounded-full transition-colors"
-          title="Hướng dẫn sử dụng"
-        >
-          <HelpCircle size={20} />
-        </button>
         <button className="relative p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
           <Bell size={20} />
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
@@ -80,32 +72,26 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed, user }
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center gap-2 sm:gap-3 pl-1 sm:pl-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl py-1.5 px-2 transition-colors"
+            className="flex items-center gap-2 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
           >
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 leading-none truncate max-w-[150px]">
-                {user?.user_metadata?.full_name || user?.email || 'Admin User'}
-              </p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-none">
-                {user?.email || 'Quản trị viên'}
-              </p>
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
+              <span className="text-white text-sm font-bold">{initials}</span>
             </div>
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-sm overflow-hidden flex-shrink-0">
-              {user?.user_metadata?.avatar_url ? (
-                <img src={user.user_metadata.avatar_url} alt="avatar" className="w-full h-full object-cover" />
-              ) : (
-                <span className="font-bold text-sm">{(user?.email?.[0] || 'A').toUpperCase()}</span>
-              )}
+            <div className="hidden sm:block text-left">
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate max-w-[120px]">
+                {displayName}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Admin</p>
             </div>
-            <ChevronDown size={16} className={`text-slate-400 hidden sm:block transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+            <ChevronDown size={16} className={`hidden sm:block text-slate-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
           </button>
 
           {/* Dropdown Menu */}
           {showUserMenu && (
-            <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
-                <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
-                  {user?.user_metadata?.full_name || 'Admin User'}
+            <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50">
+              <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                  {displayName}
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                   {user?.email}
@@ -124,16 +110,8 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed, user }
           )}
         </div>
       </div>
-
-      {/* User Guide Modal */}
-      {showUserGuide && (
-        <Suspense fallback={<div className="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center"><div className="text-white">Đang tải...</div></div>}>
-          <UserGuide onClose={() => setShowUserGuide(false)} />
-        </Suspense>
-      )}
     </header>
   );
 };
 
 export default Header;
-

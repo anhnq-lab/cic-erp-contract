@@ -22,6 +22,7 @@ import CustomerDetail from './components/CustomerDetail';
 import ProductList from './components/ProductList';
 import ProductDetail from './components/ProductDetail';
 import PaymentList from './components/PaymentList';
+import UserGuide from './components/UserGuide';
 import { MOCK_CONTRACTS } from './constants';
 import { Unit, Contract, Product } from './types';
 import { ContractService } from './services';
@@ -317,6 +318,8 @@ const App: React.FC = () => {
           />;
         }
         return <UnitList onSelectUnit={handleViewUnit} />;
+      case 'user-guide':
+        return <UserGuide />;
       default:
         return <Dashboard selectedUnit={selectedUnit} onSelectUnit={setSelectedUnit} onSelectContract={handleViewContract} />;
     }

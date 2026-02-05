@@ -17,5 +17,6 @@ export const ROUTES = {
     PRODUCT_DETAIL: (id: string) => `/products/${id}`,
     UNITS: '/units',
     UNIT_DETAIL: (id: string) => `/units/${id}`,
+    USER_GUIDE: '/user-guide',
     SETTINGS: '/settings',
 } as const;

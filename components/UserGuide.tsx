@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import {
     Book, Keyboard, Search, FileText, Users, Building2, Package,
-    LayoutDashboard, CreditCard, BarChart3, Bot, Settings, ChevronRight,
-    ChevronDown, Lightbulb, Zap, Target, HelpCircle, X, MousePointer,
-    Copy, Edit, Plus, Filter, Download, Upload, Sparkles
+    LayoutDashboard, CreditCard, BarChart3, Bot, ChevronRight,
+    ChevronDown, Lightbulb, Zap, HelpCircle,
+    Copy, Edit, Plus, Filter, Sparkles
 } from 'lucide-react';
 
 interface GuideSection {
@@ -13,110 +13,62 @@ interface GuideSection {
     content: React.ReactNode;
 }
 
-const UserGuide: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
+const UserGuide: React.FC = () => {
     const [activeSection, setActiveSection] = useState<string>('overview');
     const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
 
     const sections: GuideSection[] = [
-        {
-            id: 'overview',
-            title: 'Tổng quan',
-            icon: <LayoutDashboard size={18} />,
-            content: <OverviewSection />
-        },
-        {
-            id: 'contracts',
-            title: 'Quản lý Hợp đồng',
-            icon: <FileText size={18} />,
-            content: <ContractsSection />
-        },
-        {
-            id: 'search',
-            title: 'Tìm kiếm',
-            icon: <Search size={18} />,
-            content: <SearchSection />
-        },
-        {
-            id: 'shortcuts',
-            title: 'Phím tắt',
-            icon: <Keyboard size={18} />,
-            content: <ShortcutsSection />
-        },
-        {
-            id: 'modules',
-            title: 'Các Module',
-            icon: <Package size={18} />,
-            content: <ModulesSection />
-        },
-        {
-            id: 'tips',
-            title: 'Mẹo hay',
-            icon: <Lightbulb size={18} />,
-            content: <TipsSection />
-        },
-        {
-            id: 'faq',
-            title: 'Câu hỏi thường gặp',
-            icon: <HelpCircle size={18} />,
-            content: <FaqSection expandedFaq={expandedFaq} setExpandedFaq={setExpandedFaq} />
-        }
+        { id: 'overview', title: 'Tổng quan', icon: <LayoutDashboard size={18} />, content: <OverviewSection /> },
+        { id: 'contracts', title: 'Quản lý Hợp đồng', icon: <FileText size={18} />, content: <ContractsSection /> },
+        { id: 'search', title: 'Tìm kiếm', icon: <Search size={18} />, content: <SearchSection /> },
+        { id: 'shortcuts', title: 'Phím tắt', icon: <Keyboard size={18} />, content: <ShortcutsSection /> },
+        { id: 'modules', title: 'Các Module', icon: <Package size={18} />, content: <ModulesSection /> },
+        { id: 'tips', title: 'Mẹo hay', icon: <Lightbulb size={18} />, content: <TipsSection /> },
+        { id: 'faq', title: 'Câu hỏi thường gặp', icon: <HelpCircle size={18} />, content: <FaqSection expandedFaq={expandedFaq} setExpandedFaq={setExpandedFaq} /> }
     ];
 
     return (
-        <div className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-hidden flex animate-in fade-in zoom-in-95 duration-300">
-                {/* Sidebar */}
-                <div className="w-64 bg-slate-50 dark:bg-slate-800/50 border-r border-slate-200 dark:border-slate-700 p-4 flex flex-col">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-xl">
-                            <Book size={24} className="text-orange-600" />
-                        </div>
-                        <div>
-                            <h2 className="font-black text-slate-900 dark:text-slate-100">Hướng dẫn</h2>
-                            <p className="text-xs text-slate-500">CIC ERP Contract</p>
-                        </div>
+        <div className="flex h-full bg-slate-50 dark:bg-slate-950">
+            {/* Sidebar */}
+            <div className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col flex-shrink-0">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-xl">
+                        <Book size={24} className="text-orange-600" />
                     </div>
-
-                    <nav className="flex-1 space-y-1">
-                        {sections.map(section => (
-                            <button
-                                key={section.id}
-                                onClick={() => setActiveSection(section.id)}
-                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${activeSection === section.id
-                                        ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
-                                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                                    }`}
-                            >
-                                {section.icon}
-                                <span className="font-semibold text-sm">{section.title}</span>
-                            </button>
-                        ))}
-                    </nav>
-
-                    <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                        <p className="text-xs text-slate-400 text-center">Phiên bản 2.0</p>
+                    <div>
+                        <h2 className="font-black text-slate-900 dark:text-slate-100">Hướng dẫn</h2>
+                        <p className="text-xs text-slate-500">CIC ERP Contract</p>
                     </div>
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 flex flex-col">
-                    <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
-                        <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">
-                            {sections.find(s => s.id === activeSection)?.title}
-                        </h3>
-                        {onClose && (
-                            <button
-                                onClick={onClose}
-                                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                            >
-                                <X size={20} />
-                            </button>
-                        )}
-                    </div>
+                <nav className="flex-1 space-y-1">
+                    {sections.map(section => (
+                        <button
+                            key={section.id}
+                            onClick={() => setActiveSection(section.id)}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${activeSection === section.id
+                                    ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
+                                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                }`}
+                        >
+                            {section.icon}
+                            <span className="font-semibold text-sm">{section.title}</span>
+                        </button>
+                    ))}
+                </nav>
 
-                    <div className="flex-1 overflow-y-auto p-6">
-                        {sections.find(s => s.id === activeSection)?.content}
-                    </div>
+                <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <p className="text-xs text-slate-400 text-center">Phiên bản 2.0</p>
+                </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+                <div className="max-w-4xl mx-auto">
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-6">
+                        {sections.find(s => s.id === activeSection)?.title}
+                    </h3>
+                    {sections.find(s => s.id === activeSection)?.content}
                 </div>
             </div>
         </div>
@@ -136,29 +88,13 @@ const OverviewSection = () => (
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-            <FeatureCard
-                icon={<FileText className="text-orange-500" />}
-                title="Quản lý Hợp đồng"
-                description="Tạo, chỉnh sửa, theo dõi hợp đồng với đầy đủ thông tin chi tiết"
-            />
-            <FeatureCard
-                icon={<BarChart3 className="text-indigo-500" />}
-                title="Dashboard Thông minh"
-                description="Phân tích dữ liệu theo thời gian thực, so sánh năm"
-            />
-            <FeatureCard
-                icon={<Search className="text-emerald-500" />}
-                title="Tìm kiếm Toàn cục"
-                description="Tìm nhanh hợp đồng, khách hàng, nhân sự với Ctrl+K"
-            />
-            <FeatureCard
-                icon={<Bot className="text-purple-500" />}
-                title="AI Assistant"
-                description="Trợ lý AI hỗ trợ phân tích và đề xuất hành động"
-            />
+            <FeatureCard icon={<FileText className="text-orange-500" />} title="Quản lý Hợp đồng" description="Tạo, chỉnh sửa, theo dõi hợp đồng với đầy đủ thông tin chi tiết" />
+            <FeatureCard icon={<BarChart3 className="text-indigo-500" />} title="Dashboard Thông minh" description="Phân tích dữ liệu theo thời gian thực, so sánh năm" />
+            <FeatureCard icon={<Search className="text-emerald-500" />} title="Tìm kiếm Toàn cục" description="Tìm nhanh hợp đồng, khách hàng, nhân sự với Ctrl+K" />
+            <FeatureCard icon={<Bot className="text-purple-500" />} title="AI Assistant" description="Trợ lý AI hỗ trợ phân tích và đề xuất hành động" />
         </div>
 
-        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
+        <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4">
             <h5 className="font-bold text-sm text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
                 <Zap size={16} className="text-amber-500" /> Bắt đầu nhanh
             </h5>
@@ -182,48 +118,28 @@ const OverviewSection = () => (
 
 const ContractsSection = () => (
     <div className="space-y-6">
-        <ActionCard
-            icon={<Plus className="text-emerald-500" />}
-            title="Tạo hợp đồng mới"
-            steps={[
-                'Nhấn nút "+ Tạo mới" hoặc phím Ctrl+N',
-                'Điền thông tin cơ bản: Loại HĐ, Đơn vị, Khách hàng',
-                'Thêm sản phẩm/dịch vụ và chi phí',
-                'Cài đặt lịch thu tiền',
-                'Nhấn "Lưu hợp đồng"'
-            ]}
-        />
-
-        <ActionCard
-            icon={<Edit className="text-blue-500" />}
-            title="Chỉnh sửa hợp đồng"
-            steps={[
-                'Double-click vào hợp đồng để sửa nhanh',
-                'Hoặc: Click xem chi tiết → Nhấn nút "Chỉnh sửa"',
-                'Sau khi lưu sẽ quay về trang chi tiết'
-            ]}
-        />
-
-        <ActionCard
-            icon={<Copy className="text-purple-500" />}
-            title="Nhân bản hợp đồng"
-            steps={[
-                'Ở danh sách, nhấn icon 📋 cuối dòng',
-                'Form tạo mới sẽ được điền sẵn dữ liệu',
-                'Chỉnh sửa và lưu như hợp đồng mới'
-            ]}
-        />
-
-        <ActionCard
-            icon={<Filter className="text-amber-500" />}
-            title="Lọc và tìm kiếm"
-            steps={[
-                'Gõ vào ô tìm kiếm để lọc theo mã HĐ, khách hàng',
-                'Dùng bộ lọc: Năm, Đơn vị, Trạng thái',
-                'Click vào tiêu đề cột để sắp xếp'
-            ]}
-        />
-
+        <ActionCard icon={<Plus className="text-emerald-500" />} title="Tạo hợp đồng mới" steps={[
+            'Nhấn nút "+ Tạo mới" hoặc phím Ctrl+N',
+            'Điền thông tin cơ bản: Loại HĐ, Đơn vị, Khách hàng',
+            'Thêm sản phẩm/dịch vụ và chi phí',
+            'Cài đặt lịch thu tiền',
+            'Nhấn "Lưu hợp đồng"'
+        ]} />
+        <ActionCard icon={<Edit className="text-blue-500" />} title="Chỉnh sửa hợp đồng" steps={[
+            'Double-click vào hợp đồng để sửa nhanh',
+            'Hoặc: Click xem chi tiết → Nhấn nút "Chỉnh sửa"',
+            'Sau khi lưu sẽ quay về trang chi tiết'
+        ]} />
+        <ActionCard icon={<Copy className="text-purple-500" />} title="Nhân bản hợp đồng" steps={[
+            'Ở danh sách, nhấn icon 📋 cuối dòng',
+            'Form tạo mới sẽ được điền sẵn dữ liệu',
+            'Chỉnh sửa và lưu như hợp đồng mới'
+        ]} />
+        <ActionCard icon={<Filter className="text-amber-500" />} title="Lọc và tìm kiếm" steps={[
+            'Gõ vào ô tìm kiếm để lọc theo mã HĐ, khách hàng',
+            'Dùng bộ lọc: Năm, Đơn vị, Trạng thái',
+            'Click vào tiêu đề cột để sắp xếp'
+        ]} />
         <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-800">
             <h5 className="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-2 mb-2">
                 <Sparkles size={16} /> Mẹo: Copy mã hợp đồng
@@ -254,21 +170,12 @@ const SearchSection = () => (
             <SearchTypeCard icon={<Package className="text-purple-500" />} type="Sản phẩm" fields="Tên, Mã sản phẩm" />
         </div>
 
-        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
+        <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4">
             <h5 className="font-bold text-sm text-slate-700 dark:text-slate-300 mb-3">Cách sử dụng</h5>
             <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-                <li className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-white dark:bg-slate-700 rounded border text-xs">↑ ↓</kbd>
-                    Di chuyển giữa kết quả
-                </li>
-                <li className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-white dark:bg-slate-700 rounded border text-xs">Enter</kbd>
-                    Chọn kết quả
-                </li>
-                <li className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-white dark:bg-slate-700 rounded border text-xs">Esc</kbd>
-                    Đóng tìm kiếm
-                </li>
+                <li className="flex items-center gap-2"><kbd className="px-2 py-1 bg-white dark:bg-slate-700 rounded border text-xs">↑ ↓</kbd> Di chuyển giữa kết quả</li>
+                <li className="flex items-center gap-2"><kbd className="px-2 py-1 bg-white dark:bg-slate-700 rounded border text-xs">Enter</kbd> Chọn kết quả</li>
+                <li className="flex items-center gap-2"><kbd className="px-2 py-1 bg-white dark:bg-slate-700 rounded border text-xs">Esc</kbd> Đóng tìm kiếm</li>
             </ul>
         </div>
     </div>
@@ -280,13 +187,11 @@ const ShortcutsSection = () => (
             { keys: ['Ctrl', 'K'], action: 'Mở tìm kiếm toàn cục' },
             { keys: ['/'], action: 'Focus ô tìm kiếm trong danh sách' },
         ]} />
-
         <ShortcutCategory title="Hợp đồng" shortcuts={[
             { keys: ['Ctrl', 'N'], action: 'Tạo hợp đồng mới' },
             { keys: ['Double-click'], action: 'Sửa nhanh hợp đồng' },
             { keys: ['Click mã HĐ'], action: 'Copy mã hợp đồng' },
         ]} />
-
         <ShortcutCategory title="Form" shortcuts={[
             { keys: ['Esc'], action: 'Đóng modal / Hủy form' },
             { keys: ['Tab'], action: 'Chuyển trường tiếp theo' },
@@ -296,122 +201,44 @@ const ShortcutsSection = () => (
 
 const ModulesSection = () => (
     <div className="space-y-4">
-        <ModuleCard
-            icon={<LayoutDashboard className="text-indigo-500" />}
-            title="Dashboard"
-            description="Tổng quan kinh doanh: KPI, biểu đồ, so sánh năm, phân bổ theo đơn vị/nhân sự."
-        />
-        <ModuleCard
-            icon={<FileText className="text-orange-500" />}
-            title="Hợp đồng"
-            description="Quản lý toàn bộ hợp đồng: Tạo mới, chỉnh sửa, theo dõi trạng thái, lịch thu chi."
-        />
-        <ModuleCard
-            icon={<CreditCard className="text-emerald-500" />}
-            title="Thanh toán"
-            description="Theo dõi các đợt thanh toán, cảnh báo quá hạn, ghi nhận tiền về."
-        />
-        <ModuleCard
-            icon={<BarChart3 className="text-purple-500" />}
-            title="Phân tích"
-            description="Báo cáo chi tiết, phân tích xu hướng, đánh giá hiệu suất."
-        />
-        <ModuleCard
-            icon={<Users className="text-cyan-500" />}
-            title="Nhân sự"
-            description="Quản lý thông tin, chức vụ, đơn vị của nhân viên."
-        />
-        <ModuleCard
-            icon={<Building2 className="text-blue-500" />}
-            title="Khách hàng"
-            description="Danh bạ khách hàng, lịch sử hợp đồng, thông tin liên hệ."
-        />
+        <ModuleCard icon={<LayoutDashboard className="text-indigo-500" />} title="Dashboard" description="Tổng quan kinh doanh: KPI, biểu đồ, so sánh năm, phân bổ theo đơn vị/nhân sự." />
+        <ModuleCard icon={<FileText className="text-orange-500" />} title="Hợp đồng" description="Quản lý toàn bộ hợp đồng: Tạo mới, chỉnh sửa, theo dõi trạng thái, lịch thu chi." />
+        <ModuleCard icon={<CreditCard className="text-emerald-500" />} title="Thanh toán" description="Theo dõi các đợt thanh toán, cảnh báo quá hạn, ghi nhận tiền về." />
+        <ModuleCard icon={<BarChart3 className="text-purple-500" />} title="Phân tích" description="Báo cáo chi tiết, phân tích xu hướng, đánh giá hiệu suất." />
+        <ModuleCard icon={<Users className="text-cyan-500" />} title="Nhân sự" description="Quản lý thông tin, chức vụ, đơn vị của nhân viên." />
+        <ModuleCard icon={<Building2 className="text-blue-500" />} title="Khách hàng" description="Danh bạ khách hàng, lịch sử hợp đồng, thông tin liên hệ." />
     </div>
 );
 
 const TipsSection = () => (
     <div className="space-y-4">
-        <TipCard
-            number={1}
-            title="Sử dụng Double-click để sửa nhanh"
-            description="Không cần mở chi tiết rồi mới bấm Sửa. Double-click trực tiếp vào dòng hợp đồng!"
-        />
-        <TipCard
-            number={2}
-            title="Copy mã HĐ bằng 1 click"
-            description="Click vào mã hợp đồng ở danh sách để copy nhanh, không cần select thủ công."
-        />
-        <TipCard
-            number={3}
-            title="Dùng / để tìm kiếm trong danh sách"
-            description="Gõ / ở bất kỳ đâu để focus ngay vào ô tìm kiếm, giống GitHub/Slack!"
-        />
-        <TipCard
-            number={4}
-            title="Ctrl+K tìm kiếm quốc giới"
-            description="Tìm hợp đồng, khách hàng, nhân sự, sản phẩm chỉ với 1 phím tắt."
-        />
-        <TipCard
-            number={5}
-            title="Nhân bản để tạo nhanh"
-            description="Có hợp đồng tương tự? Nhấn icon 📋 để nhân bản, chỉ sửa vài trường là xong!"
-        />
+        <TipCard number={1} title="Sử dụng Double-click để sửa nhanh" description="Không cần mở chi tiết rồi mới bấm Sửa. Double-click trực tiếp vào dòng hợp đồng!" />
+        <TipCard number={2} title="Copy mã HĐ bằng 1 click" description="Click vào mã hợp đồng ở danh sách để copy nhanh, không cần select thủ công." />
+        <TipCard number={3} title="Dùng / để tìm kiếm trong danh sách" description="Gõ / ở bất kỳ đâu để focus ngay vào ô tìm kiếm, giống GitHub/Slack!" />
+        <TipCard number={4} title="Ctrl+K tìm kiếm toàn cục" description="Tìm hợp đồng, khách hàng, nhân sự, sản phẩm chỉ với 1 phím tắt." />
+        <TipCard number={5} title="Nhân bản để tạo nhanh" description="Có hợp đồng tương tự? Nhấn icon 📋 để nhân bản, chỉ sửa vài trường là xong!" />
     </div>
 );
 
 const FaqSection = ({ expandedFaq, setExpandedFaq }: { expandedFaq: string | null, setExpandedFaq: (id: string | null) => void }) => {
     const faqs = [
-        {
-            id: 'edit',
-            question: 'Làm sao để sửa hợp đồng?',
-            answer: 'Double-click vào hợp đồng ở danh sách, hoặc mở chi tiết rồi nhấn nút "Chỉnh sửa".'
-        },
-        {
-            id: 'copy',
-            question: 'Làm sao copy mã hợp đồng?',
-            answer: 'Click trực tiếp vào mã hợp đồng (ví dụ: HD_001/...) ở danh sách. Hệ thống sẽ copy và hiện thông báo.'
-        },
-        {
-            id: 'search',
-            question: 'Làm sao tìm hợp đồng nhanh?',
-            answer: 'Nhấn Ctrl+K để mở tìm kiếm toàn cục. Gõ mã HĐ, tên khách hàng hoặc tiêu đề.'
-        },
-        {
-            id: 'clone',
-            question: 'Làm sao tạo hợp đồng tương tự?',
-            answer: 'Ở danh sách, nhấn icon 📋 cuối dòng để nhân bản. Form sẽ được điền sẵn dữ liệu.'
-        },
-        {
-            id: 'payment',
-            question: 'Làm sao xem lịch thu tiền?',
-            answer: 'Mở chi tiết hợp đồng, kéo xuống phần "Tiến độ thu chi" để xem các đợt thanh toán.'
-        },
-        {
-            id: 'export',
-            question: 'Làm sao xuất Excel?',
-            answer: 'Ở danh sách hợp đồng, nhấn nút "Xuất Excel" ở góc phải để tải file.'
-        }
+        { id: 'edit', question: 'Làm sao để sửa hợp đồng?', answer: 'Double-click vào hợp đồng ở danh sách, hoặc mở chi tiết rồi nhấn nút "Chỉnh sửa".' },
+        { id: 'copy', question: 'Làm sao copy mã hợp đồng?', answer: 'Click trực tiếp vào mã hợp đồng (ví dụ: HD_001/...) ở danh sách. Hệ thống sẽ copy và hiện thông báo.' },
+        { id: 'search', question: 'Làm sao tìm hợp đồng nhanh?', answer: 'Nhấn Ctrl+K để mở tìm kiếm toàn cục. Gõ mã HĐ, tên khách hàng hoặc tiêu đề.' },
+        { id: 'clone', question: 'Làm sao tạo hợp đồng tương tự?', answer: 'Ở danh sách, nhấn icon 📋 cuối dòng để nhân bản. Form sẽ được điền sẵn dữ liệu.' },
+        { id: 'payment', question: 'Làm sao xem lịch thu tiền?', answer: 'Mở chi tiết hợp đồng, kéo xuống phần "Tiến độ thu chi" để xem các đợt thanh toán.' },
+        { id: 'export', question: 'Làm sao xuất Excel?', answer: 'Ở danh sách hợp đồng, nhấn nút "Xuất Excel" ở góc phải để tải file.' }
     ];
 
     return (
         <div className="space-y-2">
             {faqs.map(faq => (
                 <div key={faq.id} className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
-                    <button
-                        onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
-                        className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                    >
+                    <button onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)} className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                         <span className="font-semibold text-slate-900 dark:text-slate-100">{faq.question}</span>
-                        <ChevronDown
-                            size={18}
-                            className={`text-slate-400 transition-transform ${expandedFaq === faq.id ? 'rotate-180' : ''}`}
-                        />
+                        <ChevronDown size={18} className={`text-slate-400 transition-transform ${expandedFaq === faq.id ? 'rotate-180' : ''}`} />
                     </button>
-                    {expandedFaq === faq.id && (
-                        <div className="px-4 pb-4 text-sm text-slate-600 dark:text-slate-400">
-                            {faq.answer}
-                        </div>
-                    )}
+                    {expandedFaq === faq.id && <div className="px-4 pb-4 text-sm text-slate-600 dark:text-slate-400">{faq.answer}</div>}
                 </div>
             ))}
         </div>

@@ -51,7 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onClose,
 }) => {
   const managementItems = NAV_ITEMS.filter(item => ['dashboard', 'contracts', 'payments', 'analytics', 'ai-assistant'].includes(item.id));
-  const categoryItems = NAV_ITEMS.filter(item => ['units', 'personnel', 'products', 'customers'].includes(item.id));
+  const categoryItems = NAV_ITEMS.filter(item => ['units', 'personnel', 'products', 'customers', 'user-guide'].includes(item.id));
   const settingsItem = NAV_ITEMS.find(item => item.id === 'settings');
 
   return (

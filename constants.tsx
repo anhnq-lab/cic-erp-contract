@@ -7,7 +7,8 @@ import {
   PieChart,
   Users,
   Building2,
-  Package
+  Package,
+  HelpCircle
 } from 'lucide-react';
 import { Contract, Unit, ImplementationStage, ContractType, Employee, Customer, Product, ProductCategory, Payment, PaymentStatus, PaymentMethod, UserRole, PlanStatus } from './types';
 
@@ -166,6 +167,7 @@ export const NAV_ITEMS = [
   { id: 'personnel', label: 'Nhân sự', icon: <Users size={20} /> },
   { id: 'products', label: 'Sản phẩm/DV', icon: <Package size={20} /> },
   { id: 'customers', label: 'Khách hàng', icon: <Building2 size={20} /> },
+  { id: 'user-guide', label: 'Hướng dẫn', icon: <HelpCircle size={20} /> },
 
   { id: 'settings', label: 'Cài đặt', icon: <Settings size={20} /> },
 ];
