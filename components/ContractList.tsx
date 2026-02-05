@@ -51,6 +51,19 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+N: Add new contract
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        onAdd();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onAdd]);
+
   // Initial lookup data fetch (Run once)
   useEffect(() => {
     const fetchLookups = async () => {
@@ -296,6 +309,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
           </button>
           <button
             onClick={onAdd}
+            title="Thêm hợp đồng mới (Ctrl+N)"
             className="flex items-center justify-center gap-2 bg-indigo-700 text-white px-6 py-3 rounded-2xl font-black hover:bg-indigo-800 transition-all shadow-xl shadow-indigo-100 dark:shadow-none"
           >
             <Plus size={22} /> Thêm mới
