@@ -4,13 +4,14 @@ import { ROUTES } from '../routes/routes';
 import {
     Book, Keyboard, Search, FileText, Users, Building2, Package,
     LayoutDashboard, CreditCard, BarChart3, Bot, ChevronRight,
-    ChevronDown, Lightbulb, Zap, HelpCircle, ExternalLink, Sparkles,
+    ChevronDown, Lightbulb, Zap, HelpCircle, Sparkles,
     Copy, Edit, Plus, Filter, ArrowRight, Play, Settings, CheckCircle2,
-    Circle, Rocket, Phone, Mail, MessageCircle, X, Command, Video
+    Circle, Rocket, Phone, Mail, MessageCircle, X, ClipboardCheck,
+    ArrowRightCircle, Clock, UserCheck, Scale, Send, FileCheck
 } from 'lucide-react';
 
 // ============================================
-// USER GUIDE - User-Centric Redesign
+// USER GUIDE - Compact Collapsible Design
 // ============================================
 
 const UserGuide: React.FC = () => {
@@ -18,8 +19,9 @@ const UserGuide: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showShortcuts, setShowShortcuts] = useState(false);
     const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
+    const [expandedModule, setExpandedModule] = useState<string | null>('contracts');
 
-    // Onboarding progress (can be stored in localStorage for persistence)
+    // Onboarding progress
     const [completedSteps, setCompletedSteps] = useState<string[]>(() => {
         const saved = localStorage.getItem('cic-onboarding-progress');
         return saved ? JSON.parse(saved) : [];
@@ -75,413 +77,267 @@ const UserGuide: React.FC = () => {
         { id: 'edit', q: 'Làm sao sửa hợp đồng?', a: 'Double-click vào hợp đồng trong danh sách, hoặc mở chi tiết rồi nhấn "Chỉnh sửa".' },
         { id: 'copy', q: 'Làm sao copy mã hợp đồng?', a: 'Click trực tiếp vào mã hợp đồng (ví dụ: HD_001/...). Hệ thống tự copy vào clipboard.' },
         { id: 'search', q: 'Làm sao tìm hợp đồng nhanh?', a: 'Nhấn Ctrl+K để mở tìm kiếm toàn cục, gõ mã HĐ hoặc tên khách hàng.' },
-        { id: 'clone', q: 'Làm sao nhân bản hợp đồng?', a: 'Ở danh sách, nhấn icon 📋 cuối dòng để nhân bản.' },
+        { id: 'approval', q: 'Quy trình phê duyệt hợp đồng?', a: 'Nháp → Chờ duyệt → Phê duyệt pháp lý → Đang thực hiện. Xem chi tiết ở mục "Hợp đồng".' },
         { id: 'export', q: 'Làm sao xuất Excel?', a: 'Ở danh sách hợp đồng, nhấn nút "Xuất Excel" ở góc phải.' },
     ];
 
-    // Filter FAQs by search
     const filteredFaqs = searchQuery
         ? faqs.filter(f => f.q.toLowerCase().includes(searchQuery.toLowerCase()) || f.a.toLowerCase().includes(searchQuery.toLowerCase()))
         : faqs;
 
+    // Module guides data
+    const moduleGuides: ModuleGuideData[] = [
+        {
+            id: 'contracts',
+            title: 'Hợp đồng',
+            icon: <FileText size={18} />,
+            color: 'orange',
+            path: ROUTES.CONTRACTS,
+            guides: [
+                { title: 'Tạo hợp đồng mới', steps: ['Nhấn "+ Tạo mới" hoặc Ctrl+N', 'Điền thông tin: Loại HĐ, Đơn vị, KH', 'Thêm sản phẩm/dịch vụ', 'Cài đặt lịch thu tiền', 'Lưu'] },
+                { title: 'Sửa hợp đồng', steps: ['Double-click vào HĐ để sửa nhanh', 'Hoặc: Mở chi tiết → Chỉnh sửa', 'Cập nhật → Lưu'] },
+                { title: 'Nhân bản hợp đồng', steps: ['Ở danh sách, nhấn icon 📋', 'Chỉnh sửa thông tin mới', 'Lưu như HĐ mới'] },
+                { title: 'Lọc & Xuất Excel', steps: ['Dùng bộ lọc: Năm, Đơn vị, Trạng thái', 'Click tiêu đề cột để sắp xếp', 'Nhấn "Xuất Excel"'] },
+            ],
+            workflow: {
+                title: 'Quy trình phê duyệt hợp đồng',
+                steps: [
+                    { status: 'Nháp', desc: 'HĐ mới tạo, chưa gửi duyệt', icon: <Edit size={16} /> },
+                    { status: 'Chờ duyệt', desc: 'Đã gửi, chờ cấp trên duyệt', icon: <Clock size={16} /> },
+                    { status: 'Duyệt pháp lý', desc: 'Bộ phận pháp lý xem xét', icon: <Scale size={16} /> },
+                    { status: 'Đang thực hiện', desc: 'HĐ đã được duyệt, đang triển khai', icon: <Play size={16} /> },
+                    { status: 'Hoàn thành', desc: 'HĐ đã hoàn tất tất cả điều khoản', icon: <CheckCircle2 size={16} /> },
+                ]
+            }
+        },
+        {
+            id: 'dashboard',
+            title: 'Dashboard',
+            icon: <LayoutDashboard size={18} />,
+            color: 'indigo',
+            path: ROUTES.DASHBOARD,
+            guides: [
+                { title: 'Xem tổng quan KPI', steps: ['Mở Dashboard từ sidebar', 'Xem các thẻ KPI ở đầu trang', 'So sánh với cùng kỳ năm trước'] },
+                { title: 'Lọc theo đơn vị/năm', steps: ['Chọn đơn vị từ dropdown', 'Chọn năm cần xem', 'Biểu đồ tự động cập nhật'] },
+            ]
+        },
+        {
+            id: 'payments',
+            title: 'Thanh toán',
+            icon: <CreditCard size={18} />,
+            color: 'emerald',
+            path: ROUTES.PAYMENTS,
+            guides: [
+                { title: 'Theo dõi thanh toán', steps: ['Vào module Thanh toán', 'Xem danh sách đợt thu/chi', 'Lọc theo trạng thái'] },
+                { title: 'Ghi nhận tiền về', steps: ['Tìm đợt thanh toán cần ghi nhận', 'Nhấn nút "Ghi nhận"', 'Nhập số tiền thực nhận'] },
+            ]
+        },
+        {
+            id: 'personnel',
+            title: 'Nhân sự',
+            icon: <Users size={18} />,
+            color: 'cyan',
+            path: ROUTES.PERSONNEL,
+            guides: [
+                { title: 'Xem danh sách nhân viên', steps: ['Vào module Nhân sự', 'Tìm kiếm theo tên/mã NV', 'Lọc theo đơn vị, chức vụ'] },
+                { title: 'Thêm nhân viên mới', steps: ['Nhấn "+ Thêm nhân viên"', 'Điền thông tin cá nhân', 'Chọn đơn vị, chức vụ, lưu'] },
+            ]
+        },
+        {
+            id: 'customers',
+            title: 'Khách hàng',
+            icon: <Building2 size={18} />,
+            color: 'blue',
+            path: ROUTES.CUSTOMERS,
+            guides: [
+                { title: 'Quản lý khách hàng', steps: ['Vào module Khách hàng', 'Tìm kiếm theo tên/MST', 'Click để xem lịch sử HĐ'] },
+                { title: 'Thêm khách hàng mới', steps: ['Nhấn "+ Thêm khách hàng"', 'Điền tên, MST, địa chỉ', 'Lưu thông tin'] },
+            ]
+        },
+        {
+            id: 'products',
+            title: 'Sản phẩm',
+            icon: <Package size={18} />,
+            color: 'rose',
+            path: ROUTES.PRODUCTS,
+            guides: [
+                { title: 'Xem danh mục SP/DV', steps: ['Vào module Sản phẩm', 'Tìm kiếm theo tên/mã', 'Xem giá & đơn vị tính'] },
+                { title: 'Thêm sản phẩm mới', steps: ['Nhấn "+ Thêm sản phẩm"', 'Điền tên, mã, giá', 'Chọn danh mục, lưu'] },
+            ]
+        },
+        {
+            id: 'ai',
+            title: 'AI Assistant',
+            icon: <Bot size={18} />,
+            color: 'violet',
+            path: ROUTES.AI_ASSISTANT,
+            guides: [
+                { title: 'Hỏi đáp với AI', steps: ['Vào module AI Assistant', 'Gõ câu hỏi vào ô chat', 'AI phân tích và trả lời'] },
+                { title: 'Phân tích dữ liệu', steps: ['Yêu cầu AI tóm tắt báo cáo', 'Hỏi về xu hướng doanh thu', 'Nhận gợi ý hành động'] },
+            ]
+        },
+        {
+            id: 'analytics',
+            title: 'Phân tích',
+            icon: <BarChart3 size={18} />,
+            color: 'purple',
+            path: ROUTES.ANALYTICS,
+            guides: [
+                { title: 'Xem báo cáo', steps: ['Vào module Phân tích', 'Chọn loại báo cáo', 'Lọc theo thời gian/đơn vị'] },
+                { title: 'Xuất báo cáo', steps: ['Chọn dữ liệu cần xuất', 'Nhấn "Xuất PDF/Excel"', 'Tải file về máy'] },
+            ]
+        },
+    ];
+
+    const colorClasses: Record<string, { bg: string; text: string; border: string }> = {
+        orange: { bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-600 dark:text-orange-400', border: 'border-orange-200 dark:border-orange-800' },
+        indigo: { bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-200 dark:border-indigo-800' },
+        emerald: { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-800' },
+        cyan: { bg: 'bg-cyan-50 dark:bg-cyan-900/20', text: 'text-cyan-600 dark:text-cyan-400', border: 'border-cyan-200 dark:border-cyan-800' },
+        blue: { bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-800' },
+        rose: { bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-600 dark:text-rose-400', border: 'border-rose-200 dark:border-rose-800' },
+        violet: { bg: 'bg-violet-50 dark:bg-violet-900/20', text: 'text-violet-600 dark:text-violet-400', border: 'border-violet-200 dark:border-violet-800' },
+        purple: { bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-600 dark:text-purple-400', border: 'border-purple-200 dark:border-purple-800' },
+    };
+
     return (
         <div className="max-w-4xl mx-auto space-y-6">
             {/* Header */}
-            <div className="text-center py-6">
-                <div className="inline-flex items-center gap-3 mb-4">
-                    <div className="p-3 bg-gradient-to-br from-orange-500 to-amber-500 rounded-2xl shadow-lg">
-                        <Book size={28} className="text-white" />
+            <div className="text-center py-4">
+                <div className="inline-flex items-center gap-3 mb-3">
+                    <div className="p-2.5 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl shadow-lg">
+                        <Book size={24} className="text-white" />
                     </div>
                     <div className="text-left">
-                        <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">
-                            Hướng dẫn sử dụng
-                        </h1>
-                        <p className="text-sm text-slate-500">CIC ERP Contract v2.1</p>
+                        <h1 className="text-xl font-black text-slate-900 dark:text-slate-100">Hướng dẫn sử dụng</h1>
+                        <p className="text-xs text-slate-500">CIC ERP Contract v2.1</p>
                     </div>
                 </div>
 
-                {/* Smart Search */}
-                <div className="relative max-w-md mx-auto mt-4">
-                    <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                {/* Search */}
+                <div className="relative max-w-md mx-auto">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                         type="text"
-                        placeholder="Tìm hướng dẫn... (ví dụ: tạo hợp đồng)"
+                        placeholder="Tìm hướng dẫn..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 text-sm"
+                        className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
                     />
-                    {searchQuery && (
-                        <button
-                            onClick={() => setSearchQuery('')}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full"
-                        >
-                            <X size={16} className="text-slate-400" />
-                        </button>
-                    )}
                 </div>
             </div>
-
-            {/* Onboarding Progress */}
-            {progress < 100 && (
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-5 border border-indigo-100 dark:border-indigo-800">
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                            <Rocket size={18} className="text-indigo-500" />
-                            Làm quen với hệ thống
-                        </h3>
-                        <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
-                            {progress}% hoàn thành
-                        </span>
-                    </div>
-
-                    {/* Progress bar */}
-                    <div className="h-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-full mb-4 overflow-hidden">
-                        <div
-                            className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
-                            style={{ width: `${progress}%` }}
-                        />
-                    </div>
-
-                    {/* Steps */}
-                    <div className="space-y-2">
-                        {onboardingSteps.map((step) => {
-                            const isComplete = completedSteps.includes(step.id);
-                            return (
-                                <button
-                                    key={step.id}
-                                    onClick={() => handleStepClick(step)}
-                                    className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${isComplete
-                                        ? 'bg-white/50 dark:bg-slate-800/50'
-                                        : 'bg-white dark:bg-slate-800 hover:shadow-md hover:scale-[1.01]'
-                                        }`}
-                                >
-                                    {isComplete ? (
-                                        <CheckCircle2 size={20} className="text-emerald-500 flex-shrink-0" />
-                                    ) : (
-                                        <Circle size={20} className="text-slate-300 dark:text-slate-600 flex-shrink-0" />
-                                    )}
-                                    <span className={`text-sm font-medium flex-1 ${isComplete ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-300'
-                                        }`}>
-                                        {step.label}
-                                    </span>
-                                    {!isComplete && (
-                                        <ArrowRight size={16} className="text-indigo-500" />
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-            )}
-
-            {/* Completion celebration */}
-            {progress === 100 && (
-                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-2xl p-5 border border-emerald-200 dark:border-emerald-800 text-center">
-                    <div className="text-4xl mb-2">🎉</div>
-                    <h3 className="font-bold text-emerald-800 dark:text-emerald-300">Tuyệt vời! Bạn đã hoàn thành làm quen!</h3>
-                    <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-1">Tiếp tục khám phá các tính năng bên dưới.</p>
-                </div>
-            )}
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <QuickActionCard
-                    icon={<Play size={20} />}
-                    title="Bắt đầu Tour"
-                    description="Hướng dẫn từng bước"
-                    color="from-orange-500 to-amber-500"
-                    onClick={() => {
-                        // Start interactive tour
-                        alert('🚧 Tính năng Tour đang được phát triển!');
-                    }}
-                />
-                <QuickActionCard
-                    icon={<Keyboard size={20} />}
-                    title="Phím tắt"
-                    description="Thao tác nhanh"
-                    color="from-indigo-500 to-purple-500"
-                    onClick={() => setShowShortcuts(true)}
-                />
-                <QuickActionCard
-                    icon={<Search size={20} />}
-                    title="Tìm kiếm"
-                    description="Ctrl+K"
-                    color="from-emerald-500 to-teal-500"
-                    onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))}
-                />
-                <QuickActionCard
-                    icon={<Plus size={20} />}
-                    title="Tạo HĐ"
-                    description="Hợp đồng mới"
-                    color="from-rose-500 to-pink-500"
-                    onClick={() => navigate(ROUTES.CONTRACT_NEW)}
-                />
+            <div className="grid grid-cols-4 gap-2">
+                <QuickBtn icon={<Play size={16} />} label="Tour" onClick={() => alert('🚧 Đang phát triển')} />
+                <QuickBtn icon={<Keyboard size={16} />} label="Phím tắt" onClick={() => setShowShortcuts(true)} />
+                <QuickBtn icon={<Search size={16} />} label="Ctrl+K" onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))} />
+                <QuickBtn icon={<Plus size={16} />} label="Tạo HĐ" onClick={() => navigate(ROUTES.CONTRACT_NEW)} />
             </div>
 
-            {/* Popular Topics - Visual Cards */}
+            {/* Onboarding Progress - Compact */}
+            {progress < 100 && (
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-4 border border-indigo-100 dark:border-indigo-800">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            <Rocket size={16} className="text-indigo-500" /> Làm quen hệ thống
+                        </span>
+                        <span className="text-xs font-bold text-indigo-600">{progress}%</span>
+                    </div>
+                    <div className="h-1.5 bg-indigo-100 dark:bg-indigo-900/50 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all" style={{ width: `${progress}%` }} />
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-3">
+                        {onboardingSteps.map((step) => (
+                            <button
+                                key={step.id}
+                                onClick={() => handleStepClick(step)}
+                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${completedSteps.includes(step.id)
+                                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30'
+                                    }`}
+                            >
+                                {completedSteps.includes(step.id) ? <CheckCircle2 size={12} /> : <Circle size={12} />}
+                                {step.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Module Guides - Collapsible Accordion */}
             <div>
-                <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                    <Lightbulb size={20} className="text-amber-500" />
-                    Hướng dẫn theo module
-                </h3>
-
-                {/* Contracts Section */}
-                <h4 className="font-bold text-sm text-orange-600 dark:text-orange-400 mb-3 flex items-center gap-2">
-                    <FileText size={16} /> Hợp đồng
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <TopicCard
-                        icon={<Plus className="text-emerald-500" />}
-                        title="Tạo hợp đồng mới"
-                        steps={['Nhấn "+ Tạo mới" hoặc Ctrl+N', 'Điền thông tin: Loại HĐ, Đơn vị, Khách hàng', 'Thêm sản phẩm/dịch vụ', 'Cài đặt lịch thu tiền', 'Lưu hợp đồng']}
-                        action={{ label: 'Tạo ngay', onClick: () => navigate(ROUTES.CONTRACT_NEW) }}
-                    />
-                    <TopicCard
-                        icon={<Copy className="text-purple-500" />}
-                        title="Nhân bản hợp đồng"
-                        steps={['Vào danh sách Hợp đồng', 'Nhấn icon 📋 cuối dòng', 'Chỉnh sửa thông tin mới', 'Lưu như hợp đồng mới']}
-                        action={{ label: 'Xem danh sách', onClick: () => navigate(ROUTES.CONTRACTS) }}
-                    />
-                    <TopicCard
-                        icon={<Edit className="text-blue-500" />}
-                        title="Sửa hợp đồng"
-                        steps={['Double-click vào HĐ để sửa nhanh', 'Hoặc: Mở chi tiết → Chỉnh sửa', 'Cập nhật thông tin cần thiết', 'Nhấn Lưu']}
-                        action={{ label: 'Xem danh sách', onClick: () => navigate(ROUTES.CONTRACTS) }}
-                    />
-                    <TopicCard
-                        icon={<Filter className="text-amber-500" />}
-                        title="Lọc & Xuất Excel"
-                        steps={['Dùng bộ lọc: Năm, Đơn vị, Trạng thái', 'Click tiêu đề cột để sắp xếp', 'Nhấn "Xuất Excel" ở góc phải']}
-                        action={{ label: 'Xem danh sách', onClick: () => navigate(ROUTES.CONTRACTS) }}
-                    />
-                </div>
-
-                {/* Dashboard Section */}
-                <h4 className="font-bold text-sm text-indigo-600 dark:text-indigo-400 mb-3 flex items-center gap-2">
-                    <LayoutDashboard size={16} /> Dashboard
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <TopicCard
-                        icon={<BarChart3 className="text-indigo-500" />}
-                        title="Xem tổng quan KPI"
-                        steps={['Mở Dashboard từ sidebar', 'Xem các thẻ KPI ở đầu trang', 'So sánh với cùng kỳ năm trước', 'Hover để xem chi tiết']}
-                        action={{ label: 'Mở Dashboard', onClick: () => navigate(ROUTES.DASHBOARD) }}
-                    />
-                    <TopicCard
-                        icon={<Filter className="text-purple-500" />}
-                        title="Lọc theo đơn vị/năm"
-                        steps={['Chọn đơn vị từ dropdown', 'Chọn năm cần xem', 'Biểu đồ tự động cập nhật', 'So sánh giữa các đơn vị']}
-                        action={{ label: 'Mở Dashboard', onClick: () => navigate(ROUTES.DASHBOARD) }}
-                    />
-                </div>
-
-                {/* Payments Section */}
-                <h4 className="font-bold text-sm text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2">
-                    <CreditCard size={16} /> Thanh toán
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <TopicCard
-                        icon={<CreditCard className="text-emerald-500" />}
-                        title="Theo dõi thanh toán"
-                        steps={['Vào module Thanh toán', 'Xem danh sách đợt thu/chi', 'Lọc theo trạng thái: Chờ, Đã thu, Quá hạn', 'Click để xem chi tiết']}
-                        action={{ label: 'Xem thanh toán', onClick: () => navigate(ROUTES.PAYMENTS) }}
-                    />
-                    <TopicCard
-                        icon={<CheckCircle2 className="text-green-500" />}
-                        title="Ghi nhận tiền về"
-                        steps={['Tìm đợt thanh toán cần ghi nhận', 'Nhấn nút "Ghi nhận"', 'Nhập số tiền thực nhận', 'Xác nhận để cập nhật']}
-                        action={{ label: 'Xem thanh toán', onClick: () => navigate(ROUTES.PAYMENTS) }}
-                    />
-                </div>
-
-                {/* Personnel Section */}
-                <h4 className="font-bold text-sm text-cyan-600 dark:text-cyan-400 mb-3 flex items-center gap-2">
-                    <Users size={16} /> Nhân sự
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <TopicCard
-                        icon={<Users className="text-cyan-500" />}
-                        title="Xem danh sách nhân viên"
-                        steps={['Vào module Nhân sự', 'Tìm kiếm theo tên/mã NV', 'Lọc theo đơn vị, chức vụ', 'Click để xem chi tiết']}
-                        action={{ label: 'Xem nhân sự', onClick: () => navigate(ROUTES.PERSONNEL) }}
-                    />
-                    <TopicCard
-                        icon={<Plus className="text-teal-500" />}
-                        title="Thêm nhân viên mới"
-                        steps={['Nhấn "+ Thêm nhân viên"', 'Điền thông tin cá nhân', 'Chọn đơn vị, chức vụ', 'Lưu thông tin']}
-                        action={{ label: 'Xem nhân sự', onClick: () => navigate(ROUTES.PERSONNEL) }}
-                    />
-                </div>
-
-                {/* Customers Section */}
-                <h4 className="font-bold text-sm text-blue-600 dark:text-blue-400 mb-3 flex items-center gap-2">
-                    <Building2 size={16} /> Khách hàng
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <TopicCard
-                        icon={<Building2 className="text-blue-500" />}
-                        title="Quản lý khách hàng"
-                        steps={['Vào module Khách hàng', 'Xem danh sách & thông tin liên hệ', 'Tìm kiếm theo tên/MST', 'Click để xem lịch sử HĐ']}
-                        action={{ label: 'Xem KH', onClick: () => navigate(ROUTES.CUSTOMERS) }}
-                    />
-                    <TopicCard
-                        icon={<Plus className="text-sky-500" />}
-                        title="Thêm khách hàng mới"
-                        steps={['Nhấn "+ Thêm khách hàng"', 'Điền tên, MST, địa chỉ', 'Thêm thông tin liên hệ', 'Lưu thông tin']}
-                        action={{ label: 'Xem KH', onClick: () => navigate(ROUTES.CUSTOMERS) }}
-                    />
-                </div>
-
-                {/* Products Section */}
-                <h4 className="font-bold text-sm text-rose-600 dark:text-rose-400 mb-3 flex items-center gap-2">
-                    <Package size={16} /> Sản phẩm / Dịch vụ
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <TopicCard
-                        icon={<Package className="text-rose-500" />}
-                        title="Xem danh mục SP/DV"
-                        steps={['Vào module Sản phẩm', 'Tìm kiếm theo tên/mã', 'Lọc theo danh mục', 'Xem giá & đơn vị tính']}
-                        action={{ label: 'Xem SP', onClick: () => navigate(ROUTES.PRODUCTS) }}
-                    />
-                    <TopicCard
-                        icon={<Plus className="text-pink-500" />}
-                        title="Thêm sản phẩm mới"
-                        steps={['Nhấn "+ Thêm sản phẩm"', 'Điền tên, mã, mô tả', 'Nhập giá & đơn vị tính', 'Chọn danh mục, lưu']}
-                        action={{ label: 'Xem SP', onClick: () => navigate(ROUTES.PRODUCTS) }}
-                    />
-                </div>
-
-                {/* AI Assistant Section */}
-                <h4 className="font-bold text-sm text-violet-600 dark:text-violet-400 mb-3 flex items-center gap-2">
-                    <Bot size={16} /> AI Assistant
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <TopicCard
-                        icon={<Bot className="text-violet-500" />}
-                        title="Hỏi đáp với AI"
-                        steps={['Vào module AI Assistant', 'Gõ câu hỏi vào ô chat', 'AI sẽ phân tích và trả lời', 'Có thể hỏi về dữ liệu HĐ, KH...']}
-                        action={{ label: 'Mở AI', onClick: () => navigate(ROUTES.AI_ASSISTANT) }}
-                    />
-                    <TopicCard
-                        icon={<Sparkles className="text-purple-500" />}
-                        title="Phân tích dữ liệu"
-                        steps={['Yêu cầu AI tóm tắt báo cáo', 'Hỏi về xu hướng doanh thu', 'So sánh hiệu suất đơn vị', 'Nhận gợi ý hành động']}
-                        action={{ label: 'Mở AI', onClick: () => navigate(ROUTES.AI_ASSISTANT) }}
-                    />
-                </div>
-
-                {/* Search Section */}
-                <h4 className="font-bold text-sm text-slate-600 dark:text-slate-400 mb-3 flex items-center gap-2">
-                    <Search size={16} /> Tìm kiếm & Phím tắt
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <TopicCard
-                        icon={<Search className="text-indigo-500" />}
-                        title="Tìm kiếm toàn cục"
-                        steps={['Nhấn Ctrl+K hoặc click ô tìm kiếm', 'Gõ mã HĐ, tên KH, hoặc từ khóa', 'Dùng ↑↓ để chọn, Enter để mở']}
-                        action={{ label: 'Thử ngay', onClick: () => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true })) }}
-                    />
-                    <TopicCard
-                        icon={<Keyboard className="text-slate-500" />}
-                        title="Xem phím tắt"
-                        steps={['Nhấn ? bất kỳ lúc nào', 'Xem danh sách phím tắt', 'Học các thao tác nhanh', 'Nhấn Esc để đóng']}
-                        action={{ label: 'Xem phím tắt', onClick: () => setShowShortcuts(true) }}
-                    />
-                </div>
-            </div>
-
-            {/* Module Navigation */}
-            <div>
-                <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                    <Package size={20} className="text-blue-500" />
-                    Các module trong hệ thống
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    <ModuleLink
-                        icon={<LayoutDashboard />}
-                        label="Dashboard"
-                        path={ROUTES.DASHBOARD}
-                        color="indigo"
-                        features={['Xem KPI tổng quan', 'Biểu đồ doanh thu theo tháng', 'So sánh năm trước/năm nay', 'Phân tích theo đơn vị, nhân sự', 'Cảnh báo hợp đồng sắp đến hạn']}
-                    />
-                    <ModuleLink
-                        icon={<FileText />}
-                        label="Hợp đồng"
-                        path={ROUTES.CONTRACTS}
-                        color="orange"
-                        features={['Tạo, sửa, xóa hợp đồng', 'Nhân bản hợp đồng', 'Theo dõi trạng thái', 'Lịch thu chi tiền', 'Xuất Excel', 'Tìm kiếm & lọc nâng cao']}
-                    />
-                    <ModuleLink
-                        icon={<CreditCard />}
-                        label="Thanh toán"
-                        path={ROUTES.PAYMENTS}
-                        color="emerald"
-                        features={['Theo dõi đợt thanh toán', 'Ghi nhận tiền về', 'Cảnh báo quá hạn', 'Lịch thanh toán', 'Báo cáo công nợ']}
-                    />
-                    <ModuleLink
-                        icon={<BarChart3 />}
-                        label="Phân tích"
-                        path={ROUTES.ANALYTICS}
-                        color="purple"
-                        features={['Báo cáo chi tiết', 'Phân tích xu hướng', 'So sánh hiệu suất', 'Xuất báo cáo PDF/Excel', 'Biểu đồ tương tác']}
-                    />
-                    <ModuleLink
-                        icon={<Users />}
-                        label="Nhân sự"
-                        path={ROUTES.PERSONNEL}
-                        color="cyan"
-                        features={['Danh sách nhân viên', 'Thông tin cá nhân', 'Chức vụ & đơn vị', 'Hợp đồng phụ trách', 'Thống kê hiệu suất']}
-                    />
-                    <ModuleLink
-                        icon={<Building2 />}
-                        label="Khách hàng"
-                        path={ROUTES.CUSTOMERS}
-                        color="blue"
-                        features={['Danh bạ khách hàng', 'Thông tin liên hệ', 'Lịch sử hợp đồng', 'Phân loại khách hàng', 'Ghi chú & đánh giá']}
-                    />
-                    <ModuleLink
-                        icon={<Package />}
-                        label="Sản phẩm"
-                        path={ROUTES.PRODUCTS}
-                        color="rose"
-                        features={['Danh mục sản phẩm/dịch vụ', 'Giá & đơn vị tính', 'Phân loại danh mục', 'Tìm kiếm nhanh', 'Import/Export']}
-                    />
-                    <ModuleLink
-                        icon={<Bot />}
-                        label="AI Assistant"
-                        path={ROUTES.AI_ASSISTANT}
-                        color="violet"
-                        features={['Hỏi đáp thông minh', 'Phân tích dữ liệu', 'Gợi ý hành động', 'Tóm tắt báo cáo', 'Hỗ trợ tìm kiếm']}
-                    />
-                    <ModuleLink
-                        icon={<Settings />}
-                        label="Cài đặt"
-                        path={ROUTES.SETTINGS}
-                        color="slate"
-                        features={['Cấu hình hệ thống', 'Quản lý người dùng', 'Quyền truy cập', 'Giao diện & theme', 'Sao lưu dữ liệu']}
-                    />
-                </div>
-            </div>
-
-            {/* FAQ */}
-            <div>
-                <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                    <HelpCircle size={20} className="text-rose-500" />
-                    Câu hỏi thường gặp
+                <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+                    <Lightbulb size={16} className="text-amber-500" /> Hướng dẫn theo module
                 </h3>
                 <div className="space-y-2">
-                    {filteredFaqs.map(faq => (
-                        <div key={faq.id} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    {moduleGuides.map((module) => (
+                        <div key={module.id} className={`rounded-xl border overflow-hidden ${colorClasses[module.color].border}`}>
+                            {/* Module Header */}
                             <button
-                                onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
-                                className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                                onClick={() => setExpandedModule(expandedModule === module.id ? null : module.id)}
+                                className={`w-full flex items-center gap-3 p-3 text-left transition-colors ${expandedModule === module.id ? colorClasses[module.color].bg : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                                    }`}
                             >
-                                <span className="font-medium text-slate-900 dark:text-slate-100">{faq.q}</span>
-                                <ChevronDown size={18} className={`text-slate-400 transition-transform ${expandedFaq === faq.id ? 'rotate-180' : ''}`} />
+                                <div className={`p-1.5 rounded-lg ${colorClasses[module.color].bg} ${colorClasses[module.color].text}`}>
+                                    {module.icon}
+                                </div>
+                                <span className={`font-bold text-sm flex-1 ${colorClasses[module.color].text}`}>{module.title}</span>
+                                <span className="text-xs text-slate-400">{module.guides.length} hướng dẫn</span>
+                                <ChevronDown size={16} className={`text-slate-400 transition-transform ${expandedModule === module.id ? 'rotate-180' : ''}`} />
                             </button>
-                            {expandedFaq === faq.id && (
-                                <div className="px-4 pb-4 text-sm text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700 pt-3">
-                                    {faq.a}
+
+                            {/* Module Content */}
+                            {expandedModule === module.id && (
+                                <div className="p-4 bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700">
+                                    {/* Workflow (if exists) */}
+                                    {module.workflow && (
+                                        <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                                            <h5 className="font-bold text-xs text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
+                                                <ClipboardCheck size={14} /> {module.workflow.title}
+                                            </h5>
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                {module.workflow.steps.map((step, i) => (
+                                                    <React.Fragment key={i}>
+                                                        <div className="flex items-center gap-1.5 px-2 py-1 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600">
+                                                            <span className={`${colorClasses[module.color].text}`}>{step.icon}</span>
+                                                            <div>
+                                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{step.status}</span>
+                                                            </div>
+                                                        </div>
+                                                        {i < module.workflow.steps.length - 1 && (
+                                                            <ArrowRightCircle size={14} className="text-slate-300 dark:text-slate-600" />
+                                                        )}
+                                                    </React.Fragment>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Guides Grid */}
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {module.guides.map((guide, i) => (
+                                            <div key={i} className="p-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg">
+                                                <h5 className="font-bold text-xs text-slate-800 dark:text-slate-200 mb-2">{guide.title}</h5>
+                                                <ol className="space-y-1">
+                                                    {guide.steps.map((step, j) => (
+                                                        <li key={j} className="flex items-start gap-1.5 text-[11px] text-slate-600 dark:text-slate-400">
+                                                            <span className="bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-400 px-1 rounded text-[10px] font-bold">{j + 1}</span>
+                                                            {step}
+                                                        </li>
+                                                    ))}
+                                                </ol>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Go to module button */}
+                                    <button
+                                        onClick={() => navigate(module.path)}
+                                        className={`w-full mt-3 py-2 rounded-lg text-xs font-bold transition-colors ${colorClasses[module.color].bg} ${colorClasses[module.color].text} hover:opacity-80`}
+                                    >
+                                        Đi đến {module.title} →
+                                    </button>
                                 </div>
                             )}
                         </div>
@@ -489,77 +345,86 @@ const UserGuide: React.FC = () => {
                 </div>
             </div>
 
-            {/* Tips */}
-            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl p-5 border border-amber-200 dark:border-amber-800">
-                <h3 className="font-bold text-amber-900 dark:text-amber-200 mb-3 flex items-center gap-2">
-                    <Sparkles size={18} /> Mẹo hay
+            {/* FAQ - Compact */}
+            <div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+                    <HelpCircle size={16} className="text-rose-500" /> Câu hỏi thường gặp
                 </h3>
-                <ul className="space-y-2 text-sm text-amber-800 dark:text-amber-300">
-                    <li className="flex items-start gap-2">
-                        <span className="font-bold">•</span>
-                        <span><strong>Double-click</strong> vào hợp đồng để sửa nhanh, không cần mở chi tiết.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                        <span className="font-bold">•</span>
-                        <span>Gõ <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded text-xs font-mono">/</kbd> trong danh sách để focus ô tìm kiếm.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                        <span className="font-bold">•</span>
-                        <span>Click vào <strong>mã hợp đồng</strong> để copy nhanh vào clipboard.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                        <span className="font-bold">•</span>
-                        <span>Nhấn <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded text-xs font-mono">?</kbd> bất kỳ lúc nào để xem phím tắt.</span>
-                    </li>
+                <div className="space-y-1">
+                    {filteredFaqs.map(faq => (
+                        <div key={faq.id} className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                            <button
+                                onClick
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                ={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
+                                className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                            >
+                                <span className="font-medium text-sm text-slate-900 dark:text-slate-100">{faq.q}</span>
+                                <ChevronDown size={14} className={`text-slate-400 transition-transform ${expandedFaq === faq.id ? 'rotate-180' : ''}`} />
+                            </button>
+                            {expandedFaq === faq.id && (
+                                <div className="px-3 pb-3 text-xs text-slate-600 dark:text-slate-400">{faq.a}</div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Tips - Compact */}
+            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-800">
+                <h3 className="font-bold text-sm text-amber-900 dark:text-amber-200 mb-2 flex items-center gap-2">
+                    <Sparkles size={14} /> Mẹo hay
+                </h3>
+                <ul className="grid grid-cols-2 gap-2 text-xs text-amber-800 dark:text-amber-300">
+                    <li>• <strong>Double-click</strong> để sửa nhanh HĐ</li>
+                    <li>• Gõ <kbd className="px-1 bg-white dark:bg-slate-800 rounded">/</kbd> để focus tìm kiếm</li>
+                    <li>• Click <strong>mã HĐ</strong> để copy</li>
+                    <li>• Nhấn <kbd className="px-1 bg-white dark:bg-slate-800 rounded">?</kbd> để xem phím tắt</li>
                 </ul>
             </div>
 
-            {/* Contact Support */}
-            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-2xl p-5">
-                <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
-                    <Phone size={18} className="text-green-500" /> Cần hỗ trợ?
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                    <a href="tel:0123456789" className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:shadow-md transition-all">
-                        <Phone size={16} className="text-green-500" /> Hotline
-                    </a>
-                    <a href="mailto:support@cic.vn" className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:shadow-md transition-all">
-                        <Mail size={16} className="text-blue-500" /> Email
-                    </a>
-                    <a href="https://zalo.me" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:shadow-md transition-all">
-                        <MessageCircle size={16} className="text-blue-600" /> Zalo
-                    </a>
+            {/* Contact - Compact */}
+            <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800/50 rounded-xl p-3">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                    <Phone size={14} className="text-green-500" /> Cần hỗ trợ?
+                </span>
+                <div className="flex gap-2">
+                    <a href="tel:0123456789" className="px-3 py-1.5 bg-white dark:bg-slate-700 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 hover:shadow transition-all">Hotline</a>
+                    <a href="mailto:support@cic.vn" className="px-3 py-1.5 bg-white dark:bg-slate-700 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 hover:shadow transition-all">Email</a>
                 </div>
             </div>
 
             {/* Keyboard Shortcuts Modal */}
             {showShortcuts && (
                 <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowShortcuts(false)}>
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
-                            <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                                <Keyboard size={20} className="text-indigo-500" /> Phím tắt
+                            <h3 className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                                <Keyboard size={18} className="text-indigo-500" /> Phím tắt
                             </h3>
-                            <button onClick={() => setShowShortcuts(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">
-                                <X size={20} className="text-slate-400" />
+                            <button onClick={() => setShowShortcuts(false)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+                                <X size={18} className="text-slate-400" />
                             </button>
                         </div>
-                        <div className="p-4 space-y-4">
-                            <ShortcutGroup title="Điều hướng" shortcuts={[
-                                { keys: ['Ctrl', 'K'], desc: 'Mở tìm kiếm toàn cục' },
-                                { keys: ['/'], desc: 'Focus ô tìm kiếm trong danh sách' },
-                                { keys: ['?'], desc: 'Mở bảng phím tắt này' },
-                            ]} />
-                            <ShortcutGroup title="Hợp đồng" shortcuts={[
-                                { keys: ['Ctrl', 'N'], desc: 'Tạo hợp đồng mới' },
-                                { keys: ['Double-click'], desc: 'Sửa nhanh hợp đồng' },
-                                { keys: ['Click mã HĐ'], desc: 'Copy mã hợp đồng' },
-                            ]} />
-                            <ShortcutGroup title="Thao tác chung" shortcuts={[
-                                { keys: ['Esc'], desc: 'Đóng modal / Hủy' },
-                                { keys: ['Tab'], desc: 'Chuyển trường tiếp theo' },
-                                { keys: ['Enter'], desc: 'Xác nhận / Chọn' },
-                            ]} />
+                        <div className="p-4 space-y-3">
+                            <ShortcutRow keys={['Ctrl', 'K']} desc="Tìm kiếm toàn cục" />
+                            <ShortcutRow keys={['Ctrl', 'N']} desc="Tạo hợp đồng mới" />
+                            <ShortcutRow keys={['/']} desc="Focus ô tìm kiếm" />
+                            <ShortcutRow keys={['?']} desc="Mở bảng phím tắt" />
+                            <ShortcutRow keys={['Esc']} desc="Đóng modal" />
+                            <ShortcutRow keys={['Double-click']} desc="Sửa nhanh hợp đồng" />
                         </div>
                     </div>
                 </div>
@@ -567,163 +432,47 @@ const UserGuide: React.FC = () => {
         </div>
     );
 };
+
+// ============================================
+// Types
+// ============================================
+interface ModuleGuideData {
+    id: string;
+    title: string;
+    icon: React.ReactNode;
+    color: string;
+    path: string;
+    guides: { title: string; steps: string[] }[];
+    workflow?: {
+        title: string;
+        steps: { status: string; desc: string; icon: React.ReactNode }[];
+    };
+}
 
 // ============================================
 // Helper Components
 // ============================================
-
-const QuickActionCard = ({ icon, title, description, color, onClick }: {
-    icon: React.ReactNode;
-    title: string;
-    description: string;
-    color: string;
-    onClick: () => void;
-}) => (
+const QuickBtn = ({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) => (
     <button
         onClick={onClick}
-        className="group p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:scale-[1.02] transition-all text-left"
+        className="flex flex-col items-center gap-1 p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-md hover:scale-[1.02] transition-all"
     >
-        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center mb-3 text-white shadow-lg group-hover:scale-110 transition-transform`}>
-            {icon}
-        </div>
-        <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">{title}</h4>
-        <p className="text-xs text-slate-500 mt-0.5">{description}</p>
+        <span className="text-indigo-500">{icon}</span>
+        <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{label}</span>
     </button>
 );
 
-const TopicCard = ({ icon, title, steps, action }: {
-    icon: React.ReactNode;
-    title: string;
-    steps: string[];
-    action: { label: string; onClick: () => void };
-}) => (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
-        <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-slate-100 dark:bg-slate-700 rounded-xl">{icon}</div>
-            <h4 className="font-bold text-slate-900 dark:text-slate-100">{title}</h4>
-        </div>
-        <ol className="space-y-1.5 mb-4">
-            {steps.map((step, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400">
-                    <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 px-1.5 py-0.5 rounded text-xs font-bold flex-shrink-0">{i + 1}</span>
-                    {step}
-                </li>
-            ))}
-        </ol>
-        <button
-            onClick={action.onClick}
-            className="w-full py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl font-bold text-sm hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors flex items-center justify-center gap-2"
-        >
-            {action.label} <ArrowRight size={14} />
-        </button>
-    </div>
-);
-
-const ModuleLink = ({ icon, label, path, color, features }: {
-    icon: React.ReactNode;
-    label: string;
-    path: string;
-    color: string;
-    features?: string[];
-}) => {
-    const navigate = useNavigate();
-    const [showTooltip, setShowTooltip] = useState(false);
-
-    const colorClasses: Record<string, string> = {
-        indigo: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30',
-        orange: 'text-orange-500 bg-orange-50 dark:bg-orange-900/30',
-        emerald: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30',
-        purple: 'text-purple-500 bg-purple-50 dark:bg-purple-900/30',
-        cyan: 'text-cyan-500 bg-cyan-50 dark:bg-cyan-900/30',
-        blue: 'text-blue-500 bg-blue-50 dark:bg-blue-900/30',
-        rose: 'text-rose-500 bg-rose-50 dark:bg-rose-900/30',
-        violet: 'text-violet-500 bg-violet-50 dark:bg-violet-900/30',
-        slate: 'text-slate-500 bg-slate-100 dark:bg-slate-700/50',
-    };
-
-    const borderColors: Record<string, string> = {
-        indigo: 'border-indigo-200 dark:border-indigo-800',
-        orange: 'border-orange-200 dark:border-orange-800',
-        emerald: 'border-emerald-200 dark:border-emerald-800',
-        purple: 'border-purple-200 dark:border-purple-800',
-        cyan: 'border-cyan-200 dark:border-cyan-800',
-        blue: 'border-blue-200 dark:border-blue-800',
-        rose: 'border-rose-200 dark:border-rose-800',
-        violet: 'border-violet-200 dark:border-violet-800',
-        slate: 'border-slate-300 dark:border-slate-700',
-    };
-
-    return (
-        <div
-            className="relative"
-            onMouseEnter={() => setShowTooltip(true)}
-            onMouseLeave={() => setShowTooltip(false)}
-        >
-            <button
-                onClick={() => navigate(path)}
-                className="w-full flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:scale-[1.02] transition-all text-left group"
-            >
-                <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
-                    {React.cloneElement(icon as React.ReactElement<{ size: number }>, { size: 18 })}
-                </div>
-                <span className="font-medium text-sm text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                    {label}
-                </span>
-                <ChevronRight size={16} className="ml-auto text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 transition-colors" />
-            </button>
-
-            {/* Tooltip with features */}
-            {showTooltip && features && features.length > 0 && (
-                <div className={`absolute z-50 left-0 right-0 top-full mt-2 p-4 bg-white dark:bg-slate-900 rounded-xl shadow-xl border-2 ${borderColors[color]} animate-in fade-in slide-in-from-top-2 duration-200`}>
-                    <div className="flex items-center gap-2 mb-3">
-                        <div className={`p-1.5 rounded-lg ${colorClasses[color]}`}>
-                            {React.cloneElement(icon as React.ReactElement<{ size: number }>, { size: 16 })}
-                        </div>
-                        <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">{label}</h4>
-                    </div>
-                    <ul className="space-y-1.5">
-                        {features.map((feature, i) => (
-                            <li key={i} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
-                                <span className="text-emerald-500 mt-0.5">✓</span>
-                                {feature}
-                            </li>
-                        ))}
-                    </ul>
-                    <button
-                        onClick={() => navigate(path)}
-                        className={`w-full mt-3 py-2 rounded-lg text-xs font-bold transition-colors ${colorClasses[color]} hover:opacity-80`}
-                    >
-                        Đi đến {label} →
-                    </button>
-                </div>
-            )}
-        </div>
-    );
-};
-
-const ShortcutGroup = ({ title, shortcuts }: {
-    title: string;
-    shortcuts: { keys: string[]; desc: string }[];
-}) => (
-    <div>
-        <h4 className="font-bold text-sm text-slate-700 dark:text-slate-300 mb-2">{title}</h4>
-        <div className="space-y-2">
-            {shortcuts.map((s, i) => (
-                <div key={i} className="flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                        {s.keys.map((key, j) => (
-                            <React.Fragment key={j}>
-                                <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded border border-slate-200 dark:border-slate-600 text-xs font-mono">
-                                    {key}
-                                </kbd>
-                                {j < s.keys.length - 1 && <span className="text-slate-400 text-xs">+</span>}
-                            </React.Fragment>
-                        ))}
-                    </div>
-                    <span className="text-sm text-slate-600 dark:text-slate-400">{s.desc}</span>
-                </div>
+const ShortcutRow = ({ keys, desc }: { keys: string[]; desc: string }) => (
+    <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1">
+            {keys.map((key, i) => (
+                <React.Fragment key={i}>
+                    <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded border border-slate-200 dark:border-slate-600 text-xs font-mono">{key}</kbd>
+                    {i < keys.length - 1 && <span className="text-slate-400 text-xs">+</span>}
+                </React.Fragment>
             ))}
         </div>
+        <span className="text-sm text-slate-600 dark:text-slate-400">{desc}</span>
     </div>
 );
 
