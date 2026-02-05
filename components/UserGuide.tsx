@@ -73,8 +73,8 @@ const UserGuide: React.FC = () => {
 
     // FAQ data
     const faqs = [
-        { id: 'create', q: 'Làm sao tạo hợp đồng mới?', a: 'Vào Hợp đồng → Nhấn "+ Tạo mới" hoặc dùng phím Ctrl+N.' },
-        { id: 'edit', q: 'Làm sao sửa hợp đồng?', a: 'Double-click vào hợp đồng trong danh sách, hoặc mở chi tiết rồi nhấn "Chỉnh sửa".' },
+        { id: 'create', q: 'Làm sao tạo hợp đồng mới?', a: 'Vào Hợp đồng → Nhấn "+ Tạo mới" hoặc dùng phím Alt+N.' },
+        { id: 'edit', q: 'Làm sao sửa hợp đồng?', a: 'Mở chi tiết hợp đồng rồi nhấn nút "Chỉnh sửa".' },
         { id: 'copy', q: 'Làm sao copy mã hợp đồng?', a: 'Click trực tiếp vào mã hợp đồng (ví dụ: HD_001/...). Hệ thống tự copy vào clipboard.' },
         { id: 'search', q: 'Làm sao tìm hợp đồng nhanh?', a: 'Nhấn Ctrl+K để mở tìm kiếm toàn cục, gõ mã HĐ hoặc tên khách hàng.' },
         { id: 'approval', q: 'Quy trình phê duyệt hợp đồng?', a: 'Nháp → Chờ duyệt (Pháp lý + Tài chính SONG SONG) → Đã duyệt → Chờ ký → Có hiệu lực. Xem chi tiết ở mục "Hợp đồng".' },
@@ -94,8 +94,8 @@ const UserGuide: React.FC = () => {
             color: 'orange',
             path: ROUTES.CONTRACTS,
             guides: [
-                { title: 'Tạo hợp đồng mới', steps: ['Nhấn "+ Tạo mới" hoặc Ctrl+N', 'Điền thông tin: Loại HĐ, Đơn vị, KH', 'Thêm sản phẩm/dịch vụ', 'Cài đặt lịch thu tiền', 'Lưu'] },
-                { title: 'Sửa hợp đồng', steps: ['Double-click vào HĐ để sửa nhanh', 'Hoặc: Mở chi tiết → Chỉnh sửa', 'Cập nhật → Lưu'] },
+                { title: 'Tạo hợp đồng mới', steps: ['Nhấn "+ Tạo mới" hoặc Alt+N', 'Điền thông tin: Loại HĐ, Đơn vị, KH', 'Thêm sản phẩm/dịch vụ', 'Cài đặt lịch thu tiền', 'Lưu'] },
+                { title: 'Sửa hợp đồng', steps: ['Mở chi tiết hợp đồng', 'Nhấn nút "Chỉnh sửa"', 'Cập nhật → Lưu'] },
                 { title: 'Nhân bản hợp đồng', steps: ['Ở danh sách, nhấn icon 📋', 'Chỉnh sửa thông tin mới', 'Lưu như HĐ mới'] },
                 { title: 'Lọc & Xuất Excel', steps: ['Dùng bộ lọc: Năm, Đơn vị, Trạng thái', 'Click tiêu đề cột để sắp xếp', 'Nhấn "Xuất Excel"'] },
             ],
@@ -314,8 +314,8 @@ const UserGuide: React.FC = () => {
                             key={module.id}
                             onClick={() => setExpandedModule(module.id)}
                             className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-medium whitespace-nowrap transition-all border-b-2 ${expandedModule === module.id
-                                    ? `${colorClasses[module.color].bg} ${colorClasses[module.color].text} border-current`
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-200 dark:hover:bg-slate-700'
+                                ? `${colorClasses[module.color].bg} ${colorClasses[module.color].text} border-current`
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-200 dark:hover:bg-slate-700'
                                 }`}
                         >
                             <span className={expandedModule === module.id ? '' : 'opacity-60'}>{module.icon}</span>
@@ -495,11 +495,17 @@ const UserGuide: React.FC = () => {
                         </div>
                         <div className="p-4 space-y-3">
                             <ShortcutRow keys={['Ctrl', 'K']} desc="Tìm kiếm toàn cục" />
-                            <ShortcutRow keys={['Ctrl', 'N']} desc="Tạo hợp đồng mới" />
+                            <ShortcutRow keys={['Alt', 'N']} desc="Tạo hợp đồng mới" />
                             <ShortcutRow keys={['/']} desc="Focus ô tìm kiếm" />
                             <ShortcutRow keys={['?']} desc="Mở bảng phím tắt" />
-                            <ShortcutRow keys={['Esc']} desc="Đóng modal" />
-                            <ShortcutRow keys={['Double-click']} desc="Sửa nhanh hợp đồng" />
+                            <ShortcutRow keys={['Esc']} desc="Đóng modal/popup" />
+                            <div className="border-t border-slate-100 dark:border-slate-700 my-2 pt-2">
+                                <p className="text-xs font-bold text-slate-500 mb-2">Điều hướng (nhấn G rồi phím tiếp theo)</p>
+                            </div>
+                            <ShortcutRow keys={['G', 'D']} desc="Đi đến Dashboard" />
+                            <ShortcutRow keys={['G', 'C']} desc="Đi đến Hợp đồng" />
+                            <ShortcutRow keys={['G', 'P']} desc="Đi đến Nhân sự" />
+                            <ShortcutRow keys={['G', 'H']} desc="Đi đến Hướng dẫn" />
                         </div>
                     </div>
                 </div>

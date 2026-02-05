@@ -53,24 +53,63 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
   }, [searchTerm]);
 
   // Keyboard shortcuts
+  const [gKeyPressed, setGKeyPressed] = useState(false);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl+N: Add new contract
-      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+      // Skip if in input fields
+      const inInput = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
+
+      // Alt+N: Add new contract (changed from Ctrl+N to avoid browser conflict)
+      if (e.altKey && e.key === 'n') {
         e.preventDefault();
         onAdd();
+        return;
       }
+
       // / : Focus search (like GitHub)
-      if (e.key === '/' && !e.ctrlKey && !e.metaKey &&
-        !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+      if (e.key === '/' && !e.ctrlKey && !e.metaKey && !inInput) {
         e.preventDefault();
         const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
         searchInput?.focus();
+        return;
+      }
+
+      // G-key navigation (GitHub style: press G then another key)
+      if (!inInput) {
+        if (e.key === 'g' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          setGKeyPressed(true);
+          // Reset after 1 second
+          setTimeout(() => setGKeyPressed(false), 1000);
+          return;
+        }
+
+        if (gKeyPressed) {
+          setGKeyPressed(false);
+          switch (e.key) {
+            case 'd':
+              e.preventDefault();
+              window.location.href = '/dashboard';
+              break;
+            case 'c':
+              e.preventDefault();
+              window.location.href = '/contracts';
+              break;
+            case 'p':
+              e.preventDefault();
+              window.location.href = '/personnel';
+              break;
+            case 'h':
+              e.preventDefault();
+              window.location.href = '/guide';
+              break;
+          }
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onAdd]);
+  }, [onAdd, gKeyPressed]);
 
   // Initial lookup data fetch (Run once)
   useEffect(() => {
@@ -317,7 +356,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
           </button>
           <button
             onClick={onAdd}
-            title="Thêm hợp đồng mới (Ctrl+N)"
+            title="Thêm hợp đồng mới (Alt+N)"
             className="flex items-center justify-center gap-2 bg-indigo-700 text-white px-6 py-3 rounded-2xl font-black hover:bg-indigo-800 transition-all shadow-xl shadow-indigo-100 dark:shadow-none"
           >
             <Plus size={22} /> Thêm mới
@@ -520,9 +559,8 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                 <tr
                   key={contract.id}
                   onClick={() => onSelectContract(contract.id)}
-                  onDoubleClick={() => onEdit?.(contract.id)}  // Double-click to edit
                   className="group hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-all cursor-pointer"
-                  title="Click: Xem chi tiết | Double-click: Sửa nhanh"
+                  title="Click để xem chi tiết"
                 >
                   <td className="px-4 py-5 text-center text-xs font-bold text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900">
                     {stt.toString().padStart(2, '0')}
