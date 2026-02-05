@@ -222,20 +222,19 @@ const UserGuide: React.FC = () => {
             <div>
                 <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
                     <Lightbulb size={20} className="text-amber-500" />
-                    Hướng dẫn phổ biến
+                    Hướng dẫn theo module
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                {/* Contracts Section */}
+                <h4 className="font-bold text-sm text-orange-600 dark:text-orange-400 mb-3 flex items-center gap-2">
+                    <FileText size={16} /> Hợp đồng
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <TopicCard
                         icon={<Plus className="text-emerald-500" />}
                         title="Tạo hợp đồng mới"
-                        steps={['Nhấn "+ Tạo mới" hoặc Ctrl+N', 'Điền thông tin cơ bản', 'Thêm sản phẩm/dịch vụ', 'Lưu hợp đồng']}
+                        steps={['Nhấn "+ Tạo mới" hoặc Ctrl+N', 'Điền thông tin: Loại HĐ, Đơn vị, Khách hàng', 'Thêm sản phẩm/dịch vụ', 'Cài đặt lịch thu tiền', 'Lưu hợp đồng']}
                         action={{ label: 'Tạo ngay', onClick: () => navigate(ROUTES.CONTRACT_NEW) }}
-                    />
-                    <TopicCard
-                        icon={<Search className="text-indigo-500" />}
-                        title="Tìm kiếm toàn cục"
-                        steps={['Nhấn Ctrl+K hoặc click ô tìm kiếm', 'Gõ mã HĐ, tên KH, hoặc từ khóa', 'Dùng ↑↓ để chọn, Enter để mở']}
-                        action={{ label: 'Thử ngay', onClick: () => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true })) }}
                     />
                     <TopicCard
                         icon={<Copy className="text-purple-500" />}
@@ -244,10 +243,149 @@ const UserGuide: React.FC = () => {
                         action={{ label: 'Xem danh sách', onClick: () => navigate(ROUTES.CONTRACTS) }}
                     />
                     <TopicCard
-                        icon={<BarChart3 className="text-orange-500" />}
-                        title="Xem Dashboard"
-                        steps={['Mở trang Dashboard', 'Xem KPI tổng quan', 'Chọn đơn vị/năm để lọc', 'Click vào biểu đồ để xem chi tiết']}
+                        icon={<Edit className="text-blue-500" />}
+                        title="Sửa hợp đồng"
+                        steps={['Double-click vào HĐ để sửa nhanh', 'Hoặc: Mở chi tiết → Chỉnh sửa', 'Cập nhật thông tin cần thiết', 'Nhấn Lưu']}
+                        action={{ label: 'Xem danh sách', onClick: () => navigate(ROUTES.CONTRACTS) }}
+                    />
+                    <TopicCard
+                        icon={<Filter className="text-amber-500" />}
+                        title="Lọc & Xuất Excel"
+                        steps={['Dùng bộ lọc: Năm, Đơn vị, Trạng thái', 'Click tiêu đề cột để sắp xếp', 'Nhấn "Xuất Excel" ở góc phải']}
+                        action={{ label: 'Xem danh sách', onClick: () => navigate(ROUTES.CONTRACTS) }}
+                    />
+                </div>
+
+                {/* Dashboard Section */}
+                <h4 className="font-bold text-sm text-indigo-600 dark:text-indigo-400 mb-3 flex items-center gap-2">
+                    <LayoutDashboard size={16} /> Dashboard
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <TopicCard
+                        icon={<BarChart3 className="text-indigo-500" />}
+                        title="Xem tổng quan KPI"
+                        steps={['Mở Dashboard từ sidebar', 'Xem các thẻ KPI ở đầu trang', 'So sánh với cùng kỳ năm trước', 'Hover để xem chi tiết']}
                         action={{ label: 'Mở Dashboard', onClick: () => navigate(ROUTES.DASHBOARD) }}
+                    />
+                    <TopicCard
+                        icon={<Filter className="text-purple-500" />}
+                        title="Lọc theo đơn vị/năm"
+                        steps={['Chọn đơn vị từ dropdown', 'Chọn năm cần xem', 'Biểu đồ tự động cập nhật', 'So sánh giữa các đơn vị']}
+                        action={{ label: 'Mở Dashboard', onClick: () => navigate(ROUTES.DASHBOARD) }}
+                    />
+                </div>
+
+                {/* Payments Section */}
+                <h4 className="font-bold text-sm text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2">
+                    <CreditCard size={16} /> Thanh toán
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <TopicCard
+                        icon={<CreditCard className="text-emerald-500" />}
+                        title="Theo dõi thanh toán"
+                        steps={['Vào module Thanh toán', 'Xem danh sách đợt thu/chi', 'Lọc theo trạng thái: Chờ, Đã thu, Quá hạn', 'Click để xem chi tiết']}
+                        action={{ label: 'Xem thanh toán', onClick: () => navigate(ROUTES.PAYMENTS) }}
+                    />
+                    <TopicCard
+                        icon={<CheckCircle2 className="text-green-500" />}
+                        title="Ghi nhận tiền về"
+                        steps={['Tìm đợt thanh toán cần ghi nhận', 'Nhấn nút "Ghi nhận"', 'Nhập số tiền thực nhận', 'Xác nhận để cập nhật']}
+                        action={{ label: 'Xem thanh toán', onClick: () => navigate(ROUTES.PAYMENTS) }}
+                    />
+                </div>
+
+                {/* Personnel Section */}
+                <h4 className="font-bold text-sm text-cyan-600 dark:text-cyan-400 mb-3 flex items-center gap-2">
+                    <Users size={16} /> Nhân sự
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <TopicCard
+                        icon={<Users className="text-cyan-500" />}
+                        title="Xem danh sách nhân viên"
+                        steps={['Vào module Nhân sự', 'Tìm kiếm theo tên/mã NV', 'Lọc theo đơn vị, chức vụ', 'Click để xem chi tiết']}
+                        action={{ label: 'Xem nhân sự', onClick: () => navigate(ROUTES.PERSONNEL) }}
+                    />
+                    <TopicCard
+                        icon={<Plus className="text-teal-500" />}
+                        title="Thêm nhân viên mới"
+                        steps={['Nhấn "+ Thêm nhân viên"', 'Điền thông tin cá nhân', 'Chọn đơn vị, chức vụ', 'Lưu thông tin']}
+                        action={{ label: 'Xem nhân sự', onClick: () => navigate(ROUTES.PERSONNEL) }}
+                    />
+                </div>
+
+                {/* Customers Section */}
+                <h4 className="font-bold text-sm text-blue-600 dark:text-blue-400 mb-3 flex items-center gap-2">
+                    <Building2 size={16} /> Khách hàng
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <TopicCard
+                        icon={<Building2 className="text-blue-500" />}
+                        title="Quản lý khách hàng"
+                        steps={['Vào module Khách hàng', 'Xem danh sách & thông tin liên hệ', 'Tìm kiếm theo tên/MST', 'Click để xem lịch sử HĐ']}
+                        action={{ label: 'Xem KH', onClick: () => navigate(ROUTES.CUSTOMERS) }}
+                    />
+                    <TopicCard
+                        icon={<Plus className="text-sky-500" />}
+                        title="Thêm khách hàng mới"
+                        steps={['Nhấn "+ Thêm khách hàng"', 'Điền tên, MST, địa chỉ', 'Thêm thông tin liên hệ', 'Lưu thông tin']}
+                        action={{ label: 'Xem KH', onClick: () => navigate(ROUTES.CUSTOMERS) }}
+                    />
+                </div>
+
+                {/* Products Section */}
+                <h4 className="font-bold text-sm text-rose-600 dark:text-rose-400 mb-3 flex items-center gap-2">
+                    <Package size={16} /> Sản phẩm / Dịch vụ
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <TopicCard
+                        icon={<Package className="text-rose-500" />}
+                        title="Xem danh mục SP/DV"
+                        steps={['Vào module Sản phẩm', 'Tìm kiếm theo tên/mã', 'Lọc theo danh mục', 'Xem giá & đơn vị tính']}
+                        action={{ label: 'Xem SP', onClick: () => navigate(ROUTES.PRODUCTS) }}
+                    />
+                    <TopicCard
+                        icon={<Plus className="text-pink-500" />}
+                        title="Thêm sản phẩm mới"
+                        steps={['Nhấn "+ Thêm sản phẩm"', 'Điền tên, mã, mô tả', 'Nhập giá & đơn vị tính', 'Chọn danh mục, lưu']}
+                        action={{ label: 'Xem SP', onClick: () => navigate(ROUTES.PRODUCTS) }}
+                    />
+                </div>
+
+                {/* AI Assistant Section */}
+                <h4 className="font-bold text-sm text-violet-600 dark:text-violet-400 mb-3 flex items-center gap-2">
+                    <Bot size={16} /> AI Assistant
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <TopicCard
+                        icon={<Bot className="text-violet-500" />}
+                        title="Hỏi đáp với AI"
+                        steps={['Vào module AI Assistant', 'Gõ câu hỏi vào ô chat', 'AI sẽ phân tích và trả lời', 'Có thể hỏi về dữ liệu HĐ, KH...']}
+                        action={{ label: 'Mở AI', onClick: () => navigate(ROUTES.AI_ASSISTANT) }}
+                    />
+                    <TopicCard
+                        icon={<Sparkles className="text-purple-500" />}
+                        title="Phân tích dữ liệu"
+                        steps={['Yêu cầu AI tóm tắt báo cáo', 'Hỏi về xu hướng doanh thu', 'So sánh hiệu suất đơn vị', 'Nhận gợi ý hành động']}
+                        action={{ label: 'Mở AI', onClick: () => navigate(ROUTES.AI_ASSISTANT) }}
+                    />
+                </div>
+
+                {/* Search Section */}
+                <h4 className="font-bold text-sm text-slate-600 dark:text-slate-400 mb-3 flex items-center gap-2">
+                    <Search size={16} /> Tìm kiếm & Phím tắt
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <TopicCard
+                        icon={<Search className="text-indigo-500" />}
+                        title="Tìm kiếm toàn cục"
+                        steps={['Nhấn Ctrl+K hoặc click ô tìm kiếm', 'Gõ mã HĐ, tên KH, hoặc từ khóa', 'Dùng ↑↓ để chọn, Enter để mở']}
+                        action={{ label: 'Thử ngay', onClick: () => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true })) }}
+                    />
+                    <TopicCard
+                        icon={<Keyboard className="text-slate-500" />}
+                        title="Xem phím tắt"
+                        steps={['Nhấn ? bất kỳ lúc nào', 'Xem danh sách phím tắt', 'Học các thao tác nhanh', 'Nhấn Esc để đóng']}
+                        action={{ label: 'Xem phím tắt', onClick: () => setShowShortcuts(true) }}
                     />
                 </div>
             </div>
