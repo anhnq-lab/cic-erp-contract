@@ -583,35 +583,49 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                     {/* Revenue (In) */}
                     <div className="space-y-4">
                       <p className="text-[11px] font-black text-emerald-600 uppercase tracking-widest border-b border-emerald-100 dark:border-emerald-900 pb-2">Kế hoạch Tiền về</p>
-                      {contract.paymentPhases?.filter(p => !p.type || p.type === 'Revenue').map(p => (
+                      {contract.paymentPhases?.filter(p => !p.type || p.type === 'Revenue').map((p, idx) => (
                         <div key={p.id} className="p-4 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100 dark:border-emerald-800">
                           <div className="flex justify-between mb-2">
-                            <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{p.name || p.id}</span>
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                              {p.name || `Đợt ${idx + 1}`}
+                            </span>
                             {getPaymentStatusBadge(p.status)}
                           </div>
                           <div className="flex justify-between items-end">
-                            <span className="text-[10px] text-slate-400">{p.dueDate}</span>
+                            <span className="text-[10px] text-slate-400">
+                              {p.dueDate ? new Date(p.dueDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Chưa xác định'}
+                            </span>
                             <span className="text-sm font-black text-emerald-600">{formatVND(p.amount)}</span>
                           </div>
                         </div>
                       ))}
+                      {(!contract.paymentPhases || contract.paymentPhases.filter(p => !p.type || p.type === 'Revenue').length === 0) && (
+                        <p className="text-xs text-slate-400 italic">Chưa có kế hoạch thu tiền</p>
+                      )}
                     </div>
 
                     {/* Expense (Out) */}
                     <div className="space-y-4">
                       <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest border-b border-rose-100 dark:border-rose-900 pb-2">Kế hoạch Chi trả</p>
-                      {contract.paymentPhases?.filter(p => p.type === 'Expense').map(p => (
+                      {contract.paymentPhases?.filter(p => p.type === 'Expense').map((p, idx) => (
                         <div key={p.id} className="p-4 bg-rose-50/50 dark:bg-rose-900/10 rounded-xl border border-rose-100 dark:border-rose-800">
                           <div className="flex justify-between mb-2">
-                            <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{p.name || p.id}</span>
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                              {p.name || `Thanh toán NCC ${idx + 1}`}
+                            </span>
                             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500">DỰ CHI</span>
                           </div>
                           <div className="flex justify-between items-end">
-                            <span className="text-[10px] text-slate-400">{p.dueDate}</span>
+                            <span className="text-[10px] text-slate-400">
+                              {p.dueDate ? new Date(p.dueDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Chưa xác định'}
+                            </span>
                             <span className="text-sm font-black text-rose-500">{formatVND(p.amount)}</span>
                           </div>
                         </div>
                       ))}
+                      {(!contract.paymentPhases || contract.paymentPhases.filter(p => p.type === 'Expense').length === 0) && (
+                        <p className="text-xs text-slate-400 italic">Chưa có kế hoạch chi trả NCC</p>
+                      )}
                     </div>
                   </div>
                 </div>
