@@ -337,15 +337,15 @@ const UserGuide: React.FC = () => {
                                             )}
 
                                             {/* Flow Diagram */}
-                                            <div className="flex flex-wrap items-center gap-1 mb-4 p-2 bg-white dark:bg-slate-800 rounded-lg">
+                                            <div className="flex flex-wrap items-center gap-2 mb-4 p-3 bg-white dark:bg-slate-800 rounded-lg">
                                                 {module.workflow.steps.map((step, i) => (
                                                     <React.Fragment key={i}>
-                                                        <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold ${colorClasses[module.color].bg} ${colorClasses[module.color].text}`}>
+                                                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${colorClasses[module.color].bg} ${colorClasses[module.color].text}`}>
                                                             {step.icon}
-                                                            <span className="hidden sm:inline">{step.status.split(' ')[0]}</span>
+                                                            <span>{step.status}</span>
                                                         </div>
                                                         {i < module.workflow.steps.length - 1 && (
-                                                            <ArrowRightCircle size={12} className="text-slate-300 dark:text-slate-600 flex-shrink-0" />
+                                                            <ArrowRightCircle size={14} className="text-slate-300 dark:text-slate-600 flex-shrink-0" />
                                                         )}
                                                     </React.Fragment>
                                                 ))}
