@@ -182,6 +182,9 @@ export interface Contract {
   paymentPhases?: PaymentPhase[];
   documents?: ContractDocument[];
   draft_url?: string; // URL to draft contract document (Google Doc) for legal review
+  // Parallel approval workflow fields
+  legal_approved?: boolean; // Whether Legal has approved (for parallel review)
+  finance_approved?: boolean; // Whether Finance has approved (for parallel review)
 }
 
 export interface ContractDocument {

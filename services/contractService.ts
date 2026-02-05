@@ -192,7 +192,10 @@ const mapContract = (c: any): Contract => {
         lineItems: c.details?.lineItems || [],
         adminCosts: c.details?.adminCosts || undefined,
         documents: c.documents || [],
-        draft_url: c.draft_url || undefined
+        draft_url: c.draft_url || undefined,
+        // Parallel approval workflow fields
+        legal_approved: c.legal_approved || false,
+        finance_approved: c.finance_approved || false
     };
 };
 
