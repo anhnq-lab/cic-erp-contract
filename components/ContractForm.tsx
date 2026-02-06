@@ -891,8 +891,22 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                 : 0;
                               setSupplierDiscount(Number(supplierDiscountPercent.toFixed(2)));
 
+                              // Import execution costs from PAKD
+                              if (data.executionCosts && data.executionCosts.length > 0) {
+                                const importedExecutionCosts = data.executionCosts.map((cost, idx) => ({
+                                  id: `pakd-exec-${Date.now()}-${idx}`,
+                                  name: cost.name,
+                                  amount: cost.amount,
+                                  percentage: importedTotalInput > 0
+                                    ? Number(((cost.amount / importedTotalInput) * 100).toFixed(2))
+                                    : 0,
+                                }));
+                                setExecutionCosts(importedExecutionCosts);
+                                console.log('[PAKD Import] Execution costs imported:', importedExecutionCosts);
+                              }
+
                               toast.dismiss();
-                              toast.success(`Đã import ${processedItems.length} hạng mục thành công!`);
+                              toast.success(`Đã import ${processedItems.length} hạng mục + ${data.executionCosts?.length || 0} chi phí thực hiện!`);
                             } catch (error: any) {
                               toast.dismiss();
                               toast.error('Lỗi import PAKD: ' + (error.message || 'Unknown error'));

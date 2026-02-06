@@ -30,6 +30,13 @@ export interface PAKDAdminCosts {
     supplierDiscount: number; // Chiết khấu thêm từ NCC (Bentley, etc)
 }
 
+// Dynamic execution cost item parsed from summary section
+export interface PAKDExecutionCost {
+    id: string;
+    name: string;
+    amount: number;
+}
+
 export interface PAKDFinancials {
     revenue: number;       // Doanh thu (sản lượng)
     costs: number;         // Tổng chi phí
@@ -40,6 +47,7 @@ export interface PAKDFinancials {
 export interface ParsedPAKD {
     lineItems: PAKDLineItem[];
     adminCosts: PAKDAdminCosts;
+    executionCosts: PAKDExecutionCost[];  // Dynamic execution costs (Chi phí khác, Phí chuyên gia, etc.)
     financials: PAKDFinancials;
 }
 
@@ -189,40 +197,87 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
                     supplierDiscount: 0, // Chiết khấu thêm từ NCC
                 };
 
-                // Try to find expert fee, document fee and supplier discount from summary section
+                // Parse execution costs from summary section (dynamic items)
+                const executionCosts: PAKDExecutionCost[] = [];
+
+                // Try to find execution costs from summary section
                 for (let i = DATA_START_ROW; i < jsonData.length; i++) {
                     const row = jsonData[i];
                     if (!row) continue;
 
-                    const label = String(row[0] || row[1] || '').toLowerCase();
+                    const labelCol0 = String(row[0] || '').trim();
+                    const labelCol1 = String(row[1] || '').trim();
+                    const label = (labelCol0 || labelCol1).toLowerCase();
+
+                    // Extract value from column B (index 2) or C (index 3)
+                    const valueStr = String(row[2] || row[3] || '0');
+                    const value = Number(valueStr.replace(/[,\.]/g, '')) || 0;
+
+                    // Chi phí khác
+                    if (label.includes('chi phí khác') || label === 'chi phí khác') {
+                        if (value > 0) {
+                            executionCosts.push({
+                                id: `pakd-chiphi-khac-${Date.now()}`,
+                                name: 'Chi phí khác',
+                                amount: value
+                            });
+                        }
+                    }
+
+                    // Phí thuê chuyên gia
                     if (label.includes('phí thuê chuyên gia') || label.includes('chuyên gia')) {
-                        adminCosts.expertFee = Number(row[2] || row[3]) || 0;
+                        adminCosts.expertFee = value;
+                        if (value > 0) {
+                            executionCosts.push({
+                                id: `pakd-expert-${Date.now()}`,
+                                name: 'Phí thuê chuyên gia (net)',
+                                amount: value
+                            });
+                        }
                     }
+
+                    // Phí thanh toán chứng từ
                     if (label.includes('phí thanh toán') || label.includes('chứng từ')) {
-                        adminCosts.documentFee = Number(row[2] || row[3]) || 0;
+                        adminCosts.documentFee = value;
+                        if (value > 0) {
+                            executionCosts.push({
+                                id: `pakd-document-${Date.now()}`,
+                                name: 'Phí thanh toán chứng từ',
+                                amount: value
+                            });
+                        }
                     }
+
                     // Parse supplier discount (Chiết khấu thêm của Bentley, etc)
                     if (label.includes('chiết khấu') || label.includes('chiet khau')) {
-                        adminCosts.supplierDiscount = Number(row[2] || row[3]) || 0;
+                        adminCosts.supplierDiscount = value;
                     }
                 }
+
+                console.log('[PAKD Parser] Found execution costs:', executionCosts);
 
                 // Calculate financials
                 const totalAdminCosts = adminCosts.bankFee + adminCosts.subcontractorFee +
                     adminCosts.importLogistics + adminCosts.expertFee + adminCosts.documentFee;
 
+                // Add execution costs to total (only those not already in adminCosts)
+                const otherExecutionCosts = executionCosts
+                    .filter(c => !c.name.includes('chuyên gia') && !c.name.includes('chứng từ'))
+                    .reduce((sum, c) => sum + c.amount, 0);
+
                 const financials: PAKDFinancials = {
                     revenue: totalPriceSum,
-                    costs: totalCostSum + totalAdminCosts,
-                    profit: totalPriceSum - totalCostSum - totalAdminCosts,
+                    costs: totalCostSum + totalAdminCosts + otherExecutionCosts,
+                    profit: totalPriceSum - totalCostSum - totalAdminCosts - otherExecutionCosts,
                     margin: totalPriceSum > 0
-                        ? Math.round(((totalPriceSum - totalCostSum - totalAdminCosts) / totalPriceSum) * 100 * 100) / 100
+                        ? Math.round(((totalPriceSum - totalCostSum - totalAdminCosts - otherExecutionCosts) / totalPriceSum) * 100 * 100) / 100
                         : 0,
                 };
 
                 resolve({
                     lineItems,
                     adminCosts,
+                    executionCosts,
                     financials,
                 });
             } catch (error) {
