@@ -169,17 +169,22 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
             errors.push(`Đơn vị chưa được nhận dạng: "${row.unitId}" (sẽ dùng mặc định)`);
         }
 
-        // Role is optional, will default to NVKD
-        if (row.roleCode && !VALID_ROLES.includes(row.roleCode)) {
-            // Just a warning, will use default
-            console.log(`Role không hợp lệ: ${row.roleCode}, sẽ dùng NVKD`);
+        // Role is optional - can be set later in employee edit form
+        // Only validate if role is provided and non-empty
+        const roleValue = row.roleCode?.trim();
+        let validRole: string | undefined = undefined;
+        if (roleValue && VALID_ROLES.includes(roleValue)) {
+            validRole = roleValue;
+        } else if (roleValue) {
+            // Role provided but not valid - just log, will be null
+            console.log(`Role không hợp lệ: ${roleValue}, sẽ để trống (có thể chỉnh sửa sau)`);
         }
 
         // Update row with normalized values
         const updatedRow = {
             ...row,
             unitId: normalizedUnitId || 'default', // Will be handled in import
-            roleCode: VALID_ROLES.includes(row.roleCode) ? row.roleCode : 'NVKD',
+            roleCode: validRole || '', // Allow empty/null role
         };
 
         // Only block if critical errors (missing code, name, email, or invalid email)
@@ -311,7 +316,7 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
 
         for (const row of validRows) {
             try {
-                await EmployeeService.create({
+                const importData = {
                     employee_code: row.employeeCode,
                     name: row.name,
                     email: row.email,
@@ -319,7 +324,7 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
                     telegram: row.telegram,
                     unit_id: row.unitId === 'default' ? null : row.unitId,
                     position: row.position,
-                    role_code: row.roleCode,
+                    role_code: row.roleCode || null, // Allow null role
                     date_of_birth: row.dateOfBirth,
                     gender: row.gender,
                     id_number: row.idNumber,
@@ -331,7 +336,19 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
                     contract_type: row.contractType,
                     bank_account: row.bankAccount,
                     bank_name: row.bankName,
-                } as any);
+                };
+
+                // Debug: log first 3 rows being imported
+                if (success + failed < 3) {
+                    console.log(`[Import] Sending to DB row ${success + failed + 1}:`, {
+                        name: importData.name,
+                        unit_id: importData.unit_id,
+                        date_of_birth: importData.date_of_birth,
+                        date_joined: importData.date_joined,
+                    });
+                }
+
+                await EmployeeService.create(importData as any);
                 success++;
             } catch (error) {
                 console.error('Import error for row:', row, error);
