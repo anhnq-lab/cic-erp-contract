@@ -135,17 +135,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                             <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1">
                                 <Building2 size={12} /> Khách hàng
                             </label>
-                            <select
-                                value={customerId}
-                                onChange={(e) => setCustomerId(e.target.value)}
-                                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-500"
-                                disabled
-                            >
-                                <option value="">Tự động theo HĐ</option>
-                                {customers.map(c => (
-                                    <option key={c.id} value={c.id}>{c.shortName} - {c.name}</option>
-                                ))}
-                            </select>
+                            <input
+                                type="text"
+                                value={customerId ? (customers.find(c => c.id === customerId)?.name || 'Đang tải...') : (contractId ? 'Chưa có thông tin KH' : 'Chọn hợp đồng trước')}
+                                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400"
+                                readOnly
+                            />
                         </div>
                     </div>
 
