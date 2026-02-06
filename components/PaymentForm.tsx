@@ -58,13 +58,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
 
     // Update customerId when contractId changes
     useEffect(() => {
-        if (contractId) {
+        if (contractId && contracts.length > 0) {
             const contract = contracts.find(c => c.id === contractId);
-            if (contract) {
+            console.log('[PaymentForm] Contract selected:', contractId, 'Found:', contract?.id, 'CustomerId:', contract?.customerId);
+            if (contract && contract.customerId) {
                 setCustomerId(contract.customerId);
             }
         }
-    }, [contractId]);
+    }, [contractId, contracts]);
 
     const handleSubmit = () => {
         const paymentData = {
