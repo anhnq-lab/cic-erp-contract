@@ -149,19 +149,19 @@ export const PaymentService = {
     create: async (data: Omit<Payment, 'id'>): Promise<Payment> => {
         const payload = {
             id: crypto.randomUUID(),
-            contract_id: data.contractId,
-            customer_id: data.customerId,
-            phase_id: data.phaseId,
+            contract_id: data.contractId || null,
+            customer_id: data.customerId || null,
+            phase_id: data.phaseId || null,
             amount: data.amount,
-            paid_amount: data.paidAmount,
+            paid_amount: data.paidAmount || 0,
             status: data.status,
-            method: data.method,
-            due_date: data.dueDate,
-            payment_date: data.paymentDate,
-            bank_account: data.bankAccount,
-            reference: data.reference,
-            invoice_number: data.invoiceNumber,
-            notes: data.notes,
+            method: data.method || null,
+            due_date: data.dueDate || null,
+            payment_date: data.paymentDate || null, // Convert empty string to null
+            bank_account: data.bankAccount || null,
+            reference: data.reference || null,
+            invoice_number: data.invoiceNumber || null,
+            notes: data.notes || null,
             payment_type: data.paymentType || 'Revenue'
         };
         const { data: res, error } = await supabase.from('payments').insert(payload).select().single();
