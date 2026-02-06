@@ -209,9 +209,20 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
                     const labelCol1 = String(row[1] || '').trim();
                     const label = (labelCol0 || labelCol1).toLowerCase();
 
-                    // Extract value from column B (index 2) or C (index 3)
-                    const valueStr = String(row[2] || row[3] || '0');
-                    const value = Number(valueStr.replace(/[,\.]/g, '')) || 0;
+                    // Helper to extract numeric value from a cell 
+                    // Excel cells are typically pure numbers, not formatted strings
+                    const extractNum = (cell: any): number => {
+                        if (cell === null || cell === undefined) return 0;
+                        if (typeof cell === 'number') return cell;
+                        // If it's a string, remove thousand separators (dots in VN format)
+                        const str = String(cell).replace(/\./g, '').replace(',', '.');
+                        return Number(str) || 0;
+                    };
+
+                    // Value is typically in column C (index 2), but check B (index 1) as fallback
+                    const value = extractNum(row[2]) || extractNum(row[1]) || 0;
+
+                    console.log(`[PAKD Parser] Row ${i}: label="${label}", raw=[${row[1]}, ${row[2]}], value=${value}`);
 
                     // Chi phí khác
                     if (label.includes('chi phí khác') || label === 'chi phí khác') {
