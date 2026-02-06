@@ -65,6 +65,7 @@ const DATA_START_ROW = 4; // Row 5 (0-indexed = 4)
 
 /**
  * Parse Excel file to PAKD data
+ * Supports merged cells for shared costs (e.g., transfer fee shared across multiple products)
  */
 export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
     return new Promise((resolve, reject) => {
@@ -79,6 +80,36 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
 
+                // Get merged cells info
+                const merges = worksheet['!merges'] || [];
+
+                // Build a map of merged cell ranges for fee columns (J=9, K=10, L=11)
+                // Key: "startRow-endRow-col" -> value
+                const mergedFees: Map<string, { startRow: number; endRow: number; col: number; value: number }> = new Map();
+
+                for (const merge of merges) {
+                    const col = merge.s.c;
+                    // Only care about fee columns (Import=9, Tax=10, Transfer=11) and vertical merges
+                    if ((col === COL.IMPORT_FEE || col === COL.CONTRACTOR_TAX || col === COL.TRANSFER_FEE)
+                        && merge.s.r !== merge.e.r) {
+                        // Get the value from the start cell
+                        const cellAddr = XLSX.utils.encode_cell({ r: merge.s.r, c: col });
+                        const cell = worksheet[cellAddr];
+                        const value = cell ? Number(cell.v) || 0 : 0;
+
+                        if (value > 0) {
+                            const key = `${merge.s.r}-${merge.e.r}-${col}`;
+                            mergedFees.set(key, {
+                                startRow: merge.s.r,
+                                endRow: merge.e.r,
+                                col,
+                                value
+                            });
+                            console.log(`[PAKD Parser] Found merged fee: col=${col}, rows=${merge.s.r + 1}-${merge.e.r + 1}, value=${value}`);
+                        }
+                    }
+                }
+
                 // Convert to JSON array
                 const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
 
@@ -88,6 +119,8 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
                 let totalPriceSum = 0;
                 let totalMarginSum = 0;
 
+                // First pass: collect all line item rows
+                const lineItemRows: { rowIndex: number; row: any[] }[] = [];
                 for (let i = DATA_START_ROW; i < jsonData.length; i++) {
                     const row = jsonData[i];
                     if (!row || !row[COL.STT] || typeof row[COL.STT] !== 'number') {
@@ -97,10 +130,35 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
                         }
                         continue;
                     }
+                    lineItemRows.push({ rowIndex: i, row });
+                }
+
+                // Helper function to get fee value considering merged cells
+                const getFeeValue = (rowIndex: number, col: number, defaultValue: number): { value: number; isShared: boolean; sharedCount: number } => {
+                    for (const [, mergeInfo] of mergedFees.entries()) {
+                        if (mergeInfo.col === col && rowIndex >= mergeInfo.startRow && rowIndex <= mergeInfo.endRow) {
+                            // This row is part of a merged cell
+                            const rowsInMerge = mergeInfo.endRow - mergeInfo.startRow + 1;
+                            // Split the value evenly across all rows in the merge
+                            return {
+                                value: Math.round(mergeInfo.value / rowsInMerge),
+                                isShared: true,
+                                sharedCount: rowsInMerge
+                            };
+                        }
+                    }
+                    return { value: defaultValue, isShared: false, sharedCount: 1 };
+                };
+
+                // Second pass: parse line items with merged cell handling
+                for (const { rowIndex, row } of lineItemRows) {
+                    const importFeeInfo = getFeeValue(rowIndex, COL.IMPORT_FEE, Number(row[COL.IMPORT_FEE]) || 0);
+                    const contractorTaxInfo = getFeeValue(rowIndex, COL.CONTRACTOR_TAX, Number(row[COL.CONTRACTOR_TAX]) || 0);
+                    const transferFeeInfo = getFeeValue(rowIndex, COL.TRANSFER_FEE, Number(row[COL.TRANSFER_FEE]) || 0);
 
                     const item: PAKDLineItem = {
-                        id: `item-${Date.now()}-${i}`,
-                        stt: Number(row[COL.STT]) || i - DATA_START_ROW + 1,
+                        id: `item-${Date.now()}-${rowIndex}`,
+                        stt: Number(row[COL.STT]) || lineItems.length + 1,
                         name: String(row[COL.NAME] || ''),
                         supplier: String(row[COL.SUPPLIER] || ''),
                         quantity: Number(row[COL.QUANTITY]) || 0,
@@ -109,9 +167,9 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
                         totalCost: Number(row[COL.TOTAL_COST]) || 0,
                         unitPrice: Number(row[COL.UNIT_PRICE]) || 0,
                         totalPrice: Number(row[COL.TOTAL_PRICE]) || 0,
-                        importFee: Number(row[COL.IMPORT_FEE]) || 0,
-                        contractorTax: Number(row[COL.CONTRACTOR_TAX]) || 0,
-                        transferFee: Number(row[COL.TRANSFER_FEE]) || 0,
+                        importFee: importFeeInfo.value,
+                        contractorTax: contractorTaxInfo.value,
+                        transferFee: transferFeeInfo.value,
                         margin: Number(row[COL.MARGIN]) || 0,
                     };
 
