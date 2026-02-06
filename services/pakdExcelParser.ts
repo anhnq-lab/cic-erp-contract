@@ -590,12 +590,13 @@ export function parsePAKDWorkbook(workbook: XLSX.WorkBook): ParsedPAKD {
         else if (labelText.includes('chiết khấu') || labelText.includes('chiet khau')) {
             if (value > 0) adminCosts.supplierDiscount = value;
         }
-        // 4. Other Execution Costs
-        else if (labelText.includes('chi phí khác') || labelText.includes('logistics') || labelText.includes('thuê ngoài')) {
+        // 4. Other Execution Costs (logistics, thuê ngoài - but NOT 'chi phí khác' as it's already in line items)
+        // Bỏ qua 'chi phí khác' vì nó đã là chi phí trực tiếp trong line items
+        else if ((labelText.includes('logistics') || labelText.includes('thuê ngoài')) && !labelText.includes('chi phí khác')) {
             if (value > 0 && !labelText.includes('chuyên gia')) {
                 executionCosts.push({
                     id: `pakd-other-${Date.now()}-${i}`,
-                    name: String(row[0] || row[1] || 'Chi phí khác').trim(),
+                    name: String(row[0] || row[1] || 'Chi phí thực hiện').trim(),
                     amount: value
                 });
             }
