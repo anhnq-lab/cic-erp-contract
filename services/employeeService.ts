@@ -35,7 +35,11 @@ const mapEmployee = (s: any): Employee => {
         emergencyContact: s.emergency_contact || '',
         emergencyPhone: s.emergency_phone || '',
         contractType: s.contract_type || '',
-        contractEndDate: s.contract_end_date || ''
+        contractEndDate: s.contract_end_date || '',
+        // Additional fields
+        telegram: s.telegram || '',
+        specialization: s.specialization || '',
+        certificates: s.certificates || ''
     };
 };
 
@@ -116,7 +120,11 @@ export const EmployeeService = {
             emergency_contact: payload.emergencyContact,
             emergency_phone: payload.emergencyPhone,
             contract_type: payload.contractType,
-            contract_end_date: payload.contractEndDate || null
+            contract_end_date: payload.contractEndDate || null,
+            // Additional fields
+            telegram: payload.telegram,
+            specialization: payload.specialization,
+            certificates: payload.certificates
         };
 
         const { data, error } = await supabase.from('employees').insert(dbPayload).select().single();
@@ -156,6 +164,10 @@ export const EmployeeService = {
         if (payload.emergencyPhone !== undefined) dbPayload.emergency_phone = payload.emergencyPhone;
         if (payload.contractType !== undefined) dbPayload.contract_type = payload.contractType;
         if (payload.contractEndDate !== undefined) dbPayload.contract_end_date = payload.contractEndDate || null;
+        // Additional fields
+        if (payload.telegram !== undefined) dbPayload.telegram = payload.telegram;
+        if (payload.specialization !== undefined) dbPayload.specialization = payload.specialization;
+        if (payload.certificates !== undefined) dbPayload.certificates = payload.certificates;
 
         console.log('[employeeService.update] DB payload keys:', Object.keys(dbPayload));
         console.log('[employeeService.update] DB payload:', JSON.stringify(dbPayload, null, 2));

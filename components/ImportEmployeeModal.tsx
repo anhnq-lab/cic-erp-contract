@@ -121,6 +121,19 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
             if (ddmmyyyy) {
                 return `${ddmmyyyy[3]}-${ddmmyyyy[2].padStart(2, '0')}-${ddmmyyyy[1].padStart(2, '0')}`;
             }
+
+            // Try MM/YYYY format (common for join date) - assume day 01
+            const mmyyyy = value.match(/^(\d{1,2})\/(\d{4})$/);
+            if (mmyyyy) {
+                return `${mmyyyy[2]}-${mmyyyy[1].padStart(2, '0')}-01`;
+            }
+
+            // Try YYYY-MM-DD format (ISO)
+            const iso = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (iso) {
+                return value;
+            }
+
             return value;
         }
 
@@ -316,35 +329,37 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
 
         for (const row of validRows) {
             try {
+                // Use camelCase properties that EmployeeService.create expects
                 const importData = {
-                    employee_code: row.employeeCode,
+                    employeeCode: row.employeeCode,
                     name: row.name,
                     email: row.email,
                     phone: row.phone,
                     telegram: row.telegram,
-                    unit_id: row.unitId === 'default' ? null : row.unitId,
+                    unitId: row.unitId === 'default' ? null : row.unitId,
                     position: row.position,
-                    role_code: row.roleCode || null, // Allow null role
-                    date_of_birth: row.dateOfBirth,
+                    roleCode: row.roleCode || null, // Allow null role
+                    dateOfBirth: row.dateOfBirth,
                     gender: row.gender,
-                    id_number: row.idNumber,
+                    idNumber: row.idNumber,
                     address: row.address,
                     education: row.education,
                     specialization: row.specialization,
                     certificates: row.certificates,
-                    date_joined: row.dateJoined,
-                    contract_type: row.contractType,
-                    bank_account: row.bankAccount,
-                    bank_name: row.bankName,
+                    dateJoined: row.dateJoined,
+                    contractType: row.contractType,
+                    bankAccount: row.bankAccount,
+                    bankName: row.bankName,
+                    target: { signing: 0, revenue: 0, adminProfit: 0, revProfit: 0, cash: 0 },
                 };
 
                 // Debug: log first 3 rows being imported
                 if (success + failed < 3) {
                     console.log(`[Import] Sending to DB row ${success + failed + 1}:`, {
                         name: importData.name,
-                        unit_id: importData.unit_id,
-                        date_of_birth: importData.date_of_birth,
-                        date_joined: importData.date_joined,
+                        unitId: importData.unitId,
+                        dateOfBirth: importData.dateOfBirth,
+                        dateJoined: importData.dateJoined,
                     });
                 }
 
