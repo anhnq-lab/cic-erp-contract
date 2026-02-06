@@ -406,16 +406,20 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
     // Admin costs (không bao gồm supplierDiscount)
     const adminSum = (Object.values(adminCosts) as number[]).reduce((acc: number, val: number) => acc + val, 0);
 
+    // Execution costs (Chi phí thực hiện hợp đồng - dynamic list)
+    const executionCostsSum = executionCosts.reduce((acc, c) => acc + (c.amount || 0), 0);
+
     // Supplier Discount = hệ số % x tổng đầu vào => GIẢM chi phí
     const supplierDiscountAmount = totalInput * (supplierDiscount / 100);
 
     const estimatedRevenue = signingValue / 1.1; // Giá trị ký kết trừ thuế VAT (giả định 10%)
-    const totalCosts = totalInput + totalDirectCosts + adminSum - supplierDiscountAmount; // Trừ chiết khấu NCC
+    // Total costs = Đầu vào + Chi phí trực tiếp + Admin + Execution costs - Chiết khấu NCC
+    const totalCosts = totalInput + totalDirectCosts + adminSum + executionCostsSum - supplierDiscountAmount;
     const grossProfit = signingValue - totalCosts;
     const profitMargin = signingValue > 0 ? (grossProfit / signingValue) * 100 : 0;
 
-    return { signingValue, estimatedRevenue, totalCosts, grossProfit, profitMargin, totalInput, totalDirectCosts, adminSum, supplierDiscount, supplierDiscountAmount };
-  }, [lineItems, adminCosts, supplierDiscount]);
+    return { signingValue, estimatedRevenue, totalCosts, grossProfit, profitMargin, totalInput, totalDirectCosts, adminSum, executionCostsSum, supplierDiscount, supplierDiscountAmount };
+  }, [lineItems, adminCosts, executionCosts, supplierDiscount]);
 
   const formatVND = (val: number) => new Intl.NumberFormat('vi-VN').format(Math.round(val));
 
@@ -1112,96 +1116,90 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                       </button>
                     </div>
 
-                    {/* Dynamic Cost Items */}
+                    {/* Dynamic Cost Items - Compact Table */}
                     {executionCosts.length === 0 ? (
-                      <div className="text-center py-8 text-slate-400 dark:text-slate-500 text-xs">
-                        <Calculator size={24} className="mx-auto mb-2 opacity-50" />
-                        <p>Chưa có chi phí thực hiện nào</p>
-                        <p className="text-[10px] mt-1">Nhấn "Thêm hạng mục" để bắt đầu</p>
+                      <div className="text-center py-4 text-slate-400 dark:text-slate-500 text-xs">
+                        <p>Chưa có chi phí thực hiện. Nhấn "Thêm hạng mục" để bắt đầu.</p>
                       </div>
                     ) : (
-                      <div className="space-y-3">
-                        {executionCosts.map((cost, idx) => (
-                          <div key={cost.id} className="grid grid-cols-12 gap-3 items-center bg-white dark:bg-slate-700 p-4 rounded-2xl border border-slate-200 dark:border-slate-600 group">
-                            {/* Index */}
-                            <div className="col-span-1 text-center">
-                              <span className="text-[10px] font-bold text-slate-400">{idx + 1}</span>
-                            </div>
-
-                            {/* Name */}
-                            <div className="col-span-4">
-                              <input
-                                type="text"
-                                placeholder="Tên hạng mục chi phí..."
-                                value={cost.name}
-                                onChange={(e) => updateExecutionCost(cost.id, 'name', e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
-                              />
-                            </div>
-
-                            {/* Percentage */}
-                            <div className="col-span-2 relative">
-                              <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
-                                <Percent size={10} className="text-slate-400" />
-                              </div>
-                              <input
-                                type="number"
-                                placeholder="%"
-                                value={cost.percentage || ''}
-                                onChange={(e) => {
-                                  const pct = Number(e.target.value);
-                                  updateExecutionCost(cost.id, 'percentage', pct);
-                                  // Auto-calc amount based on Signing Value
-                                  const amount = Math.round((pct / 100) * totals.signingValue);
-                                  updateExecutionCost(cost.id, 'amount', amount);
-                                }}
-                                className="w-full pl-6 pr-2 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-bold focus:ring-2 focus:ring-indigo-500 outline-none text-center"
-                              />
-                            </div>
-
-                            {/* Amount */}
-                            <div className="col-span-4 relative">
-                              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
-                              <input
-                                type="text"
-                                value={cost.amount ? formatVND(cost.amount) : '0'}
-                                onChange={(e) => {
-                                  const raw = e.target.value.replace(/\./g, '');
-                                  if (!/^\d*$/.test(raw)) return;
-                                  const val = Number(raw);
-                                  updateExecutionCost(cost.id, 'amount', val);
-                                  // Reverse calc percentage
-                                  if (totals.signingValue > 0) {
-                                    const pct = (val / totals.signingValue) * 100;
-                                    updateExecutionCost(cost.id, 'percentage', Number(pct.toFixed(2)));
-                                  }
-                                }}
-                                className="w-full pl-8 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-black focus:ring-2 focus:ring-rose-500 outline-none text-right"
-                              />
-                            </div>
-
-                            {/* Remove button */}
-                            <div className="col-span-1 flex justify-center">
-                              <button
-                                onClick={() => removeExecutionCost(cost.id)}
-                                className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
-                                title="Xóa hạng mục"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-
-                        {/* Total Row */}
-                        <div className="flex justify-end pt-2">
-                          <div className="text-right">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase mr-4">Tổng chi phí thực hiện:</span>
-                            <span className="text-sm font-black text-rose-600 dark:text-rose-400">
-                              {formatVND(executionCosts.reduce((sum, c) => sum + (c.amount || 0), 0))}
-                            </span>
-                          </div>
-                        </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="text-slate-400 text-[10px] uppercase">
+                              <th className="text-left py-1 px-2 w-8">#</th>
+                              <th className="text-left py-1 px-2">Hạng mục</th>
+                              <th className="text-center py-1 px-2 w-20">%</th>
+                              <th className="text-right py-1 px-2 w-32">Số tiền</th>
+                              <th className="w-8"></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {executionCosts.map((cost, idx) => (
+                              <tr key={cost.id} className="group border-b border-slate-100 dark:border-slate-700 last:border-0 hover:bg-slate-100/50 dark:hover:bg-slate-700/50">
+                                <td className="py-2 px-2 text-slate-400 font-medium">{idx + 1}</td>
+                                <td className="py-2 px-2">
+                                  <input
+                                    type="text"
+                                    placeholder="Tên chi phí..."
+                                    value={cost.name}
+                                    onChange={(e) => updateExecutionCost(cost.id, 'name', e.target.value)}
+                                    className="w-full px-2 py-1 bg-transparent border-0 border-b border-transparent hover:border-slate-300 focus:border-indigo-500 text-xs font-medium outline-none transition-colors"
+                                  />
+                                </td>
+                                <td className="py-2 px-2">
+                                  <input
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="0"
+                                    value={cost.percentage || ''}
+                                    onChange={(e) => {
+                                      const pct = Number(e.target.value);
+                                      updateExecutionCost(cost.id, 'percentage', pct);
+                                      const amount = Math.round((pct / 100) * totals.totalInput);
+                                      updateExecutionCost(cost.id, 'amount', amount);
+                                    }}
+                                    className="w-full px-2 py-1 bg-transparent border-0 text-xs font-bold text-center outline-none"
+                                  />
+                                </td>
+                                <td className="py-2 px-2">
+                                  <input
+                                    type="text"
+                                    value={cost.amount ? formatVND(cost.amount) : '0'}
+                                    onChange={(e) => {
+                                      const raw = e.target.value.replace(/\./g, '');
+                                      if (!/^\d*$/.test(raw)) return;
+                                      const val = Number(raw);
+                                      updateExecutionCost(cost.id, 'amount', val);
+                                      if (totals.totalInput > 0) {
+                                        const pct = (val / totals.totalInput) * 100;
+                                        updateExecutionCost(cost.id, 'percentage', Number(pct.toFixed(2)));
+                                      }
+                                    }}
+                                    className="w-full px-2 py-1 bg-transparent border-0 text-xs font-black text-right outline-none"
+                                  />
+                                </td>
+                                <td className="py-2 px-1">
+                                  <button
+                                    onClick={() => removeExecutionCost(cost.id)}
+                                    className="p-1 text-slate-300 hover:text-rose-500 rounded opacity-0 group-hover:opacity-100 transition-all"
+                                    title="Xóa"
+                                  >
+                                    <X size={12} />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot>
+                            <tr className="border-t border-slate-200 dark:border-slate-600">
+                              <td colSpan={3} className="py-2 px-2 text-right text-[10px] font-bold text-slate-400 uppercase">Tổng chi phí thực hiện:</td>
+                              <td className="py-2 px-2 text-right text-sm font-black text-rose-600 dark:text-rose-400">
+                                {formatVND(executionCosts.reduce((sum, c) => sum + (c.amount || 0), 0))}
+                              </td>
+                              <td></td>
+                            </tr>
+                          </tfoot>
+                        </table>
                       </div>
                     )}
 
