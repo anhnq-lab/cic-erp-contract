@@ -41,7 +41,54 @@ interface ParsedRow extends ImportRow {
 }
 
 const VALID_ROLES = ['NVKD', 'UnitLeader', 'Admin', 'Leadership', 'Legal', 'Accountant', 'ChiefAccountant', 'AdminUnit'];
-const VALID_UNITS = ['bim', 'css', 'dcs', 'hcm', 'pmxd', 'stc', 'tvda', 'tvtk', 'hcns', 'tckt'];
+
+// Map unit names to IDs (case-insensitive)
+const UNIT_NAME_MAP: Record<string, string> = {
+    // Full names
+    'hội đồng quản trị': 'hdqt',
+    'ban giám đốc': 'bgd',
+    'chi nhánh tp. hồ chí minh': 'hcm',
+    'chi nhánh hồ chí minh': 'hcm',
+    'chi nhánh hcm': 'hcm',
+    'phòng hành chính - nhân sự': 'hcns',
+    'phòng hành chính nhân sự': 'hcns',
+    'phòng tài chính kế toán': 'tckt',
+    'phòng tài chính - kế toán': 'tckt',
+    'trung tâm bim': 'bim',
+    'trung tâm tư vấn đấu thầu': 'tvdt',
+    'trung tâm tư vấn thiết kế': 'tvtk',
+    'trung tâm tư vấn đầu tư': 'tvdt',
+    'trung tâm tư vấn dự án': 'tvda',
+    'trung tâm css': 'css',
+    'trung tâm thí nghiệm': 'tnghiem',
+    'trung tâm quản lý chất lượng': 'qlcl',
+    'trung tâm quản lý dự án': 'qlda',
+    'chi nhánh đà nẵng': 'dng',
+    // ID mappings (also support direct IDs)
+    'hdqt': 'hdqt',
+    'bgd': 'bgd',
+    'bim': 'bim',
+    'css': 'css',
+    'dcs': 'dcs',
+    'hcm': 'hcm',
+    'pmxd': 'pmxd',
+    'stc': 'stc',
+    'tvda': 'tvda',
+    'tvdt': 'tvdt',
+    'tvtk': 'tvtk',
+    'hcns': 'hcns',
+    'tckt': 'tckt',
+    'qlda': 'qlda',
+    'qlcl': 'qlcl',
+    'tnghiem': 'tnghiem',
+    'dng': 'dng',
+};
+
+const normalizeUnitId = (unitInput: string): string | null => {
+    if (!unitInput) return null;
+    const normalized = unitInput.toLowerCase().trim();
+    return UNIT_NAME_MAP[normalized] || null;
+};
 
 const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClose, units, onSuccess }) => {
     const [step, setStep] = useState<'upload' | 'preview' | 'importing' | 'done'>('upload');
@@ -96,12 +143,10 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
     const validateRow = (row: ImportRow, rowIndex: number, existingEmails: Set<string>): ParsedRow => {
         const errors: string[] = [];
 
-        // Required fields
+        // Required fields (only code, name, email are required now)
         if (!row.employeeCode?.trim()) errors.push('Thiếu mã nhân viên');
         if (!row.name?.trim()) errors.push('Thiếu họ tên');
         if (!row.email?.trim()) errors.push('Thiếu email');
-        if (!row.unitId?.trim()) errors.push('Thiếu mã đơn vị');
-        if (!row.roleCode?.trim()) errors.push('Thiếu role');
 
         // Email validation
         if (row.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)) {
@@ -113,21 +158,40 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
             errors.push('Email trùng lặp trong file');
         }
 
-        // Validate unit
-        if (row.unitId && !VALID_UNITS.includes(row.unitId.toLowerCase())) {
-            errors.push(`Mã đơn vị không hợp lệ: ${row.unitId}`);
+        // Normalize and validate unit (optional - will use default if missing)
+        let normalizedUnitId = row.unitId ? normalizeUnitId(row.unitId) : null;
+        if (row.unitId && !normalizedUnitId) {
+            // Warning only, not error - we'll use a default
+            errors.push(`Đơn vị chưa được nhận dạng: "${row.unitId}" (sẽ dùng mặc định)`);
         }
 
-        // Validate role
+        // Role is optional, will default to NVKD
         if (row.roleCode && !VALID_ROLES.includes(row.roleCode)) {
-            errors.push(`Role không hợp lệ: ${row.roleCode}`);
+            // Just a warning, will use default
+            console.log(`Role không hợp lệ: ${row.roleCode}, sẽ dùng NVKD`);
         }
+
+        // Update row with normalized values
+        const updatedRow = {
+            ...row,
+            unitId: normalizedUnitId || 'default', // Will be handled in import
+            roleCode: VALID_ROLES.includes(row.roleCode) ? row.roleCode : 'NVKD',
+        };
+
+        // Only block if critical errors (missing code, name, email, or invalid email)
+        const criticalErrors = errors.filter(e =>
+            e.includes('Thiếu mã') ||
+            e.includes('Thiếu họ') ||
+            e.includes('Thiếu email') ||
+            e.includes('Email không hợp lệ') ||
+            e.includes('Email trùng lặp')
+        );
 
         return {
-            ...row,
+            ...updatedRow,
             rowIndex,
             errors,
-            isValid: errors.length === 0
+            isValid: criticalErrors.length === 0
         };
     };
 
