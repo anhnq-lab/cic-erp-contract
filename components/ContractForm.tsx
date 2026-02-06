@@ -14,7 +14,7 @@ import {
   RevenueSchedule, AdministrativeCosts,
   Contract, Employee, Customer, Product, DirectCostDetail
 } from '../types';
-import { UnitService, CustomerService, ProductService, ContractService, EmployeeService } from '../services';
+import { UnitService, CustomerService, ProductService, ContractService, EmployeeService, ExecutionCostService, ExecutionCostType } from '../services';
 import Modal from './ui/Modal';
 import SearchableSelect from './ui/SearchableSelect';
 import QuickAddCustomerDialog from './ui/QuickAddCustomerDialog';
@@ -39,21 +39,24 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
   // Now using SearchableSelect with async search
   const [products, setProducts] = useState<Product[]>([]);
   const [suppliers, setSuppliers] = useState<Customer[]>([]); // Only for supplier dropdown
+  const [executionCostTypes, setExecutionCostTypes] = useState<ExecutionCostType[]>([]);
 
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const [unitsData, peopleData, productsData, suppliersRes] = await Promise.all([
+        const [unitsData, peopleData, productsData, suppliersRes, executionCostTypesRes] = await Promise.all([
           UnitService.getAll(),
           EmployeeService.getAll(),
           // CustomerService removed - now using SearchableSelect
           ProductService.getAll(),
-          CustomerService.getAll({ pageSize: 100, type: 'Supplier' }) // Only suppliers for dropdown
+          CustomerService.getAll({ pageSize: 100, type: 'Supplier' }), // Only suppliers for dropdown
+          ExecutionCostService.getAll()
         ]);
         setUnits(unitsData);
         setSalespeople(peopleData);
         setProducts(productsData);
         setSuppliers(suppliersRes.data?.filter(c => c.type === 'Supplier' || c.type === 'Both') || []);
+        setExecutionCostTypes(executionCostTypesRes);
 
         // Set default unit if creating new and no unit selected yet
         if (!isEditing && !unitId && unitsData.length > 0) {
@@ -910,6 +913,12 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                 }));
                                 setExecutionCosts(importedExecutionCosts);
                                 console.log('[PAKD Import] Execution costs imported:', importedExecutionCosts);
+
+                                // Save names for future suggestions
+                                const costNames = importedExecutionCosts.map(c => c.name);
+                                ExecutionCostService.bulkAdd(costNames).then(() => {
+                                  ExecutionCostService.getAll().then(setExecutionCostTypes);
+                                });
                               }
 
                               toast.dismiss();
@@ -1140,9 +1149,18 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                               <td className="py-2 px-2">
                                 <input
                                   type="text"
+                                  list="execution-cost-names"
                                   placeholder="Tên chi phí..."
                                   value={cost.name}
                                   onChange={(e) => updateExecutionCost(cost.id, 'name', e.target.value)}
+                                  onBlur={(e) => {
+                                    const name = e.target.value;
+                                    if (name && name.trim() !== '') {
+                                      ExecutionCostService.findOrCreate(name).then(() => {
+                                        ExecutionCostService.getAll().then(setExecutionCostTypes);
+                                      });
+                                    }
+                                  }}
                                   className="w-full px-2 py-1 bg-transparent border-0 border-b border-transparent hover:border-slate-300 focus:border-indigo-500 text-xs font-medium outline-none transition-colors"
                                 />
                               </td>
@@ -1574,6 +1592,13 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
           )}
         </div>
       </div >
+
+      {/* Data lists for suggestions */}
+      <datalist id="execution-cost-names">
+        {executionCostTypes.map(type => (
+          <option key={type.id} value={type.name} />
+        ))}
+      </datalist>
 
       {/* Quick Add Customer Dialog */}
       <QuickAddCustomerDialog
