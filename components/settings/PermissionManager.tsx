@@ -67,7 +67,7 @@ const PermissionManager: React.FC = () => {
                 // First fetch employees without join to avoid FK constraint errors
                 const { data: employeesData, error: empError } = await dataClient
                     .from('employees')
-                    .select('id, email, name, position, unit_id')
+                    .select('id, email, name, position, unit_id, role_code')
                     .order('name');
 
                 if (empError) {
@@ -90,7 +90,7 @@ const PermissionManager: React.FC = () => {
                         id: u.id,
                         email: u.email || '',
                         fullName: u.name,
-                        role: mapPositionToRole(u.position),
+                        role: (u.role_code as UserRole) || mapPositionToRole(u.position),
                         unitId: u.unit_id,
                         position: u.position,
                         unitName: u.unit_id ? unitsMap.get(u.unit_id) : undefined,
@@ -212,15 +212,61 @@ const PermissionManager: React.FC = () => {
                 </div>
             </div>
 
-            {/* Selected User Info */}
+            {/* Selected User Info with Role Selector */}
             {selectedUser && (
-                <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold">
-                        {selectedUser.fullName?.charAt(0) || 'U'}
+                <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold">
+                            {selectedUser.fullName?.charAt(0) || 'U'}
+                        </div>
+                        <div className="flex-1">
+                            <p className="font-semibold text-slate-800 dark:text-slate-200">{selectedUser.fullName}</p>
+                            <p className="text-xs text-slate-500">{selectedUser.position || 'Nhân viên'} • {selectedUser.unitName || selectedUser.email}</p>
+                        </div>
                     </div>
-                    <div>
-                        <p className="font-semibold text-slate-800 dark:text-slate-200">{selectedUser.fullName}</p>
-                        <p className="text-xs text-slate-500">{selectedUser.position || 'Nhân viên'} • {selectedUser.unitName || selectedUser.email}</p>
+
+                    {/* Role Selector */}
+                    <div className="flex items-center gap-3 pt-3 border-t border-indigo-200 dark:border-indigo-800">
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                            Role hệ thống:
+                        </label>
+                        <select
+                            value={selectedUser.role || ''}
+                            onChange={async (e) => {
+                                const newRole = e.target.value as UserRole;
+                                try {
+                                    const { error } = await dataClient
+                                        .from('employees')
+                                        .update({ role_code: newRole || null })
+                                        .eq('id', selectedUserId);
+
+                                    if (error) throw error;
+
+                                    // Update local state
+                                    setUsers(prev => prev.map(u =>
+                                        u.id === selectedUserId
+                                            ? { ...u, role: newRole }
+                                            : u
+                                    ));
+
+                                    toast.success(`Đã cập nhật role thành ${newRole || 'Chưa phân quyền'}`);
+                                } catch (err) {
+                                    console.error('Error updating role:', err);
+                                    toast.error('Không thể cập nhật role');
+                                }
+                            }}
+                            className="flex-1 px-3 py-2 text-sm border rounded-lg bg-white dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                            <option value="">-- Chưa phân quyền --</option>
+                            <option value="NVKD">Nhân viên kinh doanh</option>
+                            <option value="UnitLeader">Trưởng đơn vị</option>
+                            <option value="Admin">Quản trị viên</option>
+                            <option value="Leadership">Ban lãnh đạo</option>
+                            <option value="Legal">Pháp chế</option>
+                            <option value="Accountant">Kế toán viên</option>
+                            <option value="ChiefAccountant">Kế toán trưởng</option>
+                            <option value="AdminUnit">Admin đơn vị</option>
+                        </select>
                     </div>
                 </div>
             )}
