@@ -1104,7 +1104,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
 
 
                   {/* 3.2 CHI PHÍ THỰC HIỆN HỢP ĐỒNG (Dynamic list) */}
-                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 space-y-2">
+                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 space-y-2 max-w-[50%]">
                     <div className="flex items-center justify-between">
                       <h4 className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
                         <Calculator size={14} /> Chi phí thực hiện hợp đồng
