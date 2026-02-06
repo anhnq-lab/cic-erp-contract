@@ -9,7 +9,7 @@ import {
   MapPin, UserCheck, Hash, Percent
 } from 'lucide-react';
 import {
-  Unit, ContractType, LineItem,
+  Unit, ContractType, LineItem, UnitAllocation,
   ContractContact, PaymentSchedule,
   RevenueSchedule, AdministrativeCosts,
   Contract, Employee, Customer, Product, DirectCostDetail
@@ -21,6 +21,7 @@ import QuickAddCustomerDialog from './ui/QuickAddCustomerDialog';
 
 // Contract Form Sub-components
 import { StepIndicator, FinancialSummary, FormHeader, formatVND as formatVNDUtil, PAKDImportButton } from './contract-form';
+import UnitAllocationsInput from './contract-form/UnitAllocationsInput';
 
 interface ContractFormProps {
   contract?: Contract; // For edit mode
@@ -73,6 +74,10 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
   const [contractType, setContractType] = useState<ContractType>(contract?.contractType || 'HĐ');
   const [unitId, setUnitId] = useState(contract?.unitId || '');
   const [coordinatingUnitId, setCoordinatingUnitId] = useState(contract?.coordinatingUnitId || '');
+  // Unit Allocations for QĐ 09.2024 coordination
+  const [unitAllocations, setUnitAllocations] = useState<UnitAllocation[]>(
+    contract?.unitAllocations || []
+  );
   const [salespersonId, setSalespersonId] = useState(contract?.salespersonId || '');
   const [customerId, setCustomerId] = useState(contract?.customerId || null);
   const [title, setTitle] = useState(contract?.title || '');
@@ -451,6 +456,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
       customerId: customerId || null,
       unitId,
       coordinatingUnitId: coordinatingUnitId || null,
+      unitAllocations: unitAllocations.length > 0 ? unitAllocations : null,
       salespersonId,
       value: totals.signingValue,
       estimatedCost: totals.totalCosts,
@@ -649,19 +655,19 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     </select>
                   </div>
 
-                  {/* Coordinating Unit */}
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold text-slate-500 uppercase ml-1 flex items-center gap-1">
-                      <Users size={10} /> Đơn vị phối hợp
+                  {/* Unit Allocations - QĐ 09.2024 */}
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-[11px] font-bold text-orange-500 uppercase ml-1 flex items-center gap-1">
+                      <Users size={10} /> Phân bổ đơn vị phối hợp (QĐ 09.2024)
                     </label>
-                    <select
-                      value={coordinatingUnitId}
-                      onChange={(e) => setCoordinatingUnitId(e.target.value)}
-                      className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:border-indigo-500 transition-all"
-                    >
-                      <option value="">-- Chọn đơn vị phối hợp (nếu có) --</option>
-                      {units.filter(u => u.id !== 'all' && u.id !== unitId).map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                    </select>
+                    <UnitAllocationsInput
+                      units={units}
+                      employees={salespeople}
+                      leadUnitId={unitId}
+                      leadEmployeeId={salespersonId}
+                      allocations={unitAllocations}
+                      onChange={setUnitAllocations}
+                    />
                   </div>
 
                   <div className="space-y-2 md:col-span-2">

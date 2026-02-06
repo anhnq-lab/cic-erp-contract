@@ -164,6 +164,18 @@ export interface ExecutionCostItem {
   note?: string;          // Ghi chú
 }
 
+/**
+ * Represents a unit allocation for business coordination (QĐ 09.2024)
+ * Allows multiple units to share contract KPIs with percentage distribution
+ */
+export interface UnitAllocation {
+  unitId: string;         // ID của đơn vị
+  employeeId: string;     // Nhân viên phụ trách của đơn vị này
+  percent: number;        // % phân bổ (0-100)
+  role: 'lead' | 'support'; // Vai trò: lead = đơn vị thực hiện, support = đơn vị phối hợp
+}
+
+
 export interface Contract {
   id: string;
   title: string;
@@ -186,7 +198,8 @@ export interface Contract {
   stage: ImplementationStage;
   category: string;
   unitId: string;
-  coordinatingUnitId?: string; // Đơn vị phối hợp
+  coordinatingUnitId?: string; // Đơn vị phối hợp (Legacy - backward compatibility)
+  unitAllocations?: UnitAllocation[]; // Phân bổ đơn vị phối hợp với % (QĐ 09.2024)
   salespersonId: string;
   lineItems?: LineItem[];
   adminCosts?: AdministrativeCosts;        // Legacy: fixed fields

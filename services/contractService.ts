@@ -97,6 +97,7 @@ const buildPayload = (data: Partial<Contract>): Record<string, any> => {
         customerId: 'customer_id',
         unitId: 'unit_id',
         coordinatingUnitId: 'coordinating_unit_id',
+        // unitAllocations handled separately as JSONB wrapper
         salespersonId: 'employee_id',
         value: 'value',
         estimatedCost: 'estimated_cost',
@@ -128,6 +129,13 @@ const buildPayload = (data: Partial<Contract>): Record<string, any> => {
             lineItems: data.lineItems || [],
             adminCosts: data.adminCosts || {}
         };
+    }
+
+    // Handle unitAllocations JSONB field (QĐ 09.2024)
+    if ((data as any).unitAllocations !== undefined) {
+        payload.unit_allocations = (data as any).unitAllocations
+            ? { allocations: (data as any).unitAllocations }
+            : null;
     }
 
     return payload;
@@ -171,6 +179,7 @@ const mapContract = (c: any): Contract => {
         customerId: c.customer_id || '',
         unitId: c.unit_id || '',
         coordinatingUnitId: c.coordinating_unit_id || undefined,
+        unitAllocations: c.unit_allocations?.allocations || undefined,
         // Map from DB 'employee_id' (new) or 'salesperson_id' (legacy)
         salespersonId: c.employee_id || c.salesperson_id || undefined,
         value: c.value || 0,
