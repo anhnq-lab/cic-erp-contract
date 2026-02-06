@@ -544,29 +544,61 @@ export function parsePAKDWorkbook(workbook: XLSX.WorkBook): ParsedPAKD {
         return Number(str) || 0;
     };
 
+    const findNumericInRow = (row: any[]): number => {
+        // Scan from left to right, skip the first few columns if they are likely labels
+        for (let i = 1; i < row.length; i++) {
+            const val = extractNum(row[i]);
+            if (val > 0) return val;
+        }
+        return 0;
+    };
+
     for (let i = DATA_START_ROW; i < jsonData.length; i++) {
         const row = jsonData[i];
-        if (!row) continue;
-        const labelCol0 = String(row[0] || '').trim();
-        const labelCol1 = String(row[1] || '').trim();
-        const label = (labelCol0 || labelCol1).toLowerCase();
-        const value = extractNum(row[2]) || extractNum(row[1]) || 0;
+        if (!row || row.length === 0) continue;
 
-        if (label.includes('phí thuê chuyên gia') || label.includes('chuyên gia')) {
+        // Collect text from the first few columns to identify the row label
+        const labelText = row.slice(0, 5).map(c => String(c || '').trim()).join(' ').toLowerCase();
+        if (!labelText) continue;
+
+        const value = findNumericInRow(row);
+
+        // 1. Expert Fees (including support/hỗ trợ)
+        if (labelText.includes('chuyên gia')) {
             if (value > 0) {
-                executionCosts.push({ id: `pakd-expert-${Date.now()}`, name: 'Phí thuê chuyên gia (net)', amount: value });
-                adminCosts.expertFee = value;
+                const name = labelText.includes('hỗ trợ') ? 'Phí hỗ trợ chuyên gia' : 'Phí thuê chuyên gia (net)';
+                executionCosts.push({
+                    id: `pakd-expert-${Date.now()}-${i}`,
+                    name,
+                    amount: value
+                });
+                adminCosts.expertFee += value;
             }
         }
-        if (label.includes('phí thanh toán') || label.includes('chứng từ')) {
+        // 2. Document Fees
+        else if (labelText.includes('phí thanh toán') || labelText.includes('chứng từ') || labelText.includes('biên bản')) {
             if (value > 0) {
-                executionCosts.push({ id: `pakd-document-${Date.now()}`, name: 'Phí thanh toán chứng từ', amount: value });
-                adminCosts.documentFee = value;
+                executionCosts.push({
+                    id: `pakd-document-${Date.now()}-${i}`,
+                    name: 'Phí thanh toán chứng từ',
+                    amount: value
+                });
+                adminCosts.documentFee += value;
             }
         }
-        if (label.includes('chiết khấu') || label.includes('chiet khau')) adminCosts.supplierDiscount = value;
-        if (label.includes('chi phí khác') && !label.includes('thuê')) {
-            if (value > 0) executionCosts.push({ id: `pakd-other-${Date.now()}`, name: 'Chi phí khác', amount: value });
+        // 3. Supplier Discount
+        else if (labelText.includes('chiết khấu') || labelText.includes('chiet khau')) {
+            if (value > 0) adminCosts.supplierDiscount = value;
+        }
+        // 4. Other Execution Costs
+        else if (labelText.includes('chi phí khác') || labelText.includes('logistics') || labelText.includes('thuê ngoài')) {
+            if (value > 0 && !labelText.includes('chuyên gia')) {
+                executionCosts.push({
+                    id: `pakd-other-${Date.now()}-${i}`,
+                    name: String(row[0] || row[1] || 'Chi phí khác').trim(),
+                    amount: value
+                });
+            }
         }
     }
 
