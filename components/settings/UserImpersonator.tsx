@@ -50,33 +50,44 @@ const UserImpersonator: React.FC = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             setLoading(true);
-            // Sử dụng column 'name' thay vì 'full_name' theo DB schema
-            const { data, error } = await supabase
-                .from('employees')
-                .select('id, email, name, position, unit_id, units(name)')
-                .order('name');
+            try {
+                // First fetch employees without join to avoid FK constraint errors
+                const { data: employeesData, error: empError } = await supabase
+                    .from('employees')
+                    .select('id, email, name, position, unit_id')
+                    .order('name');
 
-            if (error) {
-                console.error('[UserImpersonator] Error:', error);
-                toast.error('Không thể tải danh sách nhân viên');
-                setLoading(false);
-                return;
-            }
+                if (empError) {
+                    console.error('[UserImpersonator] Error fetching employees:', empError);
+                    toast.error('Không thể tải danh sách nhân viên');
+                    setLoading(false);
+                    return;
+                }
 
-            // Handle empty data without error
-            if (data) {
-                console.log('[UserImpersonator] Loaded', data.length, 'employees');
-                setUsers(data.map(u => ({
-                    id: u.id,
-                    email: u.email || '',
-                    fullName: u.name, // DB column is 'name', not 'full_name'
-                    role: mapPositionToRole(u.position),
-                    unitId: u.unit_id,
-                    position: u.position,
-                    unitName: (u.units as any)?.name,
-                })));
-            } else {
-                setUsers([]);
+                // Then fetch units separately
+                const { data: unitsData } = await supabase
+                    .from('units')
+                    .select('id, name');
+
+                const unitsMap = new Map(unitsData?.map(u => [u.id, u.name]) || []);
+
+                if (employeesData) {
+                    console.log('[UserImpersonator] Loaded', employeesData.length, 'employees');
+                    setUsers(employeesData.map(u => ({
+                        id: u.id,
+                        email: u.email || '',
+                        fullName: u.name,
+                        role: mapPositionToRole(u.position),
+                        unitId: u.unit_id,
+                        position: u.position,
+                        unitName: u.unit_id ? unitsMap.get(u.unit_id) : undefined,
+                    })));
+                } else {
+                    setUsers([]);
+                }
+            } catch (err) {
+                console.error('[UserImpersonator] Unexpected error:', err);
+                toast.error('Lỗi không xác định khi tải dữ liệu');
             }
             setLoading(false);
         };

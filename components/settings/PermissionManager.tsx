@@ -63,32 +63,44 @@ const PermissionManager: React.FC = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             setLoading(true);
-            const { data, error } = await dataClient
-                .from('employees')
-                .select('id, email, name, position, unit_id, units(name)')
-                .order('name');
+            try {
+                // First fetch employees without join to avoid FK constraint errors
+                const { data: employeesData, error: empError } = await dataClient
+                    .from('employees')
+                    .select('id, email, name, position, unit_id')
+                    .order('name');
 
-            if (error) {
-                console.error('[PermissionManager] Error:', error);
-                toast.error('Không thể tải danh sách nhân viên');
-                setLoading(false);
-                return;
-            }
+                if (empError) {
+                    console.error('[PermissionManager] Error fetching employees:', empError);
+                    toast.error('Không thể tải danh sách nhân viên');
+                    setLoading(false);
+                    return;
+                }
 
-            // Handle empty data without error
-            if (data) {
-                console.log('[PermissionManager] Loaded', data.length, 'employees');
-                setUsers(data.map(u => ({
-                    id: u.id,
-                    email: u.email || '',
-                    fullName: u.name,
-                    role: mapPositionToRole(u.position),
-                    unitId: u.unit_id,
-                    position: u.position,
-                    unitName: (u.units as any)?.name,
-                })));
-            } else {
-                setUsers([]);
+                // Then fetch units separately
+                const { data: unitsData } = await dataClient
+                    .from('units')
+                    .select('id, name');
+
+                const unitsMap = new Map(unitsData?.map(u => [u.id, u.name]) || []);
+
+                if (employeesData) {
+                    console.log('[PermissionManager] Loaded', employeesData.length, 'employees');
+                    setUsers(employeesData.map(u => ({
+                        id: u.id,
+                        email: u.email || '',
+                        fullName: u.name,
+                        role: mapPositionToRole(u.position),
+                        unitId: u.unit_id,
+                        position: u.position,
+                        unitName: u.unit_id ? unitsMap.get(u.unit_id) : undefined,
+                    })));
+                } else {
+                    setUsers([]);
+                }
+            } catch (err) {
+                console.error('[PermissionManager] Unexpected error:', err);
+                toast.error('Lỗi không xác định khi tải dữ liệu');
             }
             setLoading(false);
         };
