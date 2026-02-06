@@ -68,7 +68,10 @@ const UNIT_NAME_MAP: Record<string, string> = {
     'trung tâm dcs': 'dcs',
     'trung tâm pmxd': 'pmxd',
     'trung tâm stc': 'stc',
-    // ID mappings (also support direct IDs)
+    // ID mappings with Vietnamese diacritics
+    'hđqt': 'hdqt',
+    'bgđ': 'bgd',
+    // ID mappings (without diacritics)
     'hdqt': 'hdqt',
     'bgd': 'bgd',
     'bim': 'bim',
