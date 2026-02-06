@@ -118,7 +118,7 @@ const MainLayout: React.FC = () => {
                     />
 
                     {/* Page Content */}
-                    <main className="p-4 md:p-6 lg:p-8">
+                    <main className="pt-20 p-4 md:p-6 lg:p-8">
                         <div className={`${contentMaxWidthClass} mx-auto`}>
                             {/* Pass context to child routes via Outlet */}
                             <Outlet context={{ selectedUnit, setSelectedUnit, theme, setTheme }} />
