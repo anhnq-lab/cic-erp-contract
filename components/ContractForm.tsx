@@ -882,6 +882,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
 
                               // Supplier discount from Excel is MONEY (VND), not %.
                               // Calculate % = (discountAmount / totalInput) * 100
+                              // Use high precision to avoid rounding errors
                               const supplierDiscountAmount = data.adminCosts.supplierDiscount || 0;
                               const importedTotalInput = processedItems.reduce(
                                 (acc, item) => acc + (item.quantity * item.inputPrice), 0
@@ -889,7 +890,8 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                               const supplierDiscountPercent = importedTotalInput > 0
                                 ? (supplierDiscountAmount / importedTotalInput) * 100
                                 : 0;
-                              setSupplierDiscount(Number(supplierDiscountPercent.toFixed(2)));
+                              // Use 6 decimal places for accuracy, UI will display rounded
+                              setSupplierDiscount(Number(supplierDiscountPercent.toFixed(6)));
 
                               // Import execution costs from PAKD
                               if (data.executionCosts && data.executionCosts.length > 0) {
