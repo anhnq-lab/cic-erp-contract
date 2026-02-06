@@ -783,106 +783,104 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                         <Package size={14} /> Chi tiết Sản phẩm & Dịch vụ
                       </h4>
                       <div className="flex items-center gap-2">
+                        <PAKDImportButton
+                          onImport={async (data) => {
+                            toast.loading('Đang xử lý import PAKD...');
+
+                            try {
+                              // Process each line item - findOrCreate products and suppliers
+                              const processedItems: LineItem[] = [];
+
+                              for (let i = 0; i < data.lineItems.length; i++) {
+                                const item = data.lineItems[i];
+
+                                // Find or create product
+                                let productName = item.name;
+                                if (item.name && item.name.trim() !== '') {
+                                  try {
+                                    const product = await ProductService.findOrCreate(
+                                      item.name,
+                                      item.unitCost,
+                                      item.unitPrice
+                                    );
+                                    productName = product.name;
+                                    // Refresh products list
+                                    const allProducts = await ProductService.getAll();
+                                    setProducts(allProducts);
+                                  } catch (e) {
+                                    console.warn('[PAKD Import] Could not create product:', e);
+                                  }
+                                }
+
+                                // Find or create supplier
+                                let supplierName = item.supplier || '';
+                                if (item.supplier && item.supplier.trim() !== '') {
+                                  try {
+                                    const supplier = await CustomerService.findOrCreateSupplier(item.supplier);
+                                    supplierName = supplier.name;
+                                    // Refresh suppliers list  
+                                    const allSuppliers = await CustomerService.getAll({ type: 'Supplier' });
+                                    setSuppliers(allSuppliers.data);
+                                  } catch (e) {
+                                    console.warn('[PAKD Import] Could not create supplier:', e);
+                                  }
+                                }
+
+                                // Calculate direct costs from individual fees
+                                const directCostsTotal = item.importFee + item.contractorTax + item.transferFee;
+
+                                processedItems.push({
+                                  id: `imported-${Date.now()}-${i}`,
+                                  name: productName,
+                                  supplier: supplierName,
+                                  quantity: item.quantity,
+                                  inputPrice: item.unitCost,
+                                  outputPrice: item.unitPrice,
+                                  directCosts: directCostsTotal,
+                                  directCostDetails: [
+                                    { id: `dc-import-${i}`, name: 'Nhập khẩu', amount: item.importFee },
+                                    { id: `dc-tax-${i}`, name: 'Thuế nhà thầu', amount: item.contractorTax },
+                                    { id: `dc-transfer-${i}`, name: 'Chuyển tiền', amount: item.transferFee },
+                                  ],
+                                });
+                              }
+
+                              setLineItems(processedItems);
+
+                              // Map admin costs (without supplierDiscount)
+                              setAdminCosts({
+                                transferFee: data.adminCosts.bankFee || 0,
+                                contractorTax: data.adminCosts.subcontractorFee || 0,
+                                importFee: data.adminCosts.importLogistics || 0,
+                                expertHiring: data.adminCosts.expertFee || 0,
+                                documentProcessing: data.adminCosts.documentFee || 0,
+                              });
+
+                              // Supplier discount from Excel is MONEY (VND), not %.
+                              // Calculate % = (discountAmount / totalInput) * 100
+                              const supplierDiscountAmount = data.adminCosts.supplierDiscount || 0;
+                              const importedTotalInput = processedItems.reduce(
+                                (acc, item) => acc + (item.quantity * item.inputPrice), 0
+                              );
+                              const supplierDiscountPercent = importedTotalInput > 0
+                                ? (supplierDiscountAmount / importedTotalInput) * 100
+                                : 0;
+                              setSupplierDiscount(Number(supplierDiscountPercent.toFixed(2)));
+
+                              toast.dismiss();
+                              toast.success(`Đã import ${processedItems.length} hạng mục thành công!`);
+                            } catch (error: any) {
+                              toast.dismiss();
+                              toast.error('Lỗi import PAKD: ' + (error.message || 'Unknown error'));
+                              console.error('[PAKD Import] Error:', error);
+                            }
+                          }}
+                        />
                         <button onClick={addLineItem} className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 border border-emerald-100 dark:border-emerald-800 hover:bg-emerald-100 transition-colors">
                           <Plus size={12} /> Thêm hạng mục
                         </button>
                       </div>
                     </div>
-
-                    {/* PAKD Import Section */}
-                    <PAKDImportButton
-                      onImport={async (data) => {
-                        toast.loading('Đang xử lý import PAKD...');
-
-                        try {
-                          // Process each line item - findOrCreate products and suppliers
-                          const processedItems: LineItem[] = [];
-
-                          for (let i = 0; i < data.lineItems.length; i++) {
-                            const item = data.lineItems[i];
-
-                            // Find or create product
-                            let productName = item.name;
-                            if (item.name && item.name.trim() !== '') {
-                              try {
-                                const product = await ProductService.findOrCreate(
-                                  item.name,
-                                  item.unitCost,
-                                  item.unitPrice
-                                );
-                                productName = product.name;
-                                // Refresh products list
-                                const allProducts = await ProductService.getAll();
-                                setProducts(allProducts);
-                              } catch (e) {
-                                console.warn('[PAKD Import] Could not create product:', e);
-                              }
-                            }
-
-                            // Find or create supplier
-                            let supplierName = item.supplier || '';
-                            if (item.supplier && item.supplier.trim() !== '') {
-                              try {
-                                const supplier = await CustomerService.findOrCreateSupplier(item.supplier);
-                                supplierName = supplier.name;
-                                // Refresh suppliers list  
-                                const allSuppliers = await CustomerService.getAll({ type: 'Supplier' });
-                                setSuppliers(allSuppliers.data);
-                              } catch (e) {
-                                console.warn('[PAKD Import] Could not create supplier:', e);
-                              }
-                            }
-
-                            // Calculate direct costs from individual fees
-                            const directCostsTotal = item.importFee + item.contractorTax + item.transferFee;
-
-                            processedItems.push({
-                              id: `imported-${Date.now()}-${i}`,
-                              name: productName,
-                              supplier: supplierName,
-                              quantity: item.quantity,
-                              inputPrice: item.unitCost,
-                              outputPrice: item.unitPrice,
-                              directCosts: directCostsTotal,
-                              directCostDetails: [
-                                { id: `dc-import-${i}`, name: 'Nhập khẩu', amount: item.importFee },
-                                { id: `dc-tax-${i}`, name: 'Thuế nhà thầu', amount: item.contractorTax },
-                                { id: `dc-transfer-${i}`, name: 'Chuyển tiền', amount: item.transferFee },
-                              ],
-                            });
-                          }
-
-                          setLineItems(processedItems);
-
-                          // Map admin costs (without supplierDiscount)
-                          setAdminCosts({
-                            transferFee: data.adminCosts.bankFee || 0,
-                            contractorTax: data.adminCosts.subcontractorFee || 0,
-                            importFee: data.adminCosts.importLogistics || 0,
-                            expertHiring: data.adminCosts.expertFee || 0,
-                            documentProcessing: data.adminCosts.documentFee || 0,
-                          });
-
-                          // Supplier discount from Excel is MONEY (VND), not %.
-                          // Calculate % = (discountAmount / totalInput) * 100
-                          const supplierDiscountAmount = data.adminCosts.supplierDiscount || 0;
-                          const importedTotalInput = processedItems.reduce(
-                            (acc, item) => acc + (item.quantity * item.inputPrice), 0
-                          );
-                          const supplierDiscountPercent = importedTotalInput > 0
-                            ? (supplierDiscountAmount / importedTotalInput) * 100
-                            : 0;
-                          setSupplierDiscount(Number(supplierDiscountPercent.toFixed(2)));
-
-                          toast.dismiss();
-                          toast.success(`Đã import ${processedItems.length} hạng mục thành công!`);
-                        } catch (error: any) {
-                          toast.dismiss();
-                          toast.error('Lỗi import PAKD: ' + (error.message || 'Unknown error'));
-                          console.error('[PAKD Import] Error:', error);
-                        }
-                      }}
-                    />
 
                     <div className="overflow-x-auto rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800">
                       <table className="w-full text-left text-xs min-w-[1200px]">

@@ -1,9 +1,9 @@
 /**
- * PAKD Import Button Component
- * Allows importing pre-approved PAKD from Excel file
+ * PAKD Import Button Component - Compact Version
+ * Allows importing pre-approved PAKD from Excel file with minimal UI
  */
 import React, { useRef, useState } from 'react';
-import { Upload, FileSpreadsheet, Download, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, FileSpreadsheet, Download, X, CheckCircle, Loader2 } from 'lucide-react';
 import { parsePAKDExcel, generatePAKDTemplate, ParsedPAKD } from '../../services/pakdExcelParser';
 import { toast } from 'sonner';
 
@@ -16,19 +16,10 @@ interface PAKDImportButtonProps {
 export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [dragOver, setDragOver] = useState(false);
     const [previewData, setPreviewData] = useState<ParsedPAKD | null>(null);
 
     const handleFileSelect = async (file: File) => {
         if (!file) return;
-
-        // Validate file type
-        const validTypes = [
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'application/vnd.ms-excel',
-            '.xlsx',
-            '.xls'
-        ];
 
         if (!file.name.match(/\.(xlsx|xls)$/i)) {
             toast.error('Vui lòng chọn file Excel (.xlsx hoặc .xls)');
@@ -50,33 +41,13 @@ export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) 
 
     const handleConfirmImport = () => {
         if (!previewData) return;
-
-        // Pass raw parsed data to parent - parent will handle findOrCreate
         onImport(previewData);
         setPreviewData(null);
-    };
-
-    const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault();
-        setDragOver(true);
-    };
-
-    const handleDragLeave = () => {
-        setDragOver(false);
-    };
-
-    const handleDrop = (e: React.DragEvent) => {
-        e.preventDefault();
-        setDragOver(false);
-
-        const file = e.dataTransfer.files[0];
-        if (file) handleFileSelect(file);
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) handleFileSelect(file);
-        // Reset input
         e.target.value = '';
     };
 
@@ -85,68 +56,50 @@ export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) 
     };
 
     return (
-        <div className="space-y-4">
-            {/* Import Zone */}
-            <div
-                onClick={() => !disabled && !isProcessing && fileInputRef.current?.click()}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                className={`
-                    relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer
-                    transition-all duration-200
-                    ${dragOver
-                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                        : 'border-slate-200 dark:border-slate-700 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                    }
-                    ${disabled || isProcessing ? 'opacity-50 cursor-not-allowed' : ''}
-                `}
-            >
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".xlsx,.xls"
-                    onChange={handleInputChange}
-                    className="hidden"
+        <>
+            {/* Compact Import Button - Icon Only */}
+            <div className="flex items-center gap-2">
+                <button
+                    onClick={() => !disabled && !isProcessing && fileInputRef.current?.click()}
                     disabled={disabled || isProcessing}
-                />
-
-                <div className="flex flex-col items-center gap-3">
+                    className={`
+                        flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all
+                        ${disabled || isProcessing
+                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                            : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50'
+                        }
+                    `}
+                    title="Import từ file PAKD Excel"
+                >
                     {isProcessing ? (
-                        <>
-                            <div className="animate-spin rounded-full h-10 w-10 border-2 border-indigo-500 border-t-transparent" />
-                            <p className="text-sm font-medium text-slate-600 dark:text-slate-300">Đang xử lý file...</p>
-                        </>
+                        <Loader2 size={14} className="animate-spin" />
                     ) : (
-                        <>
-                            <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
-                                <Upload className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                            </div>
-                            <div>
-                                <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                                    Kéo thả file PAKD hoặc click để chọn
-                                </p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                    Hỗ trợ .xlsx, .xls
-                                </p>
-                            </div>
-                        </>
+                        <Upload size={14} />
                     )}
-                </div>
+                    <span className="hidden sm:inline">Import PAKD</span>
+                </button>
+
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        generatePAKDTemplate();
+                        toast.success('Đã tải template PAKD_Template.xlsx');
+                    }}
+                    className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                    title="Tải template Excel mẫu"
+                >
+                    <Download size={14} />
+                </button>
             </div>
 
-            {/* Download Template Button */}
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    generatePAKDTemplate();
-                    toast.success('Đã tải template PAKD_Template.xlsx');
-                }}
-                className="flex items-center gap-2 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
-            >
-                <Download size={14} />
-                Tải template Excel mẫu
-            </button>
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleInputChange}
+                className="hidden"
+                disabled={disabled || isProcessing}
+            />
 
             {/* Preview Modal */}
             {previewData && (
@@ -243,6 +196,6 @@ export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) 
                     </div>
                 </div>
             )}
-        </div>
+        </>
     );
 }
