@@ -218,35 +218,36 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
                     if (index < 3) {
                         console.log(`[Import Debug] Row ${index + 2}:`, {
                             raw: row,
-                            col4_unitId: row[4],
-                            col5_position: row[5],
+                            col5_unitId: row[5],
+                            col6_position: row[6],
                         });
                     }
 
-                    // Column mapping based on template:
-                    // 0: Mã NV, 1: Họ tên, 2: Email, 3: SĐT, 4: Mã đơn vị, 5: Chức vụ, 6: Role
-                    // 7: Ngày sinh, 8: Giới tính, 9: CCCD, 10: Địa chỉ, 11: Học vấn
-                    // 12: Ngày vào làm, 13: Loại HĐ, 14: STK, 15: Ngân hàng
+                    // Column mapping based on user's actual Excel:
+                    // 0: Mã NV, 1: Họ tên, 2: Email, 3: SĐT, 4: Telegram, 5: Mã đơn vị
+                    // 6: Chức vụ, 7: Role, 8: Ngày sinh, 9: Giới tính, 10: CCCD
+                    // 11: Địa chỉ, 12: Học vấn, 13: Chuyên ngành, 14: Chứng chỉ
+                    // 15: Ngày vào làm, 16: Loại HĐ, 17: STK, 18: Ngân hàng
                     const importRow: ImportRow = {
                         employeeCode: String(row[0] || '').trim(),
                         name: String(row[1] || '').trim(),
                         email: String(row[2] || '').trim().toLowerCase(),
                         phone: row[3] ? String(row[3]).trim() : undefined,
-                        telegram: undefined, // Template doesn't have Telegram column
-                        unitId: String(row[4] || '').trim().toLowerCase(), // Index 4
-                        position: row[5] ? String(row[5]).trim() : undefined, // Index 5
-                        roleCode: String(row[6] || '').trim(), // Index 6
-                        dateOfBirth: parseDate(row[7]), // Index 7
-                        gender: parseGender(row[8] ? String(row[8]) : undefined), // Index 8
-                        idNumber: row[9] ? String(row[9]).trim() : undefined, // Index 9
-                        address: row[10] ? String(row[10]).trim() : undefined, // Index 10
-                        education: row[11] ? String(row[11]).trim() : undefined, // Index 11
-                        specialization: undefined, // Template doesn't have this
-                        certificates: undefined, // Template doesn't have this
-                        dateJoined: parseDate(row[12]), // Index 12
-                        contractType: row[13] ? String(row[13]).trim() : undefined, // Index 13
-                        bankAccount: row[14] ? String(row[14]).trim() : undefined, // Index 14
-                        bankName: row[15] ? String(row[15]).trim() : undefined, // Index 15
+                        telegram: row[4] ? String(row[4]).trim() : undefined, // Index 4
+                        unitId: String(row[5] || '').trim().toLowerCase(), // Index 5
+                        position: row[6] ? String(row[6]).trim() : undefined, // Index 6
+                        roleCode: String(row[7] || '').trim(), // Index 7
+                        dateOfBirth: parseDate(row[8]), // Index 8
+                        gender: parseGender(row[9] ? String(row[9]) : undefined), // Index 9
+                        idNumber: row[10] ? String(row[10]).trim() : undefined, // Index 10
+                        address: row[11] ? String(row[11]).trim() : undefined, // Index 11
+                        education: row[12] ? String(row[12]).trim() : undefined, // Index 12
+                        specialization: row[13] ? String(row[13]).trim() : undefined, // Index 13
+                        certificates: row[14] ? String(row[14]).trim() : undefined, // Index 14
+                        dateJoined: parseDate(row[15]), // Index 15
+                        contractType: row[16] ? String(row[16]).trim() : undefined, // Index 16
+                        bankAccount: row[17] ? String(row[17]).trim() : undefined, // Index 17
+                        bankName: row[18] ? String(row[18]).trim() : undefined, // Index 18
                     };
 
                     const validatedRow = validateRow(importRow, index + 2, existingEmails);
