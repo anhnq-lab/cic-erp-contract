@@ -214,29 +214,51 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
                 const parsed: ParsedRow[] = [];
 
                 rows.forEach((row, index) => {
+                    // Debug: log raw row data
+                    if (index < 3) {
+                        console.log(`[Import Debug] Row ${index + 2}:`, {
+                            raw: row,
+                            col4_unitId: row[4],
+                            col5_position: row[5],
+                        });
+                    }
+
+                    // Column mapping based on template:
+                    // 0: Mã NV, 1: Họ tên, 2: Email, 3: SĐT, 4: Mã đơn vị, 5: Chức vụ, 6: Role
+                    // 7: Ngày sinh, 8: Giới tính, 9: CCCD, 10: Địa chỉ, 11: Học vấn
+                    // 12: Ngày vào làm, 13: Loại HĐ, 14: STK, 15: Ngân hàng
                     const importRow: ImportRow = {
                         employeeCode: String(row[0] || '').trim(),
                         name: String(row[1] || '').trim(),
                         email: String(row[2] || '').trim().toLowerCase(),
                         phone: row[3] ? String(row[3]).trim() : undefined,
-                        telegram: row[4] ? String(row[4]).trim() : undefined,
-                        unitId: String(row[5] || '').trim().toLowerCase(),
-                        position: row[6] ? String(row[6]).trim() : undefined,
-                        roleCode: String(row[7] || '').trim(),
-                        dateOfBirth: parseDate(row[8]),
-                        gender: parseGender(row[9] ? String(row[9]) : undefined),
-                        idNumber: row[10] ? String(row[10]).trim() : undefined,
-                        address: row[11] ? String(row[11]).trim() : undefined,
-                        education: row[12] ? String(row[12]).trim() : undefined,
-                        specialization: row[13] ? String(row[13]).trim() : undefined,
-                        certificates: row[14] ? String(row[14]).trim() : undefined,
-                        dateJoined: parseDate(row[15]),
-                        contractType: row[16] ? String(row[16]).trim() : undefined,
-                        bankAccount: row[17] ? String(row[17]).trim() : undefined,
-                        bankName: row[18] ? String(row[18]).trim() : undefined,
+                        telegram: undefined, // Template doesn't have Telegram column
+                        unitId: String(row[4] || '').trim().toLowerCase(), // Index 4
+                        position: row[5] ? String(row[5]).trim() : undefined, // Index 5
+                        roleCode: String(row[6] || '').trim(), // Index 6
+                        dateOfBirth: parseDate(row[7]), // Index 7
+                        gender: parseGender(row[8] ? String(row[8]) : undefined), // Index 8
+                        idNumber: row[9] ? String(row[9]).trim() : undefined, // Index 9
+                        address: row[10] ? String(row[10]).trim() : undefined, // Index 10
+                        education: row[11] ? String(row[11]).trim() : undefined, // Index 11
+                        specialization: undefined, // Template doesn't have this
+                        certificates: undefined, // Template doesn't have this
+                        dateJoined: parseDate(row[12]), // Index 12
+                        contractType: row[13] ? String(row[13]).trim() : undefined, // Index 13
+                        bankAccount: row[14] ? String(row[14]).trim() : undefined, // Index 14
+                        bankName: row[15] ? String(row[15]).trim() : undefined, // Index 15
                     };
 
                     const validatedRow = validateRow(importRow, index + 2, existingEmails);
+
+                    // Debug: log validated row
+                    if (index < 3) {
+                        console.log(`[Import Debug] Validated Row ${index + 2}:`, {
+                            unitId: validatedRow.unitId,
+                            position: validatedRow.position,
+                        });
+                    }
+
                     if (importRow.email) {
                         existingEmails.add(importRow.email.toLowerCase());
                     }
