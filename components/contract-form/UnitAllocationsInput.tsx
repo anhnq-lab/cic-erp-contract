@@ -129,39 +129,39 @@ export default function UnitAllocationsInput({
 
     return (
         <div className="space-y-4">
-            {/* Lead Unit - Employee selector inside, % auto-calculated */}
+            {/* Lead Unit - Same row layout as support units */}
             <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-4 border-2 border-indigo-200 dark:border-indigo-800">
-                <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-indigo-500 rounded-xl flex items-center justify-center">
-                            <Users size={16} className="text-white" />
+                <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase mb-3 flex items-center gap-1">
+                    <Users size={12} /> Đơn vị thực hiện
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {/* Unit Display */}
+                    <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 border-2 border-indigo-200 dark:border-indigo-700 rounded-xl">
+                        <div className="w-6 h-6 bg-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Users size={12} className="text-white" />
                         </div>
-                        <div>
-                            <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase">Đơn vị thực hiện</p>
-                            <p className="text-sm font-black text-slate-800 dark:text-white">{getUnitName(leadUnitId)}</p>
-                        </div>
+                        <span className="text-sm font-bold text-slate-800 dark:text-white truncate">{getUnitName(leadUnitId)}</span>
                     </div>
-                    <div className="flex items-center gap-2 bg-indigo-100 dark:bg-indigo-800/50 px-3 py-1.5 rounded-xl">
-                        <span className="text-lg font-black text-indigo-700 dark:text-indigo-300">{leadPercent}</span>
-                        <Percent size={14} className="text-indigo-500" />
-                    </div>
-                </div>
 
-                {/* Lead Employee Selector */}
-                <div className="mt-3">
-                    <label className="text-[10px] font-bold text-indigo-500 uppercase mb-1 flex items-center gap-1">
-                        <User size={10} /> Sale thực hiện (Chịu trách nhiệm KPI)
-                    </label>
+                    {/* Employee Select */}
                     <select
                         value={leadAllocation?.employeeId || ''}
                         onChange={(e) => handleLeadEmployeeChange(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border-2 border-indigo-200 dark:border-indigo-700 rounded-xl text-sm font-bold text-indigo-700 dark:text-indigo-300"
+                        className="px-3 py-2 bg-white dark:bg-slate-900 border-2 border-indigo-200 dark:border-indigo-700 rounded-xl text-sm font-medium"
                     >
-                        <option value="">-- Chọn nhân viên phụ trách --</option>
+                        <option value="">-- Chọn NV --</option>
                         {getFilteredEmployees(leadUnitId).map(e => (
                             <option key={e.id} value={e.id}>{e.name}</option>
                         ))}
                     </select>
+
+                    {/* Percent Display (auto-calculated) */}
+                    <div className="flex items-center gap-2">
+                        <div className="flex-1 px-3 py-2 bg-indigo-100 dark:bg-indigo-800/50 border-2 border-indigo-200 dark:border-indigo-700 rounded-xl text-sm font-black text-indigo-700 dark:text-indigo-300 text-center">
+                            {leadPercent}
+                        </div>
+                        <Percent size={14} className="text-indigo-500" />
+                    </div>
                 </div>
             </div>
 
