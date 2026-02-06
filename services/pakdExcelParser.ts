@@ -224,38 +224,30 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
 
                     console.log(`[PAKD Parser] Row ${i}: label="${label}", raw=[${row[1]}, ${row[2]}], value=${value}`);
 
-                    // Chi phí khác
-                    if (label.includes('chi phí khác') || label === 'chi phí khác') {
-                        if (value > 0) {
-                            executionCosts.push({
-                                id: `pakd-chiphi-khac-${Date.now()}`,
-                                name: 'Chi phí khác',
-                                amount: value
-                            });
-                        }
-                    }
+                    // NOTE: "Chi phí khác" is SKIPPED because it's usually already included in line item direct costs
+                    // Only parse specific separate costs like expert fees and document processing fees
 
-                    // Phí thuê chuyên gia
+                    // Phí thuê chuyên gia - Add to executionCosts only (not adminCosts to avoid double counting)
                     if (label.includes('phí thuê chuyên gia') || label.includes('chuyên gia')) {
-                        adminCosts.expertFee = value;
                         if (value > 0) {
                             executionCosts.push({
                                 id: `pakd-expert-${Date.now()}`,
                                 name: 'Phí thuê chuyên gia (net)',
                                 amount: value
                             });
+                            console.log(`[PAKD Parser] Found Phí thuê chuyên gia: ${value}`);
                         }
                     }
 
-                    // Phí thanh toán chứng từ
+                    // Phí thanh toán chứng từ - Add to executionCosts only
                     if (label.includes('phí thanh toán') || label.includes('chứng từ')) {
-                        adminCosts.documentFee = value;
                         if (value > 0) {
                             executionCosts.push({
                                 id: `pakd-document-${Date.now()}`,
                                 name: 'Phí thanh toán chứng từ',
                                 amount: value
                             });
+                            console.log(`[PAKD Parser] Found Phí thanh toán chứng từ: ${value}`);
                         }
                     }
 
