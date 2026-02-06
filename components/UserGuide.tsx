@@ -463,10 +463,12 @@ const UserGuide: React.FC = () => {
                     <Sparkles size={14} /> Mẹo hay
                 </h3>
                 <ul className="grid grid-cols-2 gap-2 text-xs text-amber-800 dark:text-amber-300">
-                    <li>• <strong>Double-click</strong> để sửa nhanh HĐ</li>
-                    <li>• Gõ <kbd className="px-1 bg-white dark:bg-slate-800 rounded">/</kbd> để focus tìm kiếm</li>
+                    <li>• <kbd className="px-1 bg-white dark:bg-slate-800 rounded">Alt+N</kbd> tạo HĐ mới</li>
+                    <li>• <kbd className="px-1 bg-white dark:bg-slate-800 rounded">/</kbd> focus ô tìm kiếm</li>
                     <li>• Click <strong>mã HĐ</strong> để copy</li>
-                    <li>• Nhấn <kbd className="px-1 bg-white dark:bg-slate-800 rounded">?</kbd> để xem phím tắt</li>
+                    <li>• <kbd className="px-1 bg-white dark:bg-slate-800 rounded">?</kbd> xem phím tắt</li>
+                    <li>• <kbd className="px-1 bg-white dark:bg-slate-800 rounded">G</kbd> → <kbd className="px-1 bg-white dark:bg-slate-800 rounded">D</kbd> đến Dashboard</li>
+                    <li>• <kbd className="px-1 bg-white dark:bg-slate-800 rounded">G</kbd> → <kbd className="px-1 bg-white dark:bg-slate-800 rounded">C</kbd> đến Hợp đồng</li>
                 </ul>
             </div>
 
