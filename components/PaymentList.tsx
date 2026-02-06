@@ -127,9 +127,10 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
         }
     };
 
-    const getCustomerName = (customerId: string) => {
+    const getCustomerName = (customerId: string | null) => {
+        if (!customerId) return '—';
         const customer = customers.find(c => c.id === customerId);
-        return customer ? customer.name : customerId;
+        return customer ? customer.name : '—';
     };
 
     // CRUD handlers
