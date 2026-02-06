@@ -863,8 +863,16 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                             documentProcessing: data.adminCosts.documentFee || 0,
                           });
 
-                          // Supplier discount - separate, adds to revenue
-                          setSupplierDiscount(data.adminCosts.supplierDiscount || 0);
+                          // Supplier discount from Excel is MONEY (VND), not %.
+                          // Calculate % = (discountAmount / totalInput) * 100
+                          const supplierDiscountAmount = data.adminCosts.supplierDiscount || 0;
+                          const importedTotalInput = processedItems.reduce(
+                            (acc, item) => acc + (item.quantity * item.inputPrice), 0
+                          );
+                          const supplierDiscountPercent = importedTotalInput > 0
+                            ? (supplierDiscountAmount / importedTotalInput) * 100
+                            : 0;
+                          setSupplierDiscount(Number(supplierDiscountPercent.toFixed(2)));
 
                           toast.dismiss();
                           toast.success(`Đã import ${processedItems.length} hạng mục thành công!`);
