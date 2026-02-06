@@ -1,6 +1,11 @@
 /**
  * PAKD Excel Parser Service
  * Parse and generate Excel files for PAKD (Phương án Kinh doanh)
+ * 
+ * Supports 2 template formats:
+ * - Format 1 (HD123): STT, Tên SP, SL, Nhập từ, Giá vào, TT vào, Giá ra, TT ra, Chênh lệch, %LN
+ * - Format 2 (185/PPXD): STT, Tên SP, NCC, SL, DVT, Giá vào, TT vào, Giá ra, TT ra, Nhập, Thuế, Chuyển, CL
+ * - Unified Format: 14 columns combining both
  */
 import * as XLSX from 'xlsx';
 
@@ -19,6 +24,7 @@ export interface PAKDLineItem {
     contractorTax: number; // Thuế nhà thầu
     transferFee: number;   // Phí chuyển tiền
     margin: number;        // Chênh lệch
+    marginPercent?: number; // % Lợi nhuận
 }
 
 export interface PAKDAdminCosts {
@@ -44,36 +50,184 @@ export interface PAKDFinancials {
     margin: number;        // Hệ số LN/SL (%)
 }
 
+export interface PAKDHeader {
+    contractNumber?: string;  // Số hợp đồng
+    customerName?: string;    // Tên khách hàng
+    salesPerson?: string;     // Nhân viên kinh doanh
+    usdRate?: number;         // Tỷ giá USD
+    eurRate?: number;         // Tỷ giá EUR
+}
+
 export interface ParsedPAKD {
+    header: PAKDHeader;
     lineItems: PAKDLineItem[];
     adminCosts: PAKDAdminCosts;
     executionCosts: PAKDExecutionCost[];  // Dynamic execution costs (Chi phí khác, Phí chuyên gia, etc.)
     financials: PAKDFinancials;
 }
 
-// Excel column mapping (0-indexed)
-const COL = {
-    STT: 0,           // A
-    NAME: 1,          // B
-    SUPPLIER: 2,      // C
-    QUANTITY: 3,      // D
-    UNIT: 4,          // E
-    UNIT_COST: 5,     // F
-    TOTAL_COST: 6,    // G
-    UNIT_PRICE: 7,    // H
-    TOTAL_PRICE: 8,   // I
-    IMPORT_FEE: 9,    // J
-    CONTRACTOR_TAX: 10, // K
-    TRANSFER_FEE: 11,   // L
-    MARGIN: 12        // M
-};
+// Template format detection
+type TemplateFormat = 'FORMAT_1' | 'FORMAT_2' | 'UNIFIED';
 
-const HEADER_ROW = 3;  // Row 4 (0-indexed = 3)
-const DATA_START_ROW = 4; // Row 5 (0-indexed = 4)
+/**
+ * Detect template format based on header row structure
+ */
+function detectTemplateFormat(headerRow: any[]): TemplateFormat {
+    if (!headerRow || headerRow.length < 5) return 'UNIFIED';
+
+    const headerStr = headerRow.map(h => String(h || '').toLowerCase()).join('|');
+
+    // Format 1: Has "Nhập từ" column and no separate "Nhà cung cấp"
+    if (headerStr.includes('nhập từ') || headerStr.includes('nhap tu')) {
+        return 'FORMAT_1';
+    }
+
+    // Format 2: Has "Nhà cung cấp" and "DVT" columns  
+    if ((headerStr.includes('nhà cung cấp') || headerStr.includes('nha cung cap'))
+        && (headerStr.includes('dvt') || headerStr.includes('đvt'))) {
+        return 'FORMAT_2';
+    }
+
+    return 'UNIFIED';
+}
+
+/**
+ * Get column mapping based on template format
+ */
+function getColumnMapping(format: TemplateFormat): Record<string, number> {
+    switch (format) {
+        case 'FORMAT_1':
+            // Mẫu 1: HD123 - STT, Tên SP, SL, Nhập từ, Giá vào, TT vào, Giá ra, TT ra, CL, %LN
+            return {
+                STT: 0,           // A
+                NAME: 1,          // B
+                QUANTITY: 2,      // C
+                SUPPLIER: 3,      // D (Nhập từ)
+                UNIT_COST: 4,     // E (Giá nhập)
+                TOTAL_COST: 5,    // F (Thành tiền đầu vào)
+                UNIT_PRICE: 6,    // G (Đơn giá đầu ra)
+                TOTAL_PRICE: 7,   // H (Thành tiền đầu ra)
+                MARGIN: 8,        // I (Chênh lệch)
+                MARGIN_PCT: 9,    // J (% LN)
+                // No separate fee columns in Format 1
+                IMPORT_FEE: -1,
+                CONTRACTOR_TAX: -1,
+                TRANSFER_FEE: -1,
+                UNIT: -1,
+            };
+        case 'FORMAT_2':
+            // Mẫu 2: 185/PPXD - STT, Tên, NCC, SL, DVT, Giá vào, TT vào, Giá ra, TT ra, Nhập, Thuế, Chuyển, CL
+            return {
+                STT: 0,           // A
+                NAME: 1,          // B
+                SUPPLIER: 2,      // C
+                QUANTITY: 3,      // D
+                UNIT: 4,          // E (DVT)
+                UNIT_COST: 5,     // F
+                TOTAL_COST: 6,    // G
+                UNIT_PRICE: 7,    // H
+                TOTAL_PRICE: 8,   // I
+                IMPORT_FEE: 9,    // J
+                CONTRACTOR_TAX: 10, // K
+                TRANSFER_FEE: 11,   // L
+                MARGIN: 12,       // M
+                MARGIN_PCT: -1,   // Not in Format 2
+            };
+        case 'UNIFIED':
+        default:
+            // Unified format: 14 columns
+            return {
+                STT: 0,           // A
+                NAME: 1,          // B
+                SUPPLIER: 2,      // C
+                QUANTITY: 3,      // D
+                UNIT: 4,          // E
+                UNIT_COST: 5,     // F
+                TOTAL_COST: 6,    // G
+                UNIT_PRICE: 7,    // H
+                TOTAL_PRICE: 8,   // I
+                IMPORT_FEE: 9,    // J
+                CONTRACTOR_TAX: 10, // K
+                TRANSFER_FEE: 11,   // L
+                MARGIN: 12,       // M
+                MARGIN_PCT: 13,   // N
+            };
+    }
+}
+
+/**
+ * Find header row in the sheet
+ */
+function findHeaderRow(jsonData: any[][]): number {
+    for (let i = 0; i < Math.min(10, jsonData.length); i++) {
+        const row = jsonData[i];
+        if (!row) continue;
+
+        const rowStr = row.map(c => String(c || '').toLowerCase()).join('|');
+
+        // Look for common header keywords
+        if (rowStr.includes('stt') &&
+            (rowStr.includes('tên') || rowStr.includes('ten') ||
+                rowStr.includes('sản phẩm') || rowStr.includes('phần mềm'))) {
+            return i;
+        }
+    }
+    return 3; // Default to row 4 (0-indexed = 3)
+}
+
+/**
+ * Parse header information from sheet
+ */
+function parseHeader(jsonData: any[][]): PAKDHeader {
+    const header: PAKDHeader = {};
+
+    for (let i = 0; i < Math.min(5, jsonData.length); i++) {
+        const row = jsonData[i];
+        if (!row) continue;
+
+        const rowText = row.map(c => String(c || '')).join(' ').toLowerCase();
+
+        // Contract number
+        if (rowText.includes('hợp đồng') || rowText.includes('po/hđ')) {
+            const match = row.join(' ').match(/(?:HD|HĐ|PO|PPXD)\d+[A-Za-z]*/i);
+            if (match) header.contractNumber = match[0];
+        }
+
+        // Customer name (often after "với" or "khách hàng")
+        if (rowText.includes('với') || rowText.includes('khách hàng')) {
+            for (const cell of row) {
+                const cellStr = String(cell || '');
+                if (cellStr.includes('CÔNG TY') || cellStr.includes('TỔNG CÔNG TY')) {
+                    header.customerName = cellStr.trim();
+                    break;
+                }
+            }
+        }
+
+        // Sales person
+        if (rowText.includes('sales') || rowText.includes('phụ trách')) {
+            const nextCell = row.find((c, idx) => idx > 0 && c && !String(c).toLowerCase().includes('sales'));
+            if (nextCell) header.salesPerson = String(nextCell).replace(/^[^:]+:\s*/, '').trim();
+        }
+
+        // Exchange rates
+        if (rowText.includes('usd')) {
+            const match = row.join(' ').match(/usd[:\s]*([0-9.,]+)/i);
+            if (match) header.usdRate = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+        }
+        if (rowText.includes('eur')) {
+            const match = row.join(' ').match(/eur[:\s]*([0-9.,]+)/i);
+            if (match) header.eurRate = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+        }
+    }
+
+    return header;
+}
 
 /**
  * Parse Excel file to PAKD data
  * Supports merged cells for shared costs (e.g., transfer fee shared across multiple products)
+ * Auto-detects template format (Format 1, Format 2, or Unified)
  */
 export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
     return new Promise((resolve, reject) => {
@@ -91,16 +245,30 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
                 // Get merged cells info
                 const merges = worksheet['!merges'] || [];
 
-                // Build a map of merged cell ranges for fee columns (J=9, K=10, L=11)
-                // Key: "startRow-endRow-col" -> value
+                // Convert to JSON array
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+
+                // Parse header info
+                const header = parseHeader(jsonData);
+
+                // Find header row and detect format
+                const headerRowIdx = findHeaderRow(jsonData);
+                const headerRow = jsonData[headerRowIdx] || [];
+                const format = detectTemplateFormat(headerRow);
+                const COL = getColumnMapping(format);
+
+                console.log(`[PAKD Parser] Detected format: ${format}, header row: ${headerRowIdx + 1}`);
+
+                const DATA_START_ROW = headerRowIdx + 1;
+
+                // Build a map of merged cell ranges for fee columns
                 const mergedFees: Map<string, { startRow: number; endRow: number; col: number; value: number }> = new Map();
 
                 for (const merge of merges) {
                     const col = merge.s.c;
-                    // Only care about fee columns (Import=9, Tax=10, Transfer=11) and vertical merges
+                    // Only care about fee columns if they exist
                     if ((col === COL.IMPORT_FEE || col === COL.CONTRACTOR_TAX || col === COL.TRANSFER_FEE)
-                        && merge.s.r !== merge.e.r) {
-                        // Get the value from the start cell
+                        && col >= 0 && merge.s.r !== merge.e.r) {
                         const cellAddr = XLSX.utils.encode_cell({ r: merge.s.r, c: col });
                         const cell = worksheet[cellAddr];
                         const value = cell ? Number(cell.v) || 0 : 0;
@@ -118,10 +286,7 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
                     }
                 }
 
-                // Convert to JSON array
-                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
-
-                // Parse line items (from row 5 onwards, until empty STT)
+                // Parse line items
                 const lineItems: PAKDLineItem[] = [];
                 let totalCostSum = 0;
                 let totalPriceSum = 0;
@@ -133,7 +298,8 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
                     const row = jsonData[i];
                     if (!row || !row[COL.STT] || typeof row[COL.STT] !== 'number') {
                         // Check if it's a "TỔNG CỘNG" row
-                        if (row && String(row[COL.NAME] || '').toLowerCase().includes('tổng')) {
+                        const cellText = String(row?.[COL.NAME] || row?.[0] || '').toLowerCase();
+                        if (cellText.includes('tổng') || cellText.includes('tong')) {
                             break;
                         }
                         continue;
@@ -143,42 +309,64 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
 
                 // Helper function to get fee value considering merged cells
                 const getFeeValue = (rowIndex: number, col: number, defaultValue: number): { value: number; isShared: boolean; sharedCount: number } => {
-                    for (const [, mergeInfo] of mergedFees.entries()) {
+                    if (col < 0) return { value: 0, isShared: false, sharedCount: 1 };
+
+                    let result = { value: defaultValue, isShared: false, sharedCount: 1 };
+                    mergedFees.forEach((mergeInfo) => {
                         if (mergeInfo.col === col && rowIndex >= mergeInfo.startRow && rowIndex <= mergeInfo.endRow) {
-                            // This row is part of a merged cell
                             const rowsInMerge = mergeInfo.endRow - mergeInfo.startRow + 1;
-                            // Split the value evenly across all rows in the merge
-                            return {
+                            result = {
                                 value: Math.round(mergeInfo.value / rowsInMerge),
                                 isShared: true,
                                 sharedCount: rowsInMerge
                             };
                         }
-                    }
-                    return { value: defaultValue, isShared: false, sharedCount: 1 };
+                    });
+                    return result;
+                };
+
+                // Helper to safely get cell value
+                const getCellValue = (row: any[], colIdx: number, defaultValue: any = ''): any => {
+                    if (colIdx < 0 || colIdx >= row.length) return defaultValue;
+                    return row[colIdx] ?? defaultValue;
                 };
 
                 // Second pass: parse line items with merged cell handling
                 for (const { rowIndex, row } of lineItemRows) {
-                    const importFeeInfo = getFeeValue(rowIndex, COL.IMPORT_FEE, Number(row[COL.IMPORT_FEE]) || 0);
-                    const contractorTaxInfo = getFeeValue(rowIndex, COL.CONTRACTOR_TAX, Number(row[COL.CONTRACTOR_TAX]) || 0);
-                    const transferFeeInfo = getFeeValue(rowIndex, COL.TRANSFER_FEE, Number(row[COL.TRANSFER_FEE]) || 0);
+                    const importFeeInfo = getFeeValue(rowIndex, COL.IMPORT_FEE, Number(getCellValue(row, COL.IMPORT_FEE, 0)) || 0);
+                    const contractorTaxInfo = getFeeValue(rowIndex, COL.CONTRACTOR_TAX, Number(getCellValue(row, COL.CONTRACTOR_TAX, 0)) || 0);
+                    const transferFeeInfo = getFeeValue(rowIndex, COL.TRANSFER_FEE, Number(getCellValue(row, COL.TRANSFER_FEE, 0)) || 0);
+
+                    const totalCost = Number(getCellValue(row, COL.TOTAL_COST, 0)) || 0;
+                    const totalPrice = Number(getCellValue(row, COL.TOTAL_PRICE, 0)) || 0;
+                    const margin = Number(getCellValue(row, COL.MARGIN, 0)) || (totalPrice - totalCost);
+
+                    let marginPercent = 0;
+                    if (COL.MARGIN_PCT >= 0) {
+                        const pctValue = getCellValue(row, COL.MARGIN_PCT, 0);
+                        marginPercent = typeof pctValue === 'string'
+                            ? parseFloat(pctValue.replace('%', '').replace(',', '.'))
+                            : Number(pctValue) || 0;
+                    } else if (totalPrice > 0) {
+                        marginPercent = Math.round((margin / totalPrice) * 100 * 100) / 100;
+                    }
 
                     const item: PAKDLineItem = {
                         id: `item-${Date.now()}-${rowIndex}`,
-                        stt: Number(row[COL.STT]) || lineItems.length + 1,
-                        name: String(row[COL.NAME] || ''),
-                        supplier: String(row[COL.SUPPLIER] || ''),
-                        quantity: Number(row[COL.QUANTITY]) || 0,
-                        unit: String(row[COL.UNIT] || 'VNĐ'),
-                        unitCost: Number(row[COL.UNIT_COST]) || 0,
-                        totalCost: Number(row[COL.TOTAL_COST]) || 0,
-                        unitPrice: Number(row[COL.UNIT_PRICE]) || 0,
-                        totalPrice: Number(row[COL.TOTAL_PRICE]) || 0,
+                        stt: Number(getCellValue(row, COL.STT, lineItems.length + 1)) || lineItems.length + 1,
+                        name: String(getCellValue(row, COL.NAME, '')),
+                        supplier: String(getCellValue(row, COL.SUPPLIER, '')),
+                        quantity: Number(getCellValue(row, COL.QUANTITY, 0)) || 0,
+                        unit: String(getCellValue(row, COL.UNIT, 'VNĐ')),
+                        unitCost: Number(getCellValue(row, COL.UNIT_COST, 0)) || 0,
+                        totalCost,
+                        unitPrice: Number(getCellValue(row, COL.UNIT_PRICE, 0)) || 0,
+                        totalPrice,
                         importFee: importFeeInfo.value,
                         contractorTax: contractorTaxInfo.value,
                         transferFee: transferFeeInfo.value,
-                        margin: Number(row[COL.MARGIN]) || 0,
+                        margin,
+                        marginPercent,
                     };
 
                     lineItems.push(item);
@@ -192,15 +380,23 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
                     bankFee: lineItems.reduce((sum, item) => sum + item.transferFee, 0),
                     subcontractorFee: lineItems.reduce((sum, item) => sum + item.contractorTax, 0),
                     importLogistics: lineItems.reduce((sum, item) => sum + item.importFee, 0),
-                    expertFee: 0, // Will be parsed from summary section if available
+                    expertFee: 0,
                     documentFee: 0,
-                    supplierDiscount: 0, // Chiết khấu thêm từ NCC
+                    supplierDiscount: 0,
                 };
 
-                // Parse execution costs from summary section (dynamic items)
+                // Parse execution costs from summary section
                 const executionCosts: PAKDExecutionCost[] = [];
 
-                // Try to find execution costs from summary section
+                // Helper to extract numeric value from a cell
+                const extractNum = (cell: any): number => {
+                    if (cell === null || cell === undefined) return 0;
+                    if (typeof cell === 'number') return cell;
+                    const str = String(cell).replace(/\./g, '').replace(',', '.');
+                    return Number(str) || 0;
+                };
+
+                // Scan for summary section
                 for (let i = DATA_START_ROW; i < jsonData.length; i++) {
                     const row = jsonData[i];
                     if (!row) continue;
@@ -209,25 +405,9 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
                     const labelCol1 = String(row[1] || '').trim();
                     const label = (labelCol0 || labelCol1).toLowerCase();
 
-                    // Helper to extract numeric value from a cell 
-                    // Excel cells are typically pure numbers, not formatted strings
-                    const extractNum = (cell: any): number => {
-                        if (cell === null || cell === undefined) return 0;
-                        if (typeof cell === 'number') return cell;
-                        // If it's a string, remove thousand separators (dots in VN format)
-                        const str = String(cell).replace(/\./g, '').replace(',', '.');
-                        return Number(str) || 0;
-                    };
-
-                    // Value is typically in column C (index 2), but check B (index 1) as fallback
                     const value = extractNum(row[2]) || extractNum(row[1]) || 0;
 
-                    console.log(`[PAKD Parser] Row ${i}: label="${label}", raw=[${row[1]}, ${row[2]}], value=${value}`);
-
-                    // NOTE: "Chi phí khác" is SKIPPED because it's usually already included in line item direct costs
-                    // Only parse specific separate costs like expert fees and document processing fees
-
-                    // Phí thuê chuyên gia - Add to executionCosts only (not adminCosts to avoid double counting)
+                    // Phí thuê chuyên gia
                     if (label.includes('phí thuê chuyên gia') || label.includes('chuyên gia')) {
                         if (value > 0) {
                             executionCosts.push({
@@ -235,11 +415,11 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
                                 name: 'Phí thuê chuyên gia (net)',
                                 amount: value
                             });
-                            console.log(`[PAKD Parser] Found Phí thuê chuyên gia: ${value}`);
+                            adminCosts.expertFee = value;
                         }
                     }
 
-                    // Phí thanh toán chứng từ - Add to executionCosts only
+                    // Phí thanh toán chứng từ
                     if (label.includes('phí thanh toán') || label.includes('chứng từ')) {
                         if (value > 0) {
                             executionCosts.push({
@@ -247,13 +427,24 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
                                 name: 'Phí thanh toán chứng từ',
                                 amount: value
                             });
-                            console.log(`[PAKD Parser] Found Phí thanh toán chứng từ: ${value}`);
+                            adminCosts.documentFee = value;
                         }
                     }
 
-                    // Parse supplier discount (Chiết khấu thêm của Bentley, etc)
+                    // Chiết khấu NCC
                     if (label.includes('chiết khấu') || label.includes('chiet khau')) {
                         adminCosts.supplierDiscount = value;
+                    }
+
+                    // Chi phí khác (thuê nhà thầu, logistics, etc.)
+                    if (label.includes('chi phí khác') && !label.includes('thuê')) {
+                        if (value > 0) {
+                            executionCosts.push({
+                                id: `pakd-other-${Date.now()}`,
+                                name: 'Chi phí khác',
+                                amount: value
+                            });
+                        }
                     }
                 }
 
@@ -263,7 +454,6 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
                 const totalAdminCosts = adminCosts.bankFee + adminCosts.subcontractorFee +
                     adminCosts.importLogistics + adminCosts.expertFee + adminCosts.documentFee;
 
-                // Add execution costs to total (only those not already in adminCosts)
                 const otherExecutionCosts = executionCosts
                     .filter(c => !c.name.includes('chuyên gia') && !c.name.includes('chứng từ'))
                     .reduce((sum, c) => sum + c.amount, 0);
@@ -278,6 +468,7 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
                 };
 
                 resolve({
+                    header,
                     lineItems,
                     adminCosts,
                     executionCosts,
@@ -298,21 +489,21 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
 }
 
 /**
- * Generate PAKD Excel template
+ * Generate PAKD Excel template with unified format
  */
 export function generatePAKDTemplate(): void {
     // Create workbook
     const wb = XLSX.utils.book_new();
 
-    // Template data
+    // Template data with unified format (14 columns)
     const templateData = [
         // Row 1: Title
         ['', 'BẢNG PHƯƠNG ÁN KINH DOANH (PAKD)'],
-        // Row 2: Subtitle
-        ['', 'Hợp đồng số: [Mã hợp đồng] - [Tên khách hàng]'],
-        // Row 3: Empty
-        [],
-        // Row 4: Header
+        // Row 2: Contract info
+        ['', 'Hợp đồng số: [SỐ HỢP ĐỒNG] với [TÊN KHÁCH HÀNG]'],
+        // Row 3: Sales + Exchange rates
+        ['Sales Phụ trách:', '[TÊN NVKD]', '', '', '', 'Tỷ giá USD:', '', 'Tỷ giá EUR:', ''],
+        // Row 4: Header (14 columns)
         [
             'STT',
             'Tên sản phẩm/Dịch vụ',
@@ -326,40 +517,54 @@ export function generatePAKDTemplate(): void {
             'Nhập khẩu',
             'Thuế nhà thầu',
             'Chuyển tiền',
-            'Chênh lệch'
+            'Chênh lệch',
+            '% LN'
         ],
         // Row 5: Sample data 1
-        [1, 'Phần mềm ABC', 'NCC A', 1, 'VNĐ', 10000000, 10000000, 15000000, 15000000, 0, 0, 50000, 4950000],
+        [1, 'Phần mềm Cubicost TAS Pro - 1 year', 'Glodon', 2, 'VNĐ', 34508390, 69016780, 37584000, 75168000, 0, 0, 0, 6151219, '8.19%'],
         // Row 6: Sample data 2
-        [2, 'Dịch vụ tư vấn', 'NCC B', 2, 'VNĐ', 5000000, 10000000, 7500000, 15000000, 0, 250000, 0, 4750000],
-        // Row 7: Empty for more items
+        [2, 'Phần mềm Microstation', 'Bentley', 6, 'VNĐ', 32176565, 193059390, 69415000, 416490000, 0, 1230297, 0, 222200313, '53.36%'],
+        // Row 7: Sample data 3
+        [3, 'Phần mềm SketchUp Pro', 'Trimble', 1, 'VNĐ', 9900000, 9900000, 11386000, 11386000, 0, 0, 0, 1486000, '13.05%'],
+        // Row 8: Empty for more items
         [],
-        // Row 8: Total row
-        ['', 'TỔNG CỘNG', '', '', '', '', 20000000, '', 30000000, 0, 250000, 50000, 9700000],
-        // Row 9: Empty
+        // Row 9: Total row
+        ['', 'TỔNG CỘNG', '', '', '', '', 271976170, '', 503044000, 0, 1230297, 0, 229837532, '45.69%'],
+        // Row 10: Empty
         [],
-        // Row 10: Summary section header
+        // Row 11: Summary section header
         ['', 'TỔNG HỢP TÀI CHÍNH:'],
-        // Row 11-17: Summary items
-        ['', 'Đầu vào', 20000000],
-        ['', 'Sản lượng (Đầu ra)', 30000000],
-        ['', 'Chi phí khác', 300000],
+        // Row 12-19: Summary items
+        ['', 'Đầu vào', 271976170],
+        ['', 'Sản lượng (Đầu ra)', 503044000],
+        ['', 'Chi phí khác (thuê nhà thầu, logistics...)', 1230297],
         ['', 'Phí thuê chuyên gia (net)', 0],
         ['', 'Phí thanh toán chứng từ', 0],
-        ['', 'Tổng chi phí', 20300000],
-        ['', 'Lợi nhuận', 9700000],
-        ['', 'Hệ số LN/ SL', '32.33%'],
+        ['', 'Chiết khấu thêm NCC', 0],
+        ['', 'Tổng chi phí', 273206467],
+        ['', 'Lợi nhuận', 229837532],
+        ['', 'Hệ số LN/ SL', '45.69%'],
+        // Row 21: Empty
+        [],
+        // Row 22: Payment schedule header
+        ['', 'THANH TOÁN HỢP ĐỒNG:'],
+        ['', 'Tạm ứng:'],
+        ['', '  - Tạm ứng của khách hàng', 0],
+        ['', '  - Tạm ứng cho nhà cung cấp', 0],
+        ['', 'Thanh toán:'],
+        ['', '  - Thanh toán của khách hàng', 503044000, '', 'Dự kiến:', '15 ngày sau khi nhận hàng'],
+        ['', '  - Thanh toán cho nhà cung cấp', 271976170, '', 'Dự kiến:', 'Khi có thanh toán của KH'],
     ];
 
     // Create worksheet
     const ws = XLSX.utils.aoa_to_sheet(templateData);
 
-    // Set column widths
+    // Set column widths for 14 columns
     ws['!cols'] = [
         { wch: 5 },   // A: STT
-        { wch: 30 },  // B: Tên sản phẩm
+        { wch: 40 },  // B: Tên sản phẩm
         { wch: 15 },  // C: NCC
-        { wch: 10 },  // D: SL
+        { wch: 8 },   // D: SL
         { wch: 8 },   // E: ĐVT
         { wch: 18 },  // F: Đơn giá vào
         { wch: 18 },  // G: Thành tiền vào
@@ -368,14 +573,15 @@ export function generatePAKDTemplate(): void {
         { wch: 12 },  // J: Nhập khẩu
         { wch: 14 },  // K: Thuế nhà thầu
         { wch: 12 },  // L: Chuyển tiền
-        { wch: 14 },  // M: Chênh lệch
+        { wch: 16 },  // M: Chênh lệch
+        { wch: 10 },  // N: % LN
     ];
 
     // Add worksheet to workbook
     XLSX.utils.book_append_sheet(wb, ws, 'PAKD');
 
     // Generate and download file
-    XLSX.writeFile(wb, 'PAKD_Template.xlsx');
+    XLSX.writeFile(wb, 'PAKD_Template_Unified.xlsx');
 }
 
 /**
@@ -383,6 +589,7 @@ export function generatePAKDTemplate(): void {
  */
 export function convertToFormData(parsed: ParsedPAKD) {
     return {
+        header: parsed.header,
         lineItems: parsed.lineItems.map(item => ({
             id: item.id,
             name: item.name,
@@ -397,6 +604,7 @@ export function convertToFormData(parsed: ParsedPAKD) {
                 contractorTax: item.contractorTax,
                 transferFee: item.transferFee,
             },
+            marginPercent: item.marginPercent,
         })),
         adminCosts: {
             bankFee: parsed.adminCosts.bankFee,
@@ -409,7 +617,9 @@ export function convertToFormData(parsed: ParsedPAKD) {
             expertFeePercent: 0,
             documentFee: parsed.adminCosts.documentFee,
             documentFeePercent: 0,
+            supplierDiscount: parsed.adminCosts.supplierDiscount,
         },
+        executionCosts: parsed.executionCosts,
         financials: parsed.financials,
     };
 }
