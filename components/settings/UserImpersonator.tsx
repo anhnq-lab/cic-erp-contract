@@ -63,6 +63,7 @@ const UserImpersonator: React.FC = () => {
                 return;
             }
 
+            // Handle empty data without error
             if (data) {
                 console.log('[UserImpersonator] Loaded', data.length, 'employees');
                 setUsers(data.map(u => ({
@@ -74,6 +75,8 @@ const UserImpersonator: React.FC = () => {
                     position: u.position,
                     unitName: (u.units as any)?.name,
                 })));
+            } else {
+                setUsers([]);
             }
             setLoading(false);
         };

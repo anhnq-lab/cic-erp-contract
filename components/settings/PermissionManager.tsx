@@ -75,6 +75,7 @@ const PermissionManager: React.FC = () => {
                 return;
             }
 
+            // Handle empty data without error
             if (data) {
                 console.log('[PermissionManager] Loaded', data.length, 'employees');
                 setUsers(data.map(u => ({
@@ -86,6 +87,8 @@ const PermissionManager: React.FC = () => {
                     position: u.position,
                     unitName: (u.units as any)?.name,
                 })));
+            } else {
+                setUsers([]);
             }
             setLoading(false);
         };
@@ -256,10 +259,18 @@ const PermissionManager: React.FC = () => {
                 </div>
             )}
 
-            {!selectedUserId && (
+            {!selectedUserId && users.length > 0 && (
                 <div className="text-center py-12 text-slate-400">
                     <Users size={48} className="mx-auto mb-4 opacity-50" />
                     <p>Chọn một nhân viên để xem và chỉnh sửa quyền</p>
+                </div>
+            )}
+
+            {users.length === 0 && (
+                <div className="text-center py-12 text-slate-400">
+                    <Users size={48} className="mx-auto mb-4 opacity-50" />
+                    <p className="font-medium text-slate-600 dark:text-slate-300">Chưa có nhân viên nào</p>
+                    <p className="text-sm mt-2">Vui lòng thêm nhân viên trước khi phân quyền</p>
                 </div>
             )}
         </div>
