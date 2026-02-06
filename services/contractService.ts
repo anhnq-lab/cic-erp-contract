@@ -328,9 +328,17 @@ export const ContractService = {
         status?: string;
         unitId?: string;
         year?: string;
-    }): Promise<{ totalContracts: number, totalValue: number, totalRevenue: number, totalProfit: number }> => {
+    }): Promise<{
+        totalContracts: number,
+        totalValue: number,
+        totalRevenue: number,
+        totalProfit: number,
+        totalSigningProfit: number,
+        totalRevenueProfit: number,
+        totalCash: number
+    }> => {
         const { search, status, unitId, year } = params;
-        let query = supabase.from('contracts').select('id, value, actual_revenue, estimated_cost, actual_cost, status, title, party_a, signed_date, unit_id');
+        let query = supabase.from('contracts').select('id, value, actual_revenue, estimated_cost, actual_cost, status, title, party_a, signed_date, unit_id, payments(paid_amount)');
 
         if (search) {
             query = query.or(`title.ilike.%${search}%,id.ilike.%${search}%,party_a.ilike.%${search}%`);
@@ -359,9 +367,12 @@ export const ContractService = {
                 totalContracts: acc.totalContracts + 1,
                 totalValue: acc.totalValue + val,
                 totalRevenue: acc.totalRevenue + rev,
-                totalProfit: acc.totalProfit + (val - cost)
+                totalProfit: acc.totalProfit + (val - cost), // Legacy
+                totalSigningProfit: acc.totalSigningProfit + (val - cost),
+                totalRevenueProfit: acc.totalRevenueProfit + (rev - (curr.actual_cost || 0)),
+                totalCash: acc.totalCash + (curr.payments?.reduce((sum: number, p: any) => sum + (Number(p.paid_amount) || 0), 0) || 0)
             };
-        }, { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0 });
+        }, { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0, totalSigningProfit: 0, totalRevenueProfit: 0, totalCash: 0 });
     },
 
     // OPTIMIZED RPC-BASED STATS with fallback
@@ -370,6 +381,9 @@ export const ContractService = {
         totalValue: number,
         totalRevenue: number,
         totalProfit: number,
+        totalSigningProfit: number,
+        totalRevenueProfit: number,
+        totalCash: number,
         activeCount: number,
         pendingCount: number
     }> => {
@@ -454,12 +468,15 @@ export const ContractService = {
         totalContracts: number,
         totalValue: number,
         totalRevenue: number,
-        totalProfit: number,
+        totalProfit: number, // Legacy
+        totalSigningProfit: number,
+        totalRevenueProfit: number,
+        totalCash: number,
         activeCount: number,
         pendingCount: number
     }> => {
         console.log('[ContractService.getStatsFallback] Using direct query');
-        let query = supabase.from('contracts').select('id, value, actual_revenue, estimated_cost, status');
+        let query = supabase.from('contracts').select('id, value, actual_revenue, estimated_cost, actual_cost, status, payments(paid_amount)');
 
         if (unitId && unitId !== 'all') {
             query = query.eq('unit_id', unitId);
@@ -473,7 +490,17 @@ export const ContractService = {
         const { data, error } = await query;
         if (error) {
             console.error('[ContractService.getStatsFallback] Query error:', error);
-            return { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0, activeCount: 0, pendingCount: 0 };
+            return {
+                totalContracts: 0,
+                totalValue: 0,
+                totalRevenue: 0,
+                totalProfit: 0,
+                totalSigningProfit: 0,
+                totalRevenueProfit: 0,
+                totalCash: 0,
+                activeCount: 0,
+                pendingCount: 0
+            };
         }
 
         console.log('[ContractService.getStatsFallback] Got contracts:', data?.length);
@@ -481,15 +508,20 @@ export const ContractService = {
             const val = curr.value || 0;
             const rev = curr.actual_revenue || 0;
             const cost = curr.estimated_cost || 0;
+            const actCost = curr.actual_cost || 0;
+            const cash = curr.payments?.reduce((sum: number, p: any) => sum + (Number(p.paid_amount) || 0), 0) || 0;
             return {
                 totalContracts: acc.totalContracts + 1,
                 totalValue: acc.totalValue + val,
                 totalRevenue: acc.totalRevenue + rev,
                 totalProfit: acc.totalProfit + (val - cost),
+                totalSigningProfit: acc.totalSigningProfit + (val - cost),
+                totalRevenueProfit: acc.totalRevenueProfit + (rev - actCost),
+                totalCash: acc.totalCash + cash,
                 activeCount: acc.activeCount + (curr.status === 'Processing' || curr.status === 'Active' ? 1 : 0),
                 pendingCount: acc.pendingCount + (curr.status === 'Pending' ? 1 : 0)
             };
-        }, { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0, activeCount: 0, pendingCount: 0 });
+        }, { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0, totalSigningProfit: 0, totalRevenueProfit: 0, totalCash: 0, activeCount: 0, pendingCount: 0 });
     },
 
     getPaymentStatsRPC: async (contractId: string): Promise<{

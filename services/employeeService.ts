@@ -264,9 +264,10 @@ export const EmployeeService = {
             return data.map((e: any) => ({
                 ...mapEmployee(e),
                 stats: {
-                    contractCount: e.contract_count,
                     totalSigning: e.total_signing,
-                    totalRevenue: e.total_revenue
+                    totalRevenue: e.total_revenue,
+                    totalProfit: e.total_profit,
+                    totalCash: e.total_cash
                 }
             }));
         } catch (error) {

@@ -179,9 +179,9 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
             actual: {
               signing: Number(statsData?.totalValue) || 0,
               revenue: Number(statsData?.totalRevenue) || 0,
-              adminProfit: Number(statsData?.totalProfit) || 0,
-              revProfit: Number(statsData?.totalProfit) || 0,
-              cash: Number(statsData?.totalRevenue) || 0,
+              adminProfit: Number(statsData?.totalSigningProfit) || 0,
+              revProfit: Number(statsData?.totalRevenueProfit) || 0,
+              cash: Number(statsData?.totalCash) || 0,
               netCashflow: 0
             },
             statusCounts: {
@@ -261,14 +261,40 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
         id: u.id,
         name: u.name,
         subText: u.type === 'Branch' ? 'Chi nhánh' : 'Trung tâm',
-        target: u.target?.adminProfit || 0,
-        actual: u.stats?.totalProfit || 0,
-        // Progress based on AdminProfit target vs actual
-        progress: u.target?.adminProfit ? Math.min(100, ((u.stats?.totalProfit || 0) / u.target.adminProfit) * 100) : 0,
+        target: activeMetric === 'signing' ? (u.target?.signing || 0)
+          : activeMetric === 'revenue' ? (u.target?.revenue || 0)
+            : activeMetric === 'adminProfit' ? (u.target?.adminProfit || 0)
+              : activeMetric === 'revProfit' ? (u.target?.revProfit || 0)
+                : (u.target?.cash || 0),
+        actual: activeMetric === 'signing' ? (u.stats?.totalSigning || 0)
+          : activeMetric === 'revenue' ? (u.stats?.totalRevenue || 0)
+            : activeMetric === 'adminProfit' ? (u.stats?.totalProfit || 0)
+              : activeMetric === 'revProfit' ? (u.stats?.totalRevenueProfit || 0)
+                : (u.stats?.totalCash || 0),
+        // Progress based on target vs actual for active metric
+        progress: (activeMetric === 'signing' ? (u.target?.signing || 0) :
+          activeMetric === 'revenue' ? (u.target?.revenue || 0) :
+            activeMetric === 'adminProfit' ? (u.target?.adminProfit || 0) :
+              activeMetric === 'revProfit' ? (u.target?.revProfit || 0) :
+                (u.target?.cash || 0)) ?
+          Math.min(100, (
+            (activeMetric === 'signing' ? (u.stats?.totalSigning || 0) :
+              activeMetric === 'revenue' ? (u.stats?.totalRevenue || 0) :
+                activeMetric === 'adminProfit' ? (u.stats?.totalProfit || 0) :
+                  activeMetric === 'revProfit' ? (u.stats?.totalRevenueProfit || 0) :
+                    (u.stats?.totalCash || 0)) /
+            (activeMetric === 'signing' ? (u.target?.signing || 0) :
+              activeMetric === 'revenue' ? (u.target?.revenue || 0) :
+                activeMetric === 'adminProfit' ? (u.target?.adminProfit || 0) :
+                  activeMetric === 'revProfit' ? (u.target?.revProfit || 0) :
+                    (u.target?.cash || 0))
+          ) * 100) : 0,
         // Pie Chart Value: Dynamic based on activeMetric
         value: activeMetric === 'signing' ? (u.stats?.totalSigning || 0)
           : activeMetric === 'revenue' ? (u.stats?.totalRevenue || 0)
-            : (u.stats?.totalProfit || 0)
+            : activeMetric === 'adminProfit' ? (u.stats?.totalProfit || 0)
+              : activeMetric === 'revProfit' ? (u.stats?.totalRevenueProfit || 0)
+                : (u.stats?.totalCash || 0)
       }));
     } else {
       // For Specific Unit: map employee data
@@ -276,12 +302,22 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
         id: e.id,
         name: e.name,
         subText: e.employeeCode || 'NVKD',
-        target: e.target?.adminProfit || 0,
-        actual: e.stats?.totalProfit || 0,
+        target: activeMetric === 'signing' ? (e.target?.signing || 0)
+          : activeMetric === 'revenue' ? (e.target?.revenue || 0)
+            : activeMetric === 'adminProfit' ? (e.target?.adminProfit || 0)
+              : activeMetric === 'revProfit' ? (e.target?.revProfit || 0)
+                : (e.target?.cash || 0),
+        actual: activeMetric === 'signing' ? (e.stats?.totalSigning || 0)
+          : activeMetric === 'revenue' ? (e.stats?.totalRevenue || 0)
+            : activeMetric === 'adminProfit' ? (e.stats?.totalProfit || 0)
+              : activeMetric === 'revProfit' ? (e.stats?.totalRevenueProfit || 0)
+                : (e.stats?.totalCash || 0),
         progress: 0, // Employee target/actual profit logic pending
         value: activeMetric === 'signing' ? (e.stats?.totalSigning || 0)
           : activeMetric === 'revenue' ? (e.stats?.totalRevenue || 0)
-            : (e.stats?.totalRevenue || 0) // Fallback for profit
+            : activeMetric === 'adminProfit' ? (e.stats?.totalProfit || 0)
+              : activeMetric === 'revProfit' ? (e.stats?.totalRevenueProfit || 0)
+                : (e.stats?.totalCash || 0)
       }));
     }
 
@@ -362,7 +398,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
     { id: 'signing', label: 'Ký kết' },
     { id: 'revenue', label: 'Doanh thu' },
     { id: 'adminProfit', label: 'LNG QT' },
-    { id: 'revProfit', label: 'LNG Kế hoạch' }, // Renamed from LNG ĐT
+    { id: 'revProfit', label: 'LNG DT' }, // Renamed from LNG Kế hoạch
     { id: 'cash', label: 'Dòng tiền' }
   ];
 

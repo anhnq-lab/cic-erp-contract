@@ -176,10 +176,10 @@ export const UnitService = {
                 ...mapUnit(u),
                 functions: u.functions || '',
                 stats: {
-                    contractCount: u.contract_count,
                     totalSigning: u.total_signing,
                     totalRevenue: u.total_revenue,
-                    totalProfit: u.total_profit
+                    totalProfit: u.total_profit,
+                    totalCash: u.total_cash
                 }
             }));
         } catch (error) {
