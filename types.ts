@@ -152,6 +152,18 @@ export interface AdministrativeCosts {
   documentProcessing: number;
 }
 
+/**
+ * Represents a single execution cost item (dynamic list)
+ * Replaces the fixed AdministrativeCosts fields for flexibility
+ */
+export interface ExecutionCostItem {
+  id: string;
+  name: string;           // Tên hạng mục (e.g., "Phí chuyển tiền", "Thuế nhà thầu")
+  amount: number;         // Số tiền (VND)
+  percentage?: number;    // % tính theo Giá trị ký kết (optional)
+  note?: string;          // Ghi chú
+}
+
 export interface Contract {
   id: string;
   title: string;
@@ -177,7 +189,8 @@ export interface Contract {
   coordinatingUnitId?: string; // Đơn vị phối hợp
   salespersonId: string;
   lineItems?: LineItem[];
-  adminCosts?: AdministrativeCosts;
+  adminCosts?: AdministrativeCosts;        // Legacy: fixed fields
+  executionCosts?: ExecutionCostItem[];    // New: dynamic list of execution costs
   milestones?: Milestone[];
   paymentPhases?: PaymentPhase[];
   documents?: ContractDocument[];

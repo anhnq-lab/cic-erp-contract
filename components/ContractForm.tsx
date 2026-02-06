@@ -162,7 +162,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
     }
   }, [contract]);
 
-  // 5. Overhead Costs
+  // 5. Overhead Costs (Legacy - kept for backward compatibility)
   const [adminCosts, setAdminCosts] = useState<AdministrativeCosts>(contract?.adminCosts || {
     transferFee: 0, contractorTax: 0, importFee: 0, expertHiring: 0, documentProcessing: 0
   });
@@ -170,6 +170,30 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
   const [adminCostPercentages, setAdminCostPercentages] = useState<AdministrativeCosts>({
     transferFee: 0, contractorTax: 0, importFee: 0, expertHiring: 0, documentProcessing: 0
   });
+
+  // 5.1 Execution Costs (New - Dynamic list)
+  type ExecutionCostItem = { id: string; name: string; amount: number; percentage?: number; note?: string; };
+  const [executionCosts, setExecutionCosts] = useState<ExecutionCostItem[]>(
+    contract?.executionCosts || []
+  );
+
+  // Add execution cost item
+  const addExecutionCost = () => {
+    setExecutionCosts([
+      ...executionCosts,
+      { id: `exec-${Date.now()}`, name: '', amount: 0 }
+    ]);
+  };
+
+  // Remove execution cost item
+  const removeExecutionCost = (id: string) => {
+    setExecutionCosts(executionCosts.filter(c => c.id !== id));
+  };
+
+  // Update execution cost item
+  const updateExecutionCost = (id: string, field: keyof ExecutionCostItem, value: any) => {
+    setExecutionCosts(executionCosts.map(c => c.id === id ? { ...c, [field]: value } : c));
+  };
 
   // Supplier Discount - separate from admin costs, ADDS to revenue
   const [supplierDiscount, setSupplierDiscount] = useState<number>(0);
@@ -1058,71 +1082,121 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                   </div>
 
 
-                  {/* 3.2 CHI PHÍ QUẢN LÝ HỢP ĐỒNG (Moved inside Step 2) */}
-                  <div className="bg-slate-50 dark:bg-slate-800 p-6 rounded-[24px] border border-slate-100 dark:border-slate-700 space-y-6">
-                    <h4 className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                      <Calculator size={14} /> Chi phí quản lý hợp đồng
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                      {[
-                        { key: 'transferFee', label: 'Phí chuyển tiền / Ngân hàng' },
-                        { key: 'contractorTax', label: 'Thuế nhà thầu (nếu có)' },
-                        { key: 'importFee', label: 'Phí nhập khẩu / Logistics' },
-                        { key: 'expertHiring', label: 'Chi phí thuê khoán chuyên môn' },
-                        { key: 'documentProcessing', label: 'Chi phí xử lý chứng từ' }
-                      ].map((cost) => (
-                        <div key={cost.key} className="space-y-1.5">
-                          <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">{cost.label}</label>
-                          <div className="grid grid-cols-12 gap-2">
-                            <div className="col-span-4 relative group">
+                  {/* 3.2 CHI PHÍ THỰC HIỆN HỢP ĐỒNG (Dynamic list) */}
+                  <div className="bg-slate-50 dark:bg-slate-800 p-6 rounded-[24px] border border-slate-100 dark:border-slate-700 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <Calculator size={14} /> Chi phí thực hiện hợp đồng
+                      </h4>
+                      <button
+                        onClick={addExecutionCost}
+                        className="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-[10px] font-black uppercase flex items-center gap-1.5 border border-indigo-100 dark:border-indigo-800 hover:bg-indigo-100 transition-colors"
+                      >
+                        <Plus size={12} /> Thêm hạng mục
+                      </button>
+                    </div>
+
+                    {/* Dynamic Cost Items */}
+                    {executionCosts.length === 0 ? (
+                      <div className="text-center py-8 text-slate-400 dark:text-slate-500 text-xs">
+                        <Calculator size={24} className="mx-auto mb-2 opacity-50" />
+                        <p>Chưa có chi phí thực hiện nào</p>
+                        <p className="text-[10px] mt-1">Nhấn "Thêm hạng mục" để bắt đầu</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {executionCosts.map((cost, idx) => (
+                          <div key={cost.id} className="grid grid-cols-12 gap-3 items-center bg-white dark:bg-slate-700 p-4 rounded-2xl border border-slate-200 dark:border-slate-600 group">
+                            {/* Index */}
+                            <div className="col-span-1 text-center">
+                              <span className="text-[10px] font-bold text-slate-400">{idx + 1}</span>
+                            </div>
+
+                            {/* Name */}
+                            <div className="col-span-4">
+                              <input
+                                type="text"
+                                placeholder="Tên hạng mục chi phí..."
+                                value={cost.name}
+                                onChange={(e) => updateExecutionCost(cost.id, 'name', e.target.value)}
+                                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                              />
+                            </div>
+
+                            {/* Percentage */}
+                            <div className="col-span-2 relative">
                               <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
                                 <Percent size={10} className="text-slate-400" />
                               </div>
                               <input
                                 type="number"
                                 placeholder="%"
-                                value={(adminCostPercentages as any)[cost.key] || ''}
+                                value={cost.percentage || ''}
                                 onChange={(e) => {
                                   const pct = Number(e.target.value);
-                                  setAdminCostPercentages({ ...adminCostPercentages, [cost.key]: pct });
-                                  // Auto-calc amount based on Signing Value (Total Output)
+                                  updateExecutionCost(cost.id, 'percentage', pct);
+                                  // Auto-calc amount based on Signing Value
                                   const amount = Math.round((pct / 100) * totals.signingValue);
-                                  setAdminCosts({ ...adminCosts, [cost.key]: amount });
+                                  updateExecutionCost(cost.id, 'amount', amount);
                                 }}
-                                className="w-full pl-6 pr-1 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-center"
+                                className="w-full pl-6 pr-2 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-bold focus:ring-2 focus:ring-indigo-500 outline-none text-center"
                               />
                             </div>
-                            <div className="col-span-8 relative">
+
+                            {/* Amount */}
+                            <div className="col-span-4 relative">
                               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
                               <input
                                 type="text"
-                                value={(adminCosts as any)[cost.key] ? formatVND((adminCosts as any)[cost.key]) : '0'}
+                                value={cost.amount ? formatVND(cost.amount) : '0'}
                                 onChange={(e) => {
                                   const raw = e.target.value.replace(/\./g, '');
                                   if (!/^\d*$/.test(raw)) return;
                                   const val = Number(raw);
-                                  setAdminCosts({ ...adminCosts, [cost.key]: val });
-
+                                  updateExecutionCost(cost.id, 'amount', val);
                                   // Reverse calc percentage
                                   if (totals.signingValue > 0) {
                                     const pct = (val / totals.signingValue) * 100;
-                                    setAdminCostPercentages({ ...adminCostPercentages, [cost.key]: Number(pct.toFixed(2)) });
+                                    updateExecutionCost(cost.id, 'percentage', Number(pct.toFixed(2)));
                                   }
                                 }}
-                                className="w-full pl-8 pr-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-black text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-rose-500 outline-none transition-all text-right"
+                                className="w-full pl-8 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-black focus:ring-2 focus:ring-rose-500 outline-none text-right"
                               />
                             </div>
+
+                            {/* Remove button */}
+                            <div className="col-span-1 flex justify-center">
+                              <button
+                                onClick={() => removeExecutionCost(cost.id)}
+                                className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                                title="Xóa hạng mục"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+
+                        {/* Total Row */}
+                        <div className="flex justify-end pt-2">
+                          <div className="text-right">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase mr-4">Tổng chi phí thực hiện:</span>
+                            <span className="text-sm font-black text-rose-600 dark:text-rose-400">
+                              {formatVND(executionCosts.reduce((sum, c) => sum + (c.amount || 0), 0))}
+                            </span>
                           </div>
                         </div>
-                      ))}
+                      </div>
+                    )}
 
-                      {/* Chiết khấu NCC - Inline compact */}
-                      <div className="space-y-1.5 lg:col-span-2">
-                        <label className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase ml-1 flex items-center gap-1">
-                          <TrendingDown size={10} /> Chiết khấu từ NCC (Giảm chi phí)
+                    {/* Chiết khấu NCC */}
+                    <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                      <div className="flex items-center gap-4">
+                        <label className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase flex items-center gap-1 whitespace-nowrap">
+                          <TrendingDown size={10} /> Chiết khấu từ NCC
                         </label>
-                        <div className="grid grid-cols-12 gap-2">
-                          <div className="col-span-3 relative">
+                        <div className="flex items-center gap-2 flex-1 max-w-md">
+                          <div className="relative w-20">
                             <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
                               <Percent size={10} className="text-emerald-500" />
                             </div>
@@ -1137,19 +1211,12 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                               className="w-full pl-6 pr-1 py-2 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-300 dark:border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 dark:text-emerald-300 focus:ring-2 focus:ring-emerald-500 outline-none text-center"
                             />
                           </div>
-                          <div className="col-span-5 relative">
-                            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400" size={12} />
-                            <input
-                              type="text"
-                              readOnly
-                              value={formatVND(totals.supplierDiscountAmount || 0)}
-                              className="w-full pl-8 pr-2 py-2 bg-emerald-100 dark:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-700 rounded-xl text-xs font-black text-emerald-700 dark:text-emerald-300 text-right cursor-not-allowed"
-                              title="Tự động tính = % x Tổng giá đầu vào"
-                            />
-                          </div>
-                          <div className="col-span-4 flex items-center text-[9px] text-emerald-600 dark:text-emerald-400 italic">
-                            x {formatVND(totals.totalInput)} đầu vào
-                          </div>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-black text-sm">
+                            = {formatVND(totals.supplierDiscountAmount || 0)}
+                          </span>
+                          <span className="text-[9px] text-emerald-600 dark:text-emerald-400 italic">
+                            (x {formatVND(totals.totalInput)} đầu vào)
+                          </span>
                         </div>
                       </div>
                     </div>
