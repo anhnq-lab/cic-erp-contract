@@ -237,243 +237,7 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
             try {
                 const data = new Uint8Array(e.target?.result as ArrayBuffer);
                 const workbook = XLSX.read(data, { type: 'array' });
-
-                // Get first sheet
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-
-                // Get merged cells info
-                const merges = worksheet['!merges'] || [];
-
-                // Convert to JSON array
-                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
-
-                // Parse header info
-                const header = parseHeader(jsonData);
-
-                // Find header row and detect format
-                const headerRowIdx = findHeaderRow(jsonData);
-                const headerRow = jsonData[headerRowIdx] || [];
-                const format = detectTemplateFormat(headerRow);
-                const COL = getColumnMapping(format);
-
-                console.log(`[PAKD Parser] Detected format: ${format}, header row: ${headerRowIdx + 1}`);
-
-                const DATA_START_ROW = headerRowIdx + 1;
-
-                // Build a map of merged cell ranges for fee columns
-                const mergedFees: Map<string, { startRow: number; endRow: number; col: number; value: number }> = new Map();
-
-                for (const merge of merges) {
-                    const col = merge.s.c;
-                    // Only care about fee columns if they exist
-                    if ((col === COL.IMPORT_FEE || col === COL.CONTRACTOR_TAX || col === COL.TRANSFER_FEE)
-                        && col >= 0 && merge.s.r !== merge.e.r) {
-                        const cellAddr = XLSX.utils.encode_cell({ r: merge.s.r, c: col });
-                        const cell = worksheet[cellAddr];
-                        const value = cell ? Number(cell.v) || 0 : 0;
-
-                        if (value > 0) {
-                            const key = `${merge.s.r}-${merge.e.r}-${col}`;
-                            mergedFees.set(key, {
-                                startRow: merge.s.r,
-                                endRow: merge.e.r,
-                                col,
-                                value
-                            });
-                            console.log(`[PAKD Parser] Found merged fee: col=${col}, rows=${merge.s.r + 1}-${merge.e.r + 1}, value=${value}`);
-                        }
-                    }
-                }
-
-                // Parse line items
-                const lineItems: PAKDLineItem[] = [];
-                let totalCostSum = 0;
-                let totalPriceSum = 0;
-                let totalMarginSum = 0;
-
-                // First pass: collect all line item rows
-                const lineItemRows: { rowIndex: number; row: any[] }[] = [];
-                for (let i = DATA_START_ROW; i < jsonData.length; i++) {
-                    const row = jsonData[i];
-                    if (!row || !row[COL.STT] || typeof row[COL.STT] !== 'number') {
-                        // Check if it's a "TỔNG CỘNG" row
-                        const cellText = String(row?.[COL.NAME] || row?.[0] || '').toLowerCase();
-                        if (cellText.includes('tổng') || cellText.includes('tong')) {
-                            break;
-                        }
-                        continue;
-                    }
-                    lineItemRows.push({ rowIndex: i, row });
-                }
-
-                // Helper function to get fee value considering merged cells
-                const getFeeValue = (rowIndex: number, col: number, defaultValue: number): { value: number; isShared: boolean; sharedCount: number } => {
-                    if (col < 0) return { value: 0, isShared: false, sharedCount: 1 };
-
-                    let result = { value: defaultValue, isShared: false, sharedCount: 1 };
-                    mergedFees.forEach((mergeInfo) => {
-                        if (mergeInfo.col === col && rowIndex >= mergeInfo.startRow && rowIndex <= mergeInfo.endRow) {
-                            const rowsInMerge = mergeInfo.endRow - mergeInfo.startRow + 1;
-                            result = {
-                                value: Math.round(mergeInfo.value / rowsInMerge),
-                                isShared: true,
-                                sharedCount: rowsInMerge
-                            };
-                        }
-                    });
-                    return result;
-                };
-
-                // Helper to safely get cell value
-                const getCellValue = (row: any[], colIdx: number, defaultValue: any = ''): any => {
-                    if (colIdx < 0 || colIdx >= row.length) return defaultValue;
-                    return row[colIdx] ?? defaultValue;
-                };
-
-                // Second pass: parse line items with merged cell handling
-                for (const { rowIndex, row } of lineItemRows) {
-                    const importFeeInfo = getFeeValue(rowIndex, COL.IMPORT_FEE, Number(getCellValue(row, COL.IMPORT_FEE, 0)) || 0);
-                    const contractorTaxInfo = getFeeValue(rowIndex, COL.CONTRACTOR_TAX, Number(getCellValue(row, COL.CONTRACTOR_TAX, 0)) || 0);
-                    const transferFeeInfo = getFeeValue(rowIndex, COL.TRANSFER_FEE, Number(getCellValue(row, COL.TRANSFER_FEE, 0)) || 0);
-
-                    const totalCost = Number(getCellValue(row, COL.TOTAL_COST, 0)) || 0;
-                    const totalPrice = Number(getCellValue(row, COL.TOTAL_PRICE, 0)) || 0;
-                    const margin = Number(getCellValue(row, COL.MARGIN, 0)) || (totalPrice - totalCost);
-
-                    let marginPercent = 0;
-                    if (COL.MARGIN_PCT >= 0) {
-                        const pctValue = getCellValue(row, COL.MARGIN_PCT, 0);
-                        marginPercent = typeof pctValue === 'string'
-                            ? parseFloat(pctValue.replace('%', '').replace(',', '.'))
-                            : Number(pctValue) || 0;
-                    } else if (totalPrice > 0) {
-                        marginPercent = Math.round((margin / totalPrice) * 100 * 100) / 100;
-                    }
-
-                    const item: PAKDLineItem = {
-                        id: `item-${Date.now()}-${rowIndex}`,
-                        stt: Number(getCellValue(row, COL.STT, lineItems.length + 1)) || lineItems.length + 1,
-                        name: String(getCellValue(row, COL.NAME, '')),
-                        supplier: String(getCellValue(row, COL.SUPPLIER, '')),
-                        quantity: Number(getCellValue(row, COL.QUANTITY, 0)) || 0,
-                        unit: String(getCellValue(row, COL.UNIT, 'VNĐ')),
-                        unitCost: Number(getCellValue(row, COL.UNIT_COST, 0)) || 0,
-                        totalCost,
-                        unitPrice: Number(getCellValue(row, COL.UNIT_PRICE, 0)) || 0,
-                        totalPrice,
-                        importFee: importFeeInfo.value,
-                        contractorTax: contractorTaxInfo.value,
-                        transferFee: transferFeeInfo.value,
-                        margin,
-                        marginPercent,
-                    };
-
-                    lineItems.push(item);
-                    totalCostSum += item.totalCost;
-                    totalPriceSum += item.totalPrice;
-                    totalMarginSum += item.margin;
-                }
-
-                // Calculate admin costs from line items
-                const adminCosts: PAKDAdminCosts = {
-                    bankFee: lineItems.reduce((sum, item) => sum + item.transferFee, 0),
-                    subcontractorFee: lineItems.reduce((sum, item) => sum + item.contractorTax, 0),
-                    importLogistics: lineItems.reduce((sum, item) => sum + item.importFee, 0),
-                    expertFee: 0,
-                    documentFee: 0,
-                    supplierDiscount: 0,
-                };
-
-                // Parse execution costs from summary section
-                const executionCosts: PAKDExecutionCost[] = [];
-
-                // Helper to extract numeric value from a cell
-                const extractNum = (cell: any): number => {
-                    if (cell === null || cell === undefined) return 0;
-                    if (typeof cell === 'number') return cell;
-                    const str = String(cell).replace(/\./g, '').replace(',', '.');
-                    return Number(str) || 0;
-                };
-
-                // Scan for summary section
-                for (let i = DATA_START_ROW; i < jsonData.length; i++) {
-                    const row = jsonData[i];
-                    if (!row) continue;
-
-                    const labelCol0 = String(row[0] || '').trim();
-                    const labelCol1 = String(row[1] || '').trim();
-                    const label = (labelCol0 || labelCol1).toLowerCase();
-
-                    const value = extractNum(row[2]) || extractNum(row[1]) || 0;
-
-                    // Phí thuê chuyên gia
-                    if (label.includes('phí thuê chuyên gia') || label.includes('chuyên gia')) {
-                        if (value > 0) {
-                            executionCosts.push({
-                                id: `pakd-expert-${Date.now()}`,
-                                name: 'Phí thuê chuyên gia (net)',
-                                amount: value
-                            });
-                            adminCosts.expertFee = value;
-                        }
-                    }
-
-                    // Phí thanh toán chứng từ
-                    if (label.includes('phí thanh toán') || label.includes('chứng từ')) {
-                        if (value > 0) {
-                            executionCosts.push({
-                                id: `pakd-document-${Date.now()}`,
-                                name: 'Phí thanh toán chứng từ',
-                                amount: value
-                            });
-                            adminCosts.documentFee = value;
-                        }
-                    }
-
-                    // Chiết khấu NCC
-                    if (label.includes('chiết khấu') || label.includes('chiet khau')) {
-                        adminCosts.supplierDiscount = value;
-                    }
-
-                    // Chi phí khác (thuê nhà thầu, logistics, etc.)
-                    if (label.includes('chi phí khác') && !label.includes('thuê')) {
-                        if (value > 0) {
-                            executionCosts.push({
-                                id: `pakd-other-${Date.now()}`,
-                                name: 'Chi phí khác',
-                                amount: value
-                            });
-                        }
-                    }
-                }
-
-                console.log('[PAKD Parser] Found execution costs:', executionCosts);
-
-                // Calculate financials
-                const totalAdminCosts = adminCosts.bankFee + adminCosts.subcontractorFee +
-                    adminCosts.importLogistics + adminCosts.expertFee + adminCosts.documentFee;
-
-                const otherExecutionCosts = executionCosts
-                    .filter(c => !c.name.includes('chuyên gia') && !c.name.includes('chứng từ'))
-                    .reduce((sum, c) => sum + c.amount, 0);
-
-                const financials: PAKDFinancials = {
-                    revenue: totalPriceSum,
-                    costs: totalCostSum + totalAdminCosts + otherExecutionCosts,
-                    profit: totalPriceSum - totalCostSum - totalAdminCosts - otherExecutionCosts,
-                    margin: totalPriceSum > 0
-                        ? Math.round(((totalPriceSum - totalCostSum - totalAdminCosts - otherExecutionCosts) / totalPriceSum) * 100 * 100) / 100
-                        : 0,
-                };
-
-                resolve({
-                    header,
-                    lineItems,
-                    adminCosts,
-                    executionCosts,
-                    financials,
-                });
+                resolve(parsePAKDWorkbook(workbook));
             } catch (error) {
                 console.error('[PAKD Parser] Error parsing Excel:', error);
                 reject(new Error('Không thể đọc file Excel. Vui lòng kiểm tra định dạng file.'));
@@ -582,6 +346,241 @@ export function generatePAKDTemplate(): void {
 
     // Generate and download file
     XLSX.writeFile(wb, 'PAKD_Template_Unified.xlsx');
+}
+
+/**
+ * Fetch and parse PAKD from Google Sheets URL
+ * Supports converting standard Google Sheets 'edit' URLs to export URLs
+ */
+export async function fetchPAKDFromGoogleSheets(url: string): Promise<ParsedPAKD> {
+    try {
+        // 1. Convert URL to export format (XLSX)
+        // From: https://docs.google.com/spreadsheets/d/[ID]/edit#gid=[GID]
+        // To:   https://docs.google.com/spreadsheets/d/[ID]/export?format=xlsx&gid=[GID]
+
+        let exportUrl = url;
+        const sheetIdMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+
+        if (sheetIdMatch) {
+            const sheetId = sheetIdMatch[1];
+            const gidMatch = url.match(/gid=([0-9]+)/);
+            const gid = gidMatch ? gidMatch[1] : '0';
+            exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=xlsx&gid=${gid}`;
+        } else {
+            throw new Error('Định dạng link Google Sheets không đúng. Vui lòng kiểm tra lại.');
+        }
+
+        console.log(`[PAKD Parser] Fetching from Google Sheets: ${exportUrl}`);
+
+        // 2. Fetch data (Requires sheet to be "Anyone with link can view")
+        const response = await fetch(exportUrl);
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error('Không tìm thấy File. Vui lòng đảm bảo link đúng và Sheet ở chế độ công khai (Anyone with link can view).');
+            }
+            throw new Error(`Lỗi tải dữ liệu (${response.status}). Vui lòng kiểm tra quyền truy cập của Google Sheet.`);
+        }
+
+        const buffer = await response.arrayBuffer();
+
+        // 3. Parse ArrayBuffer
+        const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+        const merges = worksheet['!merges'] || [];
+
+        // Return a logic similar to parsePAKDExcel but from the buffer we already have
+        // (Refactored logic below to avoid duplicate code)
+        return parsePAKDWorkbook(workbook);
+    } catch (error: any) {
+        console.error('[PAKD Parser] Google Sheets error:', error);
+        throw error;
+    }
+}
+
+/**
+ * Shared logic to parse a workbook (from file or buffer)
+ */
+export function parsePAKDWorkbook(workbook: XLSX.WorkBook): ParsedPAKD {
+    // Get first sheet
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+
+    // Get merged cells info
+    const merges = worksheet['!merges'] || [];
+
+    // Convert to JSON array
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+
+    // Parse header info
+    const header = parseHeader(jsonData);
+
+    // Find header row and detect format
+    const headerRowIdx = findHeaderRow(jsonData);
+    const headerRow = jsonData[headerRowIdx] || [];
+    const format = detectTemplateFormat(headerRow);
+    const COL = getColumnMapping(format);
+
+    const DATA_START_ROW = headerRowIdx + 1;
+
+    // Build a map of merged cell ranges for fee columns
+    const mergedFees: Map<string, { startRow: number; endRow: number; col: number; value: number }> = new Map();
+
+    for (const merge of merges) {
+        const col = merge.s.c;
+        if ((col === COL.IMPORT_FEE || col === COL.CONTRACTOR_TAX || col === COL.TRANSFER_FEE)
+            && col >= 0 && merge.s.r !== merge.e.r) {
+            const cellAddr = XLSX.utils.encode_cell({ r: merge.s.r, c: col });
+            const cell = worksheet[cellAddr];
+            const value = cell ? Number(cell.v) || 0 : 0;
+
+            if (value > 0) {
+                const key = `${merge.s.r}-${merge.e.r}-${col}`;
+                mergedFees.set(key, {
+                    startRow: merge.s.r,
+                    endRow: merge.e.r,
+                    col,
+                    value
+                });
+            }
+        }
+    }
+
+    // Parse line items
+    const lineItems: PAKDLineItem[] = [];
+    let totalCostSum = 0;
+    let totalPriceSum = 0;
+
+    const lineItemRows: { rowIndex: number; row: any[] }[] = [];
+    for (let i = DATA_START_ROW; i < jsonData.length; i++) {
+        const row = jsonData[i];
+        if (!row || !row[COL.STT] || typeof row[COL.STT] !== 'number') {
+            const cellText = String(row?.[COL.NAME] || row?.[0] || '').toLowerCase();
+            if (cellText.includes('tổng') || cellText.includes('tong')) break;
+            continue;
+        }
+        lineItemRows.push({ rowIndex: i, row });
+    }
+
+    const getFeeValue = (rowIndex: number, col: number, defaultValue: number): { value: number; isShared: boolean; sharedCount: number } => {
+        if (col < 0) return { value: 0, isShared: false, sharedCount: 1 };
+
+        let result = { value: defaultValue, isShared: false, sharedCount: 1 };
+        mergedFees.forEach((mergeInfo) => {
+            if (mergeInfo.col === col && rowIndex >= mergeInfo.startRow && rowIndex <= mergeInfo.endRow) {
+                const rowsInMerge = mergeInfo.endRow - mergeInfo.startRow + 1;
+                result = {
+                    value: Math.round(mergeInfo.value / rowsInMerge),
+                    isShared: true,
+                    sharedCount: rowsInMerge
+                };
+            }
+        });
+        return result;
+    };
+
+    const getCellValue = (row: any[], colIdx: number, defaultValue: any = ''): any => {
+        if (colIdx < 0 || colIdx >= row.length) return defaultValue;
+        return row[colIdx] ?? defaultValue;
+    };
+
+    for (const { rowIndex, row } of lineItemRows) {
+        const importFeeInfo = getFeeValue(rowIndex, COL.IMPORT_FEE, Number(getCellValue(row, COL.IMPORT_FEE, 0)) || 0);
+        const contractorTaxInfo = getFeeValue(rowIndex, COL.CONTRACTOR_TAX, Number(getCellValue(row, COL.CONTRACTOR_TAX, 0)) || 0);
+        const transferFeeInfo = getFeeValue(rowIndex, COL.TRANSFER_FEE, Number(getCellValue(row, COL.TRANSFER_FEE, 0)) || 0);
+
+        const totalCost = Number(getCellValue(row, COL.TOTAL_COST, 0)) || 0;
+        const totalPrice = Number(getCellValue(row, COL.TOTAL_PRICE, 0)) || 0;
+        const margin = Number(getCellValue(row, COL.MARGIN, 0)) || (totalPrice - totalCost);
+
+        let marginPercent = 0;
+        if (COL.MARGIN_PCT >= 0) {
+            const pctValue = getCellValue(row, COL.MARGIN_PCT, 0);
+            marginPercent = typeof pctValue === 'string'
+                ? parseFloat(pctValue.replace('%', '').replace(',', '.'))
+                : Number(pctValue) || 0;
+        } else if (totalPrice > 0) {
+            marginPercent = Math.round((margin / totalPrice) * 100 * 100) / 100;
+        }
+
+        const item: PAKDLineItem = {
+            id: `item-${Date.now()}-${rowIndex}`,
+            stt: Number(getCellValue(row, COL.STT, lineItems.length + 1)) || lineItems.length + 1,
+            name: String(getCellValue(row, COL.NAME, '')),
+            supplier: String(getCellValue(row, COL.SUPPLIER, '')),
+            quantity: Number(getCellValue(row, COL.QUANTITY, 0)) || 0,
+            unit: String(getCellValue(row, COL.UNIT, 'VNĐ')),
+            unitCost: Number(getCellValue(row, COL.UNIT_COST, 0)) || 0,
+            totalCost,
+            unitPrice: Number(getCellValue(row, COL.UNIT_PRICE, 0)) || 0,
+            totalPrice,
+            importFee: importFeeInfo.value,
+            contractorTax: contractorTaxInfo.value,
+            transferFee: transferFeeInfo.value,
+            margin,
+            marginPercent,
+        };
+
+        lineItems.push(item);
+        totalCostSum += item.totalCost;
+        totalPriceSum += item.totalPrice;
+    }
+
+    const adminCosts: PAKDAdminCosts = {
+        bankFee: lineItems.reduce((sum, item) => sum + item.transferFee, 0),
+        subcontractorFee: lineItems.reduce((sum, item) => sum + item.contractorTax, 0),
+        importLogistics: lineItems.reduce((sum, item) => sum + item.importFee, 0),
+        expertFee: 0,
+        documentFee: 0,
+        supplierDiscount: 0,
+    };
+
+    const executionCosts: PAKDExecutionCost[] = [];
+    const extractNum = (cell: any): number => {
+        if (cell === null || cell === undefined) return 0;
+        if (typeof cell === 'number') return cell;
+        const str = String(cell).replace(/\./g, '').replace(',', '.');
+        return Number(str) || 0;
+    };
+
+    for (let i = DATA_START_ROW; i < jsonData.length; i++) {
+        const row = jsonData[i];
+        if (!row) continue;
+        const labelCol0 = String(row[0] || '').trim();
+        const labelCol1 = String(row[1] || '').trim();
+        const label = (labelCol0 || labelCol1).toLowerCase();
+        const value = extractNum(row[2]) || extractNum(row[1]) || 0;
+
+        if (label.includes('phí thuê chuyên gia') || label.includes('chuyên gia')) {
+            if (value > 0) {
+                executionCosts.push({ id: `pakd-expert-${Date.now()}`, name: 'Phí thuê chuyên gia (net)', amount: value });
+                adminCosts.expertFee = value;
+            }
+        }
+        if (label.includes('phí thanh toán') || label.includes('chứng từ')) {
+            if (value > 0) {
+                executionCosts.push({ id: `pakd-document-${Date.now()}`, name: 'Phí thanh toán chứng từ', amount: value });
+                adminCosts.documentFee = value;
+            }
+        }
+        if (label.includes('chiết khấu') || label.includes('chiet khau')) adminCosts.supplierDiscount = value;
+        if (label.includes('chi phí khác') && !label.includes('thuê')) {
+            if (value > 0) executionCosts.push({ id: `pakd-other-${Date.now()}`, name: 'Chi phí khác', amount: value });
+        }
+    }
+
+    const totalAdminCosts = adminCosts.bankFee + adminCosts.subcontractorFee + adminCosts.importLogistics + adminCosts.expertFee + adminCosts.documentFee;
+    const otherExecutionCosts = executionCosts.filter(c => !c.name.includes('chuyên gia') && !c.name.includes('chứng từ')).reduce((sum, c) => sum + c.amount, 0);
+
+    const financials: PAKDFinancials = {
+        revenue: totalPriceSum,
+        costs: totalCostSum + totalAdminCosts + otherExecutionCosts,
+        profit: totalPriceSum - totalCostSum - totalAdminCosts - otherExecutionCosts,
+        margin: totalPriceSum > 0 ? Math.round(((totalPriceSum - totalCostSum - totalAdminCosts - otherExecutionCosts) / totalPriceSum) * 100 * 100) / 100 : 0,
+    };
+
+    return { header, lineItems, adminCosts, executionCosts, financials };
 }
 
 /**
