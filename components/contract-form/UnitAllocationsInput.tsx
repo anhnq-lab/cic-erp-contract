@@ -1,67 +1,81 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Plus, Trash2, Users, Percent, User } from 'lucide-react';
 import { Unit, Employee, UnitAllocation } from '../../types';
 
 interface Props {
     units: Unit[];
     employees: Employee[];
-    leadUnitId: string;           // Đơn vị thực hiện chính
-    leadEmployeeId: string;       // Nhân viên chính
+    leadUnitId: string;           // Đơn vị thực hiện chính (from parent dropdown)
     allocations: UnitAllocation[];
     onChange: (allocations: UnitAllocation[]) => void;
+    onLeadEmployeeChange: (employeeId: string) => void; // Callback to update parent's salespersonId
 }
 
 /**
  * Component for managing unit allocations with percentage distribution
  * Per QĐ 09.2024 - Quy chế Phối hợp kinh doanh
+ * 
+ * Auto-calculates lead % = 100% - sum of support %
  */
 export default function UnitAllocationsInput({
     units,
     employees,
     leadUnitId,
-    leadEmployeeId,
     allocations,
-    onChange
+    onChange,
+    onLeadEmployeeChange
 }: Props) {
-    // Calculate remaining percentage
-    const leadPercent = allocations.find(a => a.role === 'lead')?.percent || 100;
+    // Calculate support total and lead percent (auto-calculated)
     const supportTotalPercent = allocations
         .filter(a => a.role === 'support')
         .reduce((sum, a) => sum + a.percent, 0);
-    const totalPercent = leadPercent + supportTotalPercent;
-    const isValid = totalPercent === 100;
+    const leadPercent = 100 - supportTotalPercent;
+    const leadAllocation = allocations.find(a => a.role === 'lead');
+    const isValid = leadPercent >= 0;
 
-    // Initialize lead allocation if not exists
+    // Initialize/sync lead allocation when leadUnitId changes
     useEffect(() => {
-        if (leadUnitId && leadEmployeeId) {
+        if (leadUnitId) {
             const existingLead = allocations.find(a => a.role === 'lead');
             if (!existingLead) {
+                // Create new lead allocation
                 onChange([{
                     unitId: leadUnitId,
-                    employeeId: leadEmployeeId,
+                    employeeId: '',
                     percent: 100,
                     role: 'lead'
-                }]);
-            } else if (existingLead.unitId !== leadUnitId || existingLead.employeeId !== leadEmployeeId) {
-                // Update lead if unit/employee changed
-                onChange(allocations.map(a =>
-                    a.role === 'lead'
-                        ? { ...a, unitId: leadUnitId, employeeId: leadEmployeeId }
-                        : a
-                ));
+                }, ...allocations.filter(a => a.role === 'support')]);
+            } else if (existingLead.unitId !== leadUnitId) {
+                // Update lead unit if changed from parent dropdown
+                const newAllocations = allocations.map(a =>
+                    a.role === 'lead' ? { ...a, unitId: leadUnitId, employeeId: '' } : a
+                );
+                onChange(newAllocations);
             }
         }
-    }, [leadUnitId, leadEmployeeId]);
+    }, [leadUnitId]);
 
-    const handleLeadPercentChange = (newPercent: number) => {
-        const clampedPercent = Math.max(0, Math.min(100, newPercent));
-        onChange(allocations.map(a =>
-            a.role === 'lead' ? { ...a, percent: clampedPercent } : a
-        ));
+    // Auto-update lead percent when support allocations change
+    useEffect(() => {
+        if (leadAllocation && leadAllocation.percent !== leadPercent) {
+            const newAllocations = allocations.map(a =>
+                a.role === 'lead' ? { ...a, percent: leadPercent } : a
+            );
+            onChange(newAllocations);
+        }
+    }, [supportTotalPercent]);
+
+    const handleLeadEmployeeChange = (employeeId: string) => {
+        // Update in allocations
+        const newAllocations = allocations.map(a =>
+            a.role === 'lead' ? { ...a, employeeId } : a
+        );
+        onChange(newAllocations);
+        // Notify parent
+        onLeadEmployeeChange(employeeId);
     };
 
     const addSupportUnit = () => {
-        // Find first unit not already used
         const usedUnitIds = allocations.map(a => a.unitId);
         const availableUnit = units.find(u => u.id !== 'all' && !usedUnitIds.includes(u.id));
         if (!availableUnit) return;
@@ -69,7 +83,7 @@ export default function UnitAllocationsInput({
         onChange([...allocations, {
             unitId: availableUnit.id,
             employeeId: '',
-            percent: 0,
+            percent: 50, // Default 50% for new support unit
             role: 'support'
         }]);
     };
@@ -78,13 +92,26 @@ export default function UnitAllocationsInput({
         onChange(allocations.filter(a => a.unitId !== unitId || a.role === 'lead'));
     };
 
-    const updateSupportUnit = (index: number, field: keyof UnitAllocation, value: string | number) => {
-        const newAllocations = [...allocations];
-        const supportAllocations = newAllocations.filter(a => a.role === 'support');
-        if (supportAllocations[index]) {
-            (supportAllocations[index] as any)[field] = value;
-            onChange(newAllocations);
-        }
+    const updateSupportPercent = (allocationToUpdate: UnitAllocation, newPercent: number) => {
+        const clampedPercent = Math.max(0, Math.min(100, newPercent));
+        const newAllocations = allocations.map(a =>
+            a === allocationToUpdate ? { ...a, percent: clampedPercent } : a
+        );
+        onChange(newAllocations);
+    };
+
+    const updateSupportEmployee = (allocationToUpdate: UnitAllocation, employeeId: string) => {
+        const newAllocations = allocations.map(a =>
+            a === allocationToUpdate ? { ...a, employeeId } : a
+        );
+        onChange(newAllocations);
+    };
+
+    const updateSupportUnit = (allocationToUpdate: UnitAllocation, newUnitId: string) => {
+        const newAllocations = allocations.map(a =>
+            a === allocationToUpdate ? { ...a, unitId: newUnitId, employeeId: '' } : a
+        );
+        onChange(newAllocations);
     };
 
     const getFilteredEmployees = (unitId: string) => {
@@ -102,7 +129,7 @@ export default function UnitAllocationsInput({
 
     return (
         <div className="space-y-4">
-            {/* Lead Unit - Always shown, % editable */}
+            {/* Lead Unit - Employee selector inside, % auto-calculated */}
             <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-4 border-2 border-indigo-200 dark:border-indigo-800">
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -114,17 +141,27 @@ export default function UnitAllocationsInput({
                             <p className="text-sm font-black text-slate-800 dark:text-white">{getUnitName(leadUnitId)}</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="number"
-                            min={0}
-                            max={100}
-                            value={leadPercent}
-                            onChange={(e) => handleLeadPercentChange(parseInt(e.target.value) || 0)}
-                            className="w-16 px-2 py-1 text-center bg-white dark:bg-slate-800 border-2 border-indigo-200 dark:border-indigo-700 rounded-xl text-sm font-bold text-indigo-700 dark:text-indigo-300"
-                        />
+                    <div className="flex items-center gap-2 bg-indigo-100 dark:bg-indigo-800/50 px-3 py-1.5 rounded-xl">
+                        <span className="text-lg font-black text-indigo-700 dark:text-indigo-300">{leadPercent}</span>
                         <Percent size={14} className="text-indigo-500" />
                     </div>
+                </div>
+
+                {/* Lead Employee Selector */}
+                <div className="mt-3">
+                    <label className="text-[10px] font-bold text-indigo-500 uppercase mb-1 flex items-center gap-1">
+                        <User size={10} /> Sale thực hiện (Chịu trách nhiệm KPI)
+                    </label>
+                    <select
+                        value={leadAllocation?.employeeId || ''}
+                        onChange={(e) => handleLeadEmployeeChange(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border-2 border-indigo-200 dark:border-indigo-700 rounded-xl text-sm font-bold text-indigo-700 dark:text-indigo-300"
+                    >
+                        <option value="">-- Chọn nhân viên phụ trách --</option>
+                        {getFilteredEmployees(leadUnitId).map(e => (
+                            <option key={e.id} value={e.id}>{e.name}</option>
+                        ))}
+                    </select>
                 </div>
             </div>
 
@@ -151,12 +188,7 @@ export default function UnitAllocationsInput({
                         {/* Unit Select */}
                         <select
                             value={allocation.unitId}
-                            onChange={(e) => {
-                                const newAllocations = [...allocations];
-                                const supportIndex = allocations.findIndex(a => a === allocation);
-                                newAllocations[supportIndex] = { ...allocation, unitId: e.target.value, employeeId: '' };
-                                onChange(newAllocations);
-                            }}
+                            onChange={(e) => updateSupportUnit(allocation, e.target.value)}
                             className="px-3 py-2 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium"
                         >
                             {units.filter(u => u.id !== 'all' && (u.id === allocation.unitId || !allocations.some(a => a.unitId === u.id))).map(u => (
@@ -167,12 +199,7 @@ export default function UnitAllocationsInput({
                         {/* Employee Select */}
                         <select
                             value={allocation.employeeId}
-                            onChange={(e) => {
-                                const newAllocations = [...allocations];
-                                const supportIndex = allocations.findIndex(a => a === allocation);
-                                newAllocations[supportIndex] = { ...allocation, employeeId: e.target.value };
-                                onChange(newAllocations);
-                            }}
+                            onChange={(e) => updateSupportEmployee(allocation, e.target.value)}
                             className="px-3 py-2 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium"
                         >
                             <option value="">-- Chọn NV --</option>
@@ -186,14 +213,9 @@ export default function UnitAllocationsInput({
                             <input
                                 type="number"
                                 min={0}
-                                max={100 - leadPercent - supportAllocations.filter(a => a !== allocation).reduce((s, a) => s + a.percent, 0)}
+                                max={100}
                                 value={allocation.percent}
-                                onChange={(e) => {
-                                    const newAllocations = [...allocations];
-                                    const supportIndex = allocations.findIndex(a => a === allocation);
-                                    newAllocations[supportIndex] = { ...allocation, percent: parseInt(e.target.value) || 0 };
-                                    onChange(newAllocations);
-                                }}
+                                onChange={(e) => updateSupportPercent(allocation, parseInt(e.target.value) || 0)}
                                 className="flex-1 px-3 py-2 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-600 rounded-xl text-sm font-bold text-center"
                             />
                             <Percent size={14} className="text-slate-400" />
@@ -215,8 +237,8 @@ export default function UnitAllocationsInput({
 
             {/* Validation Message */}
             {!isValid && (
-                <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 text-xs font-medium bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-xl">
-                    <span>⚠️ Tổng phần trăm: {totalPercent}% (cần = 100%)</span>
+                <div className="flex items-center gap-2 text-red-600 dark:text-red-400 text-xs font-medium bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-xl">
+                    <span>⚠️ Tổng % đơn vị phối hợp vượt quá 100%!</span>
                 </div>
             )}
         </div>
