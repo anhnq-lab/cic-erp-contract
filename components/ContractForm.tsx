@@ -640,35 +640,58 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     <UserCheck size={16} /> Đơn vị & Nhân sự thực hiện
                   </h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Unit Dropdown */}
                   <div className="space-y-2">
                     <label className="text-[11px] font-bold text-slate-500 uppercase ml-1 flex items-center gap-1">
-                      <MapPin size={10} /> Đơn vị thực hiện (Trung tâm/Chi nhánh)
+                      <MapPin size={10} /> Đơn vị thực hiện
                     </label>
                     <select
                       value={unitId}
                       onChange={(e) => { setUnitId(e.target.value); setSalespersonId(''); }}
-                      className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:border-indigo-500 transition-all"
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:border-indigo-500 transition-all"
                     >
                       <option value="">-- Chọn đơn vị --</option>
                       {units.filter(u => u.id !== 'all').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                     </select>
                   </div>
 
-                  {/* Unit Allocations - QĐ 09.2024 */}
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="text-[11px] font-bold text-orange-500 uppercase ml-1 flex items-center gap-1">
-                      <Users size={10} /> Phân bổ đơn vị phối hợp (QĐ 09.2024)
+                  {/* Employee Dropdown */}
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase ml-1 flex items-center gap-1">
+                      <User size={10} /> Nhân viên thực hiện
                     </label>
-                    <UnitAllocationsInput
-                      units={units}
-                      employees={salespeople}
-                      leadUnitId={unitId}
-                      allocations={unitAllocations}
-                      onChange={setUnitAllocations}
-                      onLeadEmployeeChange={setSalespersonId}
-                    />
+                    <select
+                      value={salespersonId}
+                      onChange={(e) => setSalespersonId(e.target.value)}
+                      className="w-full px-4 py-3 bg-indigo-50 dark:bg-indigo-900/20 border-2 border-indigo-100 dark:border-indigo-700 rounded-2xl text-sm font-bold text-indigo-700 dark:text-indigo-300 outline-none focus:border-indigo-500 transition-all"
+                    >
+                      <option value="">-- Chọn NV --</option>
+                      {filteredSales.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
                   </div>
+
+                  {/* Percentage Display */}
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase ml-1 flex items-center gap-1">
+                      <Percent size={10} /> Tỷ lệ %
+                    </label>
+                    <div className="w-full px-4 py-3 bg-indigo-100 dark:bg-indigo-800/50 border-2 border-indigo-200 dark:border-indigo-700 rounded-2xl text-sm font-black text-indigo-700 dark:text-indigo-300 text-center">
+                      {100 - unitAllocations.filter(a => a.role === 'support').reduce((s, a) => s + a.percent, 0)} %
+                    </div>
+                  </div>
+                </div>
+
+                {/* Support Allocations */}
+                <div className="mt-4">
+                  <UnitAllocationsInput
+                    units={units}
+                    employees={salespeople}
+                    leadUnitId={unitId}
+                    allocations={unitAllocations}
+                    onChange={setUnitAllocations}
+                    onLeadEmployeeChange={setSalespersonId}
+                  />
                 </div>
               </section>
 

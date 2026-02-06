@@ -129,29 +129,6 @@ export default function UnitAllocationsInput({
 
     return (
         <div className="space-y-4">
-            {/* Lead Unit - Only Employee and % (unit already selected above) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {/* Employee Select */}
-                <select
-                    value={leadAllocation?.employeeId || ''}
-                    onChange={(e) => handleLeadEmployeeChange(e.target.value)}
-                    className="px-3 py-2.5 bg-indigo-50 dark:bg-indigo-900/20 border-2 border-indigo-200 dark:border-indigo-700 rounded-xl text-sm font-bold text-indigo-700 dark:text-indigo-300"
-                >
-                    <option value="">-- Chọn NV --</option>
-                    {getFilteredEmployees(leadUnitId).map(e => (
-                        <option key={e.id} value={e.id}>{e.name}</option>
-                    ))}
-                </select>
-
-                {/* Percent Display (auto-calculated) */}
-                <div className="flex items-center gap-2">
-                    <div className="flex-1 px-3 py-2.5 bg-indigo-100 dark:bg-indigo-800/50 border-2 border-indigo-200 dark:border-indigo-700 rounded-xl text-sm font-black text-indigo-700 dark:text-indigo-300 text-center">
-                        {leadPercent}
-                    </div>
-                    <Percent size={14} className="text-indigo-500" />
-                </div>
-            </div>
-
             {/* Support Units */}
             {supportAllocations.map((allocation, index) => (
                 <div
