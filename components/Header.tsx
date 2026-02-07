@@ -1,18 +1,16 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Menu, LogOut, ChevronDown } from 'lucide-react';
-import { User as SupabaseUser } from '@supabase/supabase-js';
+import { Search, Bell, Menu, LogOut, ChevronDown, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface HeaderProps {
   onMenuClick: () => void;
   isSidebarCollapsed: boolean;
-  user?: SupabaseUser | null;
 }
 
-const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed, user }) => {
+const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed }) => {
   const marginClass = isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64';
-  const { signOut } = useAuth();
+  const { signOut, user, profile } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -32,8 +30,23 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed, user }
     setShowUserMenu(false);
   };
 
-  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  // Use profile data (linked to employee) first, fallback to Google metadata
+  const displayName = profile?.fullName || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const avatarUrl = user?.user_metadata?.avatar_url || profile?.avatarUrl;
   const initials = displayName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
+
+  // Map role codes to Vietnamese labels
+  const roleLabels: Record<string, string> = {
+    'Leadership': 'Ban Giám đốc',
+    'Admin': 'Quản trị viên',
+    'UnitLeader': 'Trưởng phòng',
+    'NVKD': 'Nhân viên KD',
+    'AdminUnit': 'Admin Đơn vị',
+    'Accountant': 'Kế toán',
+    'ChiefAccountant': 'Kế toán trưởng',
+    'Legal': 'Pháp chế',
+  };
+  const displayRole = profile?.role ? (roleLabels[profile.role] || profile.role) : '';
 
   return (
     <header className={`fixed top-0 left-0 right-0 h-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 ${marginClass} z-30 flex items-center justify-between px-4 transition-all duration-300`}>
@@ -74,28 +87,53 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed, user }
             onClick={() => setShowUserMenu(!showUserMenu)}
             className="flex items-center gap-2 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
           >
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
-              <span className="text-white text-sm font-bold">{initials}</span>
-            </div>
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={displayName}
+                className="w-9 h-9 rounded-full object-cover ring-2 ring-orange-200 dark:ring-orange-800"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
+                <span className="text-white text-sm font-bold">{initials}</span>
+              </div>
+            )}
             <div className="hidden sm:block text-left">
-              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate max-w-[120px]">
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate max-w-[150px]">
                 {displayName}
               </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Admin</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{displayRole}</p>
             </div>
             <ChevronDown size={16} className={`hidden sm:block text-slate-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
           </button>
 
           {/* Dropdown Menu */}
           {showUserMenu && (
-            <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50">
+            <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50">
               <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
-                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
-                  {displayName}
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                  {user?.email}
-                </p>
+                <div className="flex items-center gap-3">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={displayName} className="w-10 h-10 rounded-full object-cover" referrerPolicy="no-referrer" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
+                      <span className="text-white text-sm font-bold">{initials}</span>
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                      {displayName}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                      {user?.email}
+                    </p>
+                  </div>
+                </div>
+                {displayRole && (
+                  <span className="inline-flex items-center mt-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
+                    {displayRole}
+                  </span>
+                )}
               </div>
               <div className="py-1">
                 <button
