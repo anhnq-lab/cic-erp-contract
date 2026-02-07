@@ -368,9 +368,12 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
   };
 
   const formatCurrency = (val: number) => {
-    if (val >= 1e9) return `${(val / 1e9).toFixed(2)}B`;
-    if (val >= 1e6) return `${(val / 1e6).toFixed(0)}M`;
-    return val.toString();
+    const abs = Math.abs(val);
+    const sign = val < 0 ? '-' : '';
+    if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(2)}B`;
+    if (abs >= 1e6) return `${sign}${Math.round(abs / 1e6)}M`;
+    if (abs >= 1e3) return `${sign}${Math.round(abs / 1e3)}K`;
+    return Math.round(val).toString();
   };
 
   const getYoY = (metric: keyof KPIPlan) => {
@@ -686,9 +689,12 @@ const KPIItem = ({ title, metric, stats, target, yoy, color, icon }: any) => {
   };
 
   const formatValue = (val: number) => {
-    if (val >= 1e9) return `${(val / 1e9).toFixed(1)}B`;
-    if (val >= 1e6) return `${(val / 1e6).toFixed(0)}M`;
-    return val.toString();
+    const abs = Math.abs(val);
+    const sign = val < 0 ? '-' : '';
+    if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(2)}B`;
+    if (abs >= 1e6) return `${sign}${Math.round(abs / 1e6)}M`;
+    if (abs >= 1e3) return `${sign}${Math.round(abs / 1e3)}K`;
+    return Math.round(val).toString();
   };
 
   return (

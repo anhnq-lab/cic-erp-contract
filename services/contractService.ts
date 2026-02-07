@@ -378,7 +378,7 @@ export const ContractService = {
                 totalRevenue: acc.totalRevenue + rev,
                 totalProfit: acc.totalProfit + (val - cost), // Legacy
                 totalSigningProfit: acc.totalSigningProfit + (val - cost),
-                totalRevenueProfit: acc.totalRevenueProfit + (rev - (curr.actual_cost || 0)),
+                totalRevenueProfit: acc.totalRevenueProfit + (rev > 0 ? Math.round(rev - (curr.actual_cost || 0)) : 0),
                 totalCash: acc.totalCash + (curr.payments?.reduce((sum: number, p: any) => sum + (Number(p.paid_amount) || 0), 0) || 0)
             };
         }, { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0, totalSigningProfit: 0, totalRevenueProfit: 0, totalCash: 0 });
@@ -525,7 +525,7 @@ export const ContractService = {
                 totalRevenue: acc.totalRevenue + rev,
                 totalProfit: acc.totalProfit + (val - cost),
                 totalSigningProfit: acc.totalSigningProfit + (val - cost),
-                totalRevenueProfit: acc.totalRevenueProfit + (rev - actCost),
+                totalRevenueProfit: acc.totalRevenueProfit + (rev > 0 ? Math.round(rev - actCost) : 0),
                 totalCash: acc.totalCash + cash,
                 activeCount: acc.activeCount + (curr.status === 'Processing' || curr.status === 'Active' ? 1 : 0),
                 pendingCount: acc.pendingCount + (curr.status === 'Pending' ? 1 : 0)
