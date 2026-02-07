@@ -39,6 +39,7 @@ import Tooltip from './ui/Tooltip';
 import ContractBusinessPlanTab from './ContractBusinessPlanTab';
 import ErrorBoundary from './ErrorBoundary';
 import { useAuth } from '../contexts/AuthContext';
+import { useImpersonation } from '../contexts/ImpersonationContext';
 import { ContractReviewPanel } from './workflow/ContractReviewPanel';
 import { SubmitLegalDialog } from './workflow/SubmitLegalDialog';
 import { AddDocumentLinkDialog } from './workflow/AddDocumentLinkDialog';
@@ -61,6 +62,10 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'overview' | 'pakd'>('overview');
   const { canEdit, profile } = useAuth();
+  const { impersonatedUser, isImpersonating } = useImpersonation();
+
+  // When impersonating, use impersonated user's role for approval workflow
+  const effectiveRole = isImpersonating && impersonatedUser ? impersonatedUser.role : profile?.role;
 
   // Reference Names State
   const [unitName, setUnitName] = useState('...');
@@ -381,7 +386,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
             <ContractReviewPanel
               contractId={contract.id}
               currentStatus={contract.status}
-              userRole={profile.role}
+              userRole={effectiveRole || ''}
               legalApproved={(contract as any).legal_approved || false}
               financeApproved={(contract as any).finance_approved || false}
               onAction={async (action) => {
