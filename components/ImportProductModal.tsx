@@ -235,11 +235,11 @@ const ImportProductModal: React.FC<ImportProductModalProps> = ({ isOpen, onClose
         <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleClose} />
 
-            <div className="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="relative bg-white dark:bg-slate-900 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
+                        <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
                             <FileSpreadsheet className="text-indigo-600" size={24} />
                         </div>
                         <div>
@@ -247,7 +247,7 @@ const ImportProductModal: React.FC<ImportProductModalProps> = ({ isOpen, onClose
                             <p className="text-sm text-slate-500">Nhập danh sách sản phẩm từ file Excel</p>
                         </div>
                     </div>
-                    <button onClick={handleClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                    <button onClick={handleClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                         <X size={20} className="text-slate-400" />
                     </button>
                 </div>
@@ -259,7 +259,7 @@ const ImportProductModal: React.FC<ImportProductModalProps> = ({ isOpen, onClose
                             {/* Download Template */}
                             <button
                                 onClick={downloadTemplate}
-                                className="flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
                             >
                                 <Download size={18} />
                                 Tải template Excel mẫu
@@ -270,7 +270,7 @@ const ImportProductModal: React.FC<ImportProductModalProps> = ({ isOpen, onClose
                                 onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
                                 onDragLeave={() => setDragActive(false)}
                                 onDrop={handleDrop}
-                                className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors ${dragActive
+                                className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${dragActive
                                         ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
                                         : 'border-slate-300 dark:border-slate-700 hover:border-indigo-400'
                                     }`}
@@ -287,7 +287,7 @@ const ImportProductModal: React.FC<ImportProductModalProps> = ({ isOpen, onClose
                                             Kéo thả file Excel vào đây
                                         </p>
                                         <p className="text-sm text-slate-500 mb-4">hoặc</p>
-                                        <label className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold cursor-pointer hover:bg-indigo-700 transition-colors">
+                                        <label className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg font-bold cursor-pointer hover:bg-indigo-700 transition-colors">
                                             <Upload size={18} />
                                             Chọn file
                                             <input
@@ -305,16 +305,16 @@ const ImportProductModal: React.FC<ImportProductModalProps> = ({ isOpen, onClose
                         <>
                             {/* Preview Stats */}
                             <div className="flex gap-4 mb-6">
-                                <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-xl">
+                                <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
                                     <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Tổng:</span>
                                     <span className="font-bold text-slate-900 dark:text-slate-100">{parsedData.length}</span>
                                 </div>
-                                <div className="flex items-center gap-2 px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
+                                <div className="flex items-center gap-2 px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
                                     <CheckCircle size={16} className="text-emerald-600" />
                                     <span className="font-bold text-emerald-700 dark:text-emerald-400">{validCount} hợp lệ</span>
                                 </div>
                                 {invalidCount > 0 && (
-                                    <div className="flex items-center gap-2 px-4 py-2 bg-rose-100 dark:bg-rose-900/30 rounded-xl">
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-rose-100 dark:bg-rose-900/30 rounded-lg">
                                         <AlertCircle size={16} className="text-rose-600" />
                                         <span className="font-bold text-rose-700 dark:text-rose-400">{invalidCount} lỗi</span>
                                     </div>
@@ -322,7 +322,7 @@ const ImportProductModal: React.FC<ImportProductModalProps> = ({ isOpen, onClose
                             </div>
 
                             {/* Preview Table */}
-                            <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+                            <div className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
                                 <div className="overflow-x-auto max-h-[400px]">
                                     <table className="w-full text-sm">
                                         <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0">
@@ -369,7 +369,7 @@ const ImportProductModal: React.FC<ImportProductModalProps> = ({ isOpen, onClose
                 <div className="flex items-center justify-between p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800">
                     <button
                         onClick={parsedData.length > 0 ? resetModal : handleClose}
-                        className="px-5 py-2.5 text-slate-600 dark:text-slate-400 font-medium hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors"
+                        className="px-5 py-2.5 text-slate-600 dark:text-slate-400 font-medium hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
                     >
                         {parsedData.length > 0 ? 'Chọn file khác' : 'Hủy bỏ'}
                     </button>
@@ -378,7 +378,7 @@ const ImportProductModal: React.FC<ImportProductModalProps> = ({ isOpen, onClose
                         <button
                             onClick={handleImport}
                             disabled={validCount === 0 || isImporting}
-                            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             {isImporting ? (
                                 <>

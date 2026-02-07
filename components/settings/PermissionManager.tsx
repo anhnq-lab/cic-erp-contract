@@ -214,7 +214,7 @@ const PermissionManager: React.FC = () => {
 
             {/* Selected User Info with Role Selector */}
             {selectedUser && (
-                <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
+                <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold">
                             {selectedUser.fullName?.charAt(0) || 'U'}

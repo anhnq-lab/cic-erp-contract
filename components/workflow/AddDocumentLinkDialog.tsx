@@ -153,11 +153,11 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-md mx-4 animate-in fade-in zoom-in duration-200">
+            <div className="bg-white dark:bg-slate-900 rounded-lg shadow-2xl w-full max-w-md mx-4 animate-in fade-in zoom-in duration-200">
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
                             <Link size={20} className="text-indigo-600" />
                         </div>
                         <h3 className="font-bold text-lg text-slate-900 dark:text-white">
@@ -190,7 +190,7 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
                                     setFetchFailed(false);
                                 }}
                                 placeholder="https://docs.google.com/..."
-                                className="w-full px-4 py-3 pl-10 rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-colors"
+                                className="w-full px-4 py-3 pl-10 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-colors"
                             />
                             <div className="absolute left-3 top-1/2 -translate-y-1/2">
                                 {url ? linkTypeIcon(detectedType) : <Link size={16} className="text-slate-400" />}
@@ -223,7 +223,7 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
                                 value={name}
                                 onChange={(e) => { setName(e.target.value); setError(''); }}
                                 placeholder="Nhập tên tài liệu"
-                                className="w-full px-4 py-3 pr-10 rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-colors"
+                                className="w-full px-4 py-3 pr-10 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-colors"
                             />
                             {url && detectedType !== 'other' && !isFetchingTitle && (
                                 <button
@@ -263,14 +263,14 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
                 <div className="flex justify-end gap-3 p-5 border-t border-slate-200 dark:border-slate-800">
                     <button
                         onClick={onClose}
-                        className="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium transition-colors"
+                        className="px-5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium transition-colors"
                     >
                         Hủy
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={isFetchingTitle}
-                        className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 font-medium flex items-center gap-2 transition-colors shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30 disabled:opacity-50"
+                        className="px-5 py-2.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 font-medium flex items-center gap-2 transition-colors shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30 disabled:opacity-50"
                     >
                         <Plus size={16} />
                         Thêm

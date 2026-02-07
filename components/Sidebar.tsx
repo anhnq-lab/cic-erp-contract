@@ -27,7 +27,7 @@ const NavItem: React.FC<NavItemProps> = ({ item, activeTab, setActiveTab, isColl
       setActiveTab(item.id);
       if (window.innerWidth < 768) onClose();
     }}
-    className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all mb-1 ${activeTab === item.id
+    className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-lg transition-all mb-1 ${activeTab === item.id
       ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 shadow-sm dark:shadow-orange-500/5'
       : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'
       } ${isCollapsed ? 'md:px-0 md:justify-center' : ''}`}
@@ -87,7 +87,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           {/* Collapse Toggle Button */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className={`hidden md:flex p-2 text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl transition-all duration-200 ${isCollapsed ? 'w-full justify-center mt-2' : ''}`}
+            className={`hidden md:flex p-2 text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-all duration-200 ${isCollapsed ? 'w-full justify-center mt-2' : ''}`}
             title={isCollapsed ? 'Mở rộng' : 'Thu gọn'}
           >
             {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
@@ -97,7 +97,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div className="flex items-center gap-1 md:hidden">
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
             >
               <X size={20} />
             </button>

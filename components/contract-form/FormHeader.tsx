@@ -49,7 +49,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({
                 {showAutoFill && onAutoFill && (
                     <button
                         onClick={onAutoFill}
-                        className="p-3 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-xl font-bold text-xs uppercase transition-all flex items-center gap-2"
+                        className="p-3 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg font-bold text-xs uppercase transition-all flex items-center gap-2"
                         title="Điền dữ liệu mẫu"
                     >
                         <Users size={16} /> Data Mẫu
@@ -57,7 +57,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({
                 )}
                 <button
                     onClick={onCancel}
-                    className="p-3 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl text-slate-400 hover:text-rose-500 transition-all"
+                    className="p-3 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg text-slate-400 hover:text-rose-500 transition-all"
                 >
                     <X size={24} />
                 </button>

@@ -150,7 +150,7 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                                 required
                                 value={formData.name}
                                 onChange={(e) => handleChange('name', e.target.value)}
-                                className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                                 placeholder="Ví dụ: Trung tâm Kinh doanh số 1"
                             />
                         </div>
@@ -162,7 +162,7 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                                 required
                                 value={formData.code}
                                 onChange={(e) => handleChange('code', e.target.value)}
-                                className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                                 placeholder="Ví dụ: CENTER_01"
                             />
                         </div>
@@ -172,7 +172,7 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                             <select
                                 value={formData.type}
                                 onChange={(e) => handleChange('type', e.target.value)}
-                                className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                             >
                                 <option value="Company">Công ty</option>
                                 <option value="Branch">Chi nhánh</option>
@@ -195,13 +195,13 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                                         setShowManagerDropdown(true);
                                     }}
                                     onFocus={() => setShowManagerDropdown(true)}
-                                    className="w-full px-4 py-2 pl-10 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                    className="w-full px-4 py-2 pl-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                                     placeholder="Tìm nhân viên..."
                                 />
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                             </div>
                             {showManagerDropdown && (
-                                <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-48 overflow-auto">
+                                <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg max-h-48 overflow-auto">
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -250,7 +250,7 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                                 type="text"
                                 value={formData.address}
                                 onChange={(e) => handleChange('address', e.target.value)}
-                                className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                                 placeholder="Địa chỉ đơn vị"
                             />
                         </div>
@@ -263,7 +263,7 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                                 type="tel"
                                 value={formData.phone}
                                 onChange={(e) => handleChange('phone', e.target.value)}
-                                className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                                 placeholder="0xxx xxx xxx"
                             />
                         </div>
@@ -276,7 +276,7 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                                 type="email"
                                 value={formData.email}
                                 onChange={(e) => handleChange('email', e.target.value)}
-                                className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                                 placeholder="email@company.com"
                             />
                         </div>
@@ -287,7 +287,7 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                         <textarea
                             value={formData.functions || ''}
                             onChange={(e) => handleChange('functions', e.target.value)}
-                            className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all min-h-[80px]"
+                            className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all min-h-[80px]"
                             placeholder="Mô tả chức năng, nhiệm vụ của đơn vị..."
                         />
                     </div>
@@ -302,7 +302,7 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                         <NumberInput
                             value={formData.target.signing}
                             onChange={(value) => handleTargetChange('signing', value)}
-                            className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                            className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                         />
                     </div>
 
@@ -311,7 +311,7 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                         <NumberInput
                             value={formData.target.revenue}
                             onChange={(value) => handleTargetChange('revenue', value)}
-                            className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                            className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                         />
                     </div>
 
@@ -320,7 +320,7 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                         <NumberInput
                             value={formData.target.adminProfit}
                             onChange={(value) => handleTargetChange('adminProfit', value)}
-                            className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                            className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                         />
                     </div>
                 </div>
@@ -329,14 +329,14 @@ const UnitForm: React.FC<UnitFormProps> = ({ isOpen, onClose, onSave, unit }) =>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-6 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition-all"
+                        className="px-6 py-2.5 rounded-lg font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition-all"
                     >
                         Hủy bỏ
                     </button>
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="px-6 py-2.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 dark:shadow-none transition-all flex items-center gap-2"
+                        className="px-6 py-2.5 rounded-lg font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 dark:shadow-none transition-all flex items-center gap-2"
                     >
                         {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
                         {unit ? 'Cập nhật' : 'Thêm mới'}

@@ -178,7 +178,7 @@ const PilotRunner = () => {
     };
 
     return (
-        <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-lg border border-slate-200 dark:border-slate-800">
             <div className="flex justify-between items-center mb-4">
                 <div>
                     <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">Pilot Test Runner</h3>
@@ -187,7 +187,7 @@ const PilotRunner = () => {
                 <button
                     onClick={runPilot}
                     disabled={isRunning}
-                    className={`px-4 py-2 rounded-xl font-bold text-white transition-all ${isRunning ? 'bg-slate-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/30'
+                    className={`px-4 py-2 rounded-lg font-bold text-white transition-all ${isRunning ? 'bg-slate-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/30'
                         }`}
                 >
                     {isRunning ? 'Đang chạy...' : '▶ Chạy Test'}
@@ -202,7 +202,7 @@ const PilotRunner = () => {
             )}
 
             {/* Logs Console */}
-            <div className="bg-black text-green-400 font-mono text-xs p-4 rounded-xl h-64 overflow-y-auto border border-slate-700 shadow-inner">
+            <div className="bg-black text-green-400 font-mono text-xs p-4 rounded-lg h-64 overflow-y-auto border border-slate-700 shadow-inner">
                 {logs.length === 0 ? (
                     <span className="text-slate-600 opacity-50">Sẵn sàng để chạy...</span>
                 ) : (

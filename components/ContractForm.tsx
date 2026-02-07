@@ -489,7 +489,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-w-[1600px] w-full mx-auto flex flex-col h-[92vh]">
+    <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-w-[1600px] w-full mx-auto flex flex-col h-[92vh]">
 
       {/* HEADER */}
       <div className="px-10 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800">
@@ -604,13 +604,13 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
 
                 toast.success('Đã điền dữ liệu mẫu đầy đủ cho tất cả các bước!');
               }}
-              className="p-3 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-xl font-bold text-xs uppercase transition-all flex items-center gap-2"
+              className="p-3 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg font-bold text-xs uppercase transition-all flex items-center gap-2"
               title="Điền dữ liệu mẫu"
             >
               <Users size={16} /> Data Mẫu
             </button>
           )}
-          <button onClick={onCancel} className="p-3 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl text-slate-400 hover:text-rose-500 transition-all">
+          <button onClick={onCancel} className="p-3 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg text-slate-400 hover:text-rose-500 transition-all">
             <X size={24} />
           </button>
         </div>
@@ -649,7 +649,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     <select
                       value={unitId}
                       onChange={(e) => { setUnitId(e.target.value); setSalespersonId(''); }}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-xl text-sm font-bold outline-none focus:border-indigo-500 transition-all"
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-lg text-sm font-bold outline-none focus:border-indigo-500 transition-all"
                     >
                       <option value="">-- Chọn đơn vị --</option>
                       {units.filter(u => u.id !== 'all').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
@@ -664,7 +664,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     <select
                       value={salespersonId}
                       onChange={(e) => setSalespersonId(e.target.value)}
-                      className="w-full px-4 py-3 bg-indigo-50 dark:bg-indigo-900/20 border-2 border-indigo-100 dark:border-indigo-700 rounded-xl text-sm font-bold text-indigo-700 dark:text-indigo-300 outline-none focus:border-indigo-500 transition-all"
+                      className="w-full px-4 py-3 bg-indigo-50 dark:bg-indigo-900/20 border-2 border-indigo-100 dark:border-indigo-700 rounded-lg text-sm font-bold text-indigo-700 dark:text-indigo-300 outline-none focus:border-indigo-500 transition-all"
                     >
                       <option value="">-- Chọn NV --</option>
                       {filteredSales.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -676,7 +676,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     <label className="text-[11px] font-bold text-slate-500 uppercase ml-1 flex items-center gap-1">
                       <Percent size={10} /> Tỷ lệ %
                     </label>
-                    <div className="w-full px-4 py-3 bg-indigo-100 dark:bg-indigo-800/50 border-2 border-indigo-200 dark:border-indigo-700 rounded-xl text-sm font-black text-indigo-700 dark:text-indigo-300 text-center">
+                    <div className="w-full px-4 py-3 bg-indigo-100 dark:bg-indigo-800/50 border-2 border-indigo-200 dark:border-indigo-700 rounded-lg text-sm font-black text-indigo-700 dark:text-indigo-300 text-center">
                       {100 - unitAllocations.filter(a => a.role === 'support').reduce((s, a) => s + a.percent, 0)} %
                     </div>
                   </div>
@@ -715,7 +715,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                         setIsIdTouched(true);
                       }}
                       placeholder="Nhập số hợp đồng..."
-                      className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none"
+                      className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-lg text-sm font-bold focus:border-indigo-500 outline-none"
                     />
                   </div>
                   <div className="space-y-2">
@@ -751,7 +751,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                       type="date"
                       value={signedDate}
                       onChange={(e) => setSignedDate(e.target.value)}
-                      className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none"
+                      className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-lg text-sm font-bold focus:border-indigo-500 outline-none"
                     />
                   </div>
                 </div>
@@ -766,7 +766,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     placeholder="VD: Tư vấn giải pháp BIM, Đào tạo chuyên sâu phần mềm Plaxis 3D..."
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none h-20"
+                    className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-lg text-sm font-bold focus:border-indigo-500 outline-none h-20"
                   ></textarea>
                 </div>
 
@@ -782,10 +782,10 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     {contacts.map((contact, index) => (
                       <div key={contact.id} className="grid grid-cols-12 gap-3 items-center animate-in slide-in-from-left-2 duration-300">
                         <div className="col-span-5">
-                          <input placeholder="Họ tên..." className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-xs font-bold" />
+                          <input placeholder="Họ tên..." className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg text-xs font-bold" />
                         </div>
                         <div className="col-span-6">
-                          <input placeholder="Vai trò (Mua sắm, Kế toán, Kỹ thuật...)" className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-xs font-bold" />
+                          <input placeholder="Vai trò (Mua sắm, Kế toán, Kỹ thuật...)" className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg text-xs font-bold" />
                         </div>
                         <div className="col-span-1 text-center">
                           {contacts.length > 1 && (
@@ -940,7 +940,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                       </div>
                     </div>
 
-                    <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800">
+                    <div className="overflow-x-auto rounded-lg border border-slate-100 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800">
                       <table className="w-full text-left text-xs min-w-[900px]">
                         <thead className="bg-slate-50 dark:bg-slate-800">
                           <tr>
@@ -1054,7 +1054,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                     />
                                     {/* Hover Tooltip */}
                                     {item.directCostDetails && item.directCostDetails.length > 0 && (
-                                      <div className="absolute top-full right-0 mt-2 w-64 p-3 bg-slate-900 text-white text-[10px] rounded-xl shadow-xl z-50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                      <div className="absolute top-full right-0 mt-2 w-64 p-3 bg-slate-900 text-white text-[10px] rounded-lg shadow-xl z-50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                         <div className="space-y-1">
                                           {item.directCostDetails.map((detail, i) => (
                                             <div key={i} className="flex justify-between items-center border-b border-slate-700 pb-1 last:border-0 last:pb-0">
@@ -1117,7 +1117,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
 
 
                   {/* 3.2 CHI PHÍ THỰC HIỆN HỢP ĐỒNG (Dynamic list) */}
-                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 space-y-2 max-w-[50%]">
+                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-100 dark:border-slate-700 space-y-2 max-w-[50%]">
                     <div className="flex items-center justify-between">
                       <h4 className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
                         <Calculator size={14} /> Chi phí thực hiện hợp đồng
@@ -1243,7 +1243,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                               placeholder="%"
                               value={supplierDiscount || ''}
                               onChange={(e) => setSupplierDiscount(Number(e.target.value))}
-                              className="w-full pl-6 pr-1 py-2 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-300 dark:border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 dark:text-emerald-300 focus:ring-2 focus:ring-emerald-500 outline-none text-center"
+                              className="w-full pl-6 pr-1 py-2 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-300 dark:border-emerald-600 rounded-lg text-xs font-bold text-emerald-700 dark:text-emerald-300 focus:ring-2 focus:ring-emerald-500 outline-none text-center"
                             />
                           </div>
                           <span className="text-emerald-600 dark:text-emerald-400 font-black text-sm">
@@ -1279,7 +1279,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                       </div>
                       <div className="space-y-3">
                         {revenueSchedules.map((rev, idx) => (
-                          <div key={rev.id} className="grid grid-cols-12 gap-2 bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
+                          <div key={rev.id} className="grid grid-cols-12 gap-2 bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
                             <div className="col-span-4 space-y-1">
                               <label className="text-[9px] text-slate-400 font-bold uppercase">Ngày XHĐ</label>
                               <input
@@ -1340,7 +1340,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                       </div>
                       <div className="space-y-3">
                         {paymentSchedules.map((pay, idx) => (
-                          <div key={pay.id} className="grid grid-cols-12 gap-2 bg-emerald-50/50 dark:bg-emerald-900/20 p-3 rounded-xl border border-emerald-100 dark:border-emerald-800">
+                          <div key={pay.id} className="grid grid-cols-12 gap-2 bg-emerald-50/50 dark:bg-emerald-900/20 p-3 rounded-lg border border-emerald-100 dark:border-emerald-800">
                             <div className="col-span-4 space-y-1">
                               <label className="text-[9px] text-slate-400 font-bold uppercase">Ngày thanh toán</label>
                               <input
@@ -1409,7 +1409,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {supplierSchedules.map((pay, idx) => (
-                        <div key={pay.id} className="grid grid-cols-12 gap-2 bg-rose-50/50 dark:bg-rose-900/10 p-3 rounded-xl border border-rose-100 dark:border-rose-800">
+                        <div key={pay.id} className="grid grid-cols-12 gap-2 bg-rose-50/50 dark:bg-rose-900/10 p-3 rounded-lg border border-rose-100 dark:border-rose-800">
                           <div className="col-span-4 space-y-1">
                             <label className="text-[9px] text-slate-400 font-bold uppercase">Hạn thanh toán</label>
                             <input
@@ -1474,7 +1474,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
         size="lg"
       >
         <div className="space-y-4">
-          <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+          <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-100 dark:border-slate-700">
             <h4 className="text-sm font-bold text-indigo-600 mb-2">
               {activeCostModalIndex !== null && lineItems[activeCostModalIndex]?.name
                 ? `Sản phẩm: ${lineItems[activeCostModalIndex].name}`
@@ -1530,7 +1530,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
             onClick={() => {
               setTempCostDetails([...tempCostDetails, { id: Date.now().toString(), name: '', amount: 0 }]);
             }}
-            className="w-full py-3 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl text-slate-400 font-bold text-sm hover:border-indigo-500 hover:text-indigo-500 transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 font-bold text-sm hover:border-indigo-500 hover:text-indigo-500 transition-all flex items-center justify-center gap-2"
           >
             <Plus size={16} /> Thêm khoản chi phí
           </button>
@@ -1545,13 +1545,13 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
             <div className="flex gap-3">
               <button
                 onClick={() => setActiveCostModalIndex(null)}
-                className="px-5 py-2.5 rounded-xl font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="px-5 py-2.5 rounded-lg font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 Hủy
               </button>
               <button
                 onClick={saveCostModal}
-                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 dark:shadow-none transition-all flex items-center gap-2"
+                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold shadow-lg shadow-indigo-200 dark:shadow-none transition-all flex items-center gap-2"
               >
                 <Save size={16} /> Lưu cập nhật
               </button>

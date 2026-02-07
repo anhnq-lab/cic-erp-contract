@@ -33,12 +33,12 @@ const Settings: React.FC = () => {
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800/50 rounded-xl">
+            <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
                 {visibleTabs.map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex-1 justify-center ${activeTab === tab.id
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all flex-1 justify-center ${activeTab === tab.id
                             ? 'bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-400 shadow-sm'
                             : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                             }`}
@@ -50,7 +50,7 @@ const Settings: React.FC = () => {
             </div>
 
             {/* Tab Content */}
-            <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-xl border border-slate-200 dark:border-slate-700/40 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-sm">
                 {activeTab === 'system' && (
                     <div className="space-y-6">
                         {/* Theme */}
@@ -62,7 +62,7 @@ const Settings: React.FC = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <button
                                     onClick={() => setTheme('light')}
-                                    className={`flex items-center justify-center gap-3 p-4 rounded-xl border-2 transition-all ${theme === 'light'
+                                    className={`flex items-center justify-center gap-3 p-4 rounded-lg border-2 transition-all ${theme === 'light'
                                         ? 'bg-orange-50 border-orange-500 text-orange-700 dark:bg-orange-900/20 dark:border-orange-500 dark:text-orange-400'
                                         : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'
                                         }`}
@@ -72,7 +72,7 @@ const Settings: React.FC = () => {
                                 </button>
                                 <button
                                     onClick={() => setTheme('dark')}
-                                    className={`flex items-center justify-center gap-3 p-4 rounded-xl border-2 transition-all ${theme === 'dark'
+                                    className={`flex items-center justify-center gap-3 p-4 rounded-lg border-2 transition-all ${theme === 'dark'
                                         ? 'bg-orange-900/30 border-orange-500 text-orange-400'
                                         : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'
                                         }`}
@@ -93,7 +93,7 @@ const Settings: React.FC = () => {
                 {activeTab === 'permissions' && isAdmin && (
                     <div>
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-orange-600 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-orange-600 flex items-center justify-center">
                                 <Shield size={20} className="text-white" />
                             </div>
                             <div>
@@ -111,7 +111,7 @@ const Settings: React.FC = () => {
                         {isAdmin && (
                             <div>
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
                                         <Users size={20} className="text-white" />
                                     </div>
                                     <div>
@@ -129,7 +129,7 @@ const Settings: React.FC = () => {
                         {/* Pilot Runner */}
                         <div>
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                                     <FlaskConical size={20} className="text-white" />
                                 </div>
                                 <div>

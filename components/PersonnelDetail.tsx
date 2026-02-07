@@ -135,7 +135,7 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
                 <p className="text-slate-500 dark:text-slate-400 text-lg">Không tìm thấy nhân viên</p>
                 <button
                     onClick={onBack}
-                    className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
+                    className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-colors"
                 >
                     Quay lại
                 </button>
@@ -149,7 +149,7 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
             <div className="flex items-center gap-4">
                 <button
                     onClick={onBack}
-                    className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 >
                     <ArrowLeft size={20} className="text-slate-600 dark:text-slate-400" />
                 </button>
@@ -164,19 +164,19 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
             </div>
 
             {/* Profile Card - Fixed layout */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
                 {/* Header gradient */}
                 <div className="h-20 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 relative">
                     <div className="absolute top-4 right-4 flex items-center gap-2">
                         {stats && stats.signingProgress >= 100 && (
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-xl text-white">
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-lg text-white">
                                 <Award size={14} />
                                 <span className="font-bold text-xs">Đạt KPI</span>
                             </div>
                         )}
                         <button
                             onClick={() => setIsEditing(true)}
-                            className="p-2 bg-white/20 backdrop-blur-sm text-white rounded-xl hover:bg-white/30 transition-colors"
+                            className="p-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors"
                             title="Chỉnh sửa thông tin"
                         >
                             <Pencil size={18} />
@@ -188,7 +188,7 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
                 <div className="px-6 py-5">
                     <div className="flex flex-col sm:flex-row gap-4">
                         {/* Avatar - positioned to overlap header */}
-                        <div className="relative z-10 w-20 h-20 -mt-14 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-2xl shadow-xl border-4 border-white dark:border-slate-900 flex-shrink-0 overflow-hidden">
+                        <div className="relative z-10 w-20 h-20 -mt-14 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-2xl shadow-xl border-4 border-white dark:border-slate-900 flex-shrink-0 overflow-hidden">
                             {person.avatar ? (
                                 <img src={person.avatar} alt={person.name} className="w-full h-full object-cover" />
                             ) : (
@@ -279,10 +279,10 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
             {stats && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Signing KPI */}
-                    <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl text-emerald-600 dark:text-emerald-400">
+                                <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg text-emerald-600 dark:text-emerald-400">
                                     <Target size={20} />
                                 </div>
                                 <div>
@@ -309,10 +309,10 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
                     </div>
 
                     {/* Revenue KPI */}
-                    <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl text-indigo-600 dark:text-indigo-400">
+                                <div className="p-2.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
                                     <TrendingUp size={20} />
                                 </div>
                                 <div>
@@ -343,19 +343,19 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
             {/* Quick Stats */}
             {stats && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
                         <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{stats.contractCount}</p>
                         <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1">Tổng HĐ</p>
                     </div>
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
                         <p className="text-2xl font-black text-emerald-600">{stats.activeContracts}</p>
                         <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1">Đang thực hiện</p>
                     </div>
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
                         <p className="text-2xl font-black text-blue-600">{stats.completedContracts}</p>
                         <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1">Hoàn thành</p>
                     </div>
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
                         <p className="text-2xl font-black text-purple-600">{formatCurrency(person.target.adminProfit)}</p>
                         <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1">KPI Lợi nhuận</p>
                     </div>
@@ -363,7 +363,7 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnelId, onBack, 
             )}
 
             {/* Contracts Table */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <h3 className="text-base font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
                         <FileText size={18} className="text-indigo-500" />

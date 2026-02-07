@@ -207,7 +207,7 @@ const DebugPanel: React.FC = () => {
     };
 
     return (
-        <div className="fixed bottom-4 right-4 z-50 w-96 max-h-[80vh] bg-gray-900 text-white rounded-xl shadow-2xl overflow-hidden">
+        <div className="fixed bottom-4 right-4 z-50 w-96 max-h-[80vh] bg-gray-900 text-white rounded-lg shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between p-4 bg-purple-600">
                 <div className="flex items-center gap-2">
                     <Bug size={20} />

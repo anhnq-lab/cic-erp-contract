@@ -50,7 +50,7 @@ const Card: React.FC<CardProps> = ({
     return (
         <div
             className={`
-        rounded-xl
+        rounded-lg
         ${variantStyles[variant]}
         ${paddingStyles[padding]}
         ${noBorder ? 'border-0' : ''}
@@ -178,7 +178,7 @@ export const StatCard: React.FC<StatCardProps> = ({
                     )}
                 </div>
                 {icon && (
-                    <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-400">
+                    <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center text-orange-600 dark:text-orange-400">
                         {icon}
                     </div>
                 )}

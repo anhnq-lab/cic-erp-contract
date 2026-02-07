@@ -20,11 +20,11 @@ const sizeStyles: Record<InputSize, { input: string; icon: string }> = {
         icon: 'w-4 h-4'
     },
     md: {
-        input: 'px-4 py-2.5 text-sm rounded-xl',
+        input: 'px-4 py-2.5 text-sm rounded-lg',
         icon: 'w-4 h-4'
     },
     lg: {
-        input: 'px-5 py-3 text-base rounded-xl',
+        input: 'px-5 py-3 text-base rounded-lg',
         icon: 'w-5 h-5'
     },
 };

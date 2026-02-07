@@ -176,7 +176,7 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
                     <div className="relative">
                         <button
                             onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                            className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:border-indigo-300 transition-all min-w-[160px]"
+                            className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:border-indigo-300 transition-all min-w-[160px]"
                         >
                             <Filter size={18} className="text-slate-400" />
                             <span className="flex-1 text-left truncate">{selectedCategoryLabel}</span>
@@ -189,7 +189,7 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
                                     className="fixed inset-0 z-10"
                                     onClick={() => setIsCategoryDropdownOpen(false)}
                                 />
-                                <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-20 overflow-hidden">
+                                <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-20 overflow-hidden">
                                     <button
                                         onClick={() => {
                                             setCategoryFilter('all');
@@ -230,14 +230,14 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
                             placeholder="Tìm sản phẩm..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                            className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                         />
                     </div>
 
                     {/* Import Button */}
                     <button
                         onClick={() => setIsImportOpen(true)}
-                        className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-medium text-sm hover:border-indigo-400 transition-colors"
+                        className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-medium text-sm hover:border-indigo-400 transition-colors"
                     >
                         <Upload size={18} />
                         <span className="hidden md:inline">Import</span>
@@ -246,7 +246,7 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
                     {/* Add Button */}
                     <button
                         onClick={handleAdd}
-                        className="flex items-center gap-2 px-5 py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 dark:shadow-none"
+                        className="flex items-center gap-2 px-5 py-3 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 dark:shadow-none"
                     >
                         <Plus size={18} />
                         <span className="hidden md:inline">Thêm SP</span>
@@ -277,9 +277,9 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
 
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl text-indigo-600 dark:text-indigo-400">
+                        <div className="p-2.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
                             <Package size={20} />
                         </div>
                         <div>
@@ -288,9 +288,9 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
                         </div>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl text-emerald-600 dark:text-emerald-400">
+                        <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg text-emerald-600 dark:text-emerald-400">
                             <CheckCircle size={20} />
                         </div>
                         <div>
@@ -299,9 +299,9 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
                         </div>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-amber-100 dark:bg-amber-900/30 rounded-xl text-amber-600 dark:text-amber-400">
+                        <div className="p-2.5 bg-amber-100 dark:bg-amber-900/30 rounded-lg text-amber-600 dark:text-amber-400">
                             <Tag size={20} />
                         </div>
                         <div>
@@ -310,9 +310,9 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
                         </div>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-purple-100 dark:bg-purple-900/30 rounded-xl text-purple-600 dark:text-purple-400">
+                        <div className="p-2.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400">
                             <TrendingUp size={20} />
                         </div>
                         <div>
@@ -324,7 +324,7 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
             </div>
 
             {/* Products Table */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
                 {isLoading ? (
                     <div className="flex items-center justify-center py-16">
                         <Loader2 size={32} className="animate-spin text-indigo-500" />
@@ -418,7 +418,7 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
                                             <td className="py-4 px-6 relative">
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); setActionMenuId(actionMenuId === product.id ? null : product.id); }}
-                                                    className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-all"
+                                                    className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all"
                                                 >
                                                     <MoreVertical size={16} />
                                                 </button>
@@ -427,7 +427,7 @@ const ProductList: React.FC<ProductListProps> = ({ onSelectProduct }) => {
                                                 {actionMenuId === product.id && (
                                                     <>
                                                         <div className="fixed inset-0 z-10" onClick={(e) => { e.stopPropagation(); setActionMenuId(null); }} />
-                                                        <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-20 overflow-hidden">
+                                                        <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-20 overflow-hidden">
                                                             <button
                                                                 onClick={(e) => { e.stopPropagation(); handleEdit(product); }}
                                                                 className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"

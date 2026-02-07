@@ -91,7 +91,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
         <Modal isOpen={isOpen} onClose={onClose} title={getTitle()} size="lg">
             <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Type Selection */}
-                <div className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-800">
+                <div className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-800">
                     <label className="flex items-center gap-2 cursor-pointer">
                         <input
                             type="radio"
@@ -137,7 +137,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
                             value={formData.name}
                             onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
                             placeholder="VD: FECON Corporation"
-                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                         />
                     </div>
                     <div>
@@ -148,7 +148,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
                             value={formData.shortName}
                             onChange={e => setFormData(prev => ({ ...prev, shortName: e.target.value.toUpperCase() }))}
                             placeholder="VD: FECON"
-                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                         />
                     </div>
                 </div>
@@ -161,7 +161,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
                             required
                             value={formData.industry}
                             onChange={e => setFormData(prev => ({ ...prev, industry: e.target.value }))}
-                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                         >
                             {INDUSTRIES.map(ind => (
                                 <option key={ind} value={ind}>{ind}</option>
@@ -175,7 +175,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
                             value={formData.taxCode}
                             onChange={e => setFormData(prev => ({ ...prev, taxCode: e.target.value }))}
                             placeholder="VD: 0101234567"
-                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                         />
                     </div>
                 </div>
@@ -191,7 +191,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
                                 value={formData.contactPerson}
                                 onChange={e => setFormData(prev => ({ ...prev, contactPerson: e.target.value }))}
                                 placeholder="VD: Nguyễn Văn Hùng"
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                             />
                         </div>
                         <div>
@@ -201,7 +201,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
                                 value={formData.phone}
                                 onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                                 placeholder="VD: 024 3784 5678"
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                             />
                         </div>
                         <div>
@@ -211,7 +211,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
                                 value={formData.email}
                                 onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
                                 placeholder="VD: contact@company.vn"
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                             />
                         </div>
                         <div>
@@ -221,7 +221,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
                                 value={formData.website}
                                 onChange={e => setFormData(prev => ({ ...prev, website: e.target.value }))}
                                 placeholder="VD: www.company.vn"
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                             />
                         </div>
                     </div>
@@ -235,7 +235,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
                         value={formData.address}
                         onChange={e => setFormData(prev => ({ ...prev, address: e.target.value }))}
                         placeholder="VD: Tầng 15, Tòa nhà ABC, Quận Cầu Giấy, Hà Nội"
-                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                     />
                 </div>
 
@@ -247,7 +247,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
                         onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                         rows={2}
                         placeholder="Ghi chú thêm..."
-                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm resize-none"
+                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm resize-none"
                     />
                 </div>
 
@@ -256,14 +256,14 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                        className="px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                     >
                         Hủy
                     </button>
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
                     >
                         {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                         {customer ? 'Cập nhật' : 'Thêm mới'}

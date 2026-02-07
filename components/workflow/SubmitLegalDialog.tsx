@@ -153,11 +153,11 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-lg mx-4 animate-in fade-in zoom-in duration-200">
+            <div className="bg-white dark:bg-slate-900 rounded-lg shadow-2xl w-full max-w-lg mx-4 animate-in fade-in zoom-in duration-200">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
                             <FileText size={20} className="text-violet-600" />
                         </div>
                         <div>
@@ -196,7 +196,7 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
                                 setFetchFailed(false);
                             }}
                             placeholder="https://docs.google.com/document/d/..."
-                            className={`w-full px-4 py-3 rounded-xl border ${error
+                            className={`w-full px-4 py-3 rounded-lg border ${error
                                 ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
                                 : 'border-slate-300 focus:border-violet-500 focus:ring-violet-200'
                                 } dark:bg-slate-800 dark:border-slate-700 focus:ring-2 transition-colors`}
@@ -234,7 +234,7 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
                                     value={draftName}
                                     onChange={(e) => setDraftName(e.target.value)}
                                     placeholder="Tên tài liệu"
-                                    className="w-full px-4 py-3 pr-10 rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-colors"
+                                    className="w-full px-4 py-3 pr-10 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-colors"
                                 />
                                 {!isFetchingTitle && (
                                     <button
@@ -263,7 +263,7 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
                         </div>
                     )}
 
-                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-sm">
+                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 text-sm">
                         <p className="text-amber-800 dark:text-amber-300">
                             <strong>Lưu ý:</strong> Link phải là Google Docs và được share quyền view/comment cho Pháp chế.
                         </p>
@@ -274,14 +274,14 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
                 <div className="flex justify-end gap-3 p-6 border-t border-slate-200 dark:border-slate-800">
                     <button
                         onClick={onClose}
-                        className="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium transition-colors"
+                        className="px-5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium transition-colors"
                     >
                         Hủy
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={isFetchingTitle}
-                        className="px-5 py-2.5 rounded-xl bg-violet-600 text-white hover:bg-violet-700 font-medium flex items-center gap-2 transition-colors shadow-lg shadow-violet-200 dark:shadow-violet-900/30 disabled:opacity-50"
+                        className="px-5 py-2.5 rounded-lg bg-violet-600 text-white hover:bg-violet-700 font-medium flex items-center gap-2 transition-colors shadow-lg shadow-violet-200 dark:shadow-violet-900/30 disabled:opacity-50"
                     >
                         <Send size={16} />
                         Gửi duyệt

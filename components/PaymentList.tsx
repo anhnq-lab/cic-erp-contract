@@ -200,7 +200,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                         Theo dõi dòng tiền Thu & Chi
                     </p>
                 </div>
-                <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
                     <button
                         onClick={() => { setTypeFilter('Revenue'); setPage(1); }}
                         className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${typeFilter === 'Revenue' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
@@ -216,7 +216,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                 </div>
                 <button
                     onClick={handleAdd}
-                    className={`px-5 py-2.5 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-lg ${typeFilter === 'Revenue' ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200' : 'bg-rose-600 hover:bg-rose-700 shadow-rose-200'}`}
+                    className={`px-5 py-2.5 text-white rounded-lg font-bold text-sm flex items-center gap-2 transition-colors shadow-lg ${typeFilter === 'Revenue' ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200' : 'bg-rose-600 hover:bg-rose-700 shadow-rose-200'}`}
                 >
                     <Plus size={18} />
                     Thêm {typeFilter === 'Revenue' ? 'khoản thu' : 'khoản chi'}
@@ -226,9 +226,9 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
             {/* Stats Cards */}
             {stats && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
+                            <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
                                 <CheckCircle2 size={20} className="text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <div>
@@ -238,9 +238,9 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                         </div>
                     </div>
                     {typeFilter === 'Revenue' && (
-                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+                                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                                     <FileCheck size={20} className="text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <div>
@@ -250,9 +250,9 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                             </div>
                         </div>
                     )}
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
+                            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
                                 <Clock size={20} className="text-amber-600 dark:text-amber-400" />
                             </div>
                             <div>
@@ -261,9 +261,9 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                             </div>
                         </div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-rose-100 dark:bg-rose-900/30 rounded-xl">
+                            <div className="p-2 bg-rose-100 dark:bg-rose-900/30 rounded-lg">
                                 <AlertCircle size={20} className="text-rose-600 dark:text-rose-400" />
                             </div>
                             <div>
@@ -284,10 +284,10 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                         placeholder="Tìm kiếm theo mã, hợp đồng, hóa đơn..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                        className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                     />
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
+                <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
                     <Filter size={16} className="text-slate-400" />
                     <select
                         value={statusFilter}
@@ -304,7 +304,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
             </div>
 
             {/* Table */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead>
@@ -336,7 +336,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                                     >
                                         <td className="py-4 px-5">
                                             <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl">
+                                                <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
                                                     <CreditCard size={16} className="text-slate-500" />
                                                 </div>
                                                 <div>
@@ -390,7 +390,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                                                 <MoreVertical size={16} />
                                             </button>
                                             {actionMenuId === payment.id && (
-                                                <div className="absolute right-0 top-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-20 py-1 min-w-[140px]">
+                                                <div className="absolute right-0 top-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-20 py-1 min-w-[140px]">
                                                     <button
                                                         onClick={() => handleEdit(payment)}
                                                         className="w-full px-4 py-2 text-left text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"
@@ -421,7 +421,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                         <button
                             onClick={() => setPage(p => Math.max(1, p - 1))}
                             disabled={page === 1}
-                            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             <ChevronLeft size={20} />
                         </button>
@@ -434,7 +434,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                                     <button
                                         key={p}
                                         onClick={() => setPage(p)}
-                                        className={`w-10 h-10 rounded-xl text-sm font-black transition-all ${page === p
+                                        className={`w-10 h-10 rounded-lg text-sm font-black transition-all ${page === p
                                             ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none'
                                             : 'bg-transparent text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
                                             }`}
@@ -447,7 +447,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                         <button
                             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                             disabled={page === totalPages || totalPages === 0}
-                            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             <ChevronRight size={20} />
                         </button>

@@ -84,11 +84,11 @@ const QuickAddCustomerDialog: React.FC<QuickAddCustomerDialogProps> = ({
             />
 
             {/* Dialog */}
-            <div className="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg animate-in zoom-in-95 duration-200">
+            <div className="relative bg-white dark:bg-slate-900 rounded-lg shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg animate-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg flex items-center justify-center">
                             <Building2 size={20} className="text-indigo-600 dark:text-indigo-400" />
                         </div>
                         <div>
@@ -98,7 +98,7 @@ const QuickAddCustomerDialog: React.FC<QuickAddCustomerDialogProps> = ({
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                     >
                         <X size={20} className="text-slate-400" />
                     </button>
@@ -116,7 +116,7 @@ const QuickAddCustomerDialog: React.FC<QuickAddCustomerDialogProps> = ({
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder="VD: Công ty TNHH ABC"
-                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 outline-none transition-all"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 outline-none transition-all"
                             autoFocus
                         />
                     </div>
@@ -130,7 +130,7 @@ const QuickAddCustomerDialog: React.FC<QuickAddCustomerDialogProps> = ({
                                 value={shortName}
                                 onChange={(e) => setShortName(e.target.value)}
                                 placeholder="VD: ABC Co."
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:border-indigo-500 outline-none transition-all"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:border-indigo-500 outline-none transition-all"
                             />
                         </div>
                         <div className="space-y-1.5">
@@ -138,7 +138,7 @@ const QuickAddCustomerDialog: React.FC<QuickAddCustomerDialogProps> = ({
                             <select
                                 value={industry}
                                 onChange={(e) => setIndustry(e.target.value)}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:border-indigo-500 outline-none transition-all"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:border-indigo-500 outline-none transition-all"
                             >
                                 <option value="">-- Chọn --</option>
                                 {INDUSTRIES.map(ind => (
@@ -158,7 +158,7 @@ const QuickAddCustomerDialog: React.FC<QuickAddCustomerDialogProps> = ({
                             value={contactPerson}
                             onChange={(e) => setContactPerson(e.target.value)}
                             placeholder="VD: Nguyễn Văn A"
-                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:border-indigo-500 outline-none transition-all"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:border-indigo-500 outline-none transition-all"
                         />
                     </div>
 
@@ -173,7 +173,7 @@ const QuickAddCustomerDialog: React.FC<QuickAddCustomerDialogProps> = ({
                                 value={phone}
                                 onChange={(e) => setPhone(e.target.value)}
                                 placeholder="0xxx xxx xxx"
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:border-indigo-500 outline-none transition-all"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:border-indigo-500 outline-none transition-all"
                             />
                         </div>
                         <div className="space-y-1.5">
@@ -185,14 +185,14 @@ const QuickAddCustomerDialog: React.FC<QuickAddCustomerDialogProps> = ({
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="contact@company.vn"
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:border-indigo-500 outline-none transition-all"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:border-indigo-500 outline-none transition-all"
                             />
                         </div>
                     </div>
 
                     {/* Error */}
                     {error && (
-                        <div className="px-4 py-3 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-sm rounded-xl">
+                        <div className="px-4 py-3 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-sm rounded-lg">
                             {error}
                         </div>
                     )}
@@ -203,14 +203,14 @@ const QuickAddCustomerDialog: React.FC<QuickAddCustomerDialogProps> = ({
                             type="button"
                             onClick={() => { resetForm(); onClose(); }}
                             disabled={isSubmitting}
-                            className="px-5 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl font-bold text-sm transition-colors"
+                            className="px-5 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg font-bold text-sm transition-colors"
                         >
                             Hủy
                         </button>
                         <button
                             type="submit"
                             disabled={isSubmitting || !name.trim()}
-                            className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-sm transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isSubmitting ? (
                                 <>

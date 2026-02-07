@@ -95,7 +95,7 @@ export const ApprovalStepper: React.FC<Props> = ({ currentStatus, reviews = [] }
         <div className="space-y-4">
             {/* Rejected Banner */}
             {isRejected && (
-                <div className="flex items-center gap-3 p-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-700 dark:text-rose-300">
+                <div className="flex items-center gap-3 p-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 rounded-lg text-rose-700 dark:text-rose-300">
                     <X size={18} className="shrink-0" />
                     <div>
                         <p className="font-bold text-sm">PAKD đã bị từ chối</p>
@@ -122,7 +122,7 @@ export const ApprovalStepper: React.FC<Props> = ({ currentStatus, reviews = [] }
                     return (
                         <div
                             key={step.id}
-                            className={`relative p-4 rounded-xl border-2 transition-all ${isCurrent
+                            className={`relative p-4 rounded-lg border-2 transition-all ${isCurrent
                                 ? 'border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-900/30 shadow-lg shadow-orange-100 dark:shadow-none'
                                 : isPast
                                     ? 'border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20'

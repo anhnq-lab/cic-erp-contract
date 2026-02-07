@@ -104,9 +104,9 @@ const Auth = () => {
                             {features.map((feat, i) => (
                                 <div
                                     key={i}
-                                    className="flex items-start gap-4 p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/5 hover:bg-white/10 transition-colors group"
+                                    className="flex items-start gap-4 p-4 rounded-lg bg-white/5 backdrop-blur-sm border border-white/5 hover:bg-white/10 transition-colors group"
                                 >
-                                    <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center text-orange-400 flex-shrink-0 group-hover:bg-orange-500/30 transition-colors">
+                                    <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-400 flex-shrink-0 group-hover:bg-orange-500/30 transition-colors">
                                         {feat.icon}
                                     </div>
                                     <div>
@@ -186,7 +186,7 @@ const Auth = () => {
                                    hover:border-slate-300 dark:hover:border-slate-600
                                    hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50
                                    text-slate-700 dark:text-slate-200 
-                                   font-semibold py-4 px-6 rounded-xl 
+                                   font-semibold py-4 px-6 rounded-lg 
                                    transition-all duration-300 
                                    hover:scale-[1.01] active:scale-[0.99] 
                                    disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100

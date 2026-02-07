@@ -241,7 +241,7 @@ const UserGuide: React.FC = () => {
             {/* Header */}
             <div className="text-center py-4">
                 <div className="inline-flex items-center gap-3 mb-3">
-                    <div className="p-2.5 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl shadow-lg">
+                    <div className="p-2.5 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg shadow-lg">
                         <Book size={24} className="text-white" />
                     </div>
                     <div className="text-left">
@@ -258,7 +258,7 @@ const UserGuide: React.FC = () => {
                         placeholder="Tìm hướng dẫn..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                        className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
                     />
                 </div>
             </div>
@@ -273,7 +273,7 @@ const UserGuide: React.FC = () => {
 
             {/* Onboarding Progress - Compact */}
             {progress < 100 && (
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-4 border border-indigo-100 dark:border-indigo-800">
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-lg p-4 border border-indigo-100 dark:border-indigo-800">
                     <div className="flex items-center justify-between mb-2">
                         <span className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
                             <Rocket size={16} className="text-indigo-500" /> Làm quen hệ thống
@@ -327,10 +327,10 @@ const UserGuide: React.FC = () => {
                 {/* Tab Content */}
                 {moduleGuides.map((module) => (
                     expandedModule === module.id && (
-                        <div key={module.id} className={`p-4 rounded-xl border ${colorClasses[module.color].border} bg-white dark:bg-slate-800`}>
+                        <div key={module.id} className={`p-4 rounded-lg border ${colorClasses[module.color].border} bg-white dark:bg-slate-800`}>
                             {/* Workflow (if exists) */}
                             {module.workflow && (
-                                <div className="mb-4 p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700/50 dark:to-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-600">
+                                <div className="mb-4 p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700/50 dark:to-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-600">
                                     <h5 className="font-bold text-sm text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-2">
                                         <ClipboardCheck size={16} className={colorClasses[module.color].text} /> {module.workflow.title}
                                     </h5>
@@ -458,7 +458,7 @@ const UserGuide: React.FC = () => {
             </div>
 
             {/* Tips - Compact */}
-            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-800">
+            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
                 <h3 className="font-bold text-sm text-amber-900 dark:text-amber-200 mb-2 flex items-center gap-2">
                     <Sparkles size={14} /> Mẹo hay
                 </h3>
@@ -473,7 +473,7 @@ const UserGuide: React.FC = () => {
             </div>
 
             {/* Contact - Compact */}
-            <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800 rounded-xl p-3">
+            <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800 rounded-lg p-3">
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
                     <Phone size={14} className="text-green-500" /> Cần hỗ trợ?
                 </span>
@@ -486,7 +486,7 @@ const UserGuide: React.FC = () => {
             {/* Keyboard Shortcuts Modal */}
             {showShortcuts && (
                 <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowShortcuts(false)}>
-                    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-md w-full" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white dark:bg-slate-900 rounded-lg shadow-2xl max-w-md w-full" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
                             <h3 className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                                 <Keyboard size={18} className="text-indigo-500" /> Phím tắt
@@ -546,7 +546,7 @@ interface ModuleGuideData {
 const QuickBtn = ({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) => (
     <button
         onClick={onClick}
-        className="flex flex-col items-center gap-1 p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-md hover:scale-[1.02] transition-all"
+        className="flex flex-col items-center gap-1 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:shadow-md hover:scale-[1.02] transition-all"
     >
         <span className="text-indigo-500">{icon}</span>
         <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{label}</span>

@@ -310,7 +310,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
           <div className="flex items-center gap-4">
             <button
               onClick={onBack}
-              className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all text-slate-500"
+              className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all text-slate-500"
             >
               <ArrowLeft size={20} />
             </button>
@@ -357,7 +357,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                     onDelete();
                   }
                 }}
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all"
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all"
               >
                 <div className="w-4 h-4"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></svg></div>
                 Xóa
@@ -367,13 +367,13 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
             {canEdit('contract', contract?.unitId) && (
               <button
                 onClick={() => contract && onEdit(contract)}
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               >
                 <Edit3 size={16} />
                 Chỉnh sửa
               </button>
             )}
-            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-xl text-sm font-semibold hover:bg-orange-700 transition-all shadow-lg shadow-orange-100 dark:shadow-none">
+            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-semibold hover:bg-orange-700 transition-all shadow-lg shadow-orange-100 dark:shadow-none">
               <Download size={16} />
               Xuất PDF
             </button>
@@ -382,7 +382,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
 
         {/* CONTRACT REVIEW PANEL - Workflow actions based on status and role */}
         {profile?.role && contract?.status && (
-          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
             <ContractReviewPanel
               contractId={contract.id}
               currentStatus={contract.status}
@@ -465,7 +465,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
             <div className="lg:col-span-2 space-y-6">
               <>
                 {/* 1. FINANCIAL SUMMARY */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
+                <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
                   <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
                     <Wallet size={20} className="text-orange-500" />
                     Tổng quan Tài chính
@@ -548,7 +548,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
 
 
                 {/* 3. IMPLEMENTATION PLAN */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
+                <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
                   <div className="p-6 md:p-8">
                     <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
                       <TrendingUp size={20} className="text-orange-500" />
@@ -563,7 +563,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                               }`}>
                               {m.status === 'Completed' ? <CheckCircle2 size={10} className="text-white" /> : m.status === 'Ongoing' ? <Clock size={10} className="text-white" /> : null}
                             </div>
-                            <div className="flex-1 p-4 bg-slate-50/50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-orange-100 dark:hover:border-orange-900 transition-colors">
+                            <div className="flex-1 p-4 bg-slate-50/50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700 hover:border-orange-100 dark:hover:border-orange-900 transition-colors">
                               <div className="flex justify-between items-start mb-1">
                                 <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{m.name}</p>
                                 <span className="text-[10px] font-bold text-slate-400 uppercase">{m.date}</span>
@@ -573,14 +573,14 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                           </div>
                         ))
                       ) : (
-                        <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-xs text-slate-500 dark:text-slate-400 italic">Chưa có thông tin các mốc triển khai chi tiết.</div>
+                        <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg text-xs text-slate-500 dark:text-slate-400 italic">Chưa có thông tin các mốc triển khai chi tiết.</div>
                       )}
                     </div>
                   </div>
                 </div>
 
                 {/* 4. PAYMENT & CASHFLOW */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
+                <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
                   <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
                     <ReceiptText size={20} className="text-orange-500" />
                     Lộ trình thanh toán & Công nợ
@@ -591,7 +591,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                     <div className="space-y-4">
                       <p className="text-[11px] font-black text-emerald-600 uppercase tracking-widest border-b border-emerald-100 dark:border-emerald-900 pb-2">Kế hoạch Tiền về</p>
                       {contract.paymentPhases?.filter(p => !p.type || p.type === 'Revenue').map((p, idx) => (
-                        <div key={p.id} className="p-4 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100 dark:border-emerald-800">
+                        <div key={p.id} className="p-4 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-lg border border-emerald-100 dark:border-emerald-800">
                           <div className="flex justify-between mb-2">
                             <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
                               {p.name || `Đợt ${idx + 1}`}
@@ -615,7 +615,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                     <div className="space-y-4">
                       <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest border-b border-rose-100 dark:border-rose-900 pb-2">Kế hoạch Chi trả</p>
                       {contract.paymentPhases?.filter(p => p.type === 'Expense').map((p, idx) => (
-                        <div key={p.id} className="p-4 bg-rose-50/50 dark:bg-rose-900/10 rounded-xl border border-rose-100 dark:border-rose-800">
+                        <div key={p.id} className="p-4 bg-rose-50/50 dark:bg-rose-900/10 rounded-lg border border-rose-100 dark:border-rose-800">
                           <div className="flex justify-between mb-2">
                             <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
                               {p.name || `Thanh toán NCC ${idx + 1}`}
@@ -641,7 +641,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
 
             {/* SIDEBAR RIGHT */}
             <div className="space-y-6">
-              <div className="bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl p-6 text-white shadow-xl shadow-orange-200 dark:shadow-none relative overflow-hidden transition-all">
+              <div className="bg-gradient-to-br from-orange-500 to-amber-600 rounded-lg p-6 text-white shadow-xl shadow-orange-200 dark:shadow-none relative overflow-hidden transition-all">
                 <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
                 <div className="flex items-center gap-2 mb-4">
                   <ShieldCheck size={20} />
@@ -656,7 +656,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                     <button
                       onClick={handleAnalyzeContract}
                       disabled={isAnalyzing}
-                      className="w-full mt-2 py-2 bg-white/20 hover:bg-white/30 transition-colors rounded-xl text-xs font-bold backdrop-blur-md border border-white/10 flex items-center justify-center gap-2"
+                      className="w-full mt-2 py-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg text-xs font-bold backdrop-blur-md border border-white/10 flex items-center justify-center gap-2"
                     >
                       {isAnalyzing ? <Loader2 size={14} className="animate-spin" /> : <ShieldAlert size={14} />}
                       {isAnalyzing ? 'Đang phân tích...' : 'Qét rủi ro ngay'}
@@ -664,7 +664,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                   </div>
                 ) : (
                   <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2">
-                    <div className="p-3 bg-white/10 rounded-xl border border-white/10 text-xs text-orange-50 leading-relaxed overflow-y-auto max-h-[300px]">
+                    <div className="p-3 bg-white/10 rounded-lg border border-white/10 text-xs text-orange-50 leading-relaxed overflow-y-auto max-h-[300px]">
                       <div dangerouslySetInnerHTML={{ __html: aiAnalysisResult.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') }} />
                     </div>
                     <button
@@ -677,7 +677,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                 )}
               </div>
 
-              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h4 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                     <Paperclip size={18} className="text-slate-400" />
@@ -697,7 +697,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                       href={contract.draft_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 rounded-xl bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-all cursor-pointer group"
+                      className="flex items-center justify-between p-3 rounded-lg bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-all cursor-pointer group"
                     >
                       <div className="flex items-center gap-3 overflow-hidden">
                         <div className="p-2 bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 rounded-lg">
@@ -738,7 +738,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                         target={isExternalLink ? '_blank' : '_self'}
                         rel="noopener noreferrer"
                         onClick={(e) => !isExternalLink && (e.preventDefault(), handleDownloadDoc(file))}
-                        className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-all cursor-pointer group"
+                        className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-all cursor-pointer group"
                       >
                         <div className="flex items-center gap-3 overflow-hidden">
                           <div className={`p-2 rounded-lg group-hover:opacity-80 transition-colors ${iconBg}`}>
@@ -763,7 +763,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-6">
                 <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-6 flex items-center gap-2">
                   <HistoryIcon size={18} className="text-slate-400" />
                   Lịch sử tác động

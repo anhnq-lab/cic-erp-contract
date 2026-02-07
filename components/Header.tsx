@@ -53,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed }) => {
       <div className="flex items-center gap-2 sm:gap-4">
         <button
           onClick={onMenuClick}
-          className="md:hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+          className="md:hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
         >
           <Menu size={20} />
         </button>
@@ -64,7 +64,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed }) => {
             // Trigger CommandPalette
             window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }));
           }}
-          className="flex items-center bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl w-full max-w-[120px] sm:max-w-xs md:max-w-md border border-transparent hover:border-orange-300 dark:hover:border-orange-700 transition-all cursor-pointer group"
+          className="flex items-center bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-lg w-full max-w-[120px] sm:max-w-xs md:max-w-md border border-transparent hover:border-orange-300 dark:hover:border-orange-700 transition-all cursor-pointer group"
         >
           <Search size={18} className="text-slate-400 mr-2 flex-shrink-0 group-hover:text-orange-500 transition-colors" />
           <span className="text-sm text-slate-400 text-left flex-1 truncate">Tìm kiếm...</span>
@@ -85,7 +85,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed }) => {
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center gap-2 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+            className="flex items-center gap-2 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
           >
             {avatarUrl ? (
               <img
@@ -110,7 +110,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed }) => {
 
           {/* Dropdown Menu */}
           {showUserMenu && (
-            <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700/60 py-2 z-50 dark-dropdown-accent">
+            <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700/60 py-2 z-50 dark-dropdown-accent">
               <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
                 <div className="flex items-center gap-3">
                   {avatarUrl ? (

@@ -14,7 +14,7 @@ const ErrorState: React.FC<ErrorStateProps> = ({
     onRetry
 }) => {
     return (
-        <div className="flex flex-col items-center justify-center p-8 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800 text-center animate-in fade-in zoom-in-95 duration-300">
+        <div className="flex flex-col items-center justify-center p-8 rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800 text-center animate-in fade-in zoom-in-95 duration-300">
             <div className="w-16 h-16 bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center mb-4">
                 <AlertCircle size={32} />
             </div>
@@ -27,7 +27,7 @@ const ErrorState: React.FC<ErrorStateProps> = ({
             {onRetry && (
                 <button
                     onClick={onRetry}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold transition-colors shadow-lg shadow-rose-200 dark:shadow-none"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold transition-colors shadow-lg shadow-rose-200 dark:shadow-none"
                 >
                     <RefreshCcw size={16} />
                     Thử lại

@@ -56,12 +56,12 @@ export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) 
     return (
         <>
             {/* Compact Import Buttons */}
-            <div className="flex items-center gap-1.5 bg-slate-100/50 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-1.5 bg-slate-100/50 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
                 <button
                     onClick={() => !disabled && !isProcessing && fileInputRef.current?.click()}
                     disabled={disabled || isProcessing}
                     className={`
-                        flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all
+                        flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all
                         ${disabled || isProcessing
                             ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                             : 'bg-white dark:bg-slate-700 text-indigo-600 hover:shadow-md dark:text-indigo-400'
@@ -81,7 +81,7 @@ export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) 
                     onClick={() => !disabled && setIsGoogleModalOpen(true)}
                     disabled={disabled}
                     className={`
-                        flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all
+                        flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all
                         ${disabled
                             ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                             : 'bg-white dark:bg-slate-700 text-green-600 hover:shadow-md dark:text-green-400'
@@ -101,7 +101,7 @@ export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) 
                         generatePAKDTemplate();
                         toast.success('Đồ tải template PAKD_Template_Unified.xlsx');
                     }}
-                    className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
+                    className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all"
                     title="Tải template Excel mẫu"
                 >
                     <Download size={14} />
@@ -130,11 +130,11 @@ export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) 
             {/* Preview Modal for Local File */}
             {previewData && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden m-4 flex flex-col">
+                    <div className="bg-white dark:bg-slate-900 rounded-lg shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden m-4 flex flex-col">
                         {/* Header */}
                         <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
+                                <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
                                     <FileSpreadsheet className="w-5 h-5 text-indigo-600" />
                                 </div>
                                 <div>
@@ -144,7 +144,7 @@ export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) 
                             </div>
                             <button
                                 onClick={() => setPreviewData(null)}
-                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                             >
                                 <X size={20} className="text-slate-500" />
                             </button>
@@ -154,26 +154,26 @@ export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) 
                         <div className="p-6 overflow-y-auto flex-1">
                             {/* Financial Summary */}
                             <div className="grid grid-cols-4 gap-4 mb-6">
-                                <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border border-emerald-100 dark:border-emerald-800/50">
+                                <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-lg border border-emerald-100 dark:border-emerald-800/50">
                                     <p className="text-[10px] text-emerald-600 uppercase font-bold">Doanh thu</p>
                                     <p className="text-lg font-black text-emerald-700 dark:text-emerald-400">{formatVND(previewData.financials.revenue)} đ</p>
                                 </div>
-                                <div className="bg-rose-50 dark:bg-rose-900/20 p-4 rounded-xl border border-rose-100 dark:border-rose-800/50">
+                                <div className="bg-rose-50 dark:bg-rose-900/20 p-4 rounded-lg border border-rose-100 dark:border-rose-800/50">
                                     <p className="text-[10px] text-rose-600 uppercase font-bold">Chi phí</p>
                                     <p className="text-lg font-black text-rose-700 dark:text-rose-400">{formatVND(previewData.financials.costs)} đ</p>
                                 </div>
-                                <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
+                                <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg border border-indigo-100 dark:border-indigo-800/50">
                                     <p className="text-[10px] text-indigo-600 uppercase font-bold">Lợi nhuận</p>
                                     <p className="text-lg font-black text-indigo-700 dark:text-indigo-400">{formatVND(previewData.financials.profit)} đ</p>
                                 </div>
-                                <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-100 dark:border-amber-800/50">
+                                <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg border border-amber-100 dark:border-amber-800/50">
                                     <p className="text-[10px] text-amber-600 uppercase font-bold">Tỷ lệ LN</p>
                                     <p className="text-lg font-black text-amber-700 dark:text-amber-400">{previewData.financials.margin}%</p>
                                 </div>
                             </div>
 
                             {/* Line Items Table */}
-                            <div className="border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden">
+                            <div className="border border-slate-100 dark:border-slate-800 rounded-lg overflow-hidden">
                                 <table className="w-full text-xs">
                                     <thead className="bg-slate-50 dark:bg-slate-800">
                                         <tr>
@@ -209,7 +209,7 @@ export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) 
                             </button>
                             <button
                                 onClick={handleConfirmImport}
-                                className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20"
+                                className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20"
                             >
                                 <CheckCircle size={16} />
                                 Xác nhận Import

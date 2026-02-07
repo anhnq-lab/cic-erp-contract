@@ -133,7 +133,7 @@ export default function UnitAllocationsInput({
             {supportAllocations.map((allocation, index) => (
                 <div
                     key={`support-${allocation.unitId}-${index}`}
-                    className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 border-2 border-slate-200 dark:border-slate-700"
+                    className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border-2 border-slate-200 dark:border-slate-700"
                 >
                     <div className="flex items-center justify-between mb-3">
                         <p className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase flex items-center gap-1">
@@ -153,7 +153,7 @@ export default function UnitAllocationsInput({
                         <select
                             value={allocation.unitId}
                             onChange={(e) => updateSupportUnit(allocation, e.target.value)}
-                            className="px-3 py-2 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium"
+                            className="px-3 py-2 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium"
                         >
                             {units.filter(u => u.id !== 'all' && (u.id === allocation.unitId || !allocations.some(a => a.unitId === u.id))).map(u => (
                                 <option key={u.id} value={u.id}>{u.name}</option>
@@ -164,7 +164,7 @@ export default function UnitAllocationsInput({
                         <select
                             value={allocation.employeeId}
                             onChange={(e) => updateSupportEmployee(allocation, e.target.value)}
-                            className="px-3 py-2 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium"
+                            className="px-3 py-2 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium"
                         >
                             <option value="">-- Chọn NV --</option>
                             {getFilteredEmployees(allocation.unitId).map(e => (
@@ -180,7 +180,7 @@ export default function UnitAllocationsInput({
                                 max={100}
                                 value={allocation.percent}
                                 onChange={(e) => updateSupportPercent(allocation, parseInt(e.target.value) || 0)}
-                                className="flex-1 px-3 py-2 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-600 rounded-xl text-sm font-bold text-center"
+                                className="flex-1 px-3 py-2 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-center"
                             />
                             <Percent size={14} className="text-slate-400" />
                         </div>
@@ -193,7 +193,7 @@ export default function UnitAllocationsInput({
                 <button
                     type="button"
                     onClick={addSupportUnit}
-                    className="w-full py-3 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-sm font-bold text-slate-500 dark:text-slate-400 hover:border-orange-400 hover:text-orange-500 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-500 dark:text-slate-400 hover:border-orange-400 hover:text-orange-500 transition-all flex items-center justify-center gap-2"
                 >
                     <Plus size={16} /> Thêm đơn vị phối hợp
                 </button>
@@ -201,7 +201,7 @@ export default function UnitAllocationsInput({
 
             {/* Validation Message */}
             {!isValid && (
-                <div className="flex items-center gap-2 text-red-600 dark:text-red-400 text-xs font-medium bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-xl">
+                <div className="flex items-center gap-2 text-red-600 dark:text-red-400 text-xs font-medium bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg">
                     <span>⚠️ Tổng % đơn vị phối hợp vượt quá 100%!</span>
                 </div>
             )}

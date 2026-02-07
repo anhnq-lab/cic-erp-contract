@@ -280,7 +280,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
     <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500 pb-12">
       {/* Impersonation Warning Banner */}
       {isImpersonating && impersonatedUser && (
-        <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-300 dark:border-amber-700 rounded-xl p-4 flex items-center gap-3">
+        <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-300 dark:border-amber-700 rounded-lg p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-white">
             <User size={20} />
           </div>
@@ -315,7 +315,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
           />
           <button
             onClick={() => setIsImportModalOpen(true)}
-            className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-5 py-3 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+            className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-5 py-3 rounded-lg font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
           >
             <Upload size={20} /> Nhập Excel
           </button>
@@ -362,14 +362,14 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                 toast.error("Lỗi khi xuất file");
               }
             }}
-            className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-5 py-3 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+            className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-5 py-3 rounded-lg font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
           >
             <Download size={20} /> Xuất Excel
           </button>
           <button
             onClick={onAdd}
             title="Thêm hợp đồng mới (Alt+N)"
-            className="flex items-center justify-center gap-2 bg-indigo-700 text-white px-6 py-3 rounded-xl font-black hover:bg-indigo-800 transition-all shadow-xl shadow-indigo-100 dark:shadow-none"
+            className="flex items-center justify-center gap-2 bg-indigo-700 text-white px-6 py-3 rounded-lg font-black hover:bg-indigo-800 transition-all shadow-xl shadow-indigo-100 dark:shadow-none"
           >
             <Plus size={22} /> Thêm mới
           </button>
@@ -379,8 +379,8 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
       {/* SCORE CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Contracts */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-700/40 shadow-sm flex items-center gap-4 dark-card-glow">
-          <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-sm flex items-center gap-4 dark-card-glow">
+          <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300">
             <Briefcase size={24} />
           </div>
           <div>
@@ -390,8 +390,8 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         </div>
 
         {/* Total Value */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-700/40 shadow-sm flex items-center gap-4 dark-card-glow">
-          <div className="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-sm flex items-center gap-4 dark-card-glow">
+          <div className="w-12 h-12 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
             <DollarSign size={24} />
           </div>
           <div>
@@ -403,8 +403,8 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         </div>
 
         {/* Revenue */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-700/40 shadow-sm flex items-center gap-4 dark-card-glow">
-          <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-sm flex items-center gap-4 dark-card-glow">
+          <div className="w-12 h-12 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
             <TrendingUp size={24} />
           </div>
           <div>
@@ -416,8 +416,8 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         </div>
 
         {/* Profit */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-700/40 shadow-sm flex items-center gap-4 dark-card-glow">
-          <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-sm flex items-center gap-4 dark-card-glow">
+          <div className="w-12 h-12 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
             <DollarSign size={24} />
           </div>
           <div>
@@ -429,7 +429,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-700/40 shadow-md flex flex-wrap gap-4 items-center">
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-md flex flex-wrap gap-4 items-center">
         {/* Search */}
         <div className="flex-1 min-w-[240px] relative">
           <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
@@ -438,12 +438,12 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
             placeholder="Tìm mã HĐ, tên khách hàng hoặc dự án..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold text-slate-900 dark:text-slate-100"
+            className="w-full pl-12 pr-4 py-3 bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold text-slate-900 dark:text-slate-100"
           />
         </div>
 
         {/* Year Filter */}
-        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-xl px-4 border-2 border-slate-200 dark:border-slate-700">
+        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-4 border-2 border-slate-200 dark:border-slate-700">
           <Calendar size={18} className="text-slate-500" />
           <select
             className="bg-transparent py-3 text-sm font-black text-slate-900 dark:text-slate-100 outline-none w-[100px]"
@@ -462,7 +462,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
 
         {/* Unit Filter (Local) - Only show if Global is All */}
         {selectedUnit?.id === 'all' && (
-          <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-xl px-4 border-2 border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-4 border-2 border-slate-200 dark:border-slate-700">
             <Building2 size={18} className="text-slate-500" />
             <select
               className="bg-transparent py-3 text-sm font-black text-slate-900 dark:text-slate-100 outline-none max-w-[150px]"
@@ -481,7 +481,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         )}
 
         {/* Status Filter */}
-        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-xl px-4 border-2 border-slate-200 dark:border-slate-700">
+        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-4 border-2 border-slate-200 dark:border-slate-700">
           <Filter size={18} className="text-slate-500" />
           <select
             className="bg-transparent py-3 text-sm font-black text-slate-900 dark:text-slate-100 outline-none"
@@ -501,7 +501,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
       </div>
 
       {/* TABLE */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/40 shadow-lg transition-colors overflow-x-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-lg transition-colors overflow-x-auto">
         <table className="w-full text-left border-separate border-spacing-0 min-w-[1400px]">
           <thead>
             <tr className="z-20">
@@ -549,7 +549,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                   <td className="px-4 py-5 text-right"><div className="w-24 h-4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse ml-auto"></div></td>
                   <td className="px-4 py-5 text-right"><div className="w-24 h-4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse ml-auto"></div></td>
                   <td className="px-4 py-5 text-center"><div className="w-12 h-6 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse mx-auto"></div></td>
-                  <td className="px-4 py-5 text-center"><div className="w-20 h-6 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse mx-auto"></div></td>
+                  <td className="px-4 py-5 text-center"><div className="w-20 h-6 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse mx-auto"></div></td>
                   <td className="px-4 py-5"><div className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded animate-pulse ml-auto"></div></td>
                 </tr>
               ))
@@ -631,7 +631,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                     </span>
                   </td>
                   <td className="px-4 py-5 text-center bg-white dark:bg-slate-900">
-                    <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase shadow-sm ${getStatusColor(contract.status)} inline-block min-w-[80px]`}>
+                    <span className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase shadow-sm ${getStatusColor(contract.status)} inline-block min-w-[80px]`}>
                       {CONTRACT_STATUS_LABELS[contract.status] || contract.status}
                     </span>
                   </td>
@@ -670,7 +670,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
           <button
             onClick={() => setPage(p => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <ChevronLeft size={20} />
           </button>
@@ -688,7 +688,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                 <button
                   key={p}
                   onClick={() => setPage(p)}
-                  className={`w-10 h-10 rounded-xl text-sm font-black transition-all ${page === p
+                  className={`w-10 h-10 rounded-lg text-sm font-black transition-all ${page === p
                     ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-500/20'
                     : 'bg-transparent text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                     }`}
@@ -701,7 +701,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
           <button
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
             disabled={page === totalPages || totalPages === 0}
-            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <ChevronRight size={20} />
           </button>

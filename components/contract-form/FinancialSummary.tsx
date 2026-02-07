@@ -20,7 +20,7 @@ const FinancialSummary: React.FC<FinancialSummaryProps> = ({
 }) => {
     return (
         <div className="px-10 pt-4 pb-2 shrink-0 z-10 bg-white dark:bg-slate-900 animate-in fade-in slide-in-from-top-4 duration-300">
-            <section className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-xl px-6 py-4 text-white shadow-lg relative overflow-hidden">
+            <section className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-lg px-6 py-4 text-white shadow-lg relative overflow-hidden">
                 {/* Decorative Icon */}
                 <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-5">
                     <TrendingUp size={80} />

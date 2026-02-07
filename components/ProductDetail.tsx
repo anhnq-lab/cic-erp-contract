@@ -115,7 +115,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack, onEdit
                 <div className="flex items-center gap-4">
                     <button
                         onClick={onBack}
-                        className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all text-slate-500"
+                        className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all text-slate-500"
                     >
                         <ArrowLeft size={20} />
                     </button>
@@ -137,7 +137,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack, onEdit
                 <div className="flex gap-2">
                     <button
                         onClick={onEdit}
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
                     >
                         <Edit3 size={16} />
                         Chỉnh sửa
@@ -155,7 +155,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack, onEdit
                                 }
                             }
                         }}
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-900/30 rounded-xl text-sm font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all"
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-900/30 rounded-lg text-sm font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all"
                     >
                         <Trash2 size={16} />
                         Xóa
@@ -167,7 +167,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack, onEdit
                 {/* Main Info */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Financial Summary */}
-                    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
+                    <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                             <div className="space-y-1">
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Giá bán (Dự kiến)</p>
@@ -199,7 +199,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack, onEdit
                     </div>
 
                     {/* Description */}
-                    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
+                    <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
                         <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
                             <FileText size={20} className="text-indigo-600 dark:text-indigo-400" />
                             Mô tả sản phẩm/dịch vụ
@@ -210,7 +210,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack, onEdit
                     </div>
 
                     {/* Related Contracts */}
-                    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                    <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-slate-100 dark:border-slate-800">
                             <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                 <TrendingUp size={20} className="text-indigo-600 dark:text-indigo-400" />
@@ -261,8 +261,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack, onEdit
                 {/* Side Info */}
                 <div className="space-y-6">
                     {/* Product Card */}
-                    <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-xl p-6 text-white shadow-xl shadow-indigo-200 dark:shadow-none">
-                        <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+                    <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-lg p-6 text-white shadow-xl shadow-indigo-200 dark:shadow-none">
+                        <div className="w-14 h-14 bg-white/20 rounded-lg flex items-center justify-center mb-4">
                             <Package size={28} />
                         </div>
                         <h4 className="text-lg font-bold mb-2">{product.name}</h4>
@@ -283,7 +283,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack, onEdit
                     </div>
 
                     {/* Quick Stats */}
-                    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+                    <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-6">
                         <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
                             <TrendingUp size={18} className="text-slate-400" />
                             Thống kê (Top 50 HĐ liên quan)

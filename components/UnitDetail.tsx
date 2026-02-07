@@ -184,10 +184,10 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
             {stats && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Signing */}
-                    <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+                    <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-500/10 to-transparent rounded-bl-full"></div>
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
+                            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
                                 <FileText size={18} className="text-indigo-600" />
                             </div>
                             <span className={`text-sm font-black ${stats.signingProgress >= 100 ? 'text-emerald-600' : 'text-slate-600 dark:text-slate-400'}`}>
@@ -203,10 +203,10 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
                     </div>
 
                     {/* Revenue */}
-                    <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+                    <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-bl-full"></div>
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
+                            <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
                                 <TrendingUp size={18} className="text-emerald-600" />
                             </div>
                             <span className={`text-sm font-black ${stats.revenueProgress >= 100 ? 'text-emerald-600' : 'text-slate-600 dark:text-slate-400'}`}>
@@ -222,10 +222,10 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
                     </div>
 
                     {/* Profit */}
-                    <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+                    <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-500/10 to-transparent rounded-bl-full"></div>
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
+                            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
                                 <Target size={18} className="text-purple-600" />
                             </div>
                             <span className={`text-sm font-black ${stats.adminProfitProgress >= 100 ? 'text-emerald-600' : 'text-slate-600 dark:text-slate-400'}`}>
@@ -241,10 +241,10 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
                     </div>
 
                     {/* Contract Count */}
-                    <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+                    <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-500/10 to-transparent rounded-bl-full"></div>
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
+                            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
                                 <Briefcase size={18} className="text-amber-600" />
                             </div>
                         </div>
@@ -263,7 +263,7 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
 
             {/* Functions */}
             {unit.functions && (
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-lg border border-slate-200 dark:border-slate-800">
                     <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
                         <Target size={16} className="text-indigo-500" /> Chức năng - Nhiệm vụ
                     </h3>
@@ -276,7 +276,7 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
             {/* Top Performers & Quick Stats */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Top Performers */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5">
+                <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-5">
                     <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
                         <Award size={16} className="text-amber-500" /> Top Performers
                     </h3>
@@ -285,7 +285,7 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
                             <p className="text-slate-500 text-sm text-center py-4">Chưa có dữ liệu</p>
                         ) : (
                             topPerformers.map((p, idx) => (
-                                <div key={p.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer" onClick={() => onViewPersonnel(p.id)}>
+                                <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer" onClick={() => onViewPersonnel(p.id)}>
                                     <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black ${idx === 0 ? 'bg-amber-100 text-amber-700' : idx === 1 ? 'bg-slate-200 text-slate-600' : idx === 2 ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-500'}`}>
                                         {idx + 1}
                                     </div>
@@ -301,7 +301,7 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
                 </div>
 
                 {/* Quick Employee Stats */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5">
+                <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-5">
                     <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
                         <Users size={16} className="text-indigo-500" /> Phân bổ Nhân sự
                     </h3>
@@ -320,13 +320,13 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
             </div>
 
             {/* Recent Contracts */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5">
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-5">
                 <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
                     <FileText size={16} className="text-emerald-500" /> Hợp đồng gần đây
                 </h3>
                 <div className="space-y-2">
                     {contracts.slice(0, 5).map(c => (
-                        <div key={c.id} onClick={() => onViewContract(c.id)} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer group">
+                        <div key={c.id} onClick={() => onViewContract(c.id)} className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer group">
                             <div className="min-w-0 flex-1">
                                 <p className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">{c.partyA}</p>
                                 <p className="text-xs text-slate-500">{formatCurrency(c.value)}</p>
@@ -345,7 +345,7 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
     );
 
     const renderEmployeesTab = () => (
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
             <div className="overflow-x-auto">
                 <table className="w-full">
                     <thead className="bg-slate-50 dark:bg-slate-800">
@@ -392,7 +392,7 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
     );
 
     const renderContractsTab = () => (
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
             <div className="overflow-x-auto">
                 <table className="w-full">
                     <thead className="bg-slate-50 dark:bg-slate-800">
@@ -439,7 +439,7 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
     const renderHistoryTab = () => (
         <div className="space-y-6">
             {/* Placeholder for monthly/quarterly charts */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-6">
                 <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
                     <Activity size={16} className="text-indigo-500" /> Lịch sử KPI theo tháng
                 </h3>
@@ -453,20 +453,20 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
             </div>
 
             {/* Year over Year comparison placeholder */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-6">
                 <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
                     <Calendar size={16} className="text-emerald-500" /> So sánh năm
                 </h3>
                 <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                    <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                         <p className="text-xs text-slate-500 mb-1">Năm nay</p>
                         <p className="text-lg font-black text-slate-900 dark:text-slate-100">{formatCurrency(stats?.actualSigning || 0)}</p>
                     </div>
-                    <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                    <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                         <p className="text-xs text-slate-500 mb-1">Năm trước</p>
                         <p className="text-lg font-black text-slate-900 dark:text-slate-100">{formatCurrency(unit.lastYearActual?.signing || 0)}</p>
                     </div>
-                    <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                    <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                         <p className="text-xs text-slate-500 mb-1">Tăng trưởng</p>
                         <p className="text-lg font-black text-emerald-600">
                             {unit.lastYearActual?.signing ? `${(((stats?.actualSigning || 0) / unit.lastYearActual.signing - 1) * 100).toFixed(0)}%` : 'N/A'}
@@ -481,7 +481,7 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
         <div className="space-y-6 animate-in fade-in duration-500 pb-12">
             {/* Header */}
             <div className="flex items-center gap-4">
-                <button onClick={onBack} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                <button onClick={onBack} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                     <ArrowLeft size={20} className="text-slate-600 dark:text-slate-400" />
                 </button>
                 <div className="flex-1 min-w-0">
@@ -494,18 +494,18 @@ const UnitDetail: React.FC<UnitDetailProps> = ({ unitId, onBack, onViewContract,
                         <span className="text-[10px] text-slate-400">{staff.length} nhân viên • {contracts.length} hợp đồng</span>
                     </div>
                 </div>
-                <button onClick={() => setIsEditing(true)} className="p-2.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+                <button onClick={() => setIsEditing(true)} className="p-2.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
                     <Pencil size={18} />
                 </button>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl overflow-x-auto">
+            <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-lg overflow-x-auto">
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab.id ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab.id ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                     >
                         <tab.icon size={16} />
                         {tab.label}

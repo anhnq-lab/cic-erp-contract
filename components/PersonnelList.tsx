@@ -213,7 +213,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                     <div className="relative">
                         <button
                             onClick={() => setIsUnitDropdownOpen(!isUnitDropdownOpen)}
-                            className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:border-indigo-300 transition-all min-w-[180px]"
+                            className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:border-indigo-300 transition-all min-w-[180px]"
                         >
                             <Building size={18} className="text-slate-400" />
                             <span className="flex-1 text-left truncate">{selectedUnitName}</span>
@@ -223,7 +223,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                         {isUnitDropdownOpen && (
                             <>
                                 <div className="fixed inset-0 z-10" onClick={() => setIsUnitDropdownOpen(false)} />
-                                <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-20 overflow-hidden">
+                                <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-20 overflow-hidden">
                                     <div className="max-h-80 overflow-y-auto">
                                         {filterUnits.map(unit => (
                                             <button
@@ -251,14 +251,14 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                             placeholder="Tìm kiếm nhân viên..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                     </div>
 
                     {/* Import Button */}
                     <button
                         onClick={() => setIsImportOpen(true)}
-                        className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-medium hover:border-indigo-300 transition-all"
+                        className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:border-indigo-300 transition-all"
                     >
                         <Upload size={18} />
                         <span className="hidden sm:inline">Import</span>
@@ -268,7 +268,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                     <a
                         href="/templates/employeeImportTemplate.xlsx"
                         download
-                        className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-medium hover:border-emerald-300 transition-all"
+                        className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:border-emerald-300 transition-all"
                     >
                         <Download size={18} />
                         <span className="hidden sm:inline">Template</span>
@@ -277,7 +277,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                     {/* Add Button */}
                     <button
                         onClick={() => { setEditingPerson(undefined); setIsFormOpen(true); }}
-                        className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-200/50 hover:shadow-xl transition-all"
+                        className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg text-sm font-bold shadow-lg shadow-indigo-200/50 hover:shadow-xl transition-all"
                     >
                         <Plus size={18} />
                         <span className="hidden sm:inline">Thêm NV</span>
@@ -317,9 +317,9 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
 
             {/* Summary Stats - HR focused */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl text-indigo-600 dark:text-indigo-400">
+                        <div className="p-2.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
                             <User size={20} />
                         </div>
                         <div>
@@ -328,9 +328,9 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                         </div>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl text-emerald-600 dark:text-emerald-400">
+                        <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg text-emerald-600 dark:text-emerald-400">
                             <Building size={20} />
                         </div>
                         <div>
@@ -339,9 +339,9 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                         </div>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-pink-100 dark:bg-pink-900/30 rounded-xl text-pink-600 dark:text-pink-400">
+                        <div className="p-2.5 bg-pink-100 dark:bg-pink-900/30 rounded-lg text-pink-600 dark:text-pink-400">
                             <User size={20} />
                         </div>
                         <div>
@@ -352,9 +352,9 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                         </div>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-purple-100 dark:bg-purple-900/30 rounded-xl text-purple-600 dark:text-purple-400">
+                        <div className="p-2.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400">
                             <Calendar size={20} />
                         </div>
                         <div>
@@ -368,7 +368,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
             </div>
 
             {/* Personnel Table - HR focused */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
                 {isLoading ? (
                     <div className="flex items-center justify-center py-16">
                         <Loader2 size={32} className="animate-spin text-indigo-500" />
@@ -396,7 +396,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                                         {/* Name & Position */}
                                         <td className="py-4 px-6">
                                             <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-indigo-200/50 dark:shadow-none overflow-hidden">
+                                                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-indigo-200/50 dark:shadow-none overflow-hidden">
                                                     {person.avatar ? (
                                                         <img src={person.avatar} alt={person.name} className="w-full h-full object-cover" />
                                                     ) : (
@@ -461,7 +461,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({ selectedUnit, onSelectPer
                                                 {actionMenuId === person.id && (
                                                     <>
                                                         <div className="fixed inset-0 z-10" onClick={() => setActionMenuId(null)} />
-                                                        <div className="absolute right-0 mt-1 w-36 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg z-20 overflow-hidden">
+                                                        <div className="absolute right-0 mt-1 w-36 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-20 overflow-hidden">
                                                             <button
                                                                 onClick={(e) => { e.stopPropagation(); setEditingPerson(person); setIsFormOpen(true); setActionMenuId(null); }}
                                                                 className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"

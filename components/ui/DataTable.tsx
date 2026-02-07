@@ -145,7 +145,7 @@ function DataTable<T extends Record<string, any>>({
     const headerPadding = compact ? 'px-3 py-2' : 'px-4 py-3';
 
     return (
-        <div className={`overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 ${className}`}>
+        <div className={`overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 ${className}`}>
             <div className="overflow-x-auto">
                 <table className="w-full">
                     {/* Header */}

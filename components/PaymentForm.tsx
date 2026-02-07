@@ -109,11 +109,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
 
     return (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-300">
                 {/* Header */}
                 <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                        <div className="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg">
                             <CreditCard size={24} />
                         </div>
                         <div>
@@ -123,7 +123,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                             <p className="text-xs text-slate-500">Quản lý khoản thanh toán hợp đồng</p>
                         </div>
                     </div>
-                    <button onClick={onCancel} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                    <button onClick={onCancel} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                         <X size={20} className="text-slate-500" />
                     </button>
                 </div>
@@ -179,7 +179,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                     {/* Payment Type */}
                     <div className="space-y-2">
                         <label className="text-xs font-bold text-slate-500 uppercase">Loại thanh toán</label>
-                        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-fit">
+                        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg w-fit">
                             <button
                                 type="button"
                                 onClick={() => setPaymentType('Revenue')}
@@ -208,7 +208,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                                 value={invoiceNumber}
                                 onChange={(e) => setInvoiceNumber(e.target.value)}
                                 placeholder="VD: HĐ001-1"
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
                         </div>
                         <div className="space-y-2">
@@ -219,7 +219,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                                 type="date"
                                 value={dueDate}
                                 onChange={(e) => setDueDate(e.target.value)}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
                         </div>
                         <div className="space-y-2">
@@ -236,7 +236,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                                         setDueDate(val); // Auto-fill Due Date if empty
                                     }
                                 }}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
                         </div>
                     </div>
@@ -251,7 +251,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                                 value={amount}
                                 onChange={(value) => setAmount(value)}
                                 placeholder="0"
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
                             {amount > 0 && (
                                 <p className="text-xs text-slate-400">{formatCurrency(amount)} VND</p>
@@ -265,7 +265,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                                 value={paidAmount}
                                 onChange={(value) => setPaidAmount(value)}
                                 placeholder="0"
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             />
                         </div>
                     </div>
@@ -286,7 +286,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                                                 setPaidAmount(amount);
                                             }
                                         }}
-                                        className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${status === s
+                                        className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${status === s
                                             ? s === 'Tiền về' ? 'bg-emerald-600 text-white'
                                                 : s === 'Đã xuất HĐ' ? 'bg-blue-600 text-white'
                                                     : s === 'Quá hạn' ? 'bg-rose-600 text-white'
@@ -307,7 +307,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                                         key={m}
                                         type="button"
                                         onClick={() => setMethod(m)}
-                                        className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${method === m
+                                        className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${method === m
                                             ? 'bg-indigo-600 text-white'
                                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                                             }`}
@@ -328,7 +328,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                                 value={reference}
                                 onChange={(e) => setReference(e.target.value)}
                                 placeholder="Số UNC..."
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
                         </div>
                         <div className="space-y-2">
@@ -338,7 +338,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
                                 placeholder="Ghi chú..."
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
                         </div>
                     </div>
@@ -348,13 +348,13 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                 <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
                     <button
                         onClick={onCancel}
-                        className="px-6 py-2.5 text-slate-600 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                        className="px-6 py-2.5 text-slate-600 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                     >
                         Hủy
                     </button>
                     <button
                         // disabled={!contractId || !dueDate || !amount} // Disabled condition removed for better UX
-                        className={`px-8 py-2.5 font-bold text-sm rounded-xl transition-colors flex items-center gap-2 ${(!contractId || !dueDate || !amount)
+                        className={`px-8 py-2.5 font-bold text-sm rounded-lg transition-colors flex items-center gap-2 ${(!contractId || !dueDate || !amount)
                             ? 'bg-slate-100 text-slate-400 cursor-not-allowed dark:bg-slate-800 dark:text-slate-600'
                             : 'bg-indigo-600 text-white hover:bg-indigo-700'
                             }`}

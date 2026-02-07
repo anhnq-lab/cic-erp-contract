@@ -122,7 +122,7 @@ const OrganizationChart: React.FC<OrganizationChartProps> = ({ onSelectUnit, onE
 
         return (
             <div
-                className={`relative bg-gradient-to-br ${colorClass} text-white rounded-xl shadow-lg min-w-[160px] max-w-[200px] cursor-pointer hover:scale-105 transition-transform group`}
+                className={`relative bg-gradient-to-br ${colorClass} text-white rounded-lg shadow-lg min-w-[160px] max-w-[200px] cursor-pointer hover:scale-105 transition-transform group`}
                 onClick={() => onSelectUnit?.(node)}
             >
                 {/* Main content */}
@@ -237,12 +237,12 @@ const OrganizationChart: React.FC<OrganizationChartProps> = ({ onSelectUnit, onE
         return (
             <div className="p-8 flex items-center justify-center min-h-[400px]">
                 <div className="animate-pulse flex flex-col items-center gap-4">
-                    <div className="w-32 h-20 rounded-xl bg-slate-200 dark:bg-slate-700" />
+                    <div className="w-32 h-20 rounded-lg bg-slate-200 dark:bg-slate-700" />
                     <div className="w-0.5 h-8 bg-slate-200 dark:bg-slate-700" />
                     <div className="flex gap-4">
-                        <div className="w-24 h-16 rounded-xl bg-slate-200 dark:bg-slate-700" />
-                        <div className="w-24 h-16 rounded-xl bg-slate-200 dark:bg-slate-700" />
-                        <div className="w-24 h-16 rounded-xl bg-slate-200 dark:bg-slate-700" />
+                        <div className="w-24 h-16 rounded-lg bg-slate-200 dark:bg-slate-700" />
+                        <div className="w-24 h-16 rounded-lg bg-slate-200 dark:bg-slate-700" />
+                        <div className="w-24 h-16 rounded-lg bg-slate-200 dark:bg-slate-700" />
                     </div>
                 </div>
             </div>
@@ -250,11 +250,11 @@ const OrganizationChart: React.FC<OrganizationChartProps> = ({ onSelectUnit, onE
     }
 
     return (
-        <div className="bg-slate-50 dark:bg-slate-900 rounded-xl overflow-hidden">
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-lg overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
                         <Building2 className="w-5 h-5 text-white" />
                     </div>
                     <div>

@@ -129,7 +129,7 @@ const UserImpersonator: React.FC = () => {
         <div className="space-y-6">
             {/* Active Impersonation Banner */}
             {isImpersonating && impersonatedUser && (
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 border-2 border-amber-400 rounded-xl p-5 animate-pulse-once">
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 border-2 border-amber-400 rounded-lg p-5 animate-pulse-once">
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div className="flex items-center gap-4">
                             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-xl shadow-lg">
@@ -151,7 +151,7 @@ const UserImpersonator: React.FC = () => {
                         </div>
                         <button
                             onClick={handleStopImpersonation}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all shadow-md hover:shadow-lg"
+                            className="flex items-center gap-2 px-5 py-2.5 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-all shadow-md hover:shadow-lg"
                         >
                             <X size={18} />
                             Dừng giả làm
@@ -195,7 +195,7 @@ const UserImpersonator: React.FC = () => {
                     type="button"
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     disabled={loading}
-                    className="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl hover:border-indigo-400 transition-all"
+                    className="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg hover:border-indigo-400 transition-all"
                 >
                     <span className={loading ? 'text-slate-400' : 'text-slate-700 dark:text-slate-300'}>
                         {loading ? 'Đang tải danh sách...' : `${users.length} nhân viên có sẵn`}
@@ -205,7 +205,7 @@ const UserImpersonator: React.FC = () => {
 
                 {/* Dropdown Content */}
                 {isDropdownOpen && !loading && (
-                    <div className="absolute z-50 w-full mt-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden">
+                    <div className="absolute z-50 w-full mt-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl overflow-hidden">
                         {/* Search inside dropdown */}
                         <div className="p-3 border-b border-slate-100 dark:border-slate-700">
                             <div className="relative">
@@ -262,7 +262,7 @@ const UserImpersonator: React.FC = () => {
             )}
 
             {/* Instructions */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 text-sm">
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-sm">
                 <p className="font-semibold text-blue-700 dark:text-blue-400 mb-2">💡 Hướng dẫn:</p>
                 <ol className="text-blue-600 dark:text-blue-300 space-y-1 text-xs list-decimal list-inside">
                     <li>Click vào dropdown để mở danh sách nhân viên</li>

@@ -386,11 +386,11 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="bg-white dark:bg-slate-900 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
+                        <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
                             <FileSpreadsheet className="text-indigo-600 dark:text-indigo-400" size={24} />
                         </div>
                         <div>
@@ -414,7 +414,7 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
                     {step === 'upload' && (
                         <div className="space-y-6">
                             {/* Download Template */}
-                            <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-xl p-4">
+                            <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-4">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <h3 className="font-medium text-indigo-800 dark:text-indigo-200">Tải Template Excel</h3>
@@ -438,7 +438,7 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
                                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                                 onDragLeave={() => setDragOver(false)}
                                 onDrop={handleDrop}
-                                className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors ${dragOver
+                                className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${dragOver
                                     ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
                                     : 'border-slate-300 dark:border-slate-600 hover:border-indigo-400'
                                     }`}
@@ -459,7 +459,7 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
                                 />
                                 <label
                                     htmlFor="excel-upload"
-                                    className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors cursor-pointer"
+                                    className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer"
                                 >
                                     <Upload size={18} />
                                     Chọn file
@@ -473,14 +473,14 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
                         <div className="space-y-4">
                             {/* Summary */}
                             <div className="flex gap-4">
-                                <div className="flex-1 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4">
+                                <div className="flex-1 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
                                     <div className="flex items-center gap-2">
                                         <CheckCircle className="text-emerald-600" size={20} />
                                         <span className="font-medium text-emerald-800 dark:text-emerald-200">{validCount} hợp lệ</span>
                                     </div>
                                 </div>
                                 {invalidCount > 0 && (
-                                    <div className="flex-1 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+                                    <div className="flex-1 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
                                         <div className="flex items-center gap-2">
                                             <AlertCircle className="text-red-600" size={20} />
                                             <span className="font-medium text-red-800 dark:text-red-200">{invalidCount} lỗi</span>
@@ -490,7 +490,7 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
                             </div>
 
                             {/* Preview Table */}
-                            <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                            <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
                                 <div className="overflow-x-auto max-h-[400px]">
                                     <table className="w-full text-sm">
                                         <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0">

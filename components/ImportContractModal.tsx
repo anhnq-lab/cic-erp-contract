@@ -355,11 +355,11 @@ const ImportContractModal: React.FC<ImportContractModalProps> = ({ isOpen, onClo
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div className="bg-white dark:bg-slate-900 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                             <FileSpreadsheet className="text-blue-600" size={20} />
                         </div>
                         <div>
@@ -379,7 +379,7 @@ const ImportContractModal: React.FC<ImportContractModalProps> = ({ isOpen, onClo
                             {/* Template Download */}
                             <button
                                 onClick={downloadTemplate}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors font-medium"
+                                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors font-medium"
                             >
                                 <Download size={18} />
                                 Tải file Template mẫu
@@ -391,7 +391,7 @@ const ImportContractModal: React.FC<ImportContractModalProps> = ({ isOpen, onClo
                                 onDragLeave={handleDrag}
                                 onDragOver={handleDrag}
                                 onDrop={handleDrop}
-                                className={`border-2 border-dashed rounded-xl p-10 text-center transition-colors ${dragActive
+                                className={`border-2 border-dashed rounded-lg p-10 text-center transition-colors ${dragActive
                                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                                     : 'border-slate-300 dark:border-slate-700 hover:border-blue-400'
                                     }`}
@@ -421,12 +421,12 @@ const ImportContractModal: React.FC<ImportContractModalProps> = ({ isOpen, onClo
                         <div className="space-y-4">
                             {/* Stats */}
                             <div className="flex gap-4">
-                                <div className="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 rounded-xl">
+                                <div className="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
                                     <CheckCircle size={18} className="text-green-600" />
                                     <span className="font-medium text-green-700 dark:text-green-400">{validCount} hợp lệ</span>
                                 </div>
                                 {invalidCount > 0 && (
-                                    <div className="flex items-center gap-2 px-4 py-2 bg-red-100 dark:bg-red-900/30 rounded-xl">
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
                                         <AlertCircle size={18} className="text-red-600" />
                                         <span className="font-medium text-red-700 dark:text-red-400">{invalidCount} lỗi</span>
                                     </div>
@@ -434,7 +434,7 @@ const ImportContractModal: React.FC<ImportContractModalProps> = ({ isOpen, onClo
                             </div>
 
                             {/* Preview Table */}
-                            <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                            <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
                                 <div className="overflow-x-auto max-h-80">
                                     <table className="w-full text-sm">
                                         <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0">

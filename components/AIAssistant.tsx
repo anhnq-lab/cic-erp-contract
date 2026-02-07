@@ -196,7 +196,7 @@ const AIAssistant: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-none animate-pulse">
+          <div className="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-none animate-pulse">
             <Sparkles size={20} />
           </div>
           <div>
@@ -212,7 +212,7 @@ const AIAssistant: React.FC = () => {
         </div>
 
         {/* Agent Selector */}
-        <div className="hidden md:flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+        <div className="hidden md:flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
           {(Object.entries(AGENTS) as [AgentType, typeof AGENTS[AgentType]][]).map(([key, agent]) => {
             const Icon = agent.icon;
             const isActive = currentAgent === key;
@@ -248,14 +248,14 @@ const AIAssistant: React.FC = () => {
 
           <button
             onClick={clearChat}
-            className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all"
+            className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-all"
             title="Xóa lịch sử"
           >
             <Trash2 size={18} />
           </button>
           <button
             onClick={() => setIsFullScreen(!isFullScreen)}
-            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-all"
+            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-all"
             title={isFullScreen ? "Thu nhỏ" : "Toàn màn hình"}
           >
             {isFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
@@ -374,7 +374,7 @@ const AIAssistant: React.FC = () => {
             onClick={handleSend}
             disabled={!input.trim() || isTyping}
             className={cn(
-              "absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl flex items-center justify-center transition-all",
+              "absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-lg flex items-center justify-center transition-all",
               input.trim() && !isTyping
                 ? "bg-indigo-600 text-white shadow-lg hover:scale-105 active:scale-95"
                 : "bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed"

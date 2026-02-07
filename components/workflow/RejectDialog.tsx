@@ -43,7 +43,7 @@ export const RejectDialog: React.FC<Props> = ({ isOpen, onClose, onConfirm, isLo
             />
 
             {/* Dialog */}
-            <div className="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in-95 duration-200">
+            <div className="relative bg-white dark:bg-slate-900 rounded-lg shadow-2xl w-full max-w-md animate-in fade-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3">
@@ -75,7 +75,7 @@ export const RejectDialog: React.FC<Props> = ({ isOpen, onClose, onConfirm, isLo
                             setError('');
                         }}
                         placeholder="Nhập lý do từ chối để người lập PAKD biết cần chỉnh sửa gì..."
-                        className={`w-full px-4 py-3 rounded-xl border-2 text-sm resize-none transition-colors focus:outline-none focus:ring-2 focus:ring-rose-200 ${error
+                        className={`w-full px-4 py-3 rounded-lg border-2 text-sm resize-none transition-colors focus:outline-none focus:ring-2 focus:ring-rose-200 ${error
                                 ? 'border-rose-300 bg-rose-50'
                                 : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800'
                             }`}
@@ -115,14 +115,14 @@ export const RejectDialog: React.FC<Props> = ({ isOpen, onClose, onConfirm, isLo
                     <button
                         onClick={handleClose}
                         disabled={isLoading}
-                        className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
+                        className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                     >
                         Hủy
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={isLoading || !reason.trim()}
-                        className="flex-1 px-4 py-2.5 text-sm font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-lg shadow-rose-200 dark:shadow-none transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 px-4 py-2.5 text-sm font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-lg shadow-lg shadow-rose-200 dark:shadow-none transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isLoading ? (
                             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -127,7 +127,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                     setIsOpen(!isOpen);
                     setTimeout(() => inputRef.current?.focus(), 50);
                 }}
-                className={`w-full flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-left text-sm font-medium transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-indigo-300 dark:hover:border-indigo-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30'
+                className={`w-full flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-left text-sm font-medium transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-indigo-300 dark:hover:border-indigo-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30'
                     } ${isOpen ? 'border-indigo-500 ring-2 ring-indigo-100 dark:ring-indigo-900/30' : ''}`}
             >
                 <span className={displayValue ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'}>
@@ -149,7 +149,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
             {/* Dropdown */}
             {isOpen && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                     {/* Search Input */}
                     <div className="p-3 border-b border-slate-100 dark:border-slate-800">
                         <div className="relative">
@@ -160,7 +160,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                                 value={query}
                                 onChange={(e) => handleQueryChange(e.target.value)}
                                 placeholder="Gõ ít nhất 2 ký tự..."
-                                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:border-indigo-500 focus:outline-none transition-colors"
+                                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:border-indigo-500 focus:outline-none transition-colors"
                             />
                             {isLoading && (
                                 <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-500 animate-spin" />
@@ -203,7 +203,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                                     setIsOpen(false);
                                     onAddNew();
                                 }}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 font-bold text-sm rounded-xl transition-colors"
+                                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 font-bold text-sm rounded-lg transition-colors"
                             >
                                 <Plus size={16} />
                                 {addNewLabel}

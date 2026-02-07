@@ -188,7 +188,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                     <div className="relative">
                         <button
                             onClick={() => setShowUnitSelector(!showUnitSelector)}
-                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:border-orange-500 transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm hover:border-orange-500 transition-colors"
                         >
                             <Building2 size={18} className="text-slate-400" />
                             <span className="font-bold text-slate-700 dark:text-slate-200">{safeUnit.name}</span>
@@ -197,7 +197,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                         {showUnitSelector && (
                             <>
                                 <div className="fixed inset-0 z-10" onClick={() => setShowUnitSelector(false)} />
-                                <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-slate-900 border border-slate-200 shadow-xl rounded-xl z-20 overflow-hidden">
+                                <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-slate-900 border border-slate-200 shadow-xl rounded-lg z-20 overflow-hidden">
                                     <button onClick={() => { onSelectUnit({ id: 'all', name: 'Toàn công ty', type: 'Company' } as Unit); setShowUnitSelector(false); }} className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold text-sm">Toàn công ty</button>
                                     {units.filter(u => u.name !== 'Toàn công ty').map(u => (
                                         <button key={u.id} onClick={() => { onSelectUnit(u); setShowUnitSelector(false); }} className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold text-sm">{u.name}</button>
@@ -209,7 +209,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
 
                     {/* Year Selector */}
                     <div className="relative">
-                        <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+                        <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm">
                             <Calendar size={18} className="text-slate-400" />
                             <select
                                 value={yearFilter}
@@ -222,7 +222,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                         </div>
                     </div>
 
-                    <button className="p-2 bg-orange-50 dark:bg-orange-900/20 text-orange-600 rounded-xl hover:bg-orange-100 transition-colors">
+                    <button className="p-2 bg-orange-50 dark:bg-orange-900/20 text-orange-600 rounded-lg hover:bg-orange-100 transition-colors">
                         <Download size={20} />
                     </button>
                 </div>
@@ -231,7 +231,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
             {/* Top Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* 1. Revenue Structure */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
                         <PieChartIcon size={20} className="text-orange-500" />
                         Cơ cấu Doanh thu {selectedUnit.id === 'all' ? '(Theo Đơn vị)' : '(Theo Nhân sự)'}
@@ -260,7 +260,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                 </div>
 
                 {/* 2. Plan vs Actual */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-6">
                         Kế hoạch vs Thực tế (Doanh thu)
                     </h3>
@@ -281,7 +281,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
             </div>
 
             {/* 3. Monthly Trend (Line/Area) */}
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-6">
                     Biểu đồ Xu hướng (Doanh thu & Lợi nhuận)
                 </h3>
@@ -311,7 +311,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
             </div>
 
             {/* 4. Cashflow (Composed) */}
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-6">
                     Biểu đồ Dòng tiền (Thu - Chi)
                 </h3>

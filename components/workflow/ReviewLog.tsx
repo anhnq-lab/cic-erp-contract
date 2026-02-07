@@ -8,7 +8,7 @@ interface Props {
 
 export const ReviewLog: React.FC<Props> = ({ reviews }) => {
     return (
-        <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+        <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
             <h5 className="text-xs font-bold text-slate-500 uppercase mb-4 flex items-center gap-2">
                 <span className="w-2 h-2 bg-slate-400 rounded-full"></span> Lịch sử Xử lý
             </h5>
