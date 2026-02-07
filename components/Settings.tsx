@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Moon, Sun, Shield, Settings2, FlaskConical, Users } from 'lucide-react';
+import { Moon, Sun, Shield, Settings2, FlaskConical, Users, Monitor } from 'lucide-react';
 import DataSeeder from './admin/DataSeeder';
 import PilotRunner from './admin/PilotRunner';
 import PermissionManager from './settings/PermissionManager';
@@ -59,7 +59,7 @@ const Settings: React.FC = () => {
                                 <Settings2 size={16} className="text-orange-500" />
                                 Giao diện hệ thống
                             </h3>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-3 gap-4">
                                 <button
                                     onClick={() => setTheme('light')}
                                     className={`flex items-center justify-center gap-3 p-4 rounded-lg border transition-all ${theme === 'light'
@@ -68,7 +68,17 @@ const Settings: React.FC = () => {
                                         }`}
                                 >
                                     <Sun size={20} />
-                                    <span className="font-bold text-sm">Chế độ Sáng</span>
+                                    <span className="font-bold text-sm">Sáng</span>
+                                </button>
+                                <button
+                                    onClick={() => setTheme('blue')}
+                                    className={`flex items-center justify-center gap-3 p-4 rounded-lg border transition-all ${theme === 'blue'
+                                        ? 'bg-sky-50 border-sky-500 text-sky-700 dark:bg-sky-900/20 dark:border-sky-500 dark:text-sky-400'
+                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-500'
+                                        }`}
+                                >
+                                    <Monitor size={20} />
+                                    <span className="font-bold text-sm">CIC Blue</span>
                                 </button>
                                 <button
                                     onClick={() => setTheme('dark')}
@@ -78,7 +88,7 @@ const Settings: React.FC = () => {
                                         }`}
                                 >
                                     <Moon size={20} />
-                                    <span className="font-bold text-sm">Chế độ Tối</span>
+                                    <span className="font-bold text-sm">Tối</span>
                                 </button>
                             </div>
                         </div>
