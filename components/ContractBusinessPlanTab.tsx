@@ -782,7 +782,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                     {/* 2.3.1 Thu từ Khách hàng (Tiền vào) */}
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
-                            <p className="text-[11px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1.5">
+                            <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
                                 <ArrowDownCircle size={12} /> Tiền về từ Khách hàng
                             </p>
                             {isEditing && (
@@ -794,7 +794,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                         </div>
                         <div className="space-y-3">
                             {paymentSchedules.map((pay, idx) => (
-                                <div key={pay.id} className="grid grid-cols-12 gap-2 bg-emerald-100 dark:bg-emerald-900/40 p-3 rounded-2xl border border-emerald-200 dark:border-emerald-700">
+                                <div key={pay.id} className="grid grid-cols-12 gap-2 bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-2xl border border-emerald-200 dark:border-emerald-800">
                                     <div className="col-span-4 space-y-1">
                                         <label className="text-[9px] text-slate-600 dark:text-emerald-300 font-bold uppercase">Ngày thanh toán</label>
                                         {isEditing ? (
@@ -806,7 +806,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                     newSched[idx].date = e.target.value;
                                                     setPaymentSchedules(newSched);
                                                 }}
-                                                className="w-full bg-transparent text-[11px] font-bold outline-none"
+                                                className="w-full bg-transparent text-[11px] font-bold outline-none text-slate-800 dark:text-white"
                                             />
                                         ) : (
                                             <p className="text-[11px] font-bold text-slate-800 dark:text-white">{pay.date || '-'}</p>
@@ -823,7 +823,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                     newSched[idx].description = e.target.value;
                                                     setPaymentSchedules(newSched);
                                                 }}
-                                                className="w-full bg-transparent text-[11px] font-bold outline-none"
+                                                className="w-full bg-transparent text-[11px] font-bold outline-none text-slate-800 dark:text-white"
                                             />
                                         ) : (
                                             <p className="text-[11px] font-bold text-slate-800 dark:text-white">{pay.description || '-'}</p>
@@ -845,7 +845,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                             newSched[idx].amount = Number(raw);
                                                             setPaymentSchedules(newSched);
                                                         }}
-                                                        className="w-full bg-transparent text-[11px] font-black text-right outline-none text-emerald-600"
+                                                        className="w-full bg-transparent text-[11px] font-bold text-right outline-none text-emerald-600 dark:text-emerald-400"
                                                     />
                                                     {paymentSchedules.length > 1 && (
                                                         <button onClick={() => setPaymentSchedules(paymentSchedules.filter(p => p.id !== pay.id))} className="text-emerald-400 hover:text-emerald-600">
@@ -854,7 +854,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                     )}
                                                 </>
                                             ) : (
-                                                <span className="text-[11px] font-black text-emerald-600">{formatVND(pay.amount)}</span>
+                                                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">{formatVND(pay.amount)}</span>
                                             )}
                                         </div>
                                     </div>
@@ -864,7 +864,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                             <div className="flex justify-end pt-2">
                                 <div className="text-right">
                                     <p className="text-[9px] text-slate-600 dark:text-emerald-300 uppercase font-bold">Tổng tiền về</p>
-                                    <p className="text-sm font-black text-emerald-600">{formatVND(paymentSchedules.reduce((acc, p) => acc + p.amount, 0))}</p>
+                                    <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatVND(paymentSchedules.reduce((acc, p) => acc + p.amount, 0))}</p>
                                 </div>
                             </div>
                         </div>
@@ -873,7 +873,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                     {/* 2.3.2 Chi ra cho NCC/Thầu phụ */}
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
-                            <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest flex items-center gap-1.5">
+                            <p className="text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest flex items-center gap-1.5">
                                 <ArrowUpCircle size={12} /> Chi trả NCC / Thầu phụ
                             </p>
                             {isEditing && (
@@ -885,7 +885,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                         </div>
                         <div className="space-y-3">
                             {supplierSchedules.map((pay, idx) => (
-                                <div key={pay.id} className="grid grid-cols-12 gap-2 bg-rose-100 dark:bg-rose-900/40 p-3 rounded-2xl border border-rose-200 dark:border-rose-700">
+                                <div key={pay.id} className="grid grid-cols-12 gap-2 bg-rose-50 dark:bg-rose-900/20 p-3 rounded-2xl border border-rose-200 dark:border-rose-800">
                                     <div className="col-span-4 space-y-1">
                                         <label className="text-[9px] text-slate-600 dark:text-rose-300 font-bold uppercase">Hạn thanh toán</label>
                                         {isEditing ? (
@@ -897,7 +897,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                     newSched[idx].date = e.target.value;
                                                     setSupplierSchedules(newSched);
                                                 }}
-                                                className="w-full bg-transparent text-[11px] font-bold outline-none"
+                                                className="w-full bg-transparent text-[11px] font-bold outline-none text-slate-800 dark:text-white"
                                             />
                                         ) : (
                                             <p className="text-[11px] font-bold text-slate-800 dark:text-white">{pay.date || '-'}</p>
@@ -914,7 +914,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                     newSched[idx].description = e.target.value;
                                                     setSupplierSchedules(newSched);
                                                 }}
-                                                className="w-full bg-transparent text-[11px] font-bold outline-none"
+                                                className="w-full bg-transparent text-[11px] font-bold outline-none text-slate-800 dark:text-white"
                                             />
                                         ) : (
                                             <p className="text-[11px] font-bold text-slate-800 dark:text-white">{pay.description || '-'}</p>
@@ -936,7 +936,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                             newSched[idx].amount = Number(raw);
                                                             setSupplierSchedules(newSched);
                                                         }}
-                                                        className="w-full bg-transparent text-[11px] font-black text-right outline-none text-rose-500"
+                                                        className="w-full bg-transparent text-[11px] font-bold text-right outline-none text-rose-500 dark:text-rose-400"
                                                     />
                                                     {supplierSchedules.length > 1 && (
                                                         <button onClick={() => setSupplierSchedules(supplierSchedules.filter(p => p.id !== pay.id))} className="text-rose-400 hover:text-rose-600">
@@ -945,7 +945,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                     )}
                                                 </>
                                             ) : (
-                                                <span className="text-[11px] font-black text-rose-500">{formatVND(pay.amount)}</span>
+                                                <span className="text-[11px] font-bold text-rose-500 dark:text-rose-400">{formatVND(pay.amount)}</span>
                                             )}
                                         </div>
                                     </div>
@@ -955,7 +955,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                             <div className="flex justify-end pt-2">
                                 <div className="text-right">
                                     <p className="text-[9px] text-slate-600 dark:text-rose-300 uppercase font-bold">Tổng chi NCC</p>
-                                    <p className="text-sm font-black text-rose-500">{formatVND(supplierSchedules.reduce((acc, p) => acc + p.amount, 0))}</p>
+                                    <p className="text-sm font-bold text-rose-500 dark:text-rose-400">{formatVND(supplierSchedules.reduce((acc, p) => acc + p.amount, 0))}</p>
                                 </div>
                             </div>
                         </div>
