@@ -100,10 +100,10 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed }) => {
               </div>
             )}
             <div className="hidden sm:block text-left">
-              <p className="text-sm font-semibold text-slate-700 dark:text-white truncate max-w-[150px]">
+              <p className="text-sm font-bold text-slate-700 dark:text-white truncate max-w-[150px]">
                 {displayName}
               </p>
-              <p className="text-xs text-slate-500 dark:text-slate-300">{displayRole}</p>
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-200">{displayRole}</p>
             </div>
             <ChevronDown size={16} className={`hidden sm:block text-slate-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
           </button>
