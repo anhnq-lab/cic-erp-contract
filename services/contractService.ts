@@ -473,6 +473,8 @@ export const ContractService = {
 
 
     // FALLBACK for when RPC doesn't exist
+    // Supports unit_allocations: when filtering by a specific unit, includes contracts
+    // where the unit participates as a collaborative partner, applying % distribution.
     getStatsFallback: async (unitId: string = 'all', year: string = 'all'): Promise<{
         totalContracts: number,
         totalValue: number,
@@ -485,11 +487,10 @@ export const ContractService = {
         pendingCount: number
     }> => {
         console.log('[ContractService.getStatsFallback] Using direct query');
-        let query = supabase.from('contracts').select('id, value, actual_revenue, estimated_cost, actual_cost, status, payments(paid_amount)');
+        // When filtering by unit, we need ALL contracts to check unit_allocations too
+        let query = supabase.from('contracts').select('id, value, actual_revenue, estimated_cost, actual_cost, status, unit_id, unit_allocations, payments(paid_amount)');
 
-        if (unitId && unitId !== 'all') {
-            query = query.eq('unit_id', unitId);
-        }
+        // Only apply year filter at query level (unit filter is done in JS for allocation support)
         if (year && year !== 'All' && year !== 'all') {
             const startDate = `${year}-01-01`;
             const endDate = `${year}-12-31`;
@@ -500,33 +501,57 @@ export const ContractService = {
         if (error) {
             console.error('[ContractService.getStatsFallback] Query error:', error);
             return {
-                totalContracts: 0,
-                totalValue: 0,
-                totalRevenue: 0,
-                totalProfit: 0,
-                totalSigningProfit: 0,
-                totalRevenueProfit: 0,
-                totalCash: 0,
-                activeCount: 0,
-                pendingCount: 0
+                totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0,
+                totalSigningProfit: 0, totalRevenueProfit: 0, totalCash: 0,
+                activeCount: 0, pendingCount: 0
             };
         }
 
         console.log('[ContractService.getStatsFallback] Got contracts:', data?.length);
+
+        const isFilteringByUnit = unitId && unitId !== 'all';
+
         return (data || []).reduce((acc: any, curr: any) => {
             const val = curr.value || 0;
             const rev = curr.actual_revenue || 0;
             const cost = curr.estimated_cost || 0;
             const actCost = curr.actual_cost || 0;
             const cash = curr.payments?.reduce((sum: number, p: any) => sum + (Number(p.paid_amount) || 0), 0) || 0;
+
+            // Determine this unit's share percentage (0-100)
+            let sharePct = 100; // Default: 100% for "all" view or lead unit without allocations
+
+            if (isFilteringByUnit) {
+                const allocations: any[] = curr.unit_allocations?.allocations || [];
+                const isLeadUnit = curr.unit_id === unitId;
+                const supportAlloc = allocations.find((a: any) => a.unitId === unitId && a.role === 'support');
+
+                if (isLeadUnit && allocations.length > 0) {
+                    // Lead unit with allocations: gets the lead allocation percentage
+                    const leadAlloc = allocations.find((a: any) => a.unitId === unitId && a.role === 'lead');
+                    sharePct = leadAlloc ? (leadAlloc.percent || 100) : 100;
+                } else if (supportAlloc) {
+                    // Support unit: gets their declared percentage
+                    sharePct = supportAlloc.percent || 0;
+                } else if (!isLeadUnit) {
+                    // Not the lead unit and not in allocations → skip this contract
+                    sharePct = 0;
+                }
+                // isLeadUnit && no allocations → sharePct stays 100
+            }
+
+            if (sharePct === 0) return acc; // Skip contracts where unit has no share
+
+            const fraction = sharePct / 100;
+
             return {
-                totalContracts: acc.totalContracts + 1,
-                totalValue: acc.totalValue + val,
-                totalRevenue: acc.totalRevenue + rev,
-                totalProfit: acc.totalProfit + (val - cost),
-                totalSigningProfit: acc.totalSigningProfit + (val - cost),
-                totalRevenueProfit: acc.totalRevenueProfit + (rev > 0 ? Math.round(rev - actCost) : 0),
-                totalCash: acc.totalCash + cash,
+                totalContracts: acc.totalContracts + (sharePct > 0 ? 1 : 0),
+                totalValue: acc.totalValue + val * fraction,
+                totalRevenue: acc.totalRevenue + rev * fraction,
+                totalProfit: acc.totalProfit + (val - cost) * fraction,
+                totalSigningProfit: acc.totalSigningProfit + (val - cost) * fraction,
+                totalRevenueProfit: acc.totalRevenueProfit + (rev > 0 ? Math.round((rev - actCost) * fraction) : 0),
+                totalCash: acc.totalCash + cash * fraction,
                 activeCount: acc.activeCount + (curr.status === 'Processing' || curr.status === 'Active' ? 1 : 0),
                 pendingCount: acc.pendingCount + (curr.status === 'Pending' ? 1 : 0)
             };
@@ -604,14 +629,13 @@ export const ContractService = {
         */
     },
 
-    // FALLBACK for chart data
+    // FALLBACK for chart data (with unit_allocations support)
     getChartDataFallback: async (unitId: string = 'all', year: string = 'all'): Promise<Array<{ month: number, revenue: number, profit: number, signing: number }>> => {
         console.log('[ContractService.getChartDataFallback] Using direct query');
-        let query = supabase.from('contracts').select('signed_date, value, actual_revenue, estimated_cost');
+        // Fetch all contracts with unit_allocations for allocation-aware filtering
+        let query = supabase.from('contracts').select('signed_date, value, actual_revenue, estimated_cost, unit_id, unit_allocations');
 
-        if (unitId && unitId !== 'all') {
-            query = query.eq('unit_id', unitId);
-        }
+        // Only apply year filter at query level (unit filter is done in JS)
         if (year && year !== 'All' && year !== 'all') {
             const startDate = `${year}-01-01`;
             const endDate = `${year}-12-31`;
@@ -624,6 +648,8 @@ export const ContractService = {
             return [];
         }
 
+        const isFilteringByUnit = unitId && unitId !== 'all';
+
         // Aggregate by month
         const monthlyData: Record<number, { revenue: number, profit: number, signing: number }> = {};
         for (let m = 1; m <= 12; m++) {
@@ -631,13 +657,33 @@ export const ContractService = {
         }
 
         (data || []).forEach((c: any) => {
-            if (c.signed_date) {
-                const month = new Date(c.signed_date).getMonth() + 1;
-                if (monthlyData[month]) {
-                    monthlyData[month].signing += (c.value || 0);
-                    monthlyData[month].revenue += (c.actual_revenue || 0);
-                    monthlyData[month].profit += ((c.value || 0) - (c.estimated_cost || 0));
+            if (!c.signed_date) return;
+
+            // Determine unit share percentage
+            let sharePct = 100;
+            if (isFilteringByUnit) {
+                const allocations: any[] = c.unit_allocations?.allocations || [];
+                const isLeadUnit = c.unit_id === unitId;
+                const supportAlloc = allocations.find((a: any) => a.unitId === unitId && a.role === 'support');
+
+                if (isLeadUnit && allocations.length > 0) {
+                    const leadAlloc = allocations.find((a: any) => a.unitId === unitId && a.role === 'lead');
+                    sharePct = leadAlloc ? (leadAlloc.percent || 100) : 100;
+                } else if (supportAlloc) {
+                    sharePct = supportAlloc.percent || 0;
+                } else if (!isLeadUnit) {
+                    sharePct = 0;
                 }
+            }
+
+            if (sharePct === 0) return;
+
+            const fraction = sharePct / 100;
+            const month = new Date(c.signed_date).getMonth() + 1;
+            if (monthlyData[month]) {
+                monthlyData[month].signing += (c.value || 0) * fraction;
+                monthlyData[month].revenue += (c.actual_revenue || 0) * fraction;
+                monthlyData[month].profit += ((c.value || 0) - (c.estimated_cost || 0)) * fraction;
             }
         });
 
