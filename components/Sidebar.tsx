@@ -28,8 +28,8 @@ const NavItem: React.FC<NavItemProps> = ({ item, activeTab, setActiveTab, isColl
       if (window.innerWidth < 768) onClose();
     }}
     className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all mb-1 ${activeTab === item.id
-      ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300'
-      : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'
+      ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 shadow-sm dark:shadow-orange-500/5'
+      : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-700 dark:hover:text-slate-200'
       } ${isCollapsed ? 'md:px-0 md:justify-center' : ''}`}
     title={isCollapsed ? item.label : ''}
   >
@@ -65,7 +65,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       <div className={`
-        fixed left-0 top-0 h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-50 transition-all duration-300 ease-in-out
+        fixed left-0 top-0 h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50 flex flex-col z-50 transition-all duration-300 ease-in-out
         ${isCollapsed ? 'md:w-20' : 'md:w-64'} 
         ${isOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0'}
       `}>
@@ -109,7 +109,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Group: Quản trị */}
           <div className="mb-6">
-            {!isCollapsed && <p className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Quản trị</p>}
+            {!isCollapsed && <p className="px-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Quản trị</p>}
             <nav>
               {managementItems.map((item) => (
                 <NavItem
@@ -128,7 +128,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Group: Danh mục */}
           <div>
-            {!isCollapsed && <p className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Danh mục</p>}
+            {!isCollapsed && <p className="px-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Danh mục</p>}
             <nav>
               {categoryItems.map((item) => (
                 <NavItem
@@ -146,7 +146,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Bottom: Settings */}
-        <div className={`p-4 border-t border-slate-100 dark:border-slate-800 ${isCollapsed ? 'md:px-2' : ''}`}>
+        <div className={`p-4 border-t border-slate-100 dark:border-slate-700/50 ${isCollapsed ? 'md:px-2' : ''}`}>
           {settingsItem && (
             <NavItem
               item={settingsItem}

@@ -30,23 +30,23 @@
             }
 
             .dark {
-                /* Dark Mode: Fintech Matte Navy - REFINED TEXT */
+                /* Dark Mode: Fintech Matte Navy v2 — Proper Depth Hierarchy */
                 --c-slate-50: #f8fafc;  /* Text High Contrast */
-                --c-slate-100: #f1f5f9;
+                --c-slate-100: #f1f5f9; /* Text Light */
                 --c-slate-200: #e2e8f0; /* Text Primary */
-                --c-slate-300: #cbd5e1;
-                --c-slate-400: #94a3b8; /* Text Secondary */
-                --c-slate-500: #64748b; /* Muted Text/Icon (Restored to Neutral) */
-                --c-slate-600: #475569;
-                --c-slate-700: #334155; /* Boarders/Lines */
-                --c-slate-800: #1e293b; /* Card Hovere/Input BG */
-                --c-slate-900: #1e293b; /* Card BG (brighter for contrast) */
-                --c-slate-950: #0f172a; /* Main BG */
+                --c-slate-300: #cbd5e1; /* Light borders in cards */
+                --c-slate-400: #94a3b8; /* Text Secondary / Icons */
+                --c-slate-500: #64748b; /* Muted Text/Icon */
+                --c-slate-600: #475569; /* Subtle text */
+                --c-slate-700: #293548; /* Borders/Lines */
+                --c-slate-800: #1e293b; /* Input BG / Table Header / Hover */
+                --c-slate-900: #151d2e; /* Card BG (DISTINCT from 800) */
+                --c-slate-950: #0b1120; /* Main BG (DEEPEST) */
 
-                --c-indigo-50: #ef4444; /* Just accent placeholder */
-                --c-indigo-500: #f97316; /* Primary Brand (Gold/Orange) */
+                --c-indigo-50: #ef4444; /* Accent placeholder */
+                --c-indigo-500: #f97316; /* Primary Brand (Orange) */
                 --c-indigo-600: #ea580c; /* Primary Hover */
-                --c-indigo-700: #c2410c;
+                --c-indigo-700: #c2410c; /* Primary Active */
             }
         `;
         const style = document.createElement('style');
@@ -93,25 +93,25 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Đảm bảo scrollbar cũng đổi màu theo theme */
+        /* Dark mode scrollbar — refined */
         .dark ::-webkit-scrollbar {
             width: 8px;
         }
 
         .dark ::-webkit-scrollbar-track {
-            background: #0f172a;
+            background: #0b1120;
         }
 
         .dark ::-webkit-scrollbar-thumb {
-            background: #334155;
+            background: #293548;
             border-radius: 10px;
         }
 
         .dark ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
+            background: #3b4a60;
         }
 
-        /* Dark mode for native select/option dropdown */
+        /* Dark mode native select */
         .dark select {
             background-color: #1e293b !important;
             color: #e2e8f0 !important;
@@ -126,16 +126,25 @@
         .dark select option:hover,
         .dark select option:focus,
         .dark select option:checked {
-            background-color: #334155 !important;
+            background-color: #293548 !important;
             color: #f8fafc !important;
         }
 
-        /* Firefox dark mode select */
         @-moz-document url-prefix() {
             .dark select {
                 background-color: #1e293b !important;
                 color: #e2e8f0 !important;
             }
+        }
+
+        /* Dark mode card subtle glow on hover */
+        .dark .dark-card-glow:hover {
+            box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.08), 0 8px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Dark mode subtle top accent for dropdowns */
+        .dark .dark-dropdown-accent {
+            border-top: 2px solid rgba(249, 115, 22, 0.3);
         }
     </style>
     <script type="importmap">

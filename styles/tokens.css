@@ -137,16 +137,17 @@
   --z-tooltip: 500;
 }
 
-/* Dark Mode Overrides for shadows */
+/* Dark Mode Overrides for shadows — refined with subtle glow */
 .dark {
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.2);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.3);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4);
-  --shadow-primary: 0 10px 25px -5px rgb(249 115 22 / 0.2);
-  --shadow-success: 0 10px 25px -5px rgb(16 185 129 / 0.2);
-  --shadow-danger: 0 10px 25px -5px rgb(239 68 68 / 0.2);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.25);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.35), 0 0 0 1px rgb(255 255 255 / 0.03);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.35), 0 0 0 1px rgb(255 255 255 / 0.03);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.45), 0 0 0 1px rgb(255 255 255 / 0.04);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.6);
+  --shadow-primary: 0 10px 25px -5px rgb(249 115 22 / 0.15), 0 0 0 1px rgb(249 115 22 / 0.1);
+  --shadow-success: 0 10px 25px -5px rgb(16 185 129 / 0.15);
+  --shadow-danger: 0 10px 25px -5px rgb(239 68 68 / 0.15);
 }
 
 /* =============================================================================
@@ -199,11 +200,11 @@
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #293548;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #3b4a60;
 }
 
 .scrollbar-thin::-webkit-scrollbar {

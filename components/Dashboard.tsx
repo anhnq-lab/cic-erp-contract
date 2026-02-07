@@ -416,17 +416,17 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
         </div>
 
         {/* STICKY FILTER BAR - Metric Tabs + Filters */}
-        <div className="sticky top-16 z-20 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-sm py-4 border-b border-slate-200/50 dark:border-slate-800/50">
+        <div className="sticky top-16 z-20 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-md py-4 border-b border-slate-200/50 dark:border-slate-700/40">
           <div className="flex flex-col lg:flex-row lg:items-center justify-end gap-4">
             {/* Left: Metric Tabs */}
-            <div className="flex bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto no-scrollbar">
+            <div className="flex bg-white dark:bg-slate-800/50 p-1 rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm overflow-x-auto no-scrollbar">
               {metricTabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveMetric(tab.id as keyof KPIPlan)}
                   className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${activeMetric === tab.id
-                    ? 'bg-orange-500 text-white shadow-md shadow-orange-200 dark:shadow-none'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20 dark:shadow-orange-500/10'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50'
                     }`}
                 >
                   {tab.label}
@@ -440,7 +440,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
               <div className="relative z-20">
                 <button
                   onClick={() => setShowUnitSelector(!showUnitSelector)}
-                  className="flex items-center gap-2.5 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group"
+                  className="flex items-center gap-2.5 px-4 py-2 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-sm hover:border-indigo-300 dark:hover:border-orange-700/50 transition-all group"
                 >
                   <Building2 size={16} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
                   <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[140px]">
@@ -452,7 +452,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
                 {showUnitSelector && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowUnitSelector(false)} />
-                    <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-20 py-2 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+                    <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 rounded-2xl shadow-xl z-20 py-2 animate-in fade-in zoom-in-95 duration-200 overflow-hidden dark-dropdown-accent">
                       <div className="max-h-[320px] overflow-y-auto">
                         {[{ id: 'all', name: 'Toàn công ty', type: 'Company' } as Unit, ...allUnits.filter(u => u.name !== 'Toàn công ty')].map((u) => (
                           <button
@@ -461,7 +461,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
                               onSelectUnit(u);
                               setShowUnitSelector(false);
                             }}
-                            className={`w-full text-left px-4 py-3 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-3 ${u.id === safeUnit.id ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400'}`}
+                            className={`w-full text-left px-4 py-3 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors flex items-center gap-3 ${u.id === safeUnit.id ? 'bg-indigo-50 dark:bg-orange-500/10 text-indigo-600 dark:text-orange-400' : 'text-slate-600 dark:text-slate-300'}`}
                           >
                             <div className={`w-2 h-2 rounded-full shrink-0 ${u.id === 'all' ? 'bg-indigo-500' : u.type === 'Center' ? 'bg-emerald-400' : 'bg-amber-400'}`}></div>
                             <span className="truncate">{u.name}</span>
@@ -476,7 +476,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
 
               {/* Year Filter Button */}
               <div className="relative z-10">
-                <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group cursor-pointer relative">
+                <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-sm hover:border-indigo-300 dark:hover:border-orange-700/50 transition-all group cursor-pointer relative">
                   <Calendar size={16} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
                   <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
                     {yearFilter === 'All' ? 'Tất cả năm' : `Năm ${yearFilter}`}
@@ -518,7 +518,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <div className="xl:col-span-2 bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="xl:col-span-2 bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-700/40 shadow-sm dark-card-glow">
             <div className="flex justify-between items-center mb-10">
               <div>
                 <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight mb-2">Biến động theo tháng</h3>
@@ -533,15 +533,15 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
               {/* Chart Component - Same as before */}
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={monthlyData} barGap={0}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={document.documentElement.classList.contains('dark') ? '#293548' : '#e2e8f0'} />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} dy={10} />
                   <YAxis hide />
                   <Tooltip
-                    cursor={{ fill: document.documentElement.classList.contains('dark') ? 'rgba(51,65,85,0.3)' : '#f8fafc' }}
-                    contentStyle={{ borderRadius: '12px', border: document.documentElement.classList.contains('dark') ? '1px solid #334155' : '1px solid #e2e8f0', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.15)', background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff', color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#1e293b', padding: '12px 20px' }}
+                    cursor={{ fill: document.documentElement.classList.contains('dark') ? 'rgba(41,53,72,0.3)' : '#f8fafc' }}
+                    contentStyle={{ borderRadius: '12px', border: document.documentElement.classList.contains('dark') ? '1px solid #293548' : '1px solid #e2e8f0', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.2)', background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff', color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#1e293b', padding: '12px 20px' }}
                     itemStyle={{ fontSize: '13px', fontWeight: 600, padding: '4px 0' }}
                   />
-                  <Bar dataKey="lastYear" fill={document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'} radius={[6, 6, 0, 0]} barSize={32} />
+                  <Bar dataKey="lastYear" fill={document.documentElement.classList.contains('dark') ? '#293548' : '#e2e8f0'} radius={[6, 6, 0, 0]} barSize={32} />
                   <Bar dataKey="current" fill="#f97316" radius={[6, 6, 0, 0]} barSize={32} />
                   <Line type="monotone" dataKey="current" stroke="#fb923c" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} />
                 </ComposedChart>
@@ -549,7 +549,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-700/40 shadow-sm flex flex-col dark-card-glow">
             <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight mb-2">
               Phân bổ {safeUnit?.id === 'all' ? 'theo Đơn vị' : 'theo Sales'}
             </h3>
@@ -573,7 +573,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ borderRadius: '12px', border: document.documentElement.classList.contains('dark') ? '1px solid #334155' : '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.15)', background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff', color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#1e293b' }}
+                    contentStyle={{ borderRadius: '12px', border: document.documentElement.classList.contains('dark') ? '1px solid #293548' : '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.2)', background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff', color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#1e293b' }}
                     itemStyle={{ fontSize: '12px', fontWeight: 600 }}
                   />
                 </PieChart>
@@ -605,7 +605,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
         </div>
 
         {/* Performance Table */}
-        <div className="bg-white dark:bg-slate-900 p-8 md:p-10 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="bg-white dark:bg-slate-900 p-8 md:p-10 rounded-2xl border border-slate-200 dark:border-slate-700/40 shadow-sm dark-card-glow">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
             <div>
               <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-3 mb-2">
@@ -627,7 +627,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
               </thead>
               <tbody>
                 {performanceTableData.map((row) => (
-                  <tr key={row.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                  <tr key={row.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                     <td className="py-4 pl-4 rounded-l-3xl bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/40 border-y border-l border-transparent transition-colors">
                       <div className="flex items-center gap-4">
                         <div className={`w-12 h-12 rounded-2xl ${safeUnit?.id === 'all' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'} flex items-center justify-center font-bold text-lg shadow-sm group-hover:scale-105 transition-transform`}>
@@ -698,7 +698,7 @@ const KPIItem = ({ title, metric, stats, target, yoy, color, icon }: any) => {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all hover:shadow-lg group relative overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/40 shadow-sm transition-all hover:shadow-lg group relative overflow-hidden dark-card-glow">
       <div className="flex justify-between items-start mb-6">
         <div className={`p-3 rounded-2xl ${colors[color]} transition-transform group-hover:rotate-6`}>
           {icon}
@@ -728,14 +728,14 @@ const KPIItem = ({ title, metric, stats, target, yoy, color, icon }: any) => {
 
 const StatusCard = ({ label, count, icon, color }: any) => {
   const bgColors: any = {
-    indigo: 'bg-indigo-50 dark:bg-indigo-900/20',
-    amber: 'bg-amber-50 dark:bg-amber-900/20',
-    emerald: 'bg-emerald-50 dark:bg-emerald-900/10',
-    rose: 'bg-rose-50 dark:bg-rose-900/10',
+    indigo: 'bg-indigo-50 dark:bg-indigo-900/25 border border-indigo-100 dark:border-indigo-800/40',
+    amber: 'bg-amber-50 dark:bg-amber-900/25 border border-amber-100 dark:border-amber-800/40',
+    emerald: 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40',
+    rose: 'bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/40',
   };
 
   return (
-    <div className={`p-5 rounded-2xl ${bgColors[color]} border border-white/50 dark:border-slate-800 flex items-center justify-between shadow-sm hover:shadow-md transition-all`}>
+    <div className={`p-5 rounded-2xl ${bgColors[color]} flex items-center justify-between shadow-sm hover:shadow-md transition-all`}>
       <div className="flex items-center gap-4">
         <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl shadow-sm">
           {icon}

@@ -379,7 +379,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
       {/* SCORE CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Contracts */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-700/40 shadow-sm flex items-center gap-4 dark-card-glow">
           <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300">
             <Briefcase size={24} />
           </div>
@@ -390,7 +390,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         </div>
 
         {/* Total Value */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-700/40 shadow-sm flex items-center gap-4 dark-card-glow">
           <div className="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
             <DollarSign size={24} />
           </div>
@@ -403,7 +403,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         </div>
 
         {/* Revenue */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-700/40 shadow-sm flex items-center gap-4 dark-card-glow">
           <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
             <TrendingUp size={24} />
           </div>
@@ -416,7 +416,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         </div>
 
         {/* Profit */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-700/40 shadow-sm flex items-center gap-4 dark-card-glow">
           <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
             <DollarSign size={24} />
           </div>
@@ -429,7 +429,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-md flex flex-wrap gap-4 items-center">
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-700/40 shadow-md flex flex-wrap gap-4 items-center">
         {/* Search */}
         <div className="flex-1 min-w-[240px] relative">
           <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
@@ -501,7 +501,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
       </div>
 
       {/* TABLE */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg transition-colors overflow-x-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/40 shadow-lg transition-colors overflow-x-auto">
         <table className="w-full text-left border-separate border-spacing-0 min-w-[1400px]">
           <thead>
             <tr className="z-20">
@@ -519,7 +519,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
               ].map((col, idx) => (
                 <th
                   key={idx}
-                  className={`sticky top-0 z-20 bg-slate-50 dark:bg-slate-800 px-4 py-5 text-[10px] font-black uppercase tracking-widest border-b border-slate-200 dark:border-slate-700 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]
+                  className={`sticky top-0 z-20 bg-slate-50 dark:bg-slate-800/80 px-4 py-5 text-[10px] font-black uppercase tracking-widest border-b border-slate-200 dark:border-slate-700/60 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]
                     ${col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'}
                     ${col.color || 'text-slate-500 dark:text-slate-400'}
                     ${col.width || ''}`}
@@ -571,7 +571,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                 <tr
                   key={contract.id}
                   onClick={() => onSelectContract(contract.id)}
-                  className="group hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-all cursor-pointer"
+                  className="group hover:bg-indigo-50/50 dark:hover:bg-slate-800/30 transition-all cursor-pointer"
                   title="Click để xem chi tiết"
                 >
                   <td className="px-4 py-5 text-center text-xs font-bold text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900">
@@ -689,8 +689,8 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                   key={p}
                   onClick={() => setPage(p)}
                   className={`w-10 h-10 rounded-xl text-sm font-black transition-all ${page === p
-                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none'
-                    : 'bg-transparent text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-500/20'
+                    : 'bg-transparent text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                     }`}
                 >
                   {p}
