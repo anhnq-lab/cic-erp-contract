@@ -313,7 +313,7 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
                                     </div>
 
                                     <div className="space-y-4">
-                                        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-4">
+                                        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 space-y-4">
                                             {[
                                                 {
                                                     label: 'Ký kết',

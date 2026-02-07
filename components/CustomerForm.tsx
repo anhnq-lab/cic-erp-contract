@@ -91,7 +91,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ isOpen, onClose, onSave, cu
         <Modal isOpen={isOpen} onClose={onClose} title={getTitle()} size="lg">
             <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Type Selection */}
-                <div className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                <div className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-800">
                     <label className="flex items-center gap-2 cursor-pointer">
                         <input
                             type="radio"

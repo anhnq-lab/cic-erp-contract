@@ -394,7 +394,7 @@ const UserGuide: React.FC = () => {
                             {/* Guides Grid */}
                             <div className="grid grid-cols-2 gap-3">
                                 {module.guides.map((guide, i) => (
-                                    <div key={i} className="p-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg">
+                                    <div key={i} className="p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
                                         <h5 className="font-bold text-xs text-slate-800 dark:text-slate-200 mb-2">{guide.title}</h5>
                                         <ol className="space-y-1">
                                             {guide.steps.map((step, j) => (
@@ -444,7 +444,7 @@ const UserGuide: React.FC = () => {
 
 
                                 ={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
-                                className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                                className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                             >
                                 <span className="font-medium text-sm text-slate-900 dark:text-slate-100">{faq.q}</span>
                                 <ChevronDown size={14} className={`text-slate-400 transition-transform ${expandedFaq === faq.id ? 'rotate-180' : ''}`} />
@@ -473,7 +473,7 @@ const UserGuide: React.FC = () => {
             </div>
 
             {/* Contact - Compact */}
-            <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800/50 rounded-xl p-3">
+            <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800 rounded-xl p-3">
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
                     <Phone size={14} className="text-green-500" /> Cần hỗ trợ?
                 </span>

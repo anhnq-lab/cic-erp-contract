@@ -25,7 +25,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({
     };
 
     return (
-        <div className="px-10 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+        <div className="px-10 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800">
             <div className="flex items-center gap-6">
                 <div className="w-14 h-14 bg-indigo-600 rounded-[20px] flex items-center justify-center text-white shadow-xl shadow-indigo-100 dark:shadow-none">
                     <Plus size={28} strokeWidth={3} />

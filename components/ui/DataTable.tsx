@@ -149,7 +149,7 @@ function DataTable<T extends Record<string, any>>({
             <div className="overflow-x-auto">
                 <table className="w-full">
                     {/* Header */}
-                    <thead className={`bg-slate-50 dark:bg-slate-800/50 ${stickyHeader ? 'sticky top-0 z-10' : ''}`}>
+                    <thead className={`bg-slate-50 dark:bg-slate-800 ${stickyHeader ? 'sticky top-0 z-10' : ''}`}>
                         <tr>
                             {selectable && (
                                 <th className={`${headerPadding} w-12`}>
@@ -213,7 +213,7 @@ function DataTable<T extends Record<string, any>>({
                                         onClick={() => onRowClick?.(row)}
                                         className={`
                       ${onRowClick ? 'cursor-pointer' : ''}
-                      ${isSelected ? 'bg-orange-50 dark:bg-orange-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}
+                      ${isSelected ? 'bg-orange-50 dark:bg-orange-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-700'}
                       transition-colors
                       ${rowClassName?.(row) || ''}
                     `}
@@ -253,7 +253,7 @@ function DataTable<T extends Record<string, any>>({
 
             {/* Pagination */}
             {pagination && !isLoading && sortedData.length > 0 && (
-                <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800">
                     <p className="text-sm text-slate-500 dark:text-slate-400">
                         Hiển thị {((pagination.currentPage - 1) * pagination.pageSize) + 1} - {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)} / {pagination.totalItems}
                     </p>

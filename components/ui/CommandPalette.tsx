@@ -297,7 +297,7 @@ const CommandPalette: React.FC = () => {
                                                 onMouseEnter={() => setSelectedIndex(globalIdx)}
                                                 className={`
                           w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors
-                          ${isSelected ? 'bg-orange-50 dark:bg-orange-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}
+                          ${isSelected ? 'bg-orange-50 dark:bg-orange-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-700'}
                         `}
                                             >
                                                 <div className={`p-2 rounded-lg ${isSelected ? 'bg-orange-100 dark:bg-orange-900/40' : 'bg-slate-100 dark:bg-slate-800'}`}>

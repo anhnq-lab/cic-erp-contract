@@ -322,7 +322,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onSelectCustomer }) => {
                                     return (
                                         <tr
                                             key={customer.id}
-                                            className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer"
+                                            className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors group cursor-pointer"
                                             onClick={() => onSelectCustomer?.(customer.id)}
                                         >
                                             <td className="py-4 px-6">

@@ -225,7 +225,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack, onEdit
                                         <div
                                             key={contract.id}
                                             onClick={() => onViewContract?.(contract.id)}
-                                            className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                                            className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                                         >
                                             <div className="flex justify-between items-start">
                                                 <div className="min-w-0 pr-4">

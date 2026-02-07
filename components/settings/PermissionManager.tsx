@@ -289,7 +289,7 @@ const PermissionManager: React.FC = () => {
                         </thead>
                         <tbody>
                             {RESOURCES.map(resource => (
-                                <tr key={resource} className="border-b dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                <tr key={resource} className="border-b dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700">
                                     <td className="py-3 px-2 font-medium text-slate-800 dark:text-slate-200">
                                         {RESOURCE_LABELS[resource]}
                                     </td>

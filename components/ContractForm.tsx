@@ -492,7 +492,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-w-[1600px] w-full mx-auto flex flex-col h-[92vh]">
 
       {/* HEADER */}
-      <div className="px-10 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+      <div className="px-10 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800">
         <div className="flex items-center gap-6">
           <div className="w-14 h-14 bg-indigo-600 rounded-[20px] flex items-center justify-center text-white shadow-xl shadow-indigo-100 dark:shadow-none">
             <Plus size={28} strokeWidth={3} />
@@ -942,7 +942,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
 
                     <div className="overflow-x-auto rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800">
                       <table className="w-full text-left text-xs min-w-[1200px]">
-                        <thead className="bg-slate-50 dark:bg-slate-800/50">
+                        <thead className="bg-slate-50 dark:bg-slate-800">
                           <tr>
                             <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter">Sản phẩm/Dịch vụ</th>
                             <th className="px-2 py-4 font-black text-slate-400 uppercase tracking-tighter w-16">SL</th>
@@ -962,7 +962,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                             const lineMarginRate = outputTotal > 0 ? (lineMargin / outputTotal) * 100 : 0;
 
                             return (
-                              <tr key={item.id} className="group hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                              <tr key={item.id} className="group hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                                 <td className="px-4 py-3">
                                   <select
                                     value={products.find(p => p.name === item.name)?.id || ''}
@@ -1089,7 +1089,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                           })}
                         </tbody>
                         {/* TOTALS FOOTER */}
-                        <tfoot className="bg-slate-100 dark:bg-slate-800/80 font-black text-slate-700 dark:text-slate-200 border-t-2 border-slate-200 dark:border-slate-700">
+                        <tfoot className="bg-slate-100 dark:bg-slate-800 font-black text-slate-700 dark:text-slate-200 border-t-2 border-slate-200 dark:border-slate-700">
                           <tr>
                             <td colSpan={3} className="px-4 py-4 text-left uppercase text-xs tracking-widest text-slate-500">
                               Tổng cộng
@@ -1561,7 +1561,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
       </Modal >
 
       {/* FOOTER */}
-      < div className="px-10 py-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center" >
+      < div className="px-10 py-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800 flex justify-between items-center" >
         <div className="flex items-center gap-6">
           <button onClick={() => { localStorage.removeItem('contract_form_draft'); onCancel(); }} className="px-6 py-3 text-slate-400 hover:text-rose-500 font-bold text-xs uppercase tracking-widest transition-all flex items-center gap-2">
             <X size={14} /> Hủy bỏ

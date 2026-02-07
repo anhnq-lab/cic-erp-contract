@@ -56,7 +56,7 @@ export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) 
     return (
         <>
             {/* Compact Import Buttons */}
-            <div className="flex items-center gap-1.5 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-2xl border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-1.5 bg-slate-100/50 dark:bg-slate-800 p-1 rounded-2xl border border-slate-200 dark:border-slate-700">
                 <button
                     onClick={() => !disabled && !isProcessing && fileInputRef.current?.click()}
                     disabled={disabled || isProcessing}
@@ -175,7 +175,7 @@ export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) 
                             {/* Line Items Table */}
                             <div className="border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
                                 <table className="w-full text-xs">
-                                    <thead className="bg-slate-50 dark:bg-slate-800/50">
+                                    <thead className="bg-slate-50 dark:bg-slate-800">
                                         <tr>
                                             <th className="py-3 px-4 text-left font-bold text-slate-500 uppercase">STT</th>
                                             <th className="py-3 px-4 text-left font-bold text-slate-500 uppercase">Tên Hạng mục</th>

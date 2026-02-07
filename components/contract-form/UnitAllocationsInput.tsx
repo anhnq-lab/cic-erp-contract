@@ -133,7 +133,7 @@ export default function UnitAllocationsInput({
             {supportAllocations.map((allocation, index) => (
                 <div
                     key={`support-${allocation.unitId}-${index}`}
-                    className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border-2 border-slate-200 dark:border-slate-700"
+                    className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 border-2 border-slate-200 dark:border-slate-700"
                 >
                     <div className="flex items-center justify-between mb-3">
                         <p className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase flex items-center gap-1">

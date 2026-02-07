@@ -302,7 +302,7 @@ const AIAssistant: React.FC = () => {
                       className="prose prose-sm prose-indigo dark:prose-invert max-w-none break-words"
                       components={{
                         table: ({ node, ...props }) => <div className="overflow-x-auto my-4"><table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg" {...props} /></div>,
-                        th: ({ node, ...props }) => <th className="px-4 py-2 bg-slate-50 dark:bg-slate-800/50 text-left text-xs font-bold uppercase tracking-wider text-slate-500" {...props} />,
+                        th: ({ node, ...props }) => <th className="px-4 py-2 bg-slate-50 dark:bg-slate-800 text-left text-xs font-bold uppercase tracking-wider text-slate-500" {...props} />,
                         td: ({ node, ...props }) => <td className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 text-sm" {...props} />,
                         ul: ({ node, ...props }) => <ul className="list-disc pl-5 space-y-1" {...props} />,
                         ol: ({ node, ...props }) => <ol className="list-decimal pl-5 space-y-1" {...props} />,
@@ -349,7 +349,7 @@ const AIAssistant: React.FC = () => {
             <select
               value={currentModel}
               onChange={(e) => setCurrentModel(e.target.value)}
-              className="bg-slate-200/50 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-300 py-1.5 px-2 rounded-lg cursor-pointer focus:outline-none border border-transparent hover:border-indigo-200 transition-all max-w-[110px]"
+              className="bg-slate-200/50 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-300 py-1.5 px-2 rounded-lg cursor-pointer focus:outline-none border border-transparent hover:border-indigo-200 transition-all max-w-[110px]"
               title="Chọn Model AI"
             >
               <option value="gemini-2.0-flash">✨ Gemini 2.0 (Newest)</option>

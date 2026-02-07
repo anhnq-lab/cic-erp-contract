@@ -131,7 +131,7 @@ export function PAKDImportGoogleModal({ isOpen, onClose, onImport }: PAKDImportG
                     ) : (
                         <div className="space-y-6">
                             {/* Preview Header */}
-                            <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                            <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                                 <div className="flex items-center gap-4">
                                     <div className="text-sm">
                                         <span className="text-slate-500">Hợp đồng:</span>{' '}
@@ -174,7 +174,7 @@ export function PAKDImportGoogleModal({ isOpen, onClose, onImport }: PAKDImportG
                             {/* Items Table */}
                             <div className="border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
                                 <table className="w-full text-xs">
-                                    <thead className="bg-slate-50 dark:bg-slate-800/50">
+                                    <thead className="bg-slate-50 dark:bg-slate-800">
                                         <tr>
                                             <th className="py-3 px-4 text-left font-bold text-slate-500 uppercase">STT</th>
                                             <th className="py-3 px-4 text-left font-bold text-slate-500 uppercase">Tên Hạng mục</th>
@@ -201,7 +201,7 @@ export function PAKDImportGoogleModal({ isOpen, onClose, onImport }: PAKDImportG
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between">
+                <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800 flex items-center justify-between">
                     <p className="text-xs text-slate-500">
                         {previewData ? `Sẵn sàng import ${previewData.lineItems.length} hạng mục` : 'Vui lòng dán link để tiếp tục'}
                     </p>

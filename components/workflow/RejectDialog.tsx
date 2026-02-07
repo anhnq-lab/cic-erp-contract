@@ -111,7 +111,7 @@ export const RejectDialog: React.FC<Props> = ({ isOpen, onClose, onConfirm, isLo
                 </div>
 
                 {/* Footer */}
-                <div className="flex gap-3 p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 rounded-b-2xl">
+                <div className="flex gap-3 p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 rounded-b-2xl">
                     <button
                         onClick={handleClose}
                         disabled={isLoading}

@@ -558,7 +558,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                               }`}>
                               {m.status === 'Completed' ? <CheckCircle2 size={10} className="text-white" /> : m.status === 'Ongoing' ? <Clock size={10} className="text-white" /> : null}
                             </div>
-                            <div className="flex-1 p-4 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-orange-100 dark:hover:border-orange-900 transition-colors">
+                            <div className="flex-1 p-4 bg-slate-50/50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-orange-100 dark:hover:border-orange-900 transition-colors">
                               <div className="flex justify-between items-start mb-1">
                                 <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{m.name}</p>
                                 <span className="text-[10px] font-bold text-slate-400 uppercase">{m.date}</span>
