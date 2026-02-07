@@ -536,7 +536,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                 const lineMarginRate = outputTotal > 0 ? (lineMargin / outputTotal) * 100 : 0;
 
                                 return (
-                                    <tr key={item.id || idx} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                    <tr key={item.id || idx} className="group hover:bg-slate-50 dark:hover:bg-slate-700/50">
                                         {/* Product Dropdown */}
                                         <td className="px-4 py-3">
                                             {isEditing ? (
