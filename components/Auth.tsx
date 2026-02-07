@@ -16,30 +16,30 @@ const Auth = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     // Theme toggle (standalone, same key as MainLayout)
-    const [theme, setTheme] = useState<'light' | 'dark' | 'blue'>(() => {
+    const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         const saved = localStorage.getItem('contract-pro-theme');
-        if (saved === 'light' || saved === 'dark' || saved === 'blue') return saved;
+        if (saved === 'light' || saved === 'dark') return saved;
         if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) return 'dark';
         return 'light';
     });
 
     useEffect(() => {
         const root = document.documentElement;
-        root.classList.remove('dark', 'theme-blue');
-        if (theme === 'dark') {
-            root.classList.add('dark');
-        } else if (theme === 'blue') {
-            root.classList.add('theme-blue');
-        }
+        root.classList.remove('dark');
+        if (theme === 'dark') root.classList.add('dark');
+        // Also apply accent from saved preference
+        root.classList.remove('accent-blue');
+        const savedAccent = localStorage.getItem('contract-pro-accent');
+        if (savedAccent === 'blue') root.classList.add('accent-blue');
         localStorage.setItem('contract-pro-theme', theme);
     }, [theme]);
 
     const cycleTheme = () => {
-        setTheme(prev => prev === 'light' ? 'dark' : prev === 'dark' ? 'blue' : 'light');
+        setTheme(prev => prev === 'light' ? 'dark' : 'light');
     };
 
-    const themeIcon = theme === 'light' ? <Moon size={18} /> : theme === 'dark' ? <Sun size={18} /> : <Monitor size={18} />;
-    const themeLabel = theme === 'light' ? 'Chế độ tối' : theme === 'dark' ? 'CIC Blue' : 'Chế độ sáng';
+    const themeIcon = theme === 'light' ? <Moon size={18} /> : <Sun size={18} />;
+    const themeLabel = theme === 'light' ? 'Chế độ tối' : 'Chế độ sáng';
 
     const handleGoogleLogin = async () => {
         try {

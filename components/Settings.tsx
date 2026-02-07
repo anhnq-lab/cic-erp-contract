@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Moon, Sun, Shield, Settings2, FlaskConical, Users, Monitor } from 'lucide-react';
+import { Moon, Sun, Shield, Settings2, FlaskConical, Users, Palette } from 'lucide-react';
 import DataSeeder from './admin/DataSeeder';
 import PilotRunner from './admin/PilotRunner';
 import PermissionManager from './settings/PermissionManager';
@@ -10,7 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 type SettingsTab = 'system' | 'permissions' | 'testing';
 
 const Settings: React.FC = () => {
-    const { theme, setTheme } = useLayoutContext();
+    const { theme, setTheme, accent, setAccent } = useLayoutContext();
     const { profile } = useAuth();
     const isAdmin = profile?.role === 'Admin';
 
@@ -53,13 +53,13 @@ const Settings: React.FC = () => {
             <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
                 {activeTab === 'system' && (
                     <div className="space-y-6">
-                        {/* Theme */}
+                        {/* Theme Mode */}
                         <div>
                             <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm mb-4 flex items-center gap-2">
                                 <Settings2 size={16} className="text-orange-500" />
-                                Giao diện hệ thống
+                                Chế độ hiển thị
                             </h3>
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-2 gap-4">
                                 <button
                                     onClick={() => setTheme('light')}
                                     className={`flex items-center justify-center gap-3 p-4 rounded-lg border transition-all ${theme === 'light'
@@ -68,17 +68,7 @@ const Settings: React.FC = () => {
                                         }`}
                                 >
                                     <Sun size={20} />
-                                    <span className="font-bold text-sm">Sáng</span>
-                                </button>
-                                <button
-                                    onClick={() => setTheme('blue')}
-                                    className={`flex items-center justify-center gap-3 p-4 rounded-lg border transition-all ${theme === 'blue'
-                                        ? 'bg-sky-50 border-sky-500 text-sky-700 dark:bg-sky-900/20 dark:border-sky-500 dark:text-sky-400'
-                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-500'
-                                        }`}
-                                >
-                                    <Monitor size={20} />
-                                    <span className="font-bold text-sm">CIC Blue</span>
+                                    <span className="font-bold text-sm">Chế độ Sáng</span>
                                 </button>
                                 <button
                                     onClick={() => setTheme('dark')}
@@ -88,7 +78,37 @@ const Settings: React.FC = () => {
                                         }`}
                                 >
                                     <Moon size={20} />
-                                    <span className="font-bold text-sm">Tối</span>
+                                    <span className="font-bold text-sm">Chế độ Tối</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Accent Color */}
+                        <div>
+                            <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm mb-4 flex items-center gap-2">
+                                <Palette size={16} className="text-orange-500" />
+                                Màu chủ đạo
+                            </h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <button
+                                    onClick={() => setAccent('orange')}
+                                    className={`flex items-center justify-center gap-3 p-4 rounded-lg border transition-all ${accent === 'orange'
+                                        ? 'bg-orange-50 border-orange-500 text-orange-700 dark:bg-orange-900/20 dark:border-orange-500 dark:text-orange-400'
+                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-500'
+                                        }`}
+                                >
+                                    <div className="w-5 h-5 rounded-full bg-orange-500" />
+                                    <span className="font-bold text-sm">Cam (Mặc định)</span>
+                                </button>
+                                <button
+                                    onClick={() => setAccent('blue')}
+                                    className={`flex items-center justify-center gap-3 p-4 rounded-lg border transition-all ${accent === 'blue'
+                                        ? 'bg-sky-50 border-sky-500 text-sky-700 dark:bg-sky-900/20 dark:border-sky-500 dark:text-sky-400'
+                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-500'
+                                        }`}
+                                >
+                                    <div className="w-5 h-5 rounded-full bg-sky-500" />
+                                    <span className="font-bold text-sm">CIC Blue</span>
                                 </button>
                             </div>
                         </div>

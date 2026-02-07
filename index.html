@@ -73,26 +73,13 @@
                 --c-orange-950: #431407;
             }
 
-            .theme-blue {
-                /* CIC Classic Blue — Corporate deep navy + crisp white text */
-                --c-slate-50: #f8fafc;  /* Text High Contrast — pure white */
-                --c-slate-100: #f1f5f9; /* Text Light — neutral */
-                --c-slate-200: #e2e8f0; /* Text Primary — crisp silver */
-                --c-slate-300: #cbd5e1; /* Light borders */
-                --c-slate-400: #8da4be; /* Text Secondary / Icons — steel blue */
-                --c-slate-500: #5c7a99; /* Muted Text — slate blue */
-                --c-slate-600: #3d5f80; /* Subtle text */
-                --c-slate-700: #1c3654; /* Borders/Lines — rich navy */
-                --c-slate-800: #132b45; /* Input BG / Table Header / Hover */
-                --c-slate-900: #0d2137; /* Card BG — deep navy */
-                --c-slate-950: #08162b; /* Main BG — deepest navy */
+            .accent-blue {
+                /* CIC Classic — Override accent colors from Orange → Sky Blue */
+                --c-indigo-50: #f0f9ff;
+                --c-indigo-500: #0ea5e9;  /* Primary Brand (Sky Blue) */
+                --c-indigo-600: #0284c7;  /* Primary Hover */
+                --c-indigo-700: #0369a1;  /* Primary Active */
 
-                --c-indigo-50: #38bdf8;  /* Accent light */
-                --c-indigo-500: #0ea5e9; /* Primary Brand (Sky Blue — CIC) */
-                --c-indigo-600: #0284c7; /* Primary Hover */
-                --c-indigo-700: #0369a1; /* Primary Active */
-
-                /* Orange → Sky Blue remapping for CIC brand */
                 --c-orange-50: #f0f9ff;
                 --c-orange-100: #e0f2fe;
                 --c-orange-200: #bae6fd;
@@ -112,7 +99,7 @@
         document.head.appendChild(style);
 
         tailwind.config = {
-            darkMode: ['class', ['dark', 'theme-blue']],
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -193,35 +180,7 @@
             padding: 8px 12px;
         }
 
-        /* Blue theme scrollbar */
-        .theme-blue ::-webkit-scrollbar {
-            width: 8px;
-        }
 
-        .theme-blue ::-webkit-scrollbar-track {
-            background: #071525;
-        }
-
-        .theme-blue ::-webkit-scrollbar-thumb {
-            background: #1a3a5c;
-            border-radius: 10px;
-        }
-
-        .theme-blue ::-webkit-scrollbar-thumb:hover {
-            background: #2a5a8c;
-        }
-
-        /* Blue theme native select */
-        .theme-blue select {
-            background-color: #122d4a !important;
-            color: #e0f2fe !important;
-        }
-
-        .theme-blue select option {
-            background-color: #122d4a !important;
-            color: #e0f2fe !important;
-            padding: 8px 12px;
-        }
 
         .dark select option:hover,
         .dark select option:focus,

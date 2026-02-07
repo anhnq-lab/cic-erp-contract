@@ -61,21 +61,21 @@ const App: React.FC = () => {
   const { session, isLoading: isLoadingSession, user, profile } = useAuth();
 
   // Theme management
-  const [theme, setTheme] = useState<'light' | 'dark' | 'blue'>(() => {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const saved = localStorage.getItem('contract-pro-theme');
-    if (saved === 'light' || saved === 'dark' || saved === 'blue') return saved;
+    if (saved === 'light' || saved === 'dark') return saved;
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
     return 'light';
   });
 
   useEffect(() => {
     const root = window.document.documentElement;
-    root.classList.remove('dark', 'theme-blue');
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else if (theme === 'blue') {
-      root.classList.add('theme-blue');
-    }
+    root.classList.remove('dark');
+    if (theme === 'dark') root.classList.add('dark');
+    // Also apply accent from saved preference
+    root.classList.remove('accent-blue');
+    const savedAccent = localStorage.getItem('contract-pro-accent');
+    if (savedAccent === 'blue') root.classList.add('accent-blue');
     localStorage.setItem('contract-pro-theme', theme);
   }, [theme]);
 
@@ -289,10 +289,9 @@ const App: React.FC = () => {
             <div className="space-y-6">
               <div className="pb-6 border-b border-slate-100 dark:border-slate-800">
                 <p className="font-bold text-slate-800 dark:text-slate-200 text-sm mb-4">Giao diện hệ thống</p>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <button onClick={() => setTheme('light')} className={`flex items-center justify-center gap-3 p-4 rounded-lg border transition-all ${theme === 'light' ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-500'}`}><Sun size={20} /><span className="font-bold text-sm">Sáng</span></button>
                   <button onClick={() => setTheme('dark')} className={`flex items-center justify-center gap-3 p-4 rounded-lg border transition-all ${theme === 'dark' ? 'bg-indigo-900/40 border-indigo-500 text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-500'}`}><Moon size={20} /><span className="font-bold text-sm">Tối</span></button>
-                  <button onClick={() => setTheme('blue')} className={`flex items-center justify-center gap-3 p-4 rounded-lg border transition-all ${theme === 'blue' ? 'bg-sky-900/40 border-sky-500 text-sky-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-500'}`}><Monitor size={20} /><span className="font-bold text-sm">CIC Blue</span></button>
                 </div>
               </div>
 

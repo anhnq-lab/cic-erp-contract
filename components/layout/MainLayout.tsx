@@ -32,24 +32,33 @@ const MainLayout: React.FC = () => {
     };
     const [selectedUnit, setSelectedUnit] = useState<Unit>(ALL_UNIT);
 
-    // Theme management
-    const [theme, setTheme] = useState<'light' | 'dark' | 'blue'>(() => {
+    // Theme management — 2 axes: mode (light/dark) + accent (orange/blue)
+    const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         const saved = localStorage.getItem('contract-pro-theme');
-        if (saved === 'light' || saved === 'dark' || saved === 'blue') return saved;
+        if (saved === 'light' || saved === 'dark') return saved;
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
         return 'light';
     });
 
+    const [accent, setAccent] = useState<'orange' | 'blue'>(() => {
+        const saved = localStorage.getItem('contract-pro-accent');
+        if (saved === 'orange' || saved === 'blue') return saved;
+        return 'orange';
+    });
+
     useEffect(() => {
         const root = window.document.documentElement;
-        root.classList.remove('dark', 'theme-blue');
-        if (theme === 'dark') {
-            root.classList.add('dark');
-        } else if (theme === 'blue') {
-            root.classList.add('theme-blue');
-        }
+        root.classList.remove('dark');
+        if (theme === 'dark') root.classList.add('dark');
         localStorage.setItem('contract-pro-theme', theme);
     }, [theme]);
+
+    useEffect(() => {
+        const root = window.document.documentElement;
+        root.classList.remove('accent-blue');
+        if (accent === 'blue') root.classList.add('accent-blue');
+        localStorage.setItem('contract-pro-accent', accent);
+    }, [accent]);
 
     // Responsive sidebar
     useEffect(() => {
@@ -122,7 +131,7 @@ const MainLayout: React.FC = () => {
                     <main className="mt-16 p-4 md:p-6 lg:p-8">
                         <div className={`${contentMaxWidthClass} mx-auto`}>
                             {/* Pass context to child routes via Outlet */}
-                            <Outlet context={{ selectedUnit, setSelectedUnit, theme, setTheme }} />
+                            <Outlet context={{ selectedUnit, setSelectedUnit, theme, setTheme, accent, setAccent }} />
                         </div>
                     </main>
                 </div>
@@ -146,8 +155,10 @@ import { useOutletContext } from 'react-router-dom';
 interface LayoutContext {
     selectedUnit: Unit;
     setSelectedUnit: (unit: Unit) => void;
-    theme: 'light' | 'dark' | 'blue';
-    setTheme: (theme: 'light' | 'dark' | 'blue') => void;
+    theme: 'light' | 'dark';
+    setTheme: (theme: 'light' | 'dark') => void;
+    accent: 'orange' | 'blue';
+    setAccent: (accent: 'orange' | 'blue') => void;
 }
 
 export function useLayoutContext() {
