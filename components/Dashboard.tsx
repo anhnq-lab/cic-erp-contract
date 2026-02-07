@@ -628,8 +628,8 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
               </thead>
               <tbody>
                 {performanceTableData.map((row) => (
-                  <tr key={row.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                    <td className="py-4 pl-4 rounded-l-3xl bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/40 border-y border-l border-transparent transition-colors">
+                  <tr key={row.id} className="group cursor-pointer transition-colors">
+                    <td className="py-4 pl-4 rounded-l-3xl bg-slate-50 dark:bg-slate-900 group-hover:bg-slate-100 dark:group-hover:bg-slate-800 border-y border-l border-transparent transition-colors">
                       <div className="flex items-center gap-4">
                         <div className={`w-12 h-12 rounded-lg ${safeUnit?.id === 'all' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'} flex items-center justify-center font-bold text-lg shadow-sm group-hover:scale-105 transition-transform`}>
                           {row.name.substring(0, 1)}
@@ -640,9 +640,9 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 text-right bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/40 border-y border-transparent transition-colors text-sm font-bold text-slate-500">{formatCurrency(row.target)}</td>
-                    <td className="py-4 text-right bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/40 border-y border-transparent transition-colors text-sm font-black text-slate-900 dark:text-slate-100">{formatCurrency(row.actual)}</td>
-                    <td className="py-4 px-6 rounded-r-3xl bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/40 border-y border-r border-transparent transition-colors">
+                    <td className="py-4 text-right bg-slate-50 dark:bg-slate-900 group-hover:bg-slate-100 dark:group-hover:bg-slate-800 border-y border-transparent transition-colors text-sm font-bold text-slate-500">{formatCurrency(row.target)}</td>
+                    <td className="py-4 text-right bg-slate-50 dark:bg-slate-900 group-hover:bg-slate-100 dark:group-hover:bg-slate-800 border-y border-transparent transition-colors text-sm font-black text-slate-900 dark:text-slate-100">{formatCurrency(row.actual)}</td>
+                    <td className="py-4 px-6 rounded-r-3xl bg-slate-50 dark:bg-slate-900 group-hover:bg-slate-100 dark:group-hover:bg-slate-800 border-y border-r border-transparent transition-colors">
                       <div className="flex items-center gap-4">
                         <div className="flex-1 h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
                           <div className={`h-full rounded-full transition-all duration-1000 ${row.progress >= 90 ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]' : row.progress >= 70 ? 'bg-indigo-600' : 'bg-amber-500'}`} style={{ width: `${row.progress}%` }}></div>
