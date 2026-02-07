@@ -35,6 +35,12 @@ const MainLayout: React.FC = () => {
     // Theme management — 2 axes: mode (light/dark) + accent (orange/blue)
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         const saved = localStorage.getItem('contract-pro-theme');
+        // Migrate legacy 'blue' theme: convert to dark mode + blue accent
+        if (saved === 'blue') {
+            localStorage.setItem('contract-pro-theme', 'dark');
+            localStorage.setItem('contract-pro-accent', 'blue');
+            return 'dark';
+        }
         if (saved === 'light' || saved === 'dark') return saved;
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
         return 'light';

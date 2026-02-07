@@ -28,7 +28,7 @@ const NavItem: React.FC<NavItemProps> = ({ item, activeTab, setActiveTab, isColl
       if (window.innerWidth < 768) onClose();
     }}
     className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-lg transition-all mb-1 ${activeTab === item.id
-      ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 shadow-sm dark:shadow-orange-500/5'
+      ? 'bg-orange-50 dark:bg-orange-500/20 text-orange-700 dark:text-orange-300 shadow-sm dark:shadow-orange-500/5 border-l-[3px] border-l-orange-500'
       : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'
       } ${isCollapsed ? 'md:px-0 md:justify-center' : ''}`}
     title={isCollapsed ? item.label : ''}
