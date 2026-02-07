@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Loader2, BarChart3, Brain, Smartphone, Shield, ArrowRight, Sun, Moon } from 'lucide-react';
+import { Loader2, BarChart3, Brain, Smartphone, Shield, ArrowRight, Sun, Moon, Monitor } from 'lucide-react';
 import CICLogo from './CICLogo';
 
 /**
@@ -16,22 +16,30 @@ const Auth = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     // Theme toggle (standalone, same key as MainLayout)
-    const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const [theme, setTheme] = useState<'light' | 'dark' | 'blue'>(() => {
         const saved = localStorage.getItem('contract-pro-theme');
-        if (saved === 'light' || saved === 'dark') return saved;
+        if (saved === 'light' || saved === 'dark' || saved === 'blue') return saved;
         if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) return 'dark';
         return 'light';
     });
 
     useEffect(() => {
         const root = document.documentElement;
+        root.classList.remove('dark', 'theme-blue');
         if (theme === 'dark') {
             root.classList.add('dark');
-        } else {
-            root.classList.remove('dark');
+        } else if (theme === 'blue') {
+            root.classList.add('theme-blue');
         }
         localStorage.setItem('contract-pro-theme', theme);
     }, [theme]);
+
+    const cycleTheme = () => {
+        setTheme(prev => prev === 'light' ? 'dark' : prev === 'dark' ? 'blue' : 'light');
+    };
+
+    const themeIcon = theme === 'light' ? <Moon size={18} /> : theme === 'dark' ? <Sun size={18} /> : <Monitor size={18} />;
+    const themeLabel = theme === 'light' ? 'Chế độ tối' : theme === 'dark' ? 'CIC Blue' : 'Chế độ sáng';
 
     const handleGoogleLogin = async () => {
         try {
@@ -151,11 +159,11 @@ const Auth = () => {
             <div className="flex-1 flex items-center justify-center p-6 md:p-8 bg-white dark:bg-slate-950 relative">
                 {/* Theme toggle */}
                 <button
-                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    onClick={cycleTheme}
                     className="absolute top-4 right-4 lg:top-6 lg:right-6 p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all z-10"
-                    title={theme === 'dark' ? 'Chế độ sáng' : 'Chế độ tối'}
+                    title={themeLabel}
                 >
-                    {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                    {themeIcon}
                 </button>
                 {/* Mobile: Mini brand banner at top */}
                 <div className="absolute top-0 left-0 right-0 lg:hidden">

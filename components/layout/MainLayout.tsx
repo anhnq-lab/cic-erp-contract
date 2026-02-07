@@ -33,19 +33,20 @@ const MainLayout: React.FC = () => {
     const [selectedUnit, setSelectedUnit] = useState<Unit>(ALL_UNIT);
 
     // Theme management
-    const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const [theme, setTheme] = useState<'light' | 'dark' | 'blue'>(() => {
         const saved = localStorage.getItem('contract-pro-theme');
-        if (saved === 'light' || saved === 'dark') return saved;
+        if (saved === 'light' || saved === 'dark' || saved === 'blue') return saved;
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
         return 'light';
     });
 
     useEffect(() => {
         const root = window.document.documentElement;
+        root.classList.remove('dark', 'theme-blue');
         if (theme === 'dark') {
             root.classList.add('dark');
-        } else {
-            root.classList.remove('dark');
+        } else if (theme === 'blue') {
+            root.classList.add('theme-blue');
         }
         localStorage.setItem('contract-pro-theme', theme);
     }, [theme]);
@@ -145,8 +146,8 @@ import { useOutletContext } from 'react-router-dom';
 interface LayoutContext {
     selectedUnit: Unit;
     setSelectedUnit: (unit: Unit) => void;
-    theme: 'light' | 'dark';
-    setTheme: (theme: 'light' | 'dark') => void;
+    theme: 'light' | 'dark' | 'blue';
+    setTheme: (theme: 'light' | 'dark' | 'blue') => void;
 }
 
 export function useLayoutContext() {

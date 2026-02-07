@@ -48,6 +48,26 @@
                 --c-indigo-600: #ea580c; /* Primary Hover */
                 --c-indigo-700: #c2410c; /* Primary Active */
             }
+
+            .theme-blue {
+                /* CIC Classic Blue — Corporate blue-tinted dark theme */
+                --c-slate-50: #f0f9ff;  /* Text High Contrast (blue-white) */
+                --c-slate-100: #e0f2fe; /* Text Light */
+                --c-slate-200: #bae6fd; /* Text Primary */
+                --c-slate-300: #7dd3fc; /* Light borders in cards */
+                --c-slate-400: #93c5fd; /* Text Secondary / Icons */
+                --c-slate-500: #6b9cc3; /* Muted Text/Icon */
+                --c-slate-600: #4b7a9e; /* Subtle text */
+                --c-slate-700: #1a3a5c; /* Borders/Lines */
+                --c-slate-800: #122d4a; /* Input BG / Table Header / Hover */
+                --c-slate-900: #0c2137; /* Card BG */
+                --c-slate-950: #071525; /* Main BG (DEEPEST) */
+
+                --c-indigo-50: #38bdf8;  /* Accent light */
+                --c-indigo-500: #0ea5e9; /* Primary Brand (Sky Blue — CIC) */
+                --c-indigo-600: #0284c7; /* Primary Hover */
+                --c-indigo-700: #0369a1; /* Primary Active */
+            }
         `;
         const style = document.createElement('style');
         style.type = 'text/css';
@@ -55,7 +75,7 @@
         document.head.appendChild(style);
 
         tailwind.config = {
-            darkMode: 'class',
+            darkMode: ['class', ['dark', 'theme-blue']],
             theme: {
                 extend: {
                     colors: {
@@ -120,6 +140,36 @@
         .dark select option {
             background-color: #1e293b !important;
             color: #e2e8f0 !important;
+            padding: 8px 12px;
+        }
+
+        /* Blue theme scrollbar */
+        .theme-blue ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .theme-blue ::-webkit-scrollbar-track {
+            background: #071525;
+        }
+
+        .theme-blue ::-webkit-scrollbar-thumb {
+            background: #1a3a5c;
+            border-radius: 10px;
+        }
+
+        .theme-blue ::-webkit-scrollbar-thumb:hover {
+            background: #2a5a8c;
+        }
+
+        /* Blue theme native select */
+        .theme-blue select {
+            background-color: #122d4a !important;
+            color: #e0f2fe !important;
+        }
+
+        .theme-blue select option {
+            background-color: #122d4a !important;
+            color: #e0f2fe !important;
             padding: 8px 12px;
         }
 
