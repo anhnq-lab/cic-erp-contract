@@ -95,11 +95,11 @@ export const ApprovalStepper: React.FC<Props> = ({ currentStatus, reviews = [] }
         <div className="space-y-4">
             {/* Rejected Banner */}
             {isRejected && (
-                <div className="flex items-center gap-3 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700">
+                <div className="flex items-center gap-3 p-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-700 dark:text-rose-300">
                     <X size={18} className="shrink-0" />
                     <div>
                         <p className="font-bold text-sm">PAKD đã bị từ chối</p>
-                        <p className="text-xs text-rose-600">Cần chỉnh sửa và gửi lại</p>
+                        <p className="text-xs text-rose-600 dark:text-rose-400">Cần chỉnh sửa và gửi lại</p>
                     </div>
                 </div>
             )}
@@ -123,44 +123,44 @@ export const ApprovalStepper: React.FC<Props> = ({ currentStatus, reviews = [] }
                         <div
                             key={step.id}
                             className={`relative p-4 rounded-2xl border-2 transition-all ${isCurrent
-                                ? 'border-indigo-500 bg-indigo-50 shadow-lg shadow-indigo-100'
+                                ? 'border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-900/30 shadow-lg shadow-orange-100 dark:shadow-none'
                                 : isPast
-                                    ? 'border-emerald-300 bg-emerald-50'
+                                    ? 'border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20'
                                     : isNext
-                                        ? 'border-amber-200 bg-amber-50/50'
-                                        : 'border-slate-100 bg-slate-50/50 opacity-60'
+                                        ? 'border-amber-200 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-900/20'
+                                        : 'border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 opacity-60'
                                 }`}
                         >
                             {/* Step Number Badge */}
                             <div className={`absolute -top-2.5 -left-2.5 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shadow-sm ${isPast
                                 ? 'bg-emerald-500 text-white'
                                 : isCurrent
-                                    ? 'bg-indigo-600 text-white ring-2 ring-indigo-200'
-                                    : 'bg-slate-200 text-slate-500'
+                                    ? 'bg-orange-500 text-white ring-2 ring-orange-200 dark:ring-orange-800'
+                                    : 'bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-300'
                                 }`}>
                                 {isPast ? <Check size={14} /> : idx + 1}
                             </div>
 
                             {/* Icon & Label */}
-                            <div className={`flex items-center gap-2 mb-2 ${isCurrent ? 'text-indigo-700' : isPast ? 'text-emerald-700' : 'text-slate-500'
+                            <div className={`flex items-center gap-2 mb-2 ${isCurrent ? 'text-orange-700 dark:text-orange-400' : isPast ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'
                                 }`}>
                                 {step.icon}
                                 <span className="font-bold text-sm">{step.label}</span>
                             </div>
 
                             {/* Description */}
-                            <p className={`text-xs ${isCurrent || isPast ? 'text-slate-600' : 'text-slate-400'}`}>
+                            <p className={`text-xs ${isCurrent || isPast ? 'text-slate-600 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'}`}>
                                 {step.description}
                             </p>
 
                             {/* Approver or Timestamp */}
                             {isPast && stepReview ? (
-                                <div className="mt-3 pt-2 border-t border-emerald-200">
-                                    <p className="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
+                                <div className="mt-3 pt-2 border-t border-emerald-200 dark:border-emerald-800">
+                                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
                                         <Check size={10} />
                                         {stepReview.reviewer_profile?.full_name || 'Đã duyệt'}
                                     </p>
-                                    <p className="text-[10px] text-emerald-500 flex items-center gap-1 mt-0.5">
+                                    <p className="text-[10px] text-emerald-500 dark:text-emerald-500 flex items-center gap-1 mt-0.5">
                                         <Clock size={10} />
                                         {new Date(stepReview.created_at).toLocaleString('vi-VN', {
                                             day: '2-digit',
@@ -171,7 +171,7 @@ export const ApprovalStepper: React.FC<Props> = ({ currentStatus, reviews = [] }
                                     </p>
                                 </div>
                             ) : step.approver && !isPast ? (
-                                <p className={`text-[10px] mt-3 font-medium ${isCurrent ? 'text-indigo-600' : 'text-slate-400'
+                                <p className={`text-[10px] mt-3 font-medium ${isCurrent ? 'text-orange-600 dark:text-orange-400' : 'text-slate-400 dark:text-slate-500'
                                     }`}>
                                     → {step.approver}
                                 </p>
@@ -181,8 +181,8 @@ export const ApprovalStepper: React.FC<Props> = ({ currentStatus, reviews = [] }
                             {isCurrent && (
                                 <div className="absolute -top-1 -right-1">
                                     <span className="relative flex h-3 w-3">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
                                     </span>
                                 </div>
                             )}
