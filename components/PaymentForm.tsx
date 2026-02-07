@@ -12,6 +12,8 @@ import {
 import { Payment, PaymentStatus, PaymentMethod, Contract, Customer } from '../types';
 import { ContractService, CustomerService } from '../services';
 import NumberInput from './ui/NumberInput';
+import SearchableSelect from './ui/SearchableSelect';
+import QuickAddCustomerDialog from './ui/QuickAddCustomerDialog';
 import { formatNumber } from '../lib/utils';
 
 interface PaymentFormProps {
@@ -37,24 +39,31 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
 
     // Options
     const [contracts, setContracts] = useState<Contract[]>([]);
-    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [customerDisplayName, setCustomerDisplayName] = useState<string>('');
+    const [showAddCustomerDialog, setShowAddCustomerDialog] = useState(false);
 
     useEffect(() => {
         const fetchOptions = async () => {
             try {
-                const [contractsData, customersData] = await Promise.all([
-                    ContractService.getAll(),
-                    CustomerService.getAll()
-                ]);
+                const contractsData = await ContractService.getAll();
                 setContracts(contractsData);
-                // Correctly handle the response structure from CustomerService.getAll
-                setCustomers(customersData.data);
             } catch (error) {
                 console.error("Failed to fetch options:", error);
             }
         };
         fetchOptions();
     }, []);
+
+    // Fetch customer name when customerId is set (e.g. on edit or auto-fill from contract)
+    useEffect(() => {
+        if (customerId) {
+            CustomerService.getById(customerId).then(c => {
+                if (c) setCustomerDisplayName(c.name);
+            });
+        } else {
+            setCustomerDisplayName('');
+        }
+    }, [customerId]);
 
     // Update customerId when contractId changes
     useEffect(() => {
@@ -135,11 +144,23 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                             <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1">
                                 <Building2 size={12} /> Khách hàng
                             </label>
-                            <input
-                                type="text"
-                                value={customerId ? (customers.find(c => c.id === customerId)?.name || 'Đang tải...') : (contractId ? 'Chưa có thông tin KH' : 'Chọn hợp đồng trước')}
-                                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400"
-                                readOnly
+                            <SearchableSelect
+                                value={customerId || null}
+                                placeholder="Gõ để tìm khách hàng..."
+                                getDisplayValue={(id) => id === customerId ? customerDisplayName : undefined}
+                                onChange={(cId) => {
+                                    setCustomerId(cId || '');
+                                }}
+                                onSearch={async (query) => {
+                                    const results = await CustomerService.search(query, 20);
+                                    return results.map(c => ({
+                                        id: c.id,
+                                        name: c.name,
+                                        subText: c.industry || c.type
+                                    }));
+                                }}
+                                onAddNew={() => setShowAddCustomerDialog(true)}
+                                addNewLabel="+ Thêm khách hàng mới"
                             />
                         </div>
                     </div>
@@ -344,6 +365,19 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                     </button>
                 </div>
             </div>
+
+            {/* Quick Add Customer Dialog */}
+            {showAddCustomerDialog && (
+                <QuickAddCustomerDialog
+                    isOpen={showAddCustomerDialog}
+                    onClose={() => setShowAddCustomerDialog(false)}
+                    onCreated={(newCustomer) => {
+                        setCustomerId(newCustomer.id);
+                        setCustomerDisplayName(newCustomer.name);
+                        setShowAddCustomerDialog(false);
+                    }}
+                />
+            )}
         </div>
     );
 };
