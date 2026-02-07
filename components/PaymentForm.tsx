@@ -9,7 +9,7 @@ import {
     Building2,
     Hash
 } from 'lucide-react';
-import { Payment, PaymentStatus, PaymentMethod, Contract, Customer } from '../types';
+import { Payment, PaymentStatus, PaymentMethod } from '../types';
 import { ContractService, CustomerService } from '../services';
 import NumberInput from './ui/NumberInput';
 import SearchableSelect from './ui/SearchableSelect';
@@ -37,24 +37,42 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
     const [reference, setReference] = useState(payment?.reference || '');
     const [notes, setNotes] = useState(payment?.notes || '');
 
-    // Options
-    const [contracts, setContracts] = useState<Contract[]>([]);
+    // Display names for SearchableSelect
+    const [contractDisplayName, setContractDisplayName] = useState<string>('');
     const [customerDisplayName, setCustomerDisplayName] = useState<string>('');
     const [showAddCustomerDialog, setShowAddCustomerDialog] = useState(false);
 
+    // Fetch display names on mount for edit mode
     useEffect(() => {
-        const fetchOptions = async () => {
-            try {
-                const contractsData = await ContractService.getAll();
-                setContracts(contractsData);
-            } catch (error) {
-                console.error("Failed to fetch options:", error);
-            }
-        };
-        fetchOptions();
+        if (payment?.contractId) {
+            ContractService.getById(payment.contractId).then(c => {
+                if (c) setContractDisplayName(`${c.id} - ${c.title}`);
+            });
+        }
+        if (payment?.customerId) {
+            CustomerService.getById(payment.customerId).then(c => {
+                if (c) setCustomerDisplayName(c.name);
+            });
+        }
     }, []);
 
-    // Fetch customer name when customerId is set (e.g. on edit or auto-fill from contract)
+    // When a contract is selected, auto-fill customerId from that contract
+    const handleContractChange = async (cId: string | null) => {
+        setContractId(cId || '');
+        if (cId) {
+            const contract = await ContractService.getById(cId);
+            if (contract) {
+                setContractDisplayName(`${contract.id} - ${contract.title}`);
+                if (contract.customerId) {
+                    setCustomerId(contract.customerId);
+                }
+            }
+        } else {
+            setContractDisplayName('');
+        }
+    };
+
+    // Fetch customer name when customerId changes
     useEffect(() => {
         if (customerId) {
             CustomerService.getById(customerId).then(c => {
@@ -64,17 +82,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
             setCustomerDisplayName('');
         }
     }, [customerId]);
-
-    // Update customerId when contractId changes
-    useEffect(() => {
-        if (contractId && contracts.length > 0) {
-            const contract = contracts.find(c => c.id === contractId);
-            console.log('[PaymentForm] Contract selected:', contractId, 'Found:', contract?.id, 'CustomerId:', contract?.customerId);
-            if (contract && contract.customerId) {
-                setCustomerId(contract.customerId);
-            }
-        }
-    }, [contractId, contracts]);
 
     const handleSubmit = () => {
         const paymentData = {
@@ -129,16 +136,20 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ payment, initialPaymentType =
                             <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1">
                                 <FileText size={12} /> Hợp đồng *
                             </label>
-                            <select
-                                value={contractId}
-                                onChange={(e) => setContractId(e.target.value)}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            >
-                                <option value="">-- Chọn hợp đồng --</option>
-                                {contracts.map(c => (
-                                    <option key={c.id} value={c.id}>{c.id} - {c.title.substring(0, 40)}...</option>
-                                ))}
-                            </select>
+                            <SearchableSelect
+                                value={contractId || null}
+                                placeholder="Gõ mã HĐ hoặc tên hợp đồng..."
+                                getDisplayValue={(id) => id === contractId ? contractDisplayName : undefined}
+                                onChange={handleContractChange}
+                                onSearch={async (query) => {
+                                    const results = await ContractService.search(query, 20);
+                                    return results.map(c => ({
+                                        id: c.id,
+                                        name: `${c.id} - ${c.title}`,
+                                        subText: c.partyA || undefined
+                                    }));
+                                }}
+                            />
                         </div>
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1">
