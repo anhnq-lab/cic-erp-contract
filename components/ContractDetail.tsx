@@ -246,7 +246,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
     switch (status) {
       case 'Active': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
       case 'Pending': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800';
-      case 'Reviewing': return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800';
+      case 'Reviewing': return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border-orange-200 dark:border-orange-800';
       case 'Expired': return 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 border-rose-200 dark:border-rose-800';
       default: return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700';
     }
@@ -317,7 +317,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                     toast.success('Đã copy mã hợp đồng!');
                   }}
                   title="Click để copy mã hợp đồng"
-                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded uppercase tracking-wider hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors cursor-pointer"
+                  className="text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 px-2 py-0.5 rounded uppercase tracking-wider hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-colors cursor-pointer"
                 >
                   {contract?.id}
                 </button>
@@ -368,7 +368,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                 Chỉnh sửa
               </button>
             )}
-            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 dark:shadow-none text-sm">
+            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-xl text-sm font-semibold hover:bg-orange-700 transition-all shadow-lg shadow-orange-100 dark:shadow-none">
               <Download size={16} />
               Xuất PDF
             </button>
@@ -435,13 +435,13 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
         <div className="flex border-b border-slate-200 dark:border-slate-800">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'overview' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'overview' ? 'border-orange-500 text-orange-600 dark:text-orange-400' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
           >
             Tổng quan
           </button>
           <button
             onClick={() => setActiveTab('pakd')}
-            className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'pakd' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'pakd' ? 'border-orange-500 text-orange-600 dark:text-orange-400' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
           >
             PAKD & Dòng tiền
             {/* Indicator if needed */}
@@ -460,9 +460,9 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
             <div className="lg:col-span-2 space-y-6">
               <>
                 {/* 1. FINANCIAL SUMMARY */}
-                <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
                   <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
-                    <Wallet size={20} className="text-indigo-600 dark:text-indigo-400" />
+                    <Wallet size={20} className="text-orange-500" />
                     Tổng quan Tài chính
                   </h3>
 
@@ -484,10 +484,10 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                       <div className="space-y-1">
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Lợi nhuận gộp</p>
                         <div className="flex items-center gap-2">
-                          <p className={`text-2xl font-black ${financials.grossProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          <p className={`text-2xl font-black ${financials.grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                             {formatVND(financials.grossProfit)}
                           </p>
-                          <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${financials.grossProfit >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                          <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${financials.grossProfit >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400'}`}>
                             {financials.margin.toFixed(1)}%
                           </span>
                         </div>
@@ -517,7 +517,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                             {formatVND(contract.actualRevenue || 0)}
                           </p>
                           {contract.actualRevenue > 0 && (
-                            <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">
+                            <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold">
                               {((contract.actualRevenue || 0) / (contract.value || 1) * 100).toFixed(1)}%
                             </span>
                           )}
@@ -543,10 +543,10 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
 
 
                 {/* 3. IMPLEMENTATION PLAN */}
-                <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
                   <div className="p-6 md:p-8">
                     <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
-                      <TrendingUp size={20} className="text-indigo-600 dark:text-indigo-400" />
+                      <TrendingUp size={20} className="text-orange-500" />
                       Tiến độ thực hiện & Triển khai
                     </h3>
 
@@ -554,11 +554,11 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                       {contract.milestones && contract.milestones.length > 0 ? (
                         contract.milestones.map((m) => (
                           <div key={m.id} className="flex gap-4 relative">
-                            <div className={`w-6 h-6 rounded-full border-4 border-white dark:border-slate-900 z-10 flex-shrink-0 flex items-center justify-center shadow-sm ${m.status === 'Completed' ? 'bg-indigo-600' : m.status === 'Ongoing' ? 'bg-amber-400' : 'bg-slate-200 dark:bg-slate-700'
+                            <div className={`w-6 h-6 rounded-full border-4 border-white dark:border-slate-900 z-10 flex-shrink-0 flex items-center justify-center shadow-sm ${m.status === 'Completed' ? 'bg-orange-500' : m.status === 'Ongoing' ? 'bg-amber-400' : 'bg-slate-200 dark:bg-slate-700'
                               }`}>
                               {m.status === 'Completed' ? <CheckCircle2 size={10} className="text-white" /> : m.status === 'Ongoing' ? <Clock size={10} className="text-white" /> : null}
                             </div>
-                            <div className="flex-1 p-4 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-indigo-100 dark:hover:border-indigo-900 transition-colors">
+                            <div className="flex-1 p-4 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-orange-100 dark:hover:border-orange-900 transition-colors">
                               <div className="flex justify-between items-start mb-1">
                                 <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{m.name}</p>
                                 <span className="text-[10px] font-bold text-slate-400 uppercase">{m.date}</span>
@@ -575,9 +575,9 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                 </div>
 
                 {/* 4. PAYMENT & CASHFLOW */}
-                <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
                   <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
-                    <ReceiptText size={20} className="text-indigo-600 dark:text-indigo-400" />
+                    <ReceiptText size={20} className="text-orange-500" />
                     Lộ trình thanh toán & Công nợ
                   </h3>
 
@@ -615,7 +615,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                             <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
                               {p.name || `Thanh toán NCC ${idx + 1}`}
                             </span>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500">DỰ CHI</span>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">DỰ CHI</span>
                           </div>
                           <div className="flex justify-between items-end">
                             <span className="text-[10px] text-slate-400">
@@ -636,7 +636,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
 
             {/* SIDEBAR RIGHT */}
             <div className="space-y-6">
-              <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-6 text-white shadow-xl shadow-indigo-200 dark:shadow-none relative overflow-hidden transition-all">
+              <div className="bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl p-6 text-white shadow-xl shadow-orange-200 dark:shadow-none relative overflow-hidden transition-all">
                 <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
                 <div className="flex items-center gap-2 mb-4">
                   <ShieldCheck size={20} />
@@ -645,7 +645,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
 
                 {!aiAnalysisResult ? (
                   <div className="space-y-3">
-                    <p className="text-sm text-indigo-100 leading-relaxed">
+                    <p className="text-sm text-orange-100 leading-relaxed">
                       Sử dụng <b>DeepSeek AI</b> để phân tích rủi ro hợp đồng dựa trên các điều khoản tài chính và tiến độ.
                     </p>
                     <button
@@ -659,12 +659,12 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                   </div>
                 ) : (
                   <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2">
-                    <div className="p-3 bg-white/10 rounded-xl border border-white/10 text-xs text-indigo-50 leading-relaxed overflow-y-auto max-h-[300px]">
+                    <div className="p-3 bg-white/10 rounded-xl border border-white/10 text-xs text-orange-50 leading-relaxed overflow-y-auto max-h-[300px]">
                       <div dangerouslySetInnerHTML={{ __html: aiAnalysisResult.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') }} />
                     </div>
                     <button
                       onClick={() => setAiAnalysisResult(null)}
-                      className="w-full py-2 text-xs font-bold text-indigo-200 hover:text-white transition-colors"
+                      className="w-full py-2 text-xs font-bold text-orange-200 hover:text-white transition-colors"
                     >
                       Phân tích lại
                     </button>
@@ -672,7 +672,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                 )}
               </div>
 
-              <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h4 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                     <Paperclip size={18} className="text-slate-400" />
@@ -680,7 +680,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                   </h4>
                   <button
                     onClick={() => setShowDocLinkDialog(true)}
-                    className="bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 p-2 rounded-lg transition-colors flex items-center justify-center"
+                    className="bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/30 dark:hover:bg-orange-900/50 text-orange-600 dark:text-orange-400 p-2 rounded-lg transition-colors flex items-center justify-center"
                   >
                     <Plus size={16} />
                   </button>
@@ -748,7 +748,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                           <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteDoc(file, e); }} className="p-1.5 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100">
                             <Trash2 size={14} />
                           </button>
-                          <div className="px-2 py-1 bg-indigo-600 text-white rounded-lg text-[10px] font-bold">
+                          <div className="px-2 py-1 bg-orange-600 text-white rounded-lg text-[10px] font-bold">
                             Mở
                           </div>
                         </div>
@@ -758,7 +758,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
                 <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-6 flex items-center gap-2">
                   <HistoryIcon size={18} className="text-slate-400" />
                   Lịch sử tác động
@@ -770,7 +770,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                       const eventText = AuditLogService.formatAction(log.action, log.old_data, log.new_data);
                       return (
                         <div key={log.id} className="flex gap-4 relative">
-                          <div className="w-6 h-6 rounded-full border-4 border-white dark:border-slate-900 z-10 flex-shrink-0 flex items-center justify-center shadow-sm bg-indigo-600">
+                          <div className="w-6 h-6 rounded-full border-4 border-white dark:border-slate-900 z-10 flex-shrink-0 flex items-center justify-center shadow-sm bg-orange-500">
                             <ShieldCheck size={10} className="text-white" />
                           </div>
                           <div className="flex-1">
@@ -780,7 +780,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                               <p className="text-[10px] text-slate-400">{time}</p>
                             </div>
                             <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">{eventText}</p>
-                            <p className="text-[10px] text-indigo-500 dark:text-indigo-400 font-medium mt-0.5">
+                            <p className="text-[10px] text-orange-500 dark:text-orange-400 font-medium mt-0.5">
                               bởi {log.user_name || 'Hệ thống'}
                             </p>
                           </div>
