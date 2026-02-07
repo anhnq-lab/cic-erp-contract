@@ -9,13 +9,14 @@ import { Calendar, ChevronDown, Building2, Filter, Download, PieChart as PieChar
 import { ContractService, UnitService, EmployeeService, PaymentService } from '../services';
 import { Unit, Contract, Payment, Employee } from '../types';
 import { toast } from 'sonner';
+import { getChartColors, getAccentColor, getTooltipStyle, getGridStroke, getCursorFill, getMutedBarFill } from '../lib/themeColors';
 
 interface AnalyticsProps {
     selectedUnit: Unit;
     onSelectUnit: (unit: Unit) => void;
 }
 
-const COLORS = ['#f97316', '#10b981', '#6366f1', '#ec4899', '#8b5cf6', '#06b6d4', '#f59e0b'];
+
 
 const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => {
     const [yearFilter, setYearFilter] = useState<string>(new Date().getFullYear().toString());
@@ -233,7 +234,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                 {/* 1. Revenue Structure */}
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
-                        <PieChartIcon size={20} className="text-orange-500" />
+                        <PieChartIcon size={20} className="text-indigo-500" />
                         Cơ cấu Doanh thu {selectedUnit.id === 'all' ? '(Theo Đơn vị)' : '(Theo Nhân sự)'}
                     </h3>
                     <div className="h-[300px]">
@@ -249,10 +250,10 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                                     dataKey="value"
                                 >
                                     {structureData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
+                                        <Cell key={`cell-${index}`} fill={getChartColors()[index % getChartColors().length]} strokeWidth={0} />
                                     ))}
                                 </Pie>
-                                <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ borderRadius: 12, border: document.documentElement.classList.contains('dark') ? '1px solid #334155' : '1px solid #e2e8f0', background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff', color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#1e293b' }} />
+                                <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={getTooltipStyle()} />
                                 <Legend layout="vertical" align="right" verticalAlign="middle" iconType="circle" />
                             </PieChart>
                         </ResponsiveContainer>
@@ -267,13 +268,13 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                     <div className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={planVsActualData} barCategoryGap={20}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={getGridStroke()} />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }} dy={10} />
                                 <YAxis axisLine={false} tickLine={false} tickFormatter={formatCurrency} tick={{ fill: '#64748b', fontSize: 11 }} />
-                                <Tooltip cursor={{ fill: document.documentElement.classList.contains('dark') ? 'rgba(51,65,85,0.3)' : '#f8fafc' }} formatter={(value: number) => formatCurrency(value)} contentStyle={{ borderRadius: 12, border: document.documentElement.classList.contains('dark') ? '1px solid #334155' : '1px solid #e2e8f0', background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff', color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#1e293b' }} />
+                                <Tooltip cursor={{ fill: getCursorFill() }} formatter={(value: number) => formatCurrency(value)} contentStyle={getTooltipStyle()} />
                                 <Legend />
-                                <Bar dataKey="Actual" name="Thực tế" fill="#f97316" radius={[6, 6, 0, 0]} />
-                                <Bar dataKey="Target" name="Kế hoạch" fill={document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'} radius={[6, 6, 0, 0]} />
+                                <Bar dataKey="Actual" name="Thực tế" fill={getAccentColor()} radius={[6, 6, 0, 0]} />
+                                <Bar dataKey="Target" name="Kế hoạch" fill={getMutedBarFill()} radius={[6, 6, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -290,20 +291,20 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                         <AreaChart data={monthlyTrendData}>
                             <defs>
                                 <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.2} />
-                                    <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                                    <stop offset="5%" stopColor={getAccentColor()} stopOpacity={0.2} />
+                                    <stop offset="95%" stopColor={getAccentColor()} stopOpacity={0} />
                                 </linearGradient>
                                 <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
                                     <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'} />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={getGridStroke()} />
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }} dy={10} />
                             <YAxis axisLine={false} tickLine={false} tickFormatter={formatCurrency} tick={{ fill: '#64748b', fontSize: 11 }} />
-                            <Tooltip contentStyle={{ borderRadius: 12, border: document.documentElement.classList.contains('dark') ? '1px solid #334155' : '1px solid #e2e8f0', background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff', color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#1e293b' }} formatter={(value: number) => formatCurrency(value)} />
+                            <Tooltip contentStyle={getTooltipStyle()} formatter={(value: number) => formatCurrency(value)} />
                             <Legend />
-                            <Area type="monotone" dataKey="DoanhThu" name="Doanh thu" stroke="#f97316" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                            <Area type="monotone" dataKey="DoanhThu" name="Doanh thu" stroke={getAccentColor()} strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
                             <Area type="monotone" dataKey="LoiNhuan" name="Lợi nhuận" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorProfit)" />
                         </AreaChart>
                     </ResponsiveContainer>
@@ -318,10 +319,10 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                 <div className="h-[350px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={cashflowData}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'} />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={getGridStroke()} />
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }} dy={10} />
                             <YAxis axisLine={false} tickLine={false} tickFormatter={formatCurrency} tick={{ fill: '#64748b', fontSize: 11 }} />
-                            <Tooltip contentStyle={{ borderRadius: 12, border: document.documentElement.classList.contains('dark') ? '1px solid #334155' : '1px solid #e2e8f0', background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff', color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#1e293b' }} formatter={(value: number) => formatCurrency(value)} />
+                            <Tooltip contentStyle={getTooltipStyle()} formatter={(value: number) => formatCurrency(value)} />
                             <Legend />
                             <Bar dataKey="Thu" name="Dòng tiền vào" fill="#10b981" radius={[4, 4, 0, 0]} barSize={20} />
                             <Bar dataKey="Chi" name="Dòng tiền ra" fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={20} />

@@ -43,6 +43,7 @@ import { ContractService, UnitService, EmployeeService } from '../services';
 import { Unit, KPIPlan, Contract, Employee } from '../types';
 import { getSmartInsightsWithDeepSeek } from '../services/openaiService';
 import { NON_BUSINESS_UNIT_CODES } from '../constants';
+import { getChartColors, getAccentColor, getAccentColorLight, getTooltipStyle, getGridStroke, getCursorFill, getMutedBarFill } from '../lib/themeColors';
 
 interface DashboardProps {
   selectedUnit: Unit;
@@ -50,7 +51,7 @@ interface DashboardProps {
   onSelectContract: (id: string) => void;
 }
 
-const COLORS = ['#f97316', '#10b981', '#6366f1', '#8b5cf6', '#06b6d4', '#ec4899'];
+
 
 const DashboardSkeleton = () => (
   <div className="space-y-8 animate-pulse p-6">
@@ -533,17 +534,17 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
               {/* Chart Component - Same as before */}
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={monthlyData} barGap={0}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={document.documentElement.classList.contains('dark') ? '#293548' : '#e2e8f0'} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={getGridStroke()} />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} dy={10} />
                   <YAxis hide />
                   <Tooltip
-                    cursor={{ fill: document.documentElement.classList.contains('dark') ? 'rgba(41,53,72,0.3)' : '#f8fafc' }}
-                    contentStyle={{ borderRadius: '12px', border: document.documentElement.classList.contains('dark') ? '1px solid #293548' : '1px solid #e2e8f0', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.2)', background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff', color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#1e293b', padding: '12px 20px' }}
+                    cursor={{ fill: getCursorFill() }}
+                    contentStyle={getTooltipStyle()}
                     itemStyle={{ fontSize: '13px', fontWeight: 600, padding: '4px 0' }}
                   />
-                  <Bar dataKey="lastYear" fill={document.documentElement.classList.contains('dark') ? '#293548' : '#e2e8f0'} radius={[6, 6, 0, 0]} barSize={32} />
-                  <Bar dataKey="current" fill="#f97316" radius={[6, 6, 0, 0]} barSize={32} />
-                  <Line type="monotone" dataKey="current" stroke="#fb923c" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} />
+                  <Bar dataKey="lastYear" fill={getMutedBarFill()} radius={[6, 6, 0, 0]} barSize={32} />
+                  <Bar dataKey="current" fill={getAccentColor()} radius={[6, 6, 0, 0]} barSize={32} />
+                  <Line type="monotone" dataKey="current" stroke={getAccentColorLight()} strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
@@ -569,11 +570,11 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
                     cornerRadius={6}
                   >
                     {distributionData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
+                      <Cell key={`cell-${index}`} fill={getChartColors()[index % getChartColors().length]} strokeWidth={0} />
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ borderRadius: '12px', border: document.documentElement.classList.contains('dark') ? '1px solid #293548' : '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.2)', background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff', color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#1e293b' }}
+                    contentStyle={getTooltipStyle()}
                     itemStyle={{ fontSize: '12px', fontWeight: 600 }}
                   />
                 </PieChart>
@@ -589,13 +590,13 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
               {distributionData.slice(0, 4).map((d, i) => (
                 <div key={i} className="flex items-center justify-between group cursor-default">
                   <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-md transition-transform group-hover:scale-125" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
+                    <div className="w-3 h-3 rounded-md transition-transform group-hover:scale-125" style={{ backgroundColor: getChartColors()[i % getChartColors().length] }}></div>
                     <span className="text-sm font-bold text-slate-600 dark:text-slate-300 truncate max-w-[140px]">{d.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-slate-400">{((d.value / (stats.actual[activeMetric] || 1)) * 100).toFixed(1)}%</span>
                     <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${Math.min(100, (d.value / (Math.max(...distributionData.map(x => x.value)) || 1)) * 100)}%`, backgroundColor: COLORS[i % COLORS.length] }}></div>
+                      <div className="h-full rounded-full" style={{ width: `${Math.min(100, (d.value / (Math.max(...distributionData.map(x => x.value)) || 1)) * 100)}%`, backgroundColor: getChartColors()[i % getChartColors().length] }}></div>
                     </div>
                   </div>
                 </div>
