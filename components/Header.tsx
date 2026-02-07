@@ -49,7 +49,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed }) => {
   const displayRole = profile?.role ? (roleLabels[profile.role] || profile.role) : '';
 
   return (
-    <header className={`fixed top-0 left-0 right-0 h-16 bg-white/95 dark:bg-slate-900/98 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/60 ${marginClass} z-30 flex items-center justify-between px-4 transition-all duration-300`}>
+    <header className={`fixed top-0 left-0 right-0 h-16 bg-white/95 dark:bg-slate-900 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/60 ${marginClass} z-30 flex items-center justify-between px-4 transition-all duration-300`}>
       <div className="flex items-center gap-2 sm:gap-4">
         <button
           onClick={onMenuClick}

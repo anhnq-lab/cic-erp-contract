@@ -419,7 +419,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
         <div className="sticky top-16 z-20 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-md py-4 border-b border-slate-200/50 dark:border-slate-700/40">
           <div className="flex flex-col lg:flex-row lg:items-center justify-end gap-4">
             {/* Left: Metric Tabs */}
-            <div className="flex bg-white dark:bg-slate-800/50 p-1 rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm overflow-x-auto no-scrollbar">
+            <div className="flex bg-white dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm overflow-x-auto no-scrollbar">
               {metricTabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -440,7 +440,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
               <div className="relative z-20">
                 <button
                   onClick={() => setShowUnitSelector(!showUnitSelector)}
-                  className="flex items-center gap-2.5 px-4 py-2 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-sm hover:border-indigo-300 dark:hover:border-orange-700/50 transition-all group"
+                  className="flex items-center gap-2.5 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-sm hover:border-indigo-300 dark:hover:border-orange-700/50 transition-all group"
                 >
                   <Building2 size={16} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
                   <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[140px]">
@@ -476,7 +476,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
 
               {/* Year Filter Button */}
               <div className="relative z-10">
-                <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-sm hover:border-indigo-300 dark:hover:border-orange-700/50 transition-all group cursor-pointer relative">
+                <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-sm hover:border-indigo-300 dark:hover:border-orange-700/50 transition-all group cursor-pointer relative">
                   <Calendar size={16} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
                   <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
                     {yearFilter === 'All' ? 'Tất cả năm' : `Năm ${yearFilter}`}

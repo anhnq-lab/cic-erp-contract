@@ -941,16 +941,16 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     </div>
 
                     <div className="overflow-x-auto rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800">
-                      <table className="w-full text-left text-xs min-w-[1200px]">
+                      <table className="w-full text-left text-xs min-w-[900px]">
                         <thead className="bg-slate-50 dark:bg-slate-800">
                           <tr>
-                            <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter">Sản phẩm/Dịch vụ</th>
-                            <th className="px-2 py-4 font-black text-slate-400 uppercase tracking-tighter w-16">SL</th>
-                            <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter">Nhà cung cấp</th>
-                            <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter text-right">Giá Đầu vào</th>
-                            <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter text-right">Giá Đầu ra</th>
-                            <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter text-right">CP Trực tiếp</th>
-                            <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter text-right">Chênh lệch</th>
+                            <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter w-[320px]">Sản phẩm/Dịch vụ</th>
+                            <th className="px-2 py-4 font-black text-slate-400 uppercase tracking-tighter w-10">SL</th>
+                            <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter w-[180px]">Nhà cung cấp</th>
+                            <th className="px-3 py-4 font-black text-slate-400 uppercase tracking-tighter text-right w-[120px] whitespace-nowrap">Giá Đầu vào</th>
+                            <th className="px-3 py-4 font-black text-slate-400 uppercase tracking-tighter text-right w-[120px] whitespace-nowrap">Giá Đầu ra</th>
+                            <th className="px-3 py-4 font-black text-slate-400 uppercase tracking-tighter text-right w-[110px] whitespace-nowrap">CP Trực tiếp</th>
+                            <th className="px-3 py-4 font-black text-slate-400 uppercase tracking-tighter text-right w-[110px] whitespace-nowrap">Chênh lệch</th>
                             <th className="px-4 py-4 w-10"></th>
                           </tr>
                         </thead>
