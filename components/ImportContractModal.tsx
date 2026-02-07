@@ -391,7 +391,7 @@ const ImportContractModal: React.FC<ImportContractModalProps> = ({ isOpen, onClo
                                 onDragLeave={handleDrag}
                                 onDragOver={handleDrag}
                                 onDrop={handleDrop}
-                                className={`border-2 border-dashed rounded-lg p-10 text-center transition-colors ${dragActive
+                                className={`border border-dashed rounded-lg p-10 text-center transition-colors ${dragActive
                                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                                     : 'border-slate-300 dark:border-slate-700 hover:border-blue-400'
                                     }`}

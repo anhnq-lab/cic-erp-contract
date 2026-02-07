@@ -270,7 +270,7 @@ const ImportProductModal: React.FC<ImportProductModalProps> = ({ isOpen, onClose
                                 onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
                                 onDragLeave={() => setDragActive(false)}
                                 onDrop={handleDrop}
-                                className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${dragActive
+                                className={`border border-dashed rounded-lg p-12 text-center transition-colors ${dragActive
                                         ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
                                         : 'border-slate-300 dark:border-slate-700 hover:border-indigo-400'
                                     }`}

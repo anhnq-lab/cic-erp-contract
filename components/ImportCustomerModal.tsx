@@ -252,7 +252,7 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
                                 onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
                                 onDragLeave={() => setDragActive(false)}
                                 onDrop={handleDrop}
-                                className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${dragActive
+                                className={`border border-dashed rounded-lg p-12 text-center transition-colors ${dragActive
                                     ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
                                     : 'border-slate-300 dark:border-slate-700 hover:border-emerald-400'
                                     }`}

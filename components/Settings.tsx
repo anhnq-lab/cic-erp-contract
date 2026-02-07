@@ -62,7 +62,7 @@ const Settings: React.FC = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <button
                                     onClick={() => setTheme('light')}
-                                    className={`flex items-center justify-center gap-3 p-4 rounded-lg border-2 transition-all ${theme === 'light'
+                                    className={`flex items-center justify-center gap-3 p-4 rounded-lg border transition-all ${theme === 'light'
                                         ? 'bg-orange-50 border-orange-500 text-orange-700 dark:bg-orange-900/20 dark:border-orange-500 dark:text-orange-400'
                                         : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'
                                         }`}
@@ -72,7 +72,7 @@ const Settings: React.FC = () => {
                                 </button>
                                 <button
                                     onClick={() => setTheme('dark')}
-                                    className={`flex items-center justify-center gap-3 p-4 rounded-lg border-2 transition-all ${theme === 'dark'
+                                    className={`flex items-center justify-center gap-3 p-4 rounded-lg border transition-all ${theme === 'dark'
                                         ? 'bg-orange-900/30 border-orange-500 text-orange-400'
                                         : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'
                                         }`}

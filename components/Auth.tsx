@@ -181,7 +181,7 @@ const Auth = () => {
                         disabled={isLoading}
                         className="w-full flex items-center justify-center gap-3 
                                    bg-white dark:bg-slate-800 
-                                   border-2 border-slate-200 dark:border-slate-700 
+                                   border border-slate-200 dark:border-slate-700 
                                    hover:bg-slate-50 dark:hover:bg-slate-700 
                                    hover:border-slate-300 dark:hover:border-slate-600
                                    hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50

@@ -9,7 +9,7 @@ interface AvatarSectionProps {
 const AvatarSection: React.FC<AvatarSectionProps> = ({ previewUrl, onFileChange }) => {
     return (
         <div className="w-1/4 flex flex-col items-center gap-4">
-            <div className="w-32 h-32 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden bg-slate-50 relative group">
+            <div className="w-32 h-32 rounded-full border border-dashed border-slate-300 flex items-center justify-center overflow-hidden bg-slate-50 relative group">
                 {previewUrl ? (
                     <img src={previewUrl} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (

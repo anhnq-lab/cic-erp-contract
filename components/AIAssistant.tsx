@@ -365,7 +365,7 @@ const AIAssistant: React.FC = () => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Nhập câu hỏi của bạn (Shift+Enter để xuống dòng)..."
-            className="w-full pl-32 pr-14 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 rounded-[24px] resize-none max-h-40 min-h-[60px] shadow-sm text-sm font-medium focus:outline-none transition-all"
+            className="w-full pl-32 pr-14 py-4 bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 rounded-[24px] resize-none max-h-40 min-h-[60px] shadow-sm text-sm font-medium focus:outline-none transition-all"
             rows={1}
             style={{ height: 'auto', minHeight: '60px' }}
             disabled={isTyping}

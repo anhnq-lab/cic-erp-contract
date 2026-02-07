@@ -41,7 +41,7 @@ const variantStyles: Record<ButtonVariant, string> = {
     shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30
   `,
     outline: `
-    bg-transparent border-2 border-slate-200 hover:border-slate-300
+    bg-transparent border border-slate-200 hover:border-slate-300
     text-slate-700 font-semibold
     hover:bg-slate-50
     dark:border-slate-700 dark:hover:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800

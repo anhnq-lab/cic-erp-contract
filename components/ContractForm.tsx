@@ -649,7 +649,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     <select
                       value={unitId}
                       onChange={(e) => { setUnitId(e.target.value); setSalespersonId(''); }}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-lg text-sm font-bold outline-none focus:border-indigo-500 transition-all"
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg text-sm font-bold outline-none focus:border-indigo-500 transition-all"
                     >
                       <option value="">-- Chọn đơn vị --</option>
                       {units.filter(u => u.id !== 'all').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
@@ -664,7 +664,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     <select
                       value={salespersonId}
                       onChange={(e) => setSalespersonId(e.target.value)}
-                      className="w-full px-4 py-3 bg-indigo-50 dark:bg-indigo-900/20 border-2 border-indigo-100 dark:border-indigo-700 rounded-lg text-sm font-bold text-indigo-700 dark:text-indigo-300 outline-none focus:border-indigo-500 transition-all"
+                      className="w-full px-4 py-3 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-700 rounded-lg text-sm font-bold text-indigo-700 dark:text-indigo-300 outline-none focus:border-indigo-500 transition-all"
                     >
                       <option value="">-- Chọn NV --</option>
                       {filteredSales.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -676,7 +676,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     <label className="text-[11px] font-bold text-slate-500 uppercase ml-1 flex items-center gap-1">
                       <Percent size={10} /> Tỷ lệ %
                     </label>
-                    <div className="w-full px-4 py-3 bg-indigo-100 dark:bg-indigo-800/50 border-2 border-indigo-200 dark:border-indigo-700 rounded-lg text-sm font-black text-indigo-700 dark:text-indigo-300 text-center">
+                    <div className="w-full px-4 py-3 bg-indigo-100 dark:bg-indigo-800/50 border border-indigo-200 dark:border-indigo-700 rounded-lg text-sm font-black text-indigo-700 dark:text-indigo-300 text-center">
                       {100 - unitAllocations.filter(a => a.role === 'support').reduce((s, a) => s + a.percent, 0)} %
                     </div>
                   </div>
@@ -715,7 +715,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                         setIsIdTouched(true);
                       }}
                       placeholder="Nhập số hợp đồng..."
-                      className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-lg text-sm font-bold focus:border-indigo-500 outline-none"
+                      className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg text-sm font-bold focus:border-indigo-500 outline-none"
                     />
                   </div>
                   <div className="space-y-2">
@@ -751,7 +751,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                       type="date"
                       value={signedDate}
                       onChange={(e) => setSignedDate(e.target.value)}
-                      className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-lg text-sm font-bold focus:border-indigo-500 outline-none"
+                      className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg text-sm font-bold focus:border-indigo-500 outline-none"
                     />
                   </div>
                 </div>
@@ -766,7 +766,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     placeholder="VD: Tư vấn giải pháp BIM, Đào tạo chuyên sâu phần mềm Plaxis 3D..."
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-lg text-sm font-bold focus:border-indigo-500 outline-none h-20"
+                    className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg text-sm font-bold focus:border-indigo-500 outline-none h-20"
                   ></textarea>
                 </div>
 
@@ -1530,7 +1530,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
             onClick={() => {
               setTempCostDetails([...tempCostDetails, { id: Date.now().toString(), name: '', amount: 0 }]);
             }}
-            className="w-full py-3 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 font-bold text-sm hover:border-indigo-500 hover:text-indigo-500 transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 border border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 font-bold text-sm hover:border-indigo-500 hover:text-indigo-500 transition-all flex items-center justify-center gap-2"
           >
             <Plus size={16} /> Thêm khoản chi phí
           </button>

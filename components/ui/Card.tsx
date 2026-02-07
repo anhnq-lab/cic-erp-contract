@@ -20,7 +20,7 @@ const variantStyles: Record<CardVariant, string> = {
   `,
     outline: `
     bg-transparent
-    border-2 border-dashed border-slate-300 dark:border-slate-700/60
+    border border-dashed border-slate-300 dark:border-slate-700/60
   `,
     interactive: `
     bg-white dark:bg-slate-900

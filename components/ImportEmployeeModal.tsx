@@ -438,7 +438,7 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
                                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                                 onDragLeave={() => setDragOver(false)}
                                 onDrop={handleDrop}
-                                className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${dragOver
+                                className={`border border-dashed rounded-lg p-12 text-center transition-colors ${dragOver
                                     ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
                                     : 'border-slate-300 dark:border-slate-600 hover:border-indigo-400'
                                     }`}

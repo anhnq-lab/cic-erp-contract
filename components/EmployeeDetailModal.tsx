@@ -74,7 +74,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({ isOpen, onClo
                     </button>
 
                     <div className="flex items-center gap-5">
-                        <div className="w-20 h-20 rounded-lg bg-white/20 flex items-center justify-center text-3xl font-bold overflow-hidden border-2 border-white/30">
+                        <div className="w-20 h-20 rounded-lg bg-white/20 flex items-center justify-center text-3xl font-bold overflow-hidden border border-white/30">
                             {employee.avatar ? (
                                 <img src={employee.avatar} alt={employee.name} className="w-full h-full object-cover" />
                             ) : (

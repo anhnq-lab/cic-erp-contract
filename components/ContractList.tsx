@@ -280,7 +280,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
     <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500 pb-12">
       {/* Impersonation Warning Banner */}
       {isImpersonating && impersonatedUser && (
-        <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-300 dark:border-amber-700 rounded-lg p-4 flex items-center gap-3">
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-lg p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-white">
             <User size={20} />
           </div>
@@ -438,12 +438,12 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
             placeholder="Tìm mã HĐ, tên khách hàng hoặc dự án..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold text-slate-900 dark:text-slate-100"
+            className="w-full pl-12 pr-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold text-slate-900 dark:text-slate-100"
           />
         </div>
 
         {/* Year Filter */}
-        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-4 border-2 border-slate-200 dark:border-slate-700">
+        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-4 border border-slate-200 dark:border-slate-700">
           <Calendar size={18} className="text-slate-500" />
           <select
             className="bg-transparent py-3 text-sm font-black text-slate-900 dark:text-slate-100 outline-none w-[100px]"
@@ -462,7 +462,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
 
         {/* Unit Filter (Local) - Only show if Global is All */}
         {selectedUnit?.id === 'all' && (
-          <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-4 border-2 border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-4 border border-slate-200 dark:border-slate-700">
             <Building2 size={18} className="text-slate-500" />
             <select
               className="bg-transparent py-3 text-sm font-black text-slate-900 dark:text-slate-100 outline-none max-w-[150px]"
@@ -481,7 +481,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         )}
 
         {/* Status Filter */}
-        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-4 border-2 border-slate-200 dark:border-slate-700">
+        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-4 border border-slate-200 dark:border-slate-700">
           <Filter size={18} className="text-slate-500" />
           <select
             className="bg-transparent py-3 text-sm font-black text-slate-900 dark:text-slate-100 outline-none"
