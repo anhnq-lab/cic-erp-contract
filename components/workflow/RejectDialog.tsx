@@ -43,7 +43,7 @@ export const RejectDialog: React.FC<Props> = ({ isOpen, onClose, onConfirm, isLo
             />
 
             {/* Dialog */}
-            <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in-95 duration-200">
+            <div className="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3">

@@ -50,7 +50,7 @@ const Card: React.FC<CardProps> = ({
     return (
         <div
             className={`
-        rounded-2xl
+        rounded-xl
         ${variantStyles[variant]}
         ${paddingStyles[padding]}
         ${noBorder ? 'border-0' : ''}

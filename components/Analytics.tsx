@@ -231,7 +231,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
             {/* Top Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* 1. Revenue Structure */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
                         <PieChartIcon size={20} className="text-orange-500" />
                         Cơ cấu Doanh thu {selectedUnit.id === 'all' ? '(Theo Đơn vị)' : '(Theo Nhân sự)'}
@@ -260,7 +260,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                 </div>
 
                 {/* 2. Plan vs Actual */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-6">
                         Kế hoạch vs Thực tế (Doanh thu)
                     </h3>
@@ -281,7 +281,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
             </div>
 
             {/* 3. Monthly Trend (Line/Area) */}
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-6">
                     Biểu đồ Xu hướng (Doanh thu & Lợi nhuận)
                 </h3>
@@ -311,7 +311,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
             </div>
 
             {/* 4. Cashflow (Composed) */}
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-6">
                     Biểu đồ Dòng tiền (Thu - Chi)
                 </h3>

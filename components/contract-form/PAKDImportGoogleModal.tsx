@@ -58,7 +58,7 @@ export function PAKDImportGoogleModal({ isOpen, onClose, onImport }: PAKDImportG
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3">
@@ -92,7 +92,7 @@ export function PAKDImportGoogleModal({ isOpen, onClose, onImport }: PAKDImportG
                                         value={url}
                                         onChange={(e) => setUrl(e.target.value)}
                                         placeholder="https://docs.google.com/spreadsheets/d/..."
-                                        className="w-full pl-4 pr-32 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all outline-none text-sm"
+                                        className="w-full pl-4 pr-32 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all outline-none text-sm"
                                     />
                                     <button
                                         onClick={handleFetch}
@@ -114,7 +114,7 @@ export function PAKDImportGoogleModal({ isOpen, onClose, onImport }: PAKDImportG
                                 </div>
                             </div>
 
-                            <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-2xl border border-amber-100 dark:border-amber-900/30">
+                            <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-100 dark:border-amber-900/30">
                                 <div className="flex gap-3">
                                     <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
                                     <div className="space-y-1">
@@ -131,7 +131,7 @@ export function PAKDImportGoogleModal({ isOpen, onClose, onImport }: PAKDImportG
                     ) : (
                         <div className="space-y-6">
                             {/* Preview Header */}
-                            <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                            <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                                 <div className="flex items-center gap-4">
                                     <div className="text-sm">
                                         <span className="text-slate-500">Hợp đồng:</span>{' '}
@@ -153,26 +153,26 @@ export function PAKDImportGoogleModal({ isOpen, onClose, onImport }: PAKDImportG
 
                             {/* Financial Summary */}
                             <div className="grid grid-cols-4 gap-4">
-                                <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/30 text-center">
+                                <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border border-emerald-100 dark:border-emerald-900/30 text-center">
                                     <p className="text-[10px] text-emerald-600 uppercase font-bold mb-1">Doanh thu</p>
                                     <p className="text-lg font-black text-emerald-700 dark:text-emerald-400">{formatVND(previewData.financials.revenue)} đ</p>
                                 </div>
-                                <div className="bg-rose-50 dark:bg-rose-900/20 p-4 rounded-2xl border border-rose-100 dark:border-rose-900/30 text-center">
+                                <div className="bg-rose-50 dark:bg-rose-900/20 p-4 rounded-xl border border-rose-100 dark:border-rose-900/30 text-center">
                                     <p className="text-[10px] text-rose-600 uppercase font-bold mb-1">Chi phí</p>
                                     <p className="text-lg font-black text-rose-700 dark:text-rose-400">{formatVND(previewData.financials.costs)} đ</p>
                                 </div>
-                                <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 text-center">
+                                <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/30 text-center">
                                     <p className="text-[10px] text-indigo-600 uppercase font-bold mb-1">Lợi nhuận</p>
                                     <p className="text-lg font-black text-indigo-700 dark:text-indigo-400">{formatVND(previewData.financials.profit)} đ</p>
                                 </div>
-                                <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-2xl border border-amber-100 dark:border-amber-900/30 text-center">
+                                <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-100 dark:border-amber-900/30 text-center">
                                     <p className="text-[10px] text-amber-600 uppercase font-bold mb-1">Tỷ lệ LN</p>
                                     <p className="text-lg font-black text-amber-700 dark:text-amber-400">{previewData.financials.margin}%</p>
                                 </div>
                             </div>
 
                             {/* Items Table */}
-                            <div className="border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
+                            <div className="border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden">
                                 <table className="w-full text-xs">
                                     <thead className="bg-slate-50 dark:bg-slate-800">
                                         <tr>

@@ -133,7 +133,7 @@ export default function UnitAllocationsInput({
             {supportAllocations.map((allocation, index) => (
                 <div
                     key={`support-${allocation.unitId}-${index}`}
-                    className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 border-2 border-slate-200 dark:border-slate-700"
+                    className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 border-2 border-slate-200 dark:border-slate-700"
                 >
                     <div className="flex items-center justify-between mb-3">
                         <p className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase flex items-center gap-1">
@@ -193,7 +193,7 @@ export default function UnitAllocationsInput({
                 <button
                     type="button"
                     onClick={addSupportUnit}
-                    className="w-full py-3 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl text-sm font-bold text-slate-500 dark:text-slate-400 hover:border-orange-400 hover:text-orange-500 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-sm font-bold text-slate-500 dark:text-slate-400 hover:border-orange-400 hover:text-orange-500 transition-all flex items-center justify-center gap-2"
                 >
                     <Plus size={16} /> Thêm đơn vị phối hợp
                 </button>

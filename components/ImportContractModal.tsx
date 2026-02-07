@@ -355,7 +355,7 @@ const ImportContractModal: React.FC<ImportContractModalProps> = ({ isOpen, onClo
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-3">
@@ -391,7 +391,7 @@ const ImportContractModal: React.FC<ImportContractModalProps> = ({ isOpen, onClo
                                 onDragLeave={handleDrag}
                                 onDragOver={handleDrag}
                                 onDrop={handleDrop}
-                                className={`border-2 border-dashed rounded-2xl p-10 text-center transition-colors ${dragActive
+                                className={`border-2 border-dashed rounded-xl p-10 text-center transition-colors ${dragActive
                                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                                     : 'border-slate-300 dark:border-slate-700 hover:border-blue-400'
                                     }`}

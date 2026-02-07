@@ -53,7 +53,7 @@ const Modal: React.FC<ModalProps> = ({
             {/* Modal Content */}
             <div
                 ref={modalRef}
-                className={`relative bg-white dark:bg-slate-900 rounded-3xl shadow-2xl dark:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] ${sizeClasses[size]} w-full max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 dark:ring-1 dark:ring-slate-700/40`}
+                className={`relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl dark:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] ${sizeClasses[size]} w-full max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 dark:ring-1 dark:ring-slate-700/40`}
             >
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700/40">

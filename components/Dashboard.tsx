@@ -58,8 +58,8 @@ const DashboardSkeleton = () => (
       <div className="space-y-4">
         <Skeleton className="h-10 w-64 rounded-xl" />
         <div className="flex gap-3">
-          <Skeleton className="h-10 w-40 rounded-2xl" />
-          <Skeleton className="h-10 w-32 rounded-2xl" />
+          <Skeleton className="h-10 w-40 rounded-xl" />
+          <Skeleton className="h-10 w-32 rounded-xl" />
         </div>
       </div>
       <div className="flex gap-2">
@@ -67,14 +67,14 @@ const DashboardSkeleton = () => (
       </div>
     </div>
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-      {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
+      {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-32 rounded-xl" />)}
     </div>
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-      {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 rounded-2xl" />)}
+      {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
     </div>
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-      <Skeleton className="xl:col-span-2 h-[400px] rounded-2xl" />
-      <Skeleton className="h-[400px] rounded-2xl" />
+      <Skeleton className="xl:col-span-2 h-[400px] rounded-xl" />
+      <Skeleton className="h-[400px] rounded-xl" />
     </div>
   </div>
 );
@@ -452,7 +452,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
                 {showUnitSelector && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowUnitSelector(false)} />
-                    <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 rounded-2xl shadow-xl z-20 py-2 animate-in fade-in zoom-in-95 duration-200 overflow-hidden dark-dropdown-accent">
+                    <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 rounded-xl shadow-xl z-20 py-2 animate-in fade-in zoom-in-95 duration-200 overflow-hidden dark-dropdown-accent">
                       <div className="max-h-[320px] overflow-y-auto">
                         {[{ id: 'all', name: 'Toàn công ty', type: 'Company' } as Unit, ...allUnits.filter(u => u.name !== 'Toàn công ty')].map((u) => (
                           <button
@@ -518,7 +518,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <div className="xl:col-span-2 bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-700/40 shadow-sm dark-card-glow">
+          <div className="xl:col-span-2 bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-700/40 shadow-sm dark-card-glow">
             <div className="flex justify-between items-center mb-10">
               <div>
                 <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight mb-2">Biến động theo tháng</h3>
@@ -549,7 +549,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-700/40 shadow-sm flex flex-col dark-card-glow">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-700/40 shadow-sm flex flex-col dark-card-glow">
             <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight mb-2">
               Phân bổ {safeUnit?.id === 'all' ? 'theo Đơn vị' : 'theo Sales'}
             </h3>
@@ -605,7 +605,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
         </div>
 
         {/* Performance Table */}
-        <div className="bg-white dark:bg-slate-900 p-8 md:p-10 rounded-2xl border border-slate-200 dark:border-slate-700/40 shadow-sm dark-card-glow">
+        <div className="bg-white dark:bg-slate-900 p-8 md:p-10 rounded-xl border border-slate-200 dark:border-slate-700/40 shadow-sm dark-card-glow">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
             <div>
               <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-3 mb-2">
@@ -630,7 +630,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
                   <tr key={row.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                     <td className="py-4 pl-4 rounded-l-3xl bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/40 border-y border-l border-transparent transition-colors">
                       <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-2xl ${safeUnit?.id === 'all' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'} flex items-center justify-center font-bold text-lg shadow-sm group-hover:scale-105 transition-transform`}>
+                        <div className={`w-12 h-12 rounded-xl ${safeUnit?.id === 'all' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'} flex items-center justify-center font-bold text-lg shadow-sm group-hover:scale-105 transition-transform`}>
                           {row.name.substring(0, 1)}
                         </div>
                         <div>
@@ -698,9 +698,9 @@ const KPIItem = ({ title, metric, stats, target, yoy, color, icon }: any) => {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/40 shadow-sm transition-all hover:shadow-lg group relative overflow-hidden dark-card-glow">
+    <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-700/40 shadow-sm transition-all hover:shadow-lg group relative overflow-hidden dark-card-glow">
       <div className="flex justify-between items-start mb-6">
-        <div className={`p-3 rounded-2xl ${colors[color]} transition-transform group-hover:rotate-6`}>
+        <div className={`p-3 rounded-xl ${colors[color]} transition-transform group-hover:rotate-6`}>
           {icon}
         </div>
         <div className={`flex items-center gap-1 text-[11px] font-black ${yoy.isUp ? 'text-emerald-500' : 'text-rose-500'}`}>
@@ -735,9 +735,9 @@ const StatusCard = ({ label, count, icon, color }: any) => {
   };
 
   return (
-    <div className={`p-5 rounded-2xl ${bgColors[color]} flex items-center justify-between shadow-sm hover:shadow-md transition-all`}>
+    <div className={`p-5 rounded-xl ${bgColors[color]} flex items-center justify-between shadow-sm hover:shadow-md transition-all`}>
       <div className="flex items-center gap-4">
-        <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl shadow-sm">
+        <div className="p-3 bg-white dark:bg-slate-900 rounded-xl shadow-sm">
           {icon}
         </div>
         <div>

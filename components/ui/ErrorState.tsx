@@ -14,7 +14,7 @@ const ErrorState: React.FC<ErrorStateProps> = ({
     onRetry
 }) => {
     return (
-        <div className="flex flex-col items-center justify-center p-8 rounded-3xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800 text-center animate-in fade-in zoom-in-95 duration-300">
+        <div className="flex flex-col items-center justify-center p-8 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800 text-center animate-in fade-in zoom-in-95 duration-300">
             <div className="w-16 h-16 bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center mb-4">
                 <AlertCircle size={32} />
             </div>

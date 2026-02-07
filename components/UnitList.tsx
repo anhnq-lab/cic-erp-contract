@@ -180,7 +180,7 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
                     return (
                         <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-[24px] border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
                             <div className="flex justify-between items-start mb-4 relative z-10">
-                                <div className={`p-3 rounded-2xl ${item.bg} ${item.color}`}>
+                                <div className={`p-3 rounded-xl ${item.bg} ${item.color}`}>
                                     <Icon size={24} />
                                 </div>
                                 <span className={`text-lg font-black ${progress >= 100 ? 'text-emerald-600' : item.color}`}>
@@ -230,7 +230,7 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
                 </div>
                 <button
                     onClick={handleAdd}
-                    className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-5 py-3 rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 dark:shadow-none"
+                    className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 dark:shadow-none"
                 >
                     <Building size={20} /> Thêm Đơn vị
                 </button>
@@ -245,7 +245,7 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
             ) : (
                 <>
                     {/* Search Bar */}
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                         <div className="relative">
                             <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                             <input
@@ -253,7 +253,7 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
                                 placeholder="Tìm kiếm tên đơn vị hoặc mã đơn vị..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-slate-100 font-medium transition-all"
+                                className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-slate-100 font-medium transition-all"
                             />
                         </div>
                     </div>
@@ -269,7 +269,7 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
                                 <div key={unit.id} className="bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg hover:border-indigo-200 dark:hover:border-indigo-800 transition-all group relative cursor-pointer" onClick={() => onSelectUnit?.(unit.id)}>
                                     <div className="flex justify-between items-start mb-6">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none">
+                                            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none">
                                                 <Building size={28} />
                                             </div>
                                             <div>
@@ -313,7 +313,7 @@ const UnitList: React.FC<UnitListProps> = ({ onSelectUnit }) => {
                                     </div>
 
                                     <div className="space-y-4">
-                                        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 space-y-4">
+                                        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 space-y-4">
                                             {[
                                                 {
                                                     label: 'Ký kết',

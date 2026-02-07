@@ -72,7 +72,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             />
 
             {/* Dialog */}
-            <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl animate-fade-in">
+            <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-xl shadow-2xl animate-fade-in">
                 {/* Close button */}
                 <button
                     onClick={onClose}

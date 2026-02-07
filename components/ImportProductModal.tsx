@@ -235,7 +235,7 @@ const ImportProductModal: React.FC<ImportProductModalProps> = ({ isOpen, onClose
         <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleClose} />
 
-            <div className="relative bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
@@ -270,7 +270,7 @@ const ImportProductModal: React.FC<ImportProductModalProps> = ({ isOpen, onClose
                                 onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
                                 onDragLeave={() => setDragActive(false)}
                                 onDrop={handleDrop}
-                                className={`border-2 border-dashed rounded-2xl p-12 text-center transition-colors ${dragActive
+                                className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors ${dragActive
                                         ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
                                         : 'border-slate-300 dark:border-slate-700 hover:border-indigo-400'
                                     }`}
@@ -322,7 +322,7 @@ const ImportProductModal: React.FC<ImportProductModalProps> = ({ isOpen, onClose
                             </div>
 
                             {/* Preview Table */}
-                            <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+                            <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
                                 <div className="overflow-x-auto max-h-[400px]">
                                     <table className="w-full text-sm">
                                         <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0">

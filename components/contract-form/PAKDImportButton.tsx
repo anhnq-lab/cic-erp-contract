@@ -56,7 +56,7 @@ export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) 
     return (
         <>
             {/* Compact Import Buttons */}
-            <div className="flex items-center gap-1.5 bg-slate-100/50 dark:bg-slate-800 p-1 rounded-2xl border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-1.5 bg-slate-100/50 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
                 <button
                     onClick={() => !disabled && !isProcessing && fileInputRef.current?.click()}
                     disabled={disabled || isProcessing}
@@ -130,7 +130,7 @@ export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) 
             {/* Preview Modal for Local File */}
             {previewData && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden m-4 flex flex-col">
+                    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden m-4 flex flex-col">
                         {/* Header */}
                         <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
                             <div className="flex items-center gap-3">
@@ -173,7 +173,7 @@ export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) 
                             </div>
 
                             {/* Line Items Table */}
-                            <div className="border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
+                            <div className="border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden">
                                 <table className="w-full text-xs">
                                     <thead className="bg-slate-50 dark:bg-slate-800">
                                         <tr>

@@ -129,7 +129,7 @@ const UserImpersonator: React.FC = () => {
         <div className="space-y-6">
             {/* Active Impersonation Banner */}
             {isImpersonating && impersonatedUser && (
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 border-2 border-amber-400 rounded-2xl p-5 animate-pulse-once">
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 border-2 border-amber-400 rounded-xl p-5 animate-pulse-once">
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div className="flex items-center gap-4">
                             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-xl shadow-lg">

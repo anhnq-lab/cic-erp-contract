@@ -83,7 +83,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ contextData }) => {
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
             {/* Chat Window */}
             {isOpen && (
-                <div className="mb-4 w-80 md:w-96 h-[500px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden pointer-events-auto animate-in slide-in-from-bottom-10 fade-in duration-200">
+                <div className="mb-4 w-80 md:w-96 h-[500px] bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden pointer-events-auto animate-in slide-in-from-bottom-10 fade-in duration-200">
                     {/* Header */}
                     <div className="p-4 bg-indigo-600 flex items-center justify-between text-white shadow-md">
                         <div className="flex items-center gap-2">
@@ -106,7 +106,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ contextData }) => {
                                 className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
                                 <div
-                                    className={`max-w-[85%] p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.sender === 'user'
+                                    className={`max-w-[85%] p-3.5 rounded-xl text-sm leading-relaxed shadow-sm ${msg.sender === 'user'
                                         ? 'bg-indigo-600 text-white rounded-tr-sm'
                                         : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-tl-sm prose dark:prose-invert prose-sm max-w-none'
                                         }`}
@@ -138,7 +138,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ contextData }) => {
                         ))}
                         {isLoading && (
                             <div className="flex justify-start">
-                                <div className="bg-white dark:bg-slate-800 p-3 rounded-2xl rounded-tl-sm border border-slate-100 dark:border-slate-700 shadow-sm flex gap-1">
+                                <div className="bg-white dark:bg-slate-800 p-3 rounded-xl rounded-tl-sm border border-slate-100 dark:border-slate-700 shadow-sm flex gap-1">
                                     <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                                     <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                                     <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />

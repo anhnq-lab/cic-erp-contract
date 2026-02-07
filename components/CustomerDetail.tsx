@@ -155,7 +155,7 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ customerId, onBack, onV
                 <div className="flex items-center gap-4">
                     <button
                         onClick={onBack}
-                        className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                        className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                     >
                         <ArrowLeft size={20} className="text-slate-600 dark:text-slate-400" />
                     </button>
@@ -187,7 +187,7 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ customerId, onBack, onV
             </div>
 
             {/* Profile Card */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                 {/* Header gradient */}
                 <div className="h-28 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 relative">
                     {stats.contractCount >= 10 && (
@@ -202,7 +202,7 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ customerId, onBack, onV
                 <div className="px-6 py-5">
                     <div className="flex flex-col sm:flex-row gap-4">
                         {/* Logo/Avatar */}
-                        <div className="w-20 h-20 -mt-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 font-black text-xl shadow-xl border-4 border-white dark:border-slate-900 flex-shrink-0 relative z-10">
+                        <div className="w-20 h-20 -mt-14 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 font-black text-xl shadow-xl border-4 border-white dark:border-slate-900 flex-shrink-0 relative z-10">
                             {customer.shortName.substring(0, 3)}
                         </div>
 
@@ -311,26 +311,26 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ customerId, onBack, onV
 
             {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
                     <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{stats.contractCount}</p>
                     <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1">Tổng HĐ</p>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
                     <p className="text-2xl font-black text-emerald-600">{stats.activeContracts}</p>
                     <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1">Đang thực hiện</p>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
                     <p className="text-2xl font-black text-indigo-600">{formatCurrency(stats.totalValue)}</p>
                     <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1">Tổng giá trị</p>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
                     <p className="text-2xl font-black text-purple-600">{formatCurrency(stats.totalRevenue)}</p>
                     <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1">Doanh thu</p>
                 </div>
             </div>
 
             {/* Contracts Table */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <h3 className="text-base font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
                         <FileText size={18} className="text-indigo-500" />
@@ -415,7 +415,7 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ customerId, onBack, onV
 
             {/* Notes Section */}
             {customer.notes && (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5">
                     <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-2">Ghi chú</h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400">{customer.notes}</p>
                 </div>

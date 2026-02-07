@@ -122,7 +122,7 @@ export const ApprovalStepper: React.FC<Props> = ({ currentStatus, reviews = [] }
                     return (
                         <div
                             key={step.id}
-                            className={`relative p-4 rounded-2xl border-2 transition-all ${isCurrent
+                            className={`relative p-4 rounded-xl border-2 transition-all ${isCurrent
                                 ? 'border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-900/30 shadow-lg shadow-orange-100 dark:shadow-none'
                                 : isPast
                                     ? 'border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20'

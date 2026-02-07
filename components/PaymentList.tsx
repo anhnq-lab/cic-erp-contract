@@ -226,7 +226,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
             {/* Stats Cards */}
             {stats && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
                                 <CheckCircle2 size={20} className="text-emerald-600 dark:text-emerald-400" />
@@ -238,7 +238,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                         </div>
                     </div>
                     {typeFilter === 'Revenue' && (
-                        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
                                     <FileCheck size={20} className="text-blue-600 dark:text-blue-400" />
@@ -250,7 +250,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                             </div>
                         </div>
                     )}
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
                                 <Clock size={20} className="text-amber-600 dark:text-amber-400" />
@@ -261,7 +261,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                             </div>
                         </div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-rose-100 dark:bg-rose-900/30 rounded-xl">
                                 <AlertCircle size={20} className="text-rose-600 dark:text-rose-400" />
@@ -304,7 +304,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
             </div>
 
             {/* Table */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead>

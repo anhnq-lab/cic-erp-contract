@@ -33,7 +33,7 @@ const Settings: React.FC = () => {
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800/50 rounded-2xl">
+            <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800/50 rounded-xl">
                 {visibleTabs.map(tab => (
                     <button
                         key={tab.id}
@@ -50,7 +50,7 @@ const Settings: React.FC = () => {
             </div>
 
             {/* Tab Content */}
-            <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-2xl border border-slate-200 dark:border-slate-700/40 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-xl border border-slate-200 dark:border-slate-700/40 shadow-sm">
                 {activeTab === 'system' && (
                     <div className="space-y-6">
                         {/* Theme */}
@@ -62,7 +62,7 @@ const Settings: React.FC = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <button
                                     onClick={() => setTheme('light')}
-                                    className={`flex items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all ${theme === 'light'
+                                    className={`flex items-center justify-center gap-3 p-4 rounded-xl border-2 transition-all ${theme === 'light'
                                         ? 'bg-orange-50 border-orange-500 text-orange-700 dark:bg-orange-900/20 dark:border-orange-500 dark:text-orange-400'
                                         : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'
                                         }`}
@@ -72,7 +72,7 @@ const Settings: React.FC = () => {
                                 </button>
                                 <button
                                     onClick={() => setTheme('dark')}
-                                    className={`flex items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all ${theme === 'dark'
+                                    className={`flex items-center justify-center gap-3 p-4 rounded-xl border-2 transition-all ${theme === 'dark'
                                         ? 'bg-orange-900/30 border-orange-500 text-orange-400'
                                         : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'
                                         }`}

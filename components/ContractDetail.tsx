@@ -465,7 +465,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
             <div className="lg:col-span-2 space-y-6">
               <>
                 {/* 1. FINANCIAL SUMMARY */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
                   <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
                     <Wallet size={20} className="text-orange-500" />
                     Tổng quan Tài chính
@@ -548,7 +548,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
 
 
                 {/* 3. IMPLEMENTATION PLAN */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
                   <div className="p-6 md:p-8">
                     <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
                       <TrendingUp size={20} className="text-orange-500" />
@@ -563,7 +563,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                               }`}>
                               {m.status === 'Completed' ? <CheckCircle2 size={10} className="text-white" /> : m.status === 'Ongoing' ? <Clock size={10} className="text-white" /> : null}
                             </div>
-                            <div className="flex-1 p-4 bg-slate-50/50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-orange-100 dark:hover:border-orange-900 transition-colors">
+                            <div className="flex-1 p-4 bg-slate-50/50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-orange-100 dark:hover:border-orange-900 transition-colors">
                               <div className="flex justify-between items-start mb-1">
                                 <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{m.name}</p>
                                 <span className="text-[10px] font-bold text-slate-400 uppercase">{m.date}</span>
@@ -580,7 +580,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                 </div>
 
                 {/* 4. PAYMENT & CASHFLOW */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
                   <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
                     <ReceiptText size={20} className="text-orange-500" />
                     Lộ trình thanh toán & Công nợ
@@ -641,7 +641,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
 
             {/* SIDEBAR RIGHT */}
             <div className="space-y-6">
-              <div className="bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl p-6 text-white shadow-xl shadow-orange-200 dark:shadow-none relative overflow-hidden transition-all">
+              <div className="bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl p-6 text-white shadow-xl shadow-orange-200 dark:shadow-none relative overflow-hidden transition-all">
                 <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
                 <div className="flex items-center gap-2 mb-4">
                   <ShieldCheck size={20} />
@@ -677,7 +677,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                 )}
               </div>
 
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h4 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                     <Paperclip size={18} className="text-slate-400" />
@@ -697,7 +697,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                       href={contract.draft_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 rounded-2xl bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-all cursor-pointer group"
+                      className="flex items-center justify-between p-3 rounded-xl bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-all cursor-pointer group"
                     >
                       <div className="flex items-center gap-3 overflow-hidden">
                         <div className="p-2 bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 rounded-lg">
@@ -738,7 +738,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                         target={isExternalLink ? '_blank' : '_self'}
                         rel="noopener noreferrer"
                         onClick={(e) => !isExternalLink && (e.preventDefault(), handleDownloadDoc(file))}
-                        className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-all cursor-pointer group"
+                        className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-all cursor-pointer group"
                       >
                         <div className="flex items-center gap-3 overflow-hidden">
                           <div className={`p-2 rounded-lg group-hover:opacity-80 transition-colors ${iconBg}`}>
@@ -763,7 +763,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
                 <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-6 flex items-center gap-2">
                   <HistoryIcon size={18} className="text-slate-400" />
                   Lịch sử tác động

@@ -63,7 +63,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({ isOpen, onClo
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200">
                 {/* Header with Avatar */}
                 <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-8 text-white relative">
                     <button
@@ -74,7 +74,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({ isOpen, onClo
                     </button>
 
                     <div className="flex items-center gap-5">
-                        <div className="w-20 h-20 rounded-2xl bg-white/20 flex items-center justify-center text-3xl font-bold overflow-hidden border-2 border-white/30">
+                        <div className="w-20 h-20 rounded-xl bg-white/20 flex items-center justify-center text-3xl font-bold overflow-hidden border-2 border-white/30">
                             {employee.avatar ? (
                                 <img src={employee.avatar} alt={employee.name} className="w-full h-full object-cover" />
                             ) : (
