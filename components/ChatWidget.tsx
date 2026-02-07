@@ -83,7 +83,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ contextData }) => {
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
             {/* Chat Window */}
             {isOpen && (
-                <div className="mb-4 w-80 md:w-96 h-[500px] bg-white dark:bg-slate-900 rounded-lg shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden pointer-events-auto animate-in slide-in-from-bottom-10 fade-in duration-200">
+                <div className="mb-4 w-80 md:w-96 h-[500px] bg-white dark:bg-slate-900 rounded-lg shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden pointer-events-auto animate-in slide-in-from-bottom-10 fade-in duration-200">
                     {/* Header */}
                     <div className="p-4 bg-indigo-600 flex items-center justify-between text-white shadow-md">
                         <div className="flex items-center gap-2">
@@ -108,7 +108,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ contextData }) => {
                                 <div
                                     className={`max-w-[85%] p-3.5 rounded-lg text-sm leading-relaxed shadow-sm ${msg.sender === 'user'
                                         ? 'bg-indigo-600 text-white rounded-tr-sm'
-                                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-tl-sm prose dark:prose-invert prose-sm max-w-none'
+                                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-800 rounded-tl-sm prose dark:prose-invert prose-sm max-w-none'
                                         }`}
                                 >
                                     {msg.sender === 'user' ? (
@@ -123,7 +123,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ contextData }) => {
                                                     li: ({ node, ...props }) => <li className="my-0.5" {...props} />,
                                                     p: ({ node, ...props }) => <p className="mb-2 last:mb-0 block" {...props} />,
                                                     strong: ({ node, ...props }) => <strong className="font-black text-indigo-700 dark:text-indigo-400" {...props} />,
-                                                    table: ({ node, ...props }) => <div className="overflow-x-auto my-2 rounded-lg border border-slate-200 dark:border-slate-700"><table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-xs" {...props} /></div>,
+                                                    table: ({ node, ...props }) => <div className="overflow-x-auto my-2 rounded-lg border border-slate-200 dark:border-slate-800"><table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-xs" {...props} /></div>,
                                                     thead: ({ node, ...props }) => <thead className="bg-slate-50 dark:bg-slate-800" {...props} />,
                                                     th: ({ node, ...props }) => <th className="px-3 py-2 text-left font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider" {...props} />,
                                                     td: ({ node, ...props }) => <td className="px-3 py-2 whitespace-nowrap border-t border-slate-100 dark:border-slate-800" {...props} />,
@@ -138,7 +138,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ contextData }) => {
                         ))}
                         {isLoading && (
                             <div className="flex justify-start">
-                                <div className="bg-white dark:bg-slate-800 p-3 rounded-lg rounded-tl-sm border border-slate-100 dark:border-slate-700 shadow-sm flex gap-1">
+                                <div className="bg-white dark:bg-slate-800 p-3 rounded-lg rounded-tl-sm border border-slate-100 dark:border-slate-800 shadow-sm flex gap-1">
                                     <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                                     <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                                     <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />

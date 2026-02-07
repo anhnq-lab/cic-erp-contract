@@ -276,7 +276,7 @@ const AIAssistant: React.FC = () => {
             <div className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border",
               msg.role === 'user'
-                ? "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600"
+                ? "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-600"
                 : "bg-indigo-600 border-transparent text-white shadow-md shadow-indigo-200 dark:shadow-none"
             )}>
               {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
@@ -286,7 +286,7 @@ const AIAssistant: React.FC = () => {
               "group relative px-6 py-4 rounded-[24px] text-sm leading-relaxed shadow-sm",
               msg.role === 'user'
                 ? "bg-indigo-600 text-white rounded-tr-none"
-                : "bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-tl-none"
+                : "bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none"
             )}>
               {msg.role === 'model' ? (
                 <div className="markdown-body">
@@ -301,7 +301,7 @@ const AIAssistant: React.FC = () => {
                       remarkPlugins={[remarkGfm]}
                       className="prose prose-sm prose-indigo dark:prose-invert max-w-none break-words"
                       components={{
-                        table: ({ node, ...props }) => <div className="overflow-x-auto my-4"><table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg" {...props} /></div>,
+                        table: ({ node, ...props }) => <div className="overflow-x-auto my-4"><table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 border border-slate-200 dark:border-slate-800 rounded-lg" {...props} /></div>,
                         th: ({ node, ...props }) => <th className="px-4 py-2 bg-slate-50 dark:bg-slate-800 text-left text-xs font-bold uppercase tracking-wider text-slate-500" {...props} />,
                         td: ({ node, ...props }) => <td className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 text-sm" {...props} />,
                         ul: ({ node, ...props }) => <ul className="list-disc pl-5 space-y-1" {...props} />,
@@ -322,7 +322,7 @@ const AIAssistant: React.FC = () => {
                 <div className="absolute -bottom-6 right-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                   <button
                     onClick={() => navigator.clipboard.writeText(msg.content)}
-                    className="p-1.5 text-slate-400 hover:text-indigo-600 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm"
+                    className="p-1.5 text-slate-400 hover:text-indigo-600 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm"
                     title="Copy"
                   >
                     <Copy size={12} />

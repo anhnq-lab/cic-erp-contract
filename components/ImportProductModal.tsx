@@ -272,7 +272,7 @@ const ImportProductModal: React.FC<ImportProductModalProps> = ({ isOpen, onClose
                                 onDrop={handleDrop}
                                 className={`border border-dashed rounded-lg p-12 text-center transition-colors ${dragActive
                                         ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                                        : 'border-slate-300 dark:border-slate-700 hover:border-indigo-400'
+                                        : 'border-slate-300 dark:border-slate-800 hover:border-indigo-400'
                                     }`}
                             >
                                 {isUploading ? (

@@ -77,7 +77,7 @@ export const RejectDialog: React.FC<Props> = ({ isOpen, onClose, onConfirm, isLo
                         placeholder="Nhập lý do từ chối để người lập PAKD biết cần chỉnh sửa gì..."
                         className={`w-full px-4 py-3 rounded-lg border text-sm resize-none transition-colors focus:outline-none focus:ring-2 focus:ring-rose-200 ${error
                                 ? 'border-rose-300 bg-rose-50'
-                                : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800'
+                                : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800'
                             }`}
                         rows={4}
                         autoFocus

@@ -4,7 +4,7 @@ import { FormSectionProps } from './types';
 
 const EducationSection: React.FC<FormSectionProps> = ({ formData, setFormData }) => {
     return (
-        <div className="border-t pt-4 dark:border-slate-700">
+        <div className="border-t pt-4 dark:border-slate-800">
             <h4 className="font-medium mb-3 flex items-center gap-2 text-slate-800 dark:text-slate-200">
                 <GraduationCap size={18} className="text-amber-500" />
                 Học vấn & Chuyên môn
@@ -16,7 +16,7 @@ const EducationSection: React.FC<FormSectionProps> = ({ formData, setFormData })
                         type="text"
                         value={formData.education}
                         onChange={e => setFormData({ ...formData, education: e.target.value })}
-                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                         placeholder="Đại học, Thạc sĩ..."
                     />
                 </div>
@@ -26,7 +26,7 @@ const EducationSection: React.FC<FormSectionProps> = ({ formData, setFormData })
                         type="text"
                         value={formData.specialization}
                         onChange={e => setFormData({ ...formData, specialization: e.target.value })}
-                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                         placeholder="CNTT, Xây dựng..."
                     />
                 </div>
@@ -36,7 +36,7 @@ const EducationSection: React.FC<FormSectionProps> = ({ formData, setFormData })
                         type="text"
                         value={formData.certificates}
                         onChange={e => setFormData({ ...formData, certificates: e.target.value })}
-                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                         placeholder="PMP, AWS, IELTS..."
                     />
                 </div>

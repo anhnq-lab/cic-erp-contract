@@ -49,7 +49,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed }) => {
   const displayRole = profile?.role ? (roleLabels[profile.role] || profile.role) : '';
 
   return (
-    <header className={`fixed top-0 left-0 right-0 h-16 bg-white/95 dark:bg-slate-900 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/60 ${marginClass} z-30 flex items-center justify-between px-4 transition-all duration-300`}>
+    <header className={`fixed top-0 left-0 right-0 h-16 bg-white/95 dark:bg-slate-900 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 ${marginClass} z-30 flex items-center justify-between px-4 transition-all duration-300`}>
       <div className="flex items-center gap-2 sm:gap-4">
         <button
           onClick={onMenuClick}
@@ -110,8 +110,8 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarCollapsed }) => {
 
           {/* Dropdown Menu */}
           {showUserMenu && (
-            <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700/60 py-2 z-50 dark-dropdown-accent">
-              <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+            <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-800 py-2 z-50 dark-dropdown-accent">
+              <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-3">
                   {avatarUrl ? (
                     <img src={avatarUrl} alt={displayName} className="w-10 h-10 rounded-full object-cover" referrerPolicy="no-referrer" />

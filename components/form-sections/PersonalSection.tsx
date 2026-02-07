@@ -4,7 +4,7 @@ import { FormSectionProps } from './types';
 
 const PersonalSection: React.FC<FormSectionProps> = ({ formData, setFormData }) => {
     return (
-        <div className="border-t pt-4 dark:border-slate-700">
+        <div className="border-t pt-4 dark:border-slate-800">
             <h4 className="font-medium mb-3 flex items-center gap-2 text-slate-800 dark:text-slate-200">
                 <Users size={18} className="text-blue-500" />
                 Thông tin cá nhân
@@ -16,7 +16,7 @@ const PersonalSection: React.FC<FormSectionProps> = ({ formData, setFormData }) 
                         type="date"
                         value={formData.dateOfBirth}
                         onChange={e => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                     />
                 </div>
                 <div>
@@ -24,7 +24,7 @@ const PersonalSection: React.FC<FormSectionProps> = ({ formData, setFormData }) 
                     <select
                         value={formData.gender}
                         onChange={e => setFormData({ ...formData, gender: e.target.value as any })}
-                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                     >
                         <option value="">-- Chọn --</option>
                         <option value="male">Nam</option>
@@ -37,7 +37,7 @@ const PersonalSection: React.FC<FormSectionProps> = ({ formData, setFormData }) 
                     <select
                         value={formData.maritalStatus}
                         onChange={e => setFormData({ ...formData, maritalStatus: e.target.value as any })}
-                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                     >
                         <option value="">-- Chọn --</option>
                         <option value="single">Độc thân</option>
@@ -52,7 +52,7 @@ const PersonalSection: React.FC<FormSectionProps> = ({ formData, setFormData }) 
                         type="text"
                         value={formData.idNumber}
                         onChange={e => setFormData({ ...formData, idNumber: e.target.value })}
-                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                         placeholder="001234567890"
                     />
                 </div>
@@ -64,7 +64,7 @@ const PersonalSection: React.FC<FormSectionProps> = ({ formData, setFormData }) 
                         type="text"
                         value={formData.address}
                         onChange={e => setFormData({ ...formData, address: e.target.value })}
-                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                         placeholder="Số nhà, đường, quận, thành phố"
                     />
                 </div>

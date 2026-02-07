@@ -4,7 +4,7 @@ import { FormSectionProps } from './types';
 
 const EmergencyContactSection: React.FC<FormSectionProps> = ({ formData, setFormData }) => {
     return (
-        <div className="border-t pt-4 dark:border-slate-700">
+        <div className="border-t pt-4 dark:border-slate-800">
             <h4 className="font-medium mb-3 flex items-center gap-2 text-slate-800 dark:text-slate-200">
                 <Heart size={18} className="text-red-500" />
                 Liên hệ khẩn cấp
@@ -16,7 +16,7 @@ const EmergencyContactSection: React.FC<FormSectionProps> = ({ formData, setForm
                         type="text"
                         value={formData.emergencyContact}
                         onChange={e => setFormData({ ...formData, emergencyContact: e.target.value })}
-                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                         placeholder="Tên người thân"
                     />
                 </div>
@@ -26,7 +26,7 @@ const EmergencyContactSection: React.FC<FormSectionProps> = ({ formData, setForm
                         type="tel"
                         value={formData.emergencyPhone}
                         onChange={e => setFormData({ ...formData, emergencyPhone: e.target.value })}
-                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                         placeholder="0912345678"
                     />
                 </div>

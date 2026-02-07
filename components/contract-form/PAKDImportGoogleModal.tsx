@@ -92,7 +92,7 @@ export function PAKDImportGoogleModal({ isOpen, onClose, onImport }: PAKDImportG
                                         value={url}
                                         onChange={(e) => setUrl(e.target.value)}
                                         placeholder="https://docs.google.com/spreadsheets/d/..."
-                                        className="w-full pl-4 pr-32 py-4 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all outline-none text-sm"
+                                        className="w-full pl-4 pr-32 py-4 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 rounded-lg focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all outline-none text-sm"
                                     />
                                     <button
                                         onClick={handleFetch}

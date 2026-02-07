@@ -127,7 +127,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                     setIsOpen(!isOpen);
                     setTimeout(() => inputRef.current?.focus(), 50);
                 }}
-                className={`w-full flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-left text-sm font-medium transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-indigo-300 dark:hover:border-indigo-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30'
+                className={`w-full flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-left text-sm font-medium transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-indigo-300 dark:hover:border-indigo-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30'
                     } ${isOpen ? 'border-indigo-500 ring-2 ring-indigo-100 dark:ring-indigo-900/30' : ''}`}
             >
                 <span className={displayValue ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'}>
@@ -160,7 +160,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                                 value={query}
                                 onChange={(e) => handleQueryChange(e.target.value)}
                                 placeholder="Gõ ít nhất 2 ký tự..."
-                                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:border-indigo-500 focus:outline-none transition-colors"
+                                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:border-indigo-500 focus:outline-none transition-colors"
                             />
                             {isLoading && (
                                 <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-500 animate-spin" />

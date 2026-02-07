@@ -11,20 +11,20 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 const variantStyles: Record<CardVariant, string> = {
     default: `
     bg-white dark:bg-slate-900
-    border border-slate-200 dark:border-slate-700/40
+    border border-slate-200 dark:border-slate-800
   `,
     elevated: `
     bg-white dark:bg-slate-900
-    border border-slate-100 dark:border-slate-700/40
+    border border-slate-100 dark:border-slate-800
     shadow-lg dark:shadow-2xl
   `,
     outline: `
     bg-transparent
-    border border-dashed border-slate-300 dark:border-slate-700/60
+    border border-dashed border-slate-300 dark:border-slate-800
   `,
     interactive: `
     bg-white dark:bg-slate-900
-    border border-slate-200 dark:border-slate-700/40
+    border border-slate-200 dark:border-slate-800
     hover:border-orange-300 dark:hover:border-orange-700/50
     hover:shadow-lg dark:hover:shadow-xl
     cursor-pointer

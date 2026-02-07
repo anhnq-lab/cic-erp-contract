@@ -190,7 +190,7 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
                                     setFetchFailed(false);
                                 }}
                                 placeholder="https://docs.google.com/..."
-                                className="w-full px-4 py-3 pl-10 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-colors"
+                                className="w-full px-4 py-3 pl-10 rounded-lg border border-slate-300 dark:border-slate-800 dark:bg-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-colors"
                             />
                             <div className="absolute left-3 top-1/2 -translate-y-1/2">
                                 {url ? linkTypeIcon(detectedType) : <Link size={16} className="text-slate-400" />}
@@ -223,7 +223,7 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
                                 value={name}
                                 onChange={(e) => { setName(e.target.value); setError(''); }}
                                 placeholder="Nhập tên tài liệu"
-                                className="w-full px-4 py-3 pr-10 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-colors"
+                                className="w-full px-4 py-3 pr-10 rounded-lg border border-slate-300 dark:border-slate-800 dark:bg-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-colors"
                             />
                             {url && detectedType !== 'other' && !isFetchingTitle && (
                                 <button
@@ -263,7 +263,7 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
                 <div className="flex justify-end gap-3 p-5 border-t border-slate-200 dark:border-slate-800">
                     <button
                         onClick={onClose}
-                        className="px-5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium transition-colors"
+                        className="px-5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium transition-colors"
                     >
                         Hủy
                     </button>

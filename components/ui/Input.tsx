@@ -54,7 +54,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         const getBorderColor = () => {
             if (hasError) return 'border-red-500 focus:border-red-500 focus:ring-red-500/20';
             if (hasSuccess) return 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500/20';
-            return 'border-slate-200 focus:border-orange-500 focus:ring-orange-500/20 dark:border-slate-700/60 dark:focus:border-orange-500 dark:focus:ring-orange-500/15';
+            return 'border-slate-200 focus:border-orange-500 focus:ring-orange-500/20 dark:border-slate-800 dark:focus:border-orange-500 dark:focus:ring-orange-500/15';
         };
 
         return (

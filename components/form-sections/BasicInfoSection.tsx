@@ -12,7 +12,7 @@ const BasicInfoSection: React.FC<FormSectionProps> = ({ formData, setFormData, u
                     type="text"
                     value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800 focus:ring-2 focus:ring-indigo-500"
                     placeholder="Nhập tên nhân viên"
                 />
             </div>
@@ -23,7 +23,7 @@ const BasicInfoSection: React.FC<FormSectionProps> = ({ formData, setFormData, u
                     type="text"
                     value={formData.employeeCode}
                     onChange={e => setFormData({ ...formData, employeeCode: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800 focus:ring-2 focus:ring-indigo-500"
                     placeholder="NV001"
                 />
             </div>
@@ -34,7 +34,7 @@ const BasicInfoSection: React.FC<FormSectionProps> = ({ formData, setFormData, u
                     required
                     value={formData.unitId}
                     onChange={e => setFormData({ ...formData, unitId: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800 focus:ring-2 focus:ring-indigo-500"
                 >
                     <option value="">-- Chọn đơn vị --</option>
                     {units?.map(unit => (
@@ -49,7 +49,7 @@ const BasicInfoSection: React.FC<FormSectionProps> = ({ formData, setFormData, u
                     type="text"
                     value={formData.position}
                     onChange={e => setFormData({ ...formData, position: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                     placeholder="Chuyên viên, Trưởng phòng..."
                 />
             </div>
@@ -60,7 +60,7 @@ const BasicInfoSection: React.FC<FormSectionProps> = ({ formData, setFormData, u
                     type="date"
                     value={formData.dateJoined}
                     onChange={e => setFormData({ ...formData, dateJoined: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                 />
             </div>
 
@@ -73,7 +73,7 @@ const BasicInfoSection: React.FC<FormSectionProps> = ({ formData, setFormData, u
                     type="email"
                     value={formData.email}
                     onChange={e => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                     placeholder="email@company.vn"
                 />
             </div>
@@ -86,7 +86,7 @@ const BasicInfoSection: React.FC<FormSectionProps> = ({ formData, setFormData, u
                     type="tel"
                     value={formData.phone}
                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                     placeholder="0901234567"
                 />
             </div>
@@ -99,7 +99,7 @@ const BasicInfoSection: React.FC<FormSectionProps> = ({ formData, setFormData, u
                     type="text"
                     value={formData.telegram}
                     onChange={e => setFormData({ ...formData, telegram: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                    className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                     placeholder="@username"
                 />
             </div>

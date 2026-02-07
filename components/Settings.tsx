@@ -50,7 +50,7 @@ const Settings: React.FC = () => {
             </div>
 
             {/* Tab Content */}
-            <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
                 {activeTab === 'system' && (
                     <div className="space-y-6">
                         {/* Theme */}
@@ -64,7 +64,7 @@ const Settings: React.FC = () => {
                                     onClick={() => setTheme('light')}
                                     className={`flex items-center justify-center gap-3 p-4 rounded-lg border transition-all ${theme === 'light'
                                         ? 'bg-orange-50 border-orange-500 text-orange-700 dark:bg-orange-900/20 dark:border-orange-500 dark:text-orange-400'
-                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'
+                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-500'
                                         }`}
                                 >
                                     <Sun size={20} />
@@ -74,7 +74,7 @@ const Settings: React.FC = () => {
                                     onClick={() => setTheme('dark')}
                                     className={`flex items-center justify-center gap-3 p-4 rounded-lg border transition-all ${theme === 'dark'
                                         ? 'bg-orange-900/30 border-orange-500 text-orange-400'
-                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'
+                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-500'
                                         }`}
                                 >
                                     <Moon size={20} />
@@ -83,7 +83,7 @@ const Settings: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="border-t border-slate-100 dark:border-slate-700/40 pt-6">
+                        <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
                             <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm mb-4">Dữ liệu & Hệ thống</h3>
                             <DataSeeder />
                         </div>
@@ -124,7 +124,7 @@ const Settings: React.FC = () => {
                         )}
 
                         {/* Separator if admin */}
-                        {isAdmin && <div className="border-t border-slate-200 dark:border-slate-700" />}
+                        {isAdmin && <div className="border-t border-slate-200 dark:border-slate-800" />}
 
                         {/* Pilot Runner */}
                         <div>

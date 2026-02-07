@@ -258,7 +258,7 @@ const UserGuide: React.FC = () => {
                         placeholder="Tìm hướng dẫn..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                        className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
                     />
                 </div>
             </div>
@@ -308,7 +308,7 @@ const UserGuide: React.FC = () => {
                 </h3>
 
                 {/* Tab Headers */}
-                <div className="flex overflow-x-auto gap-1 mb-4 pb-2 border-b border-slate-200 dark:border-slate-700 scrollbar-thin">
+                <div className="flex overflow-x-auto gap-1 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800 scrollbar-thin">
                     {moduleGuides.map((module) => (
                         <button
                             key={module.id}
@@ -356,7 +356,7 @@ const UserGuide: React.FC = () => {
                                     {/* Detailed Steps Table */}
                                     <div className="space-y-2">
                                         {module.workflow.steps.map((step, i) => (
-                                            <div key={i} className="flex items-start gap-3 p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
+                                            <div key={i} className="flex items-start gap-3 p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-800">
                                                 <div className={`p-1.5 rounded-lg flex-shrink-0 ${colorClasses[module.color].bg} ${colorClasses[module.color].text}`}>
                                                     {step.icon}
                                                 </div>
@@ -427,7 +427,7 @@ const UserGuide: React.FC = () => {
                 </h3>
                 <div className="space-y-1">
                     {filteredFaqs.map(faq => (
-                        <div key={faq.id} className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                        <div key={faq.id} className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
                             <button
                                 onClick
 
@@ -487,7 +487,7 @@ const UserGuide: React.FC = () => {
             {showShortcuts && (
                 <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowShortcuts(false)}>
                     <div className="bg-white dark:bg-slate-900 rounded-lg shadow-2xl max-w-md w-full" onClick={e => e.stopPropagation()}>
-                        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
                             <h3 className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                                 <Keyboard size={18} className="text-indigo-500" /> Phím tắt
                             </h3>
@@ -501,7 +501,7 @@ const UserGuide: React.FC = () => {
                             <ShortcutRow keys={['/']} desc="Focus ô tìm kiếm" />
                             <ShortcutRow keys={['?']} desc="Mở bảng phím tắt" />
                             <ShortcutRow keys={['Esc']} desc="Đóng modal/popup" />
-                            <div className="border-t border-slate-100 dark:border-slate-700 my-2 pt-2">
+                            <div className="border-t border-slate-100 dark:border-slate-800 my-2 pt-2">
                                 <p className="text-xs font-bold text-slate-500 mb-2">Điều hướng (nhấn G rồi phím tiếp theo)</p>
                             </div>
                             <ShortcutRow keys={['G', 'D']} desc="Đi đến Dashboard" />
@@ -546,7 +546,7 @@ interface ModuleGuideData {
 const QuickBtn = ({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) => (
     <button
         onClick={onClick}
-        className="flex flex-col items-center gap-1 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:shadow-md hover:scale-[1.02] transition-all"
+        className="flex flex-col items-center gap-1 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-800 hover:shadow-md hover:scale-[1.02] transition-all"
     >
         <span className="text-indigo-500">{icon}</span>
         <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{label}</span>

@@ -252,7 +252,7 @@ const OrganizationChart: React.FC<OrganizationChartProps> = ({ onSelectUnit, onE
     return (
         <div className="bg-slate-50 dark:bg-slate-900 rounded-lg overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
                         <Building2 className="w-5 h-5 text-white" />

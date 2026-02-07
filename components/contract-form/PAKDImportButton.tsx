@@ -56,7 +56,7 @@ export function PAKDImportButton({ onImport, disabled }: PAKDImportButtonProps) 
     return (
         <>
             {/* Compact Import Buttons */}
-            <div className="flex items-center gap-1.5 bg-slate-100/50 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-1.5 bg-slate-100/50 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-800">
                 <button
                     onClick={() => !disabled && !isProcessing && fileInputRef.current?.click()}
                     disabled={disabled || isProcessing}

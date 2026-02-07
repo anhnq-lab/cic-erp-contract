@@ -4,7 +4,7 @@ import { FormSectionProps } from './types';
 
 const ContractSection: React.FC<FormSectionProps> = ({ formData, setFormData }) => {
     return (
-        <div className="border-t pt-4 dark:border-slate-700">
+        <div className="border-t pt-4 dark:border-slate-800">
             <h4 className="font-medium mb-3 flex items-center gap-2 text-slate-800 dark:text-slate-200">
                 <Building size={18} className="text-purple-500" />
                 Hợp đồng lao động
@@ -15,7 +15,7 @@ const ContractSection: React.FC<FormSectionProps> = ({ formData, setFormData }) 
                     <select
                         value={formData.contractType}
                         onChange={e => setFormData({ ...formData, contractType: e.target.value })}
-                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                     >
                         <option value="">-- Chọn --</option>
                         <option value="Full-time">Toàn thời gian</option>
@@ -31,7 +31,7 @@ const ContractSection: React.FC<FormSectionProps> = ({ formData, setFormData }) 
                         type="date"
                         value={formData.contractEndDate}
                         onChange={e => setFormData({ ...formData, contractEndDate: e.target.value })}
-                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                     />
                 </div>
                 <div>
@@ -40,7 +40,7 @@ const ContractSection: React.FC<FormSectionProps> = ({ formData, setFormData }) 
                         type="text"
                         value={formData.bankAccount}
                         onChange={e => setFormData({ ...formData, bankAccount: e.target.value })}
-                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                         placeholder="1234567890"
                     />
                 </div>
@@ -50,7 +50,7 @@ const ContractSection: React.FC<FormSectionProps> = ({ formData, setFormData }) 
                         type="text"
                         value={formData.bankName}
                         onChange={e => setFormData({ ...formData, bankName: e.target.value })}
-                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                         placeholder="Vietcombank, BIDV..."
                     />
                 </div>

@@ -199,7 +199,7 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
                             className={`w-full px-4 py-3 rounded-lg border ${error
                                 ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
                                 : 'border-slate-300 focus:border-violet-500 focus:ring-violet-200'
-                                } dark:bg-slate-800 dark:border-slate-700 focus:ring-2 transition-colors`}
+                                } dark:bg-slate-800 dark:border-slate-800 focus:ring-2 transition-colors`}
                         />
                         {error && (
                             <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
@@ -234,7 +234,7 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
                                     value={draftName}
                                     onChange={(e) => setDraftName(e.target.value)}
                                     placeholder="Tên tài liệu"
-                                    className="w-full px-4 py-3 pr-10 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-colors"
+                                    className="w-full px-4 py-3 pr-10 rounded-lg border border-slate-300 dark:border-slate-800 dark:bg-slate-800 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-colors"
                                 />
                                 {!isFetchingTitle && (
                                     <button
@@ -274,7 +274,7 @@ export const SubmitLegalDialog: React.FC<SubmitLegalDialogProps> = ({
                 <div className="flex justify-end gap-3 p-6 border-t border-slate-200 dark:border-slate-800">
                     <button
                         onClick={onClose}
-                        className="px-5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium transition-colors"
+                        className="px-5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium transition-colors"
                     >
                         Hủy
                     </button>

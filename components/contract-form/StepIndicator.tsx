@@ -43,7 +43,7 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({
                   font-black border-4 transition-all duration-300
                   ${isActive
                                         ? 'bg-indigo-600 border-indigo-100 dark:border-indigo-900 text-white'
-                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400'
+                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-400'
                                     }
                   ${isCurrent
                                         ? 'scale-110 shadow-lg shadow-indigo-200 dark:shadow-none ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-slate-900'

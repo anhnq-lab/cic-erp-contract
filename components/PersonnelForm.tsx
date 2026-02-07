@@ -200,7 +200,7 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, initialD
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
             <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-900 z-10">
+                <div className="flex items-center justify-between p-4 border-b dark:border-slate-800 sticky top-0 bg-white dark:bg-slate-900 z-10">
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                         {initialData ? 'Cập nhật Nhân sự' : 'Thêm mới Nhân sự'}
                     </h3>
@@ -230,7 +230,7 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({ isOpen, onClose, initialD
                     <ContractSection formData={formData} setFormData={setFormData} />
 
                     {/* Actions */}
-                    <div className="flex justify-end gap-3 pt-4 border-t dark:border-slate-700">
+                    <div className="flex justify-end gap-3 pt-4 border-t dark:border-slate-800">
                         <button
                             type="button"
                             onClick={onClose}

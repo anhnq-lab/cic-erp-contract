@@ -253,7 +253,7 @@ const CommandPalette: React.FC = () => {
 
             {/* Dialog */}
             <div className="relative mx-auto max-w-2xl mt-[15vh]">
-                <div className="bg-white dark:bg-slate-900 rounded-lg shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="bg-white dark:bg-slate-900 rounded-lg shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                     {/* Search Input */}
                     <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-800">
                         <Search size={20} className="text-slate-400" />

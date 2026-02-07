@@ -56,7 +56,7 @@ const Modal: React.FC<ModalProps> = ({
                 className={`relative bg-white dark:bg-slate-900 rounded-lg shadow-2xl dark:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] ${sizeClasses[size]} w-full max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 dark:ring-1 dark:ring-slate-700/40`}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700/40">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
                     <h2 className="text-lg font-black text-slate-900 dark:text-slate-100">{title}</h2>
                     <button
                         onClick={onClose}

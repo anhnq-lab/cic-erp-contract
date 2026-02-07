@@ -451,7 +451,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
 
             {/* 1. FINANCIAL SUMMARY - Auto-calculated from Line Items */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-slate-50 dark:bg-slate-800 p-5 rounded-lg border border-slate-100 dark:border-slate-700">
+                <div className="bg-slate-50 dark:bg-slate-800 p-5 rounded-lg border border-slate-100 dark:border-slate-800">
                     <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Doanh thu dự kiến</p>
                     <p className="text-2xl font-bold text-slate-900 dark:text-white">
                         {new Intl.NumberFormat('vi-VN').format(financials.revenue)} ₫
@@ -459,7 +459,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                     {isEditing && <p className="text-[10px] text-slate-400 mt-1">Tự động tính từ bảng sản phẩm</p>}
                 </div>
 
-                <div className="bg-slate-50 dark:bg-slate-800 p-5 rounded-lg border border-slate-100 dark:border-slate-700">
+                <div className="bg-slate-50 dark:bg-slate-800 p-5 rounded-lg border border-slate-100 dark:border-slate-800">
                     <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Tổng chi phí</p>
                     <p className="text-2xl font-bold text-slate-900 dark:text-white">
                         {new Intl.NumberFormat('vi-VN').format(financials.costs)} ₫
@@ -500,7 +500,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                             <>
                                 <button
                                     onClick={resetToOriginal}
-                                    className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 text-slate-500 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition-colors"
+                                    className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 text-slate-500 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 transition-colors"
                                 >
                                     <RotateCcw size={12} /> Reset từ HĐ
                                 </button>
@@ -514,7 +514,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                         )}
                     </div>
                 </div>
-                <div className="mb-8 overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+                <div className="mb-8 overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
                     <table className="w-full text-left text-xs min-w-[900px]">
                         <thead className="bg-slate-50 dark:bg-slate-800">
                             <tr>
@@ -702,7 +702,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                 </div>
 
                 {/* 2.2 Admin Costs with % */}
-                <div className="bg-slate-50 dark:bg-slate-800 p-6 rounded-lg border border-slate-100 dark:border-slate-700 space-y-4">
+                <div className="bg-slate-50 dark:bg-slate-800 p-6 rounded-lg border border-slate-100 dark:border-slate-800 space-y-4">
                     <h4 className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest flex items-center gap-2">
                         <Calculator size={14} /> Chi phí quản lý hợp đồng
                     </h4>
@@ -729,7 +729,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                 placeholder="%"
                                                 value={(adminCostPercentages as any)[item.key] || ''}
                                                 onChange={(e) => updateAdminCostByPercent(item.key as keyof AdministrativeCosts, Number(e.target.value))}
-                                                className="w-full pl-6 pr-1 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-orange-500 outline-none text-center"
+                                                className="w-full pl-6 pr-1 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-orange-500 outline-none text-center"
                                             />
                                         </div>
                                         {/* Amount Input */}
@@ -743,7 +743,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                     if (!/^\d*$/.test(raw)) return;
                                                     updateAdminCost(item.key as keyof AdministrativeCosts, Number(raw));
                                                 }}
-                                                className="w-full pl-8 pr-2 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-black focus:ring-2 focus:ring-rose-500 outline-none text-right text-rose-500"
+                                                className="w-full pl-8 pr-2 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-black focus:ring-2 focus:ring-rose-500 outline-none text-right text-rose-500"
                                             />
                                         </div>
                                     </div>
@@ -761,7 +761,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                         ))}
                     </div>
                     {/* Total Admin Costs */}
-                    <div className="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <div className="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-800">
                         <div className="text-right">
                             <p className="text-[10px] text-slate-400 uppercase font-bold">Tổng CP quản lý</p>
                             <p className="text-lg font-bold text-rose-500 dark:text-rose-400">
@@ -773,7 +773,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
             </div>
 
             {/* 2.3 Payment Schedules - Dòng tiền dự kiến */}
-            <div className="bg-gradient-to-br from-slate-50 to-orange-50/30 dark:from-slate-800 dark:to-slate-800 p-6 rounded-lg border border-slate-100 dark:border-slate-700 space-y-6 mb-8">
+            <div className="bg-gradient-to-br from-slate-50 to-orange-50/30 dark:from-slate-800 dark:to-slate-800 p-6 rounded-lg border border-slate-100 dark:border-slate-800 space-y-6 mb-8">
                 <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
                     <Wallet size={14} /> Dòng tiền dự kiến
                 </h4>
@@ -1013,7 +1013,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                         setTempCostDetails(updated);
                                     }}
                                     placeholder="Tên chi phí..."
-                                    className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                    className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
                                 />
                                 <input
                                     type="text"
@@ -1026,7 +1026,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                         setTempCostDetails(updated);
                                     }}
                                     placeholder="Số tiền"
-                                    className="w-32 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-right font-bold text-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                                    className="w-32 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-right font-bold text-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500"
                                 />
                                 <button
                                     onClick={() => setTempCostDetails(tempCostDetails.filter((_, idx) => idx !== i))}
@@ -1044,7 +1044,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                             <Plus size={14} /> Thêm chi phí
                         </button>
 
-                        <div className="flex justify-between items-center pt-4 border-t border-slate-200 dark:border-slate-700">
+                        <div className="flex justify-between items-center pt-4 border-t border-slate-200 dark:border-slate-800">
                             <div>
                                 <p className="text-[10px] text-slate-400 uppercase font-bold">Tổng cộng</p>
                                 <p className="text-lg font-black text-rose-500">

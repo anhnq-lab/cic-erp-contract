@@ -44,7 +44,7 @@ const variantStyles: Record<ButtonVariant, string> = {
     bg-transparent border border-slate-200 hover:border-slate-300
     text-slate-700 font-semibold
     hover:bg-slate-50
-    dark:border-slate-700 dark:hover:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800
+    dark:border-slate-800 dark:hover:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800
   `,
 };
 

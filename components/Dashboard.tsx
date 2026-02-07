@@ -416,10 +416,10 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
         </div>
 
         {/* STICKY FILTER BAR - Metric Tabs + Filters */}
-        <div className="sticky top-16 z-20 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-md py-4 border-b border-slate-200/50 dark:border-slate-700/40">
+        <div className="sticky top-16 z-20 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-md py-4 border-b border-slate-200/50 dark:border-slate-800">
           <div className="flex flex-col lg:flex-row lg:items-center justify-end gap-4">
             {/* Left: Metric Tabs */}
-            <div className="flex bg-white dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700/50 shadow-sm overflow-x-auto no-scrollbar">
+            <div className="flex bg-white dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto no-scrollbar">
               {metricTabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -440,7 +440,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
               <div className="relative z-20">
                 <button
                   onClick={() => setShowUnitSelector(!showUnitSelector)}
-                  className="flex items-center gap-2.5 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-lg shadow-sm hover:border-indigo-300 dark:hover:border-orange-700/50 transition-all group"
+                  className="flex items-center gap-2.5 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm hover:border-indigo-300 dark:hover:border-orange-700/50 transition-all group"
                 >
                   <Building2 size={16} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
                   <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[140px]">
@@ -452,7 +452,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
                 {showUnitSelector && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowUnitSelector(false)} />
-                    <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 rounded-lg shadow-xl z-20 py-2 animate-in fade-in zoom-in-95 duration-200 overflow-hidden dark-dropdown-accent">
+                    <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-20 py-2 animate-in fade-in zoom-in-95 duration-200 overflow-hidden dark-dropdown-accent">
                       <div className="max-h-[320px] overflow-y-auto">
                         {[{ id: 'all', name: 'Toàn công ty', type: 'Company' } as Unit, ...allUnits.filter(u => u.name !== 'Toàn công ty')].map((u) => (
                           <button
@@ -476,7 +476,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
 
               {/* Year Filter Button */}
               <div className="relative z-10">
-                <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-lg shadow-sm hover:border-indigo-300 dark:hover:border-orange-700/50 transition-all group cursor-pointer relative">
+                <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm hover:border-indigo-300 dark:hover:border-orange-700/50 transition-all group cursor-pointer relative">
                   <Calendar size={16} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
                   <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
                     {yearFilter === 'All' ? 'Tất cả năm' : `Năm ${yearFilter}`}
@@ -518,7 +518,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <div className="xl:col-span-2 bg-white dark:bg-slate-900 p-8 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-sm dark-card-glow">
+          <div className="xl:col-span-2 bg-white dark:bg-slate-900 p-8 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm dark-card-glow">
             <div className="flex justify-between items-center mb-10">
               <div>
                 <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight mb-2">Biến động theo tháng</h3>
@@ -549,7 +549,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-sm flex flex-col dark-card-glow">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col dark-card-glow">
             <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight mb-2">
               Phân bổ {safeUnit?.id === 'all' ? 'theo Đơn vị' : 'theo Sales'}
             </h3>
@@ -605,7 +605,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedUnit, onSelectUnit, onSel
         </div>
 
         {/* Performance Table */}
-        <div className="bg-white dark:bg-slate-900 p-8 md:p-10 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-sm dark-card-glow">
+        <div className="bg-white dark:bg-slate-900 p-8 md:p-10 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm dark-card-glow">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
             <div>
               <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-3 mb-2">
@@ -698,7 +698,7 @@ const KPIItem = ({ title, metric, stats, target, yoy, color, icon }: any) => {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-sm transition-all hover:shadow-lg group relative overflow-hidden dark-card-glow">
+    <div className="bg-white dark:bg-slate-900 p-6 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm transition-all hover:shadow-lg group relative overflow-hidden dark-card-glow">
       <div className="flex justify-between items-start mb-6">
         <div className={`p-3 rounded-lg ${colors[color]} transition-transform group-hover:rotate-6`}>
           {icon}

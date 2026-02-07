@@ -65,7 +65,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       <div className={`
-        fixed left-0 top-0 h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50 flex flex-col z-50 transition-all duration-300 ease-in-out
+        fixed left-0 top-0 h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-50 transition-all duration-300 ease-in-out
         ${isCollapsed ? 'md:w-20' : 'md:w-64'} 
         ${isOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0'}
       `}>
@@ -146,7 +146,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Bottom: Settings */}
-        <div className={`p-4 border-t border-slate-100 dark:border-slate-700/50 ${isCollapsed ? 'md:px-2' : ''}`}>
+        <div className={`p-4 border-t border-slate-100 dark:border-slate-800 ${isCollapsed ? 'md:px-2' : ''}`}>
           {settingsItem && (
             <NavItem
               item={settingsItem}

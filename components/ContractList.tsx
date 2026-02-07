@@ -193,7 +193,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
       case 'Pending': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800';
       case 'Reviewing': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800';
       case 'Expired': return 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400 border border-rose-200 dark:border-rose-800';
-      default: return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700';
+      default: return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-800';
     }
   };
 
@@ -379,7 +379,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
       {/* SCORE CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Contracts */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-sm flex items-center gap-4 dark-card-glow">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4 dark-card-glow">
           <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300">
             <Briefcase size={24} />
           </div>
@@ -390,7 +390,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         </div>
 
         {/* Total Value */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-sm flex items-center gap-4 dark-card-glow">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4 dark-card-glow">
           <div className="w-12 h-12 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
             <DollarSign size={24} />
           </div>
@@ -403,7 +403,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         </div>
 
         {/* Revenue */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-sm flex items-center gap-4 dark-card-glow">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4 dark-card-glow">
           <div className="w-12 h-12 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
             <TrendingUp size={24} />
           </div>
@@ -416,7 +416,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         </div>
 
         {/* Profit */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-sm flex items-center gap-4 dark-card-glow">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4 dark-card-glow">
           <div className="w-12 h-12 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
             <DollarSign size={24} />
           </div>
@@ -429,7 +429,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-md flex flex-wrap gap-4 items-center">
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-md flex flex-wrap gap-4 items-center">
         {/* Search */}
         <div className="flex-1 min-w-[240px] relative">
           <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
@@ -438,12 +438,12 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
             placeholder="Tìm mã HĐ, tên khách hàng hoặc dự án..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold text-slate-900 dark:text-slate-100"
+            className="w-full pl-12 pr-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold text-slate-900 dark:text-slate-100"
           />
         </div>
 
         {/* Year Filter */}
-        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-4 border border-slate-200 dark:border-slate-700">
+        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-4 border border-slate-200 dark:border-slate-800">
           <Calendar size={18} className="text-slate-500" />
           <select
             className="bg-transparent py-3 text-sm font-black text-slate-900 dark:text-slate-100 outline-none w-[100px]"
@@ -462,7 +462,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
 
         {/* Unit Filter (Local) - Only show if Global is All */}
         {selectedUnit?.id === 'all' && (
-          <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-4 border border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-4 border border-slate-200 dark:border-slate-800">
             <Building2 size={18} className="text-slate-500" />
             <select
               className="bg-transparent py-3 text-sm font-black text-slate-900 dark:text-slate-100 outline-none max-w-[150px]"
@@ -481,7 +481,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
         )}
 
         {/* Status Filter */}
-        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-4 border border-slate-200 dark:border-slate-700">
+        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-4 border border-slate-200 dark:border-slate-800">
           <Filter size={18} className="text-slate-500" />
           <select
             className="bg-transparent py-3 text-sm font-black text-slate-900 dark:text-slate-100 outline-none"
@@ -501,7 +501,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
       </div>
 
       {/* TABLE */}
-      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-lg transition-colors overflow-x-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-lg transition-colors overflow-x-auto">
         <table className="w-full text-left border-separate border-spacing-0 min-w-[1400px]">
           <thead>
             <tr className="z-20">
@@ -519,7 +519,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
               ].map((col, idx) => (
                 <th
                   key={idx}
-                  className={`sticky top-0 z-20 bg-slate-50 dark:bg-slate-800 px-4 py-5 text-[10px] font-black uppercase tracking-widest border-b border-slate-200 dark:border-slate-700/60 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]
+                  className={`sticky top-0 z-20 bg-slate-50 dark:bg-slate-800 px-4 py-5 text-[10px] font-black uppercase tracking-widest border-b border-slate-200 dark:border-slate-800 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]
                     ${col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'}
                     ${col.color || 'text-slate-500 dark:text-slate-400'}
                     ${col.width || ''}`}

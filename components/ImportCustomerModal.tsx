@@ -254,7 +254,7 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
                                 onDrop={handleDrop}
                                 className={`border border-dashed rounded-lg p-12 text-center transition-colors ${dragActive
                                     ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
-                                    : 'border-slate-300 dark:border-slate-700 hover:border-emerald-400'
+                                    : 'border-slate-300 dark:border-slate-800 hover:border-emerald-400'
                                     }`}
                             >
                                 {isUploading ? (

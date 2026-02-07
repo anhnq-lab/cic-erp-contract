@@ -128,7 +128,7 @@ export const ApprovalStepper: React.FC<Props> = ({ currentStatus, reviews = [] }
                                     ? 'border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20'
                                     : isNext
                                         ? 'border-amber-200 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-900/20'
-                                        : 'border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 opacity-60'
+                                        : 'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800 opacity-60'
                                 }`}
                         >
                             {/* Step Number Badge */}

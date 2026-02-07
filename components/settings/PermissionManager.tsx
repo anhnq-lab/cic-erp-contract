@@ -191,7 +191,7 @@ const PermissionManager: React.FC = () => {
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                             placeholder="Tên, chức vụ hoặc đơn vị..."
-                            className="w-full pl-9 pr-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                            className="w-full pl-9 pr-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                         />
                     </div>
                 </div>
@@ -200,7 +200,7 @@ const PermissionManager: React.FC = () => {
                     <select
                         value={selectedUserId}
                         onChange={e => setSelectedUserId(e.target.value)}
-                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700"
+                        className="w-full px-3 py-2 border rounded-lg dark:bg-slate-800 dark:border-slate-800"
                     >
                         <option value="">-- Chọn nhân viên --</option>
                         {filteredUsers.map(user => (
@@ -255,7 +255,7 @@ const PermissionManager: React.FC = () => {
                                     toast.error('Không thể cập nhật role');
                                 }
                             }}
-                            className="flex-1 px-3 py-2 text-sm border rounded-lg bg-white dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            className="flex-1 px-3 py-2 text-sm border rounded-lg bg-white dark:bg-slate-800 dark:border-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         >
                             <option value="">-- Chưa phân quyền --</option>
                             <option value="NVKD">Nhân viên kinh doanh</option>
@@ -276,7 +276,7 @@ const PermissionManager: React.FC = () => {
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
-                            <tr className="border-b dark:border-slate-700">
+                            <tr className="border-b dark:border-slate-800">
                                 <th className="text-left py-3 px-2 font-semibold text-slate-700 dark:text-slate-300">
                                     Module
                                 </th>

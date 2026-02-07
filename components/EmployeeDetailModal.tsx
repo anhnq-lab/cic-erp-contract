@@ -97,7 +97,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({ isOpen, onClo
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b border-slate-200 dark:border-slate-700 px-4 bg-slate-50 dark:bg-slate-800">
+                <div className="flex border-b border-slate-200 dark:border-slate-800 px-4 bg-slate-50 dark:bg-slate-800">
                     {tabs.map(tab => (
                         <button
                             key={tab.id}
@@ -132,7 +132,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({ isOpen, onClo
                             <InfoRow label="Email" value={employee.email || ''} icon={Mail} />
                             <InfoRow label="Số điện thoại" value={employee.phone || ''} icon={Phone} />
                             <InfoRow label="Telegram" value={employee.telegram || ''} icon={Mail} />
-                            <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                            <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800">
                                 <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
                                     <Heart size={16} className="text-red-400" />
                                     Liên hệ khẩn cấp
@@ -157,7 +157,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({ isOpen, onClo
                             <InfoRow label="Loại hợp đồng" value={employee.contractType || ''} icon={Building} />
                             <InfoRow label="Ngày hết hạn HĐ" value={formatDate(employee.contractEndDate)} icon={Calendar} />
                             <InfoRow label="Đơn vị" value={unit?.name || ''} icon={Building} />
-                            <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                            <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800">
                                 <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
                                     <CreditCard size={16} className="text-emerald-400" />
                                     Thông tin ngân hàng
@@ -170,7 +170,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({ isOpen, onClo
                 </div>
 
                 {/* Actions */}
-                <div className="flex justify-between items-center px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+                <div className="flex justify-between items-center px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800">
                     <div className="flex gap-2">
                         {employee.phone && (
                             <a
