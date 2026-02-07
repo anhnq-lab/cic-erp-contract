@@ -62,17 +62,17 @@ export const ContractReviewPanel: React.FC<ContractReviewPanelProps> = ({
 
     // Status display cho Admin
     const statusLabels: Record<string, { label: string; color: string }> = {
-        'Draft': { label: 'Nháp', color: 'bg-slate-100 text-slate-600' },
-        'Pending': { label: 'Chờ xử lý', color: 'bg-amber-100 text-amber-700' },
-        'Pending_Review': { label: '⚡ Chờ duyệt (Song song)', color: 'bg-indigo-100 text-indigo-700' },
-        'Both_Approved': { label: '✅ Đã duyệt xong', color: 'bg-emerald-100 text-emerald-700' },
-        'Pending_Sign': { label: 'Chờ ký', color: 'bg-purple-100 text-purple-700' },
-        'Active': { label: 'Đang hiệu lực', color: 'bg-green-100 text-green-700' },
-        'Completed': { label: 'Hoàn thành', color: 'bg-gray-100 text-gray-700' },
+        'Draft': { label: 'Nháp', color: 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300' },
+        'Pending': { label: 'Chờ xử lý', color: 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300' },
+        'Pending_Review': { label: '⚡ Chờ duyệt (Song song)', color: 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300' },
+        'Both_Approved': { label: '✅ Đã duyệt xong', color: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300' },
+        'Pending_Sign': { label: 'Chờ ký', color: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300' },
+        'Active': { label: 'Đang hiệu lực', color: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' },
+        'Completed': { label: 'Hoàn thành', color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300' },
         // Backward compatibility
-        'Pending_Legal': { label: 'Chờ Pháp lý duyệt', color: 'bg-violet-100 text-violet-700' },
-        'Pending_Finance': { label: 'Chờ Tài chính duyệt', color: 'bg-emerald-100 text-emerald-700' },
-        'Finance_Approved': { label: 'Đã duyệt TC', color: 'bg-blue-100 text-blue-700' },
+        'Pending_Legal': { label: 'Chờ Pháp lý duyệt', color: 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300' },
+        'Pending_Finance': { label: 'Chờ Tài chính duyệt', color: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300' },
+        'Finance_Approved': { label: 'Đã duyệt TC', color: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' },
     };
 
     const hasAnyAction = showSubmitReview || showLegalReview || showFinanceReview || showSubmitSign || showSign;
@@ -88,17 +88,17 @@ export const ContractReviewPanel: React.FC<ContractReviewPanelProps> = ({
             {isAdmin && (
                 <div className="flex items-center gap-2 text-xs">
                     <Eye size={14} className="text-slate-400" />
-                    <span className="text-slate-500">Workflow:</span>
-                    <span className={`px-2 py-0.5 rounded-full font-medium ${statusLabels[currentStatus]?.color || 'bg-slate-100 text-slate-600'}`}>
+                    <span className="text-slate-500 dark:text-slate-400">Workflow:</span>
+                    <span className={`px-2 py-0.5 rounded-full font-medium ${statusLabels[currentStatus]?.color || 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>
                         {statusLabels[currentStatus]?.label || currentStatus}
                     </span>
                     {/* Show approval status when Pending_Review */}
                     {currentStatus === 'Pending_Review' && (
                         <div className="flex items-center gap-1 ml-2">
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${legalApproved ? 'bg-violet-500 text-white' : 'bg-violet-100 text-violet-600'}`}>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${legalApproved ? 'bg-violet-500 text-white' : 'bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300'}`}>
                                 {legalApproved ? '✓ Legal' : '○ Legal'}
                             </span>
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${financeApproved ? 'bg-emerald-500 text-white' : 'bg-emerald-100 text-emerald-600'}`}>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${financeApproved ? 'bg-emerald-500 text-white' : 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-300'}`}>
                                 {financeApproved ? '✓ Finance' : '○ Finance'}
                             </span>
                         </div>
@@ -111,7 +111,7 @@ export const ContractReviewPanel: React.FC<ContractReviewPanelProps> = ({
                 <button
                     onClick={() => handleAction('SubmitReview')}
                     disabled={!!loadingAction}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium text-sm flex items-center gap-2 transition-colors shadow-lg shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-orange-600 text-white rounded-xl hover:bg-orange-700 font-medium text-sm flex items-center gap-2 transition-colors shadow-lg shadow-orange-200 dark:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {loadingAction === 'SubmitReview' ? <Loader2 size={16} className="animate-spin" /> : <Users size={16} />}
                     Gửi duyệt (Pháp lý + Tài chính)
@@ -120,9 +120,9 @@ export const ContractReviewPanel: React.FC<ContractReviewPanelProps> = ({
 
             {/* PARALLEL REVIEW SECTION */}
             {(showLegalReview || showFinanceReview) && (
-                <div className="flex gap-2 items-center bg-indigo-50 rounded-xl p-2 border border-indigo-200">
-                    <Users size={14} className="text-indigo-600" />
-                    <span className="text-[10px] font-bold text-indigo-600 uppercase">
+                <div className="flex gap-2 items-center bg-orange-50 dark:bg-orange-900/30 rounded-xl p-2 border border-orange-200 dark:border-orange-700">
+                    <Users size={14} className="text-orange-600 dark:text-orange-400" />
+                    <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase">
                         Duyệt Song song
                     </span>
                 </div>
@@ -130,15 +130,15 @@ export const ContractReviewPanel: React.FC<ContractReviewPanelProps> = ({
 
             {/* LEGAL REVIEW */}
             {showLegalReview && (
-                <div className="flex gap-2 items-center bg-violet-50 rounded-xl p-1 pr-2 border border-violet-200">
-                    <Gavel size={14} className="text-violet-600 ml-2" />
-                    <span className="text-[10px] font-bold text-violet-600 uppercase mr-2">
+                <div className="flex gap-2 items-center bg-violet-50 dark:bg-violet-900/30 rounded-xl p-1 pr-2 border border-violet-200 dark:border-violet-700">
+                    <Gavel size={14} className="text-violet-600 dark:text-violet-400 ml-2" />
+                    <span className="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase mr-2">
                         Pháp lý
                     </span>
                     <button
                         onClick={() => handleAction('RejectLegal')}
                         disabled={!!loadingAction}
-                        className="px-3 py-1.5 bg-white text-rose-600 rounded-lg hover:bg-rose-50 font-bold text-xs shadow-sm border border-slate-200 transition-colors flex items-center gap-1 disabled:opacity-50"
+                        className="px-3 py-1.5 bg-white dark:bg-slate-800 text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/30 font-bold text-xs shadow-sm border border-slate-200 dark:border-slate-600 transition-colors flex items-center gap-1 disabled:opacity-50"
                     >
                         {loadingAction === 'RejectLegal' ? <Loader2 size={12} className="animate-spin" /> : <X size={12} />} Từ chối
                     </button>
@@ -161,15 +161,15 @@ export const ContractReviewPanel: React.FC<ContractReviewPanelProps> = ({
 
             {/* FINANCE REVIEW */}
             {showFinanceReview && (
-                <div className="flex gap-2 items-center bg-emerald-50 rounded-xl p-1 pr-2 border border-emerald-200">
-                    <Calculator size={14} className="text-emerald-600 ml-2" />
-                    <span className="text-[10px] font-bold text-emerald-600 uppercase mr-2">
+                <div className="flex gap-2 items-center bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-1 pr-2 border border-emerald-200 dark:border-emerald-700">
+                    <Calculator size={14} className="text-emerald-600 dark:text-emerald-400 ml-2" />
+                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase mr-2">
                         Tài chính
                     </span>
                     <button
                         onClick={() => handleAction('RejectFinance')}
                         disabled={!!loadingAction}
-                        className="px-3 py-1.5 bg-white text-rose-600 rounded-lg hover:bg-rose-50 font-bold text-xs shadow-sm border border-slate-200 transition-colors flex items-center gap-1 disabled:opacity-50"
+                        className="px-3 py-1.5 bg-white dark:bg-slate-800 text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/30 font-bold text-xs shadow-sm border border-slate-200 dark:border-slate-600 transition-colors flex items-center gap-1 disabled:opacity-50"
                     >
                         {loadingAction === 'RejectFinance' ? <Loader2 size={12} className="animate-spin" /> : <X size={12} />} Từ chối
                     </button>
@@ -195,7 +195,7 @@ export const ContractReviewPanel: React.FC<ContractReviewPanelProps> = ({
                 <button
                     onClick={() => handleAction('SubmitSign')}
                     disabled={!!loadingAction}
-                    className="px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700 font-medium text-sm flex items-center gap-2 transition-colors shadow-lg shadow-amber-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700 font-medium text-sm flex items-center gap-2 transition-colors shadow-lg shadow-amber-200 dark:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {loadingAction === 'SubmitSign' ? <Loader2 size={16} className="animate-spin" /> : <Signature size={16} />}
                     Trình ký
@@ -207,7 +207,7 @@ export const ContractReviewPanel: React.FC<ContractReviewPanelProps> = ({
                 <button
                     onClick={() => handleAction('Sign')}
                     disabled={!!loadingAction}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 font-medium text-sm flex items-center gap-2 transition-colors shadow-lg shadow-purple-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 font-medium text-sm flex items-center gap-2 transition-colors shadow-lg shadow-purple-200 dark:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {loadingAction === 'Sign' ? <Loader2 size={16} className="animate-spin" /> : <Signature size={16} />}
                     Ký hợp đồng
