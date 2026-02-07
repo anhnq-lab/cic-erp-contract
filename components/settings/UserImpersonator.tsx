@@ -54,7 +54,7 @@ const UserImpersonator: React.FC = () => {
                 // First fetch employees without join to avoid FK constraint errors
                 const { data: employeesData, error: empError } = await supabase
                     .from('employees')
-                    .select('id, email, name, position, unit_id')
+                    .select('id, email, name, position, unit_id, role_code')
                     .order('name');
 
                 if (empError) {
@@ -77,7 +77,7 @@ const UserImpersonator: React.FC = () => {
                         id: u.id,
                         email: u.email || '',
                         fullName: u.name,
-                        role: mapPositionToRole(u.position),
+                        role: (u.role_code as UserRole) || mapPositionToRole(u.position),
                         unitId: u.unit_id,
                         position: u.position,
                         unitName: u.unit_id ? unitsMap.get(u.unit_id) : undefined,
