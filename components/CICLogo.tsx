@@ -14,8 +14,8 @@ interface CICLogoProps {
  *
  * Faithfully inspired by the original CIC corporate identity:
  * Three bold horizontal-bar letterforms forming "CIC".
+ * Both C letters open to the RIGHT (same direction).
  * Supports orange/blue accent switching via .accent-blue CSS class.
- * Responsive to light/dark mode.
  */
 const CICLogo: React.FC<CICLogoProps> = ({
     size = 'md',
@@ -72,24 +72,16 @@ export default CICLogo;
 /* ═══════════════════════════════════════════════════════════════
    Core SVG Mark — Horizontal-stripe "CIC" letterform
 
-   Faithful to the original CIC corporate logo:
-   6 horizontal bars per letter column with:
-   - C (left):  all bars full-width, but rows 1-4 (middle) are
-     shorter on the right → creating the C opening
-   - I (center): all bars full width (narrow column)
-   - C (right): mirrored C, shorter on the left for middle rows
+   Original CIC logo: both C letters open to the RIGHT.
+   6 horizontal bars per letter, with the C bars gradually
+   shorter in the middle rows for a rounded C appearance.
 
    Layout (viewBox 0 0 300 130):
-   - C-left:   x=0…80
-   - gap:      80…96
-   - I-center: 96…172
-   - gap:      172…188
-   - C-right:  188…268
+   - C-left:   x=8, opening RIGHT
+   - I-center: centered bars
+   - C-right:  x=196, opening RIGHT (same as left C)
    ═══════════════════════════════════════════════════════════════ */
 
-/**
- * Reactively watches <html> classList for accent & dark mode
- */
 function useThemeAccent() {
     const [isBlue, setIsBlue] = useState(() =>
         typeof document !== 'undefined' && document.documentElement.classList.contains('accent-blue')
@@ -123,50 +115,68 @@ const CICStripeMark: React.FC<CICStripeMarkProps> = ({ width, height, className 
     const { isBlue, isDark } = useThemeAccent();
     const gradId = useId().replace(/:/g, '_');
 
-    // ── Geometry ──
     const vbW = 300;
     const vbH = 130;
     const rows = 6;
     const barH = 15;
     const gapY = 5;
-    const rx = 2;
+    const rx = 3.5; // More rounded corners
 
     const totalH = rows * barH + (rows - 1) * gapY;
     const y0 = (vbH - totalH) / 2;
 
-    // Letter column positions
-    const cL = { x: 8, fullW: 78, shortW: 48 };       // Left C
-    const iM = { x: 104, w: 60 };                       // Center I
-    const cR = { endX: 292, fullW: 78, shortW: 48 };   // Right C (mirrored)
+    // Per-row widths for C letter — gradually shorter in the middle
+    // for a smooth, rounded C shape (not just edge/non-edge)
+    // Row 0 (top):    full width  (closing the C at top)
+    // Row 1:          slightly shorter
+    // Row 2:          shortest (deepest part of C opening)
+    // Row 3:          shortest
+    // Row 4:          slightly shorter
+    // Row 5 (bottom): full width  (closing the C at bottom)
+    const cFullW = 78;
+    const cBarWidths = [
+        cFullW,         // row 0 — top bar, full
+        cFullW * 0.68,  // row 1
+        cFullW * 0.55,  // row 2 — deepest
+        cFullW * 0.55,  // row 3 — deepest
+        cFullW * 0.68,  // row 4
+        cFullW,         // row 5 — bottom bar, full
+    ];
 
-    const gapBetween = 18; // visual gap between letters
+    // I column width (center letter, slightly narrower)
+    const iW = 56;
 
-    // Gradient
+    // Column x positions — both Cs open to the RIGHT
+    const cLeftX = 8;       // Left C starts here
+    const iCenterX = 104;   // Center I starts here
+    const cRightX = 196;    // Right C starts here (same orientation as left)
+
+    // Gradient: shifted towards RED-orange per user request
     const stops = isBlue
         ? isDark
-            ? ['#0EA5E9', '#38BDF8', '#7DD3FC']
-            : ['#0369A1', '#0284C7', '#0EA5E9']
+            ? ['#0EA5E9', '#38BDF8', '#7DD3FC']    // dark+blue
+            : ['#0369A1', '#0284C7', '#0EA5E9']    // light+blue
         : isDark
-            ? ['#F97316', '#FB923C', '#FDBA74']
-            : ['#C2410C', '#EA580C', '#F97316'];
+            ? ['#E8471C', '#F06030', '#FB923C']     // dark+red-orange
+            : ['#C92A10', '#D94215', '#E8561C'];    // light+red-orange (deeper red)
 
-    // Build bar data
     type Bar = { x: number; y: number; w: number };
     const bars: Bar[] = [];
 
     for (let i = 0; i < rows; i++) {
         const y = y0 + i * (barH + gapY);
-        const isEdge = (i === 0 || i === rows - 1);
+        const cW = cBarWidths[i];
 
-        // Left C
-        bars.push({ x: cL.x, y, w: isEdge ? cL.fullW : cL.shortW });
+        // ─── Left C (opening RIGHT) ───
+        // All bars start at cLeftX, shorter bars = opening on the right
+        bars.push({ x: cLeftX, y, w: cW });
 
-        // Center I
-        bars.push({ x: iM.x, y, w: iM.w });
+        // ─── Center I ───
+        bars.push({ x: iCenterX, y, w: iW });
 
-        // Right C (mirrored)
-        const rW = isEdge ? cR.fullW : cR.shortW;
-        bars.push({ x: cR.endX - rW, y, w: rW });
+        // ─── Right C (opening RIGHT, same as left C) ───
+        // Same orientation: bars start at cRightX, shorter bars on the right
+        bars.push({ x: cRightX, y, w: cW });
     }
 
     return (
@@ -198,7 +208,7 @@ const CICStripeMark: React.FC<CICStripeMarkProps> = ({ width, height, className 
 };
 
 /**
- * Compact CIC Icon for collapsed sidebar — Stripe mark only, proportionally scaled
+ * Compact CIC Icon for collapsed sidebar — Stripe mark only
  */
 export const CICLogoIcon: React.FC<{ size?: number; className?: string }> = ({
     size = 36,
