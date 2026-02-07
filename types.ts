@@ -335,6 +335,7 @@ export interface UserProfile {
   role: UserRole;
   unitId?: string; // Links to Unit
   avatarUrl?: string;
+  employeeId?: string; // Links to employees table (auto-matched by email)
 }
 
 export type PlanStatus = 'Draft' | 'Pending_Unit' | 'Pending_Finance' | 'Pending_Board' | 'Approved' | 'Rejected';

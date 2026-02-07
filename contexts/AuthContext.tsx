@@ -120,7 +120,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     fullName: data.full_name,
                     role: userRole,
                     unitId: data.unit_id,
-                    avatarUrl: data.avatar_url
+                    avatarUrl: data.avatar_url,
+                    employeeId: data.employee_id
                 });
                 console.log('[AuthContext.fetchProfile] Profile set successfully');
             }
@@ -198,7 +199,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 fullName: profiles[0].full_name,
                 role: profiles[0].role as UserRole,
                 unitId: profiles[0].unit_id,
-                avatarUrl: profiles[0].avatar_url
+                avatarUrl: profiles[0].avatar_url,
+                employeeId: profiles[0].employee_id
             });
         }
     };
