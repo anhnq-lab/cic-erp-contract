@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Loader2, BarChart3, Brain, Smartphone, Shield, ArrowRight } from 'lucide-react';
+import { Loader2, BarChart3, Brain, Smartphone, Shield, ArrowRight, Sun, Moon } from 'lucide-react';
 import CICLogo from './CICLogo';
 
 /**
@@ -14,6 +14,24 @@ import CICLogo from './CICLogo';
  */
 const Auth = () => {
     const [isLoading, setIsLoading] = useState(false);
+
+    // Theme toggle (standalone, same key as MainLayout)
+    const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+        const saved = localStorage.getItem('contract-pro-theme');
+        if (saved === 'light' || saved === 'dark') return saved;
+        if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) return 'dark';
+        return 'light';
+    });
+
+    useEffect(() => {
+        const root = document.documentElement;
+        if (theme === 'dark') {
+            root.classList.add('dark');
+        } else {
+            root.classList.remove('dark');
+        }
+        localStorage.setItem('contract-pro-theme', theme);
+    }, [theme]);
 
     const handleGoogleLogin = async () => {
         try {
@@ -131,6 +149,14 @@ const Auth = () => {
 
             {/* ===== RIGHT: Login Form ===== */}
             <div className="flex-1 flex items-center justify-center p-6 md:p-8 bg-white dark:bg-slate-950 relative">
+                {/* Theme toggle */}
+                <button
+                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    className="absolute top-4 right-4 lg:top-6 lg:right-6 p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all z-10"
+                    title={theme === 'dark' ? 'Chế độ sáng' : 'Chế độ tối'}
+                >
+                    {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                </button>
                 {/* Mobile: Mini brand banner at top */}
                 <div className="absolute top-0 left-0 right-0 lg:hidden">
                     <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-orange-950 px-6 py-4 flex items-center justify-between">
