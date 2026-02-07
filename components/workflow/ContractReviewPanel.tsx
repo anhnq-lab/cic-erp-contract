@@ -45,7 +45,7 @@ export const ContractReviewPanel: React.FC<ContractReviewPanelProps> = ({
 
     // Điều kiện hiển thị các nút - hỗ trợ cả QUY TRÌNH MỚI (Pending_Review) và QUY TRÌNH CŨ (Pending_Legal/Pending_Finance)
     const showSubmitReview = (currentStatus === 'Draft' || currentStatus === 'Pending') &&
-        (isAdmin || userRole === 'NVKD' || userRole === 'UnitLeader');
+        (userRole === 'NVKD' || userRole === 'UnitLeader');
 
     // PARALLEL: Legal có thể duyệt nếu status = Pending_Review VÀ chưa duyệt
     const showLegalReview = currentStatus === 'Pending_Review' && !legalApproved &&
