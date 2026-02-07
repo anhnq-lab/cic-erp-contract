@@ -15,7 +15,7 @@ interface AnalyticsProps {
     onSelectUnit: (unit: Unit) => void;
 }
 
-const COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4', '#6366f1'];
+const COLORS = ['#f97316', '#10b981', '#6366f1', '#ec4899', '#8b5cf6', '#06b6d4', '#f59e0b'];
 
 const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => {
     const [yearFilter, setYearFilter] = useState<string>(new Date().getFullYear().toString());
@@ -168,7 +168,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
 
     if (isLoading) return (
         <div className="flex items-center justify-center h-96">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
         </div>
     );
 
@@ -177,7 +177,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
             {/* Header Controls */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                         Thống kê Chuyên sâu
                     </h1>
                     <p className="text-slate-500 font-medium">Phân tích hiệu quả kinh doanh & tài chính</p>
@@ -188,7 +188,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                     <div className="relative">
                         <button
                             onClick={() => setShowUnitSelector(!showUnitSelector)}
-                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:border-indigo-500 transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:border-orange-500 transition-colors"
                         >
                             <Building2 size={18} className="text-slate-400" />
                             <span className="font-bold text-slate-700 dark:text-slate-200">{safeUnit.name}</span>
@@ -222,7 +222,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                         </div>
                     </div>
 
-                    <button className="p-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-xl hover:bg-indigo-100 transition-colors">
+                    <button className="p-2 bg-orange-50 dark:bg-orange-900/20 text-orange-600 rounded-xl hover:bg-orange-100 transition-colors">
                         <Download size={20} />
                     </button>
                 </div>
@@ -231,9 +231,9 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
             {/* Top Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* 1. Revenue Structure */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
-                        <PieChartIcon size={20} className="text-indigo-600" />
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
+                        <PieChartIcon size={20} className="text-orange-500" />
                         Cơ cấu Doanh thu {selectedUnit.id === 'all' ? '(Theo Đơn vị)' : '(Theo Nhân sự)'}
                     </h3>
                     <div className="h-[300px]">
@@ -252,7 +252,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
                                     ))}
                                 </Pie>
-                                <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ borderRadius: 16, border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
+                                <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ borderRadius: 12, border: document.documentElement.classList.contains('dark') ? '1px solid #334155' : '1px solid #e2e8f0', background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff', color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#1e293b' }} />
                                 <Legend layout="vertical" align="right" verticalAlign="middle" iconType="circle" />
                             </PieChart>
                         </ResponsiveContainer>
@@ -260,20 +260,20 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                 </div>
 
                 {/* 2. Plan vs Actual */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-6">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-6">
                         Kế hoạch vs Thực tế (Doanh thu)
                     </h3>
                     <div className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={planVsActualData} barCategoryGap={20}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'} />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }} dy={10} />
                                 <YAxis axisLine={false} tickLine={false} tickFormatter={formatCurrency} tick={{ fill: '#64748b', fontSize: 11 }} />
-                                <Tooltip cursor={{ fill: '#f8fafc' }} formatter={(value: number) => formatCurrency(value)} contentStyle={{ borderRadius: 12, border: 'none' }} />
+                                <Tooltip cursor={{ fill: document.documentElement.classList.contains('dark') ? 'rgba(51,65,85,0.3)' : '#f8fafc' }} formatter={(value: number) => formatCurrency(value)} contentStyle={{ borderRadius: 12, border: document.documentElement.classList.contains('dark') ? '1px solid #334155' : '1px solid #e2e8f0', background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff', color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#1e293b' }} />
                                 <Legend />
-                                <Bar dataKey="Actual" name="Thực tế" fill="#4f46e5" radius={[6, 6, 0, 0]} />
-                                <Bar dataKey="Target" name="Kế hoạch" fill="#e2e8f0" radius={[6, 6, 0, 0]} />
+                                <Bar dataKey="Actual" name="Thực tế" fill="#f97316" radius={[6, 6, 0, 0]} />
+                                <Bar dataKey="Target" name="Kế hoạch" fill={document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'} radius={[6, 6, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -281,8 +281,8 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
             </div>
 
             {/* 3. Monthly Trend (Line/Area) */}
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm">
-                <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-6">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-6">
                     Biểu đồ Xu hướng (Doanh thu & Lợi nhuận)
                 </h3>
                 <div className="h-[350px]">
@@ -290,20 +290,20 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
                         <AreaChart data={monthlyTrendData}>
                             <defs>
                                 <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.2} />
-                                    <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
+                                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.2} />
+                                    <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
                                 </linearGradient>
                                 <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
                                     <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'} />
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }} dy={10} />
                             <YAxis axisLine={false} tickLine={false} tickFormatter={formatCurrency} tick={{ fill: '#64748b', fontSize: 11 }} />
-                            <Tooltip contentStyle={{ borderRadius: 12, border: 'none' }} formatter={(value: number) => formatCurrency(value)} />
+                            <Tooltip contentStyle={{ borderRadius: 12, border: document.documentElement.classList.contains('dark') ? '1px solid #334155' : '1px solid #e2e8f0', background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff', color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#1e293b' }} formatter={(value: number) => formatCurrency(value)} />
                             <Legend />
-                            <Area type="monotone" dataKey="DoanhThu" name="Doanh thu" stroke="#4f46e5" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                            <Area type="monotone" dataKey="DoanhThu" name="Doanh thu" stroke="#f97316" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
                             <Area type="monotone" dataKey="LoiNhuan" name="Lợi nhuận" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorProfit)" />
                         </AreaChart>
                     </ResponsiveContainer>
@@ -311,17 +311,17 @@ const Analytics: React.FC<AnalyticsProps> = ({ selectedUnit, onSelectUnit }) => 
             </div>
 
             {/* 4. Cashflow (Composed) */}
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm">
-                <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-6">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-6">
                     Biểu đồ Dòng tiền (Thu - Chi)
                 </h3>
                 <div className="h-[350px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={cashflowData}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'} />
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }} dy={10} />
                             <YAxis axisLine={false} tickLine={false} tickFormatter={formatCurrency} tick={{ fill: '#64748b', fontSize: 11 }} />
-                            <Tooltip contentStyle={{ borderRadius: 12, border: 'none' }} formatter={(value: number) => formatCurrency(value)} />
+                            <Tooltip contentStyle={{ borderRadius: 12, border: document.documentElement.classList.contains('dark') ? '1px solid #334155' : '1px solid #e2e8f0', background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff', color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#1e293b' }} formatter={(value: number) => formatCurrency(value)} />
                             <Legend />
                             <Bar dataKey="Thu" name="Dòng tiền vào" fill="#10b981" radius={[4, 4, 0, 0]} barSize={20} />
                             <Bar dataKey="Chi" name="Dòng tiền ra" fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={20} />

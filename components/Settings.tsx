@@ -39,7 +39,7 @@ const Settings: React.FC = () => {
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex-1 justify-center ${activeTab === tab.id
-                            ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                            ? 'bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-400 shadow-sm'
                             : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                             }`}
                     >
@@ -50,20 +50,20 @@ const Settings: React.FC = () => {
             </div>
 
             {/* Tab Content */}
-            <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 {activeTab === 'system' && (
                     <div className="space-y-6">
                         {/* Theme */}
                         <div>
                             <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm mb-4 flex items-center gap-2">
-                                <Settings2 size={16} className="text-indigo-500" />
+                                <Settings2 size={16} className="text-orange-500" />
                                 Giao diện hệ thống
                             </h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <button
                                     onClick={() => setTheme('light')}
                                     className={`flex items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all ${theme === 'light'
-                                        ? 'bg-indigo-50 border-indigo-600 text-indigo-700 dark:bg-indigo-900/20 dark:border-indigo-500 dark:text-indigo-400'
+                                        ? 'bg-orange-50 border-orange-500 text-orange-700 dark:bg-orange-900/20 dark:border-orange-500 dark:text-orange-400'
                                         : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'
                                         }`}
                                 >
@@ -73,7 +73,7 @@ const Settings: React.FC = () => {
                                 <button
                                     onClick={() => setTheme('dark')}
                                     className={`flex items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all ${theme === 'dark'
-                                        ? 'bg-indigo-900/40 border-indigo-500 text-indigo-400'
+                                        ? 'bg-orange-900/30 border-orange-500 text-orange-400'
                                         : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'
                                         }`}
                                 >
@@ -93,7 +93,7 @@ const Settings: React.FC = () => {
                 {activeTab === 'permissions' && isAdmin && (
                     <div>
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-orange-600 flex items-center justify-center">
                                 <Shield size={20} className="text-white" />
                             </div>
                             <div>

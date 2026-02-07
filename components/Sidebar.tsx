@@ -27,13 +27,13 @@ const NavItem: React.FC<NavItemProps> = ({ item, activeTab, setActiveTab, isColl
       setActiveTab(item.id);
       if (window.innerWidth < 768) onClose();
     }}
-    className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all mb-1 ${activeTab === item.id
-      ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300'
+    className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all mb-1 ${activeTab === item.id
+      ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300'
       : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'
       } ${isCollapsed ? 'md:px-0 md:justify-center' : ''}`}
     title={isCollapsed ? item.label : ''}
   >
-    <span className={`transition-all ${activeTab === item.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'} ${isCollapsed ? 'md:scale-110' : ''}`}>
+    <span className={`transition-all ${activeTab === item.id ? 'text-orange-600 dark:text-orange-400' : 'text-slate-400'} ${isCollapsed ? 'md:scale-110' : ''}`}>
       {item.icon}
     </span>
     <span className={`transition-all duration-300 whitespace-nowrap overflow-hidden ${isCollapsed ? 'md:w-0 md:opacity-0' : 'w-auto opacity-100'}`}>

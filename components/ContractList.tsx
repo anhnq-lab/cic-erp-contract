@@ -489,7 +489,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
       </div>
 
       {/* TABLE */}
-      <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-lg transition-colors overflow-x-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg transition-colors overflow-x-auto">
         <table className="w-full text-left border-separate border-spacing-0 min-w-[1400px]">
           <thead>
             <tr className="z-20">
