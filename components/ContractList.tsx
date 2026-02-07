@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 import { Search, Filter, Plus, MoreVertical, ExternalLink, User, Loader2, DollarSign, Briefcase, TrendingUp, Calendar, Building2, ChevronLeft, ChevronRight, Download, Upload, Copy } from 'lucide-react';
 import { ContractService, EmployeeService, UnitService } from '../services';
-import { ContractStatus, Unit, Contract, Employee } from '../types';
+import { ContractStatus, Unit, Contract, Employee, UserRole } from '../types';
 import { CONTRACT_STATUS_LABELS } from '../constants';
 import { useImpersonation } from '../contexts/ImpersonationContext';
 import ImportContractModal from './ImportContractModal';
@@ -134,13 +134,22 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
     const fetchContracts = async () => {
       setLoading(true);
       try {
-        // IMPERSONATION OVERRIDE: Khi đang giả làm user khác, chỉ hiển thị hợp đồng của đơn vị user đó
+        // IMPERSONATION OVERRIDE
         let effectiveUnitId = 'All';
 
-        if (isImpersonating && impersonatedUser?.unitId) {
-          // 🔒 Force filter theo đơn vị của user đang giả làm
-          effectiveUnitId = impersonatedUser.unitId;
-          console.log('[ContractList] Impersonation filter:', impersonatedUser.unitId);
+        // Roles có quyền xem TẤT CẢ hợp đồng (không filter theo đơn vị)
+        const GLOBAL_VIEW_ROLES: UserRole[] = ['Legal', 'Accountant', 'ChiefAccountant', 'Leadership', 'Admin'];
+
+        if (isImpersonating && impersonatedUser) {
+          if (GLOBAL_VIEW_ROLES.includes(impersonatedUser.role)) {
+            // Pháp chế, Kế toán, Ban lãnh đạo → xem TẤT CẢ hợp đồng
+            effectiveUnitId = 'All';
+            console.log('[ContractList] Global view role:', impersonatedUser.role, '→ showing ALL contracts');
+          } else if (impersonatedUser.unitId) {
+            // Các role khác → chỉ xem hợp đồng của đơn vị mình
+            effectiveUnitId = impersonatedUser.unitId;
+            console.log('[ContractList] Unit filter:', impersonatedUser.unitId);
+          }
         } else if (selectedUnit && selectedUnit.id !== 'all') {
           effectiveUnitId = selectedUnit.id;
         } else if (unitFilter !== 'All') {
@@ -280,7 +289,10 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
               🔒 Đang xem với quyền: {impersonatedUser.fullName}
             </p>
             <p className="text-xs text-amber-600 dark:text-amber-400">
-              Chỉ hiển thị hợp đồng thuộc đơn vị của nhân viên này
+              {(['Legal', 'Accountant', 'ChiefAccountant', 'Leadership', 'Admin'] as UserRole[]).includes(impersonatedUser.role)
+                ? 'Hiển thị TẤT CẢ hợp đồng của toàn công ty'
+                : 'Chỉ hiển thị hợp đồng thuộc đơn vị của nhân viên này'
+              }
             </p>
           </div>
         </div>
