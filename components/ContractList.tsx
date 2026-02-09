@@ -540,9 +540,9 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
               ].map((col, idx) => (
                 <th
                   key={idx}
-                  className={`sticky top-0 z-20 bg-slate-800 dark:bg-slate-950 px-4 py-5 text-[10px] font-black uppercase tracking-widest border-b border-slate-700 dark:border-slate-600 shadow-[inset_0_-1px_0_rgba(0,0,0,0.1)]
+                  className={`sticky top-0 z-20 bg-slate-50 dark:bg-slate-800 px-4 py-5 text-[10px] font-black uppercase tracking-widest border-b border-slate-200 dark:border-slate-700
                     ${col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'}
-                    ${col.color || 'text-slate-300 dark:text-slate-400'}
+                    ${col.color || 'text-slate-500 dark:text-slate-400'}
                     ${col.width || ''}`}
                 >
                   {col.label}
