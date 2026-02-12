@@ -168,7 +168,7 @@ export const DocumentService = {
         file: File,
         unitId: string,
         projectName: string,
-        docType: string = 'HD' // Default to 'HD' (Hợp đồng)
+        docType: string = '' // Empty = keep original name; 'HD'|'PAKD'|'HDON' = rename with prefix
     ) => {
         const { getGoogleAccessToken } = await import('../contexts/AuthContext');
         const token = getGoogleAccessToken();
@@ -182,16 +182,19 @@ export const DocumentService = {
         const { GoogleDriveService } = await import('./googleDriveService');
         const { DriveInitService } = await import('./driveInitService');
 
-        // Ensure contract folder exists on Drive
+        // All files go to the contract's main HopDong folder
         const { folderId } = await DriveInitService.createContractFolder(
             contractId, unitId, projectName
         );
 
-        // Generate standard name
-        const standardName = generateStandardFileName(contractId, file.name, docType, projectName);
+        // If docType is specified, generate standard name with prefix
+        // Otherwise keep original file name
+        const uploadName = docType
+            ? generateStandardFileName(contractId, file.name, docType, projectName)
+            : file.name;
 
-        // Upload to Drive with NEW name
-        const driveFile = await GoogleDriveService.uploadFile(file, folderId, standardName);
+        // Upload to Drive
+        const driveFile = await GoogleDriveService.uploadFile(file, folderId, uploadName);
 
         // Record in DB as external link (Google Drive)
         const { data, error } = await supabase.from('contract_documents').insert({
@@ -231,21 +234,11 @@ export const DocumentService = {
         const { GoogleDriveService } = await import('./googleDriveService');
         const { DriveInitService } = await import('./driveInitService');
 
-        let folderId: string;
-        if (folderType === 'PAKD') {
-            const result = await DriveInitService.createPAKDFolder(contractId, unitId, projectName);
-            folderId = result.folderId;
-        } else if (folderType === 'HoaDon') {
-            const result = await DriveInitService.createInvoiceFolder(contractId, unitId, projectName);
-            folderId = result.folderId;
-        } else {
-            const result = await DriveInitService.createContractFolder(contractId, unitId, projectName);
-            folderId = result.folderId;
-        }
+        // All files go to the contract's main HopDong folder
+        const result = await DriveInitService.createContractFolder(contractId, unitId, projectName);
+        const folderId = result.folderId;
 
-
-
-        // Map folder type to doc type prefix
+        // Map folder type to doc type prefix for naming
         let docType = 'HD';
         if (folderType === 'PAKD') docType = 'PAKD';
         else if (folderType === 'HoaDon') docType = 'HDON';

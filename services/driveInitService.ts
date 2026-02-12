@@ -288,10 +288,8 @@ export const DriveInitService = {
             createdBy: userId,
         });
 
-        // Initialize subfolders (PAKD, HoaDon) automatically
-        // This ensures the structure is ready
-        await this.createPAKDFolder(contractId, unitId, projectName, year, userId);
-        await this.createInvoiceFolder(contractId, unitId, projectName, year, userId);
+        // All files (PAKD, HoaDon, etc.) go directly into the contract folder
+        // No subfolders needed
 
         return {
             folderId: folder.id,
