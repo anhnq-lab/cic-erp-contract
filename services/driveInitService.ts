@@ -281,6 +281,11 @@ export const DriveInitService = {
             createdBy: userId,
         });
 
+        // Initialize subfolders (PAKD, HoaDon) automatically
+        // This ensures the structure is ready
+        await this.createPAKDFolder(contractId, unitId, projectName, year, userId);
+        await this.createInvoiceFolder(contractId, unitId, projectName, year, userId);
+
         return {
             folderId: folder.id,
             folderUrl: GoogleDriveService.getFolderUrl(folder.id),
@@ -288,13 +293,13 @@ export const DriveInitService = {
     },
 
     /**
-     * Create a PAKD folder for a contract.
-     * Path: CIC-Document/{UnitPrefix}/PAKD/{Year}/PAKD-{ContractID}_{CustomerName}
+     * Create a PAKD folder for a contract (Nested).
+     * Path: .../HopDong/{Year}/{Contract}/PAKD
      */
     async createPAKDFolder(
         contractId: string,
         unitId: string,
-        customerName: string,
+        contractName: string,
         year?: number,
         userId?: string
     ): Promise<{ folderId: string; folderUrl: string }> {
@@ -306,13 +311,51 @@ export const DriveInitService = {
             };
         }
 
-        const pathSegments = GoogleDriveService.buildPAKDFolderPath(unitId, contractId, customerName, year);
+        // Get contract folder first to ensure parent exists (or build full path)
+        const pathSegments = GoogleDriveService.buildPAKDFolderPath(unitId, contractId, contractName, year);
         const folder = await GoogleDriveService.getOrCreatePath(pathSegments);
 
         await saveFolderMapping({
             entityType: 'contract',
             entityId: contractId,
             folderType: 'PAKD',
+            driveFolderId: folder.id,
+            driveFolderName: pathSegments[pathSegments.length - 1],
+            createdBy: userId,
+        });
+
+        return {
+            folderId: folder.id,
+            folderUrl: GoogleDriveService.getFolderUrl(folder.id),
+        };
+    },
+
+    /**
+     * Create an Invoice (HoaDon) folder for a contract (Nested).
+     * Path: .../HopDong/{Year}/{Contract}/HoaDon
+     */
+    async createInvoiceFolder(
+        contractId: string,
+        unitId: string,
+        contractName: string,
+        year?: number,
+        userId?: string
+    ): Promise<{ folderId: string; folderUrl: string }> {
+        const existing = await getFolderMapping('contract', contractId, 'HoaDon');
+        if (existing) {
+            return {
+                folderId: existing.drive_folder_id,
+                folderUrl: existing.drive_folder_url || GoogleDriveService.getFolderUrl(existing.drive_folder_id),
+            };
+        }
+
+        const pathSegments = GoogleDriveService.buildInvoiceFolderPath(unitId, contractId, contractName, year);
+        const folder = await GoogleDriveService.getOrCreatePath(pathSegments);
+
+        await saveFolderMapping({
+            entityType: 'contract',
+            entityId: contractId,
+            folderType: 'HoaDon',
             driveFolderId: folder.id,
             driveFolderName: pathSegments[pathSegments.length - 1],
             createdBy: userId,

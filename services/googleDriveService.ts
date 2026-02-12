@@ -48,7 +48,7 @@ export interface DrivePermission {
 }
 
 /** Standard subfolder structure for Business Units */
-export const BUSINESS_UNIT_SUBFOLDERS = ['PAKD', 'HopDong', 'HoaDon', 'BaoCao', 'Templates'] as const;
+export const BUSINESS_UNIT_SUBFOLDERS = ['HopDong', 'BaoCao', 'Templates'] as const;
 
 /** Standard subfolder structure for Admin Units (HĐQT, BGĐ, TCKT, HCNS) */
 export const ADMIN_UNIT_SUBFOLDERS = ['VanBan', 'BaoCao', 'Templates'] as const;
@@ -416,27 +416,31 @@ export const GoogleDriveService = {
     },
 
     /**
-     * Build path for PAKD folder.
+     * Build path for PAKD folder (Nested inside Contract).
+     * Path: .../HopDong/{Year}/{Contract}/PAKD
      */
     buildPAKDFolderPath(
         unitId: string,
         contractId: string,
-        customerName: string,
+        contractName: string, // Changed from customerName for consistency with Contract Folder
         year?: number
     ): string[] {
-        const unitPrefix = UNIT_FOLDER_MAP[unitId] || unitId.toUpperCase();
-        const y = year || new Date().getFullYear();
-        const sanitized = customerName.replace(/[/\\?%*:|"<>]/g, '_').substring(0, 80);
-        return [ROOT_FOLDER_NAME, unitPrefix, 'PAKD', String(y), `PAKD-${contractId}_${sanitized}`];
+        const contractPath = this.buildContractFolderPath(unitId, contractId, contractName, year);
+        return [...contractPath, 'PAKD'];
     },
 
     /**
-     * Build path for Invoice (HoaDon) folder.
+     * Build path for Invoice (HoaDon) folder (Nested inside Contract).
+     * Path: .../HopDong/{Year}/{Contract}/HoaDon
      */
-    buildInvoiceFolderPath(unitId: string, year?: number): string[] {
-        const unitPrefix = UNIT_FOLDER_MAP[unitId] || unitId.toUpperCase();
-        const y = year || new Date().getFullYear();
-        return [ROOT_FOLDER_NAME, unitPrefix, 'HoaDon', String(y)];
+    buildInvoiceFolderPath(
+        unitId: string,
+        contractId: string,
+        contractName: string,
+        year?: number
+    ): string[] {
+        const contractPath = this.buildContractFolderPath(unitId, contractId, contractName, year);
+        return [...contractPath, 'HoaDon'];
     },
 
     /**

@@ -29,7 +29,7 @@
 
 ---
 
-## 2. CẤU TRÚC LƯU TRỮ DỮ LIỆU
+### 2. Cấu trúc LƯU TRỮ DỮ LIỆU
 
 Hệ thống tuân thủ cấu trúc thư mục chuẩn hóa (Standardized Folder Structure) để đảm bảo sự ngăn nắp và dễ dàng tra cứu.
 
@@ -44,11 +44,24 @@ Hệ thống tuân thủ cấu trúc thư mục chuẩn hóa (Standardized Folde
 **3. Thư mục Đơn vị (Business Units):**
 Mỗi Trung tâm/Chi nhánh sẽ có một không gian lưu trữ riêng biệt với cấu trúc con:
 
+```
+CIC-Document/
+├── [Tên Đơn Vị] (Ví dụ: TT-BIM, TT-TVTK...)
+│   ├── 📁 Hợp đồng (Chứa hồ sơ theo từng hợp đồng)
+│   │   └── [Năm]
+│   │       └── [Mã Hợp Đồng]_[Tên Dự Án]
+│   │           ├── 📁 PAKD (Phương án kinh doanh)
+│   │           ├── 📁 HoaDon (Hóa đơn, chứng từ)
+│   │           └── 📄 Các file hợp đồng, phụ lục...
+│   ├── 📁 Báo cáo (Báo cáo định kỳ của đơn vị)
+│   └── 📁 Templates (Biểu mẫu dùng chung của đơn vị)
+```
+
 | Tên Thư mục | Mô tả nội dung | Ví dụ |
 | :--- | :--- | :--- |
-| **PAKD** | Hồ sơ Phương án Kinh doanh | `.../PAKD/2024/PAKD_Duan_A` |
-| **HopDong** | Hồ sơ Hợp đồng (Scan, Phụ lục) | `.../HopDong/2024/HD_001_VinGroup` |
-| **HoaDon** | Hóa đơn đầu ra/đầu vào liên quan | `.../HoaDon/2024/T1` |
+| **HopDong** | Hồ sơ Hợp đồng (Gốc) | `.../HopDong/2026/HD_001_VinGroup` |
+| ↳ **PAKD** | Hồ sơ PAKD (nằm trong Hợp đồng) | `.../HD_001.../PAKD` |
+| ↳ **HoaDon** | Hóa đơn (nằm trong Hợp đồng) | `.../HD_001.../HoaDon` |
 | **BaoCao** | Báo cáo nội bộ của đơn vị | `.../BaoCao/Tuan_01` |
 | **Templates** | Biểu mẫu đặc thù của đơn vị | `.../Templates/Mau_Bao_Gia` |
 

@@ -200,6 +200,9 @@ export const DocumentService = {
         if (folderType === 'PAKD') {
             const result = await DriveInitService.createPAKDFolder(contractId, unitId, projectName);
             folderId = result.folderId;
+        } else if (folderType === 'HoaDon') {
+            const result = await DriveInitService.createInvoiceFolder(contractId, unitId, projectName);
+            folderId = result.folderId;
         } else {
             const result = await DriveInitService.createContractFolder(contractId, unitId, projectName);
             folderId = result.folderId;
