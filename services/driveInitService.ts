@@ -112,6 +112,8 @@ async function getFolderMapping(
 // Initialization Functions
 // ============================================
 
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export const DriveInitService = {
     /**
      * Initialize the entire CIC-Document folder structure.
@@ -163,6 +165,7 @@ export const DriveInitService = {
                 createdBy: userId,
             });
             totalCreated++;
+            await delay(800); // Rate limit delay
 
             // 2. Create unit folders
             for (const [unitId, unitPrefix] of units) {
@@ -177,6 +180,7 @@ export const DriveInitService = {
                     createdBy: userId,
                 });
                 totalCreated++;
+                await delay(800); // Rate limit delay
 
                 // 3. Create subfolders for each unit
                 const subfolders = getUnitSubfolders(unitId);
@@ -193,6 +197,7 @@ export const DriveInitService = {
                         createdBy: userId,
                     });
                     totalCreated++;
+                    await delay(800); // Rate limit delay
 
                     // 4. Create year folder inside each subfolder
                     reportProgress(`${unitPrefix}/${subName}/${currentYear}`);
@@ -207,6 +212,7 @@ export const DriveInitService = {
                         createdBy: userId,
                     });
                     totalCreated++;
+                    await delay(800); // Rate limit delay
                 }
             }
 
@@ -223,6 +229,7 @@ export const DriveInitService = {
                     createdBy: userId,
                 });
                 totalCreated++;
+                await delay(800); // Rate limit delay
             }
 
             onProgress?.({
