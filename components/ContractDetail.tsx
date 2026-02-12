@@ -576,7 +576,47 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                   </div>
                 </div>
 
-                {/* 2. BUSINESS PLAN DETAILS (Moved to PAKD Tab) */}
+                {/* INVOICE SCHEDULE - Lịch xuất hóa đơn doanh thu */}
+                {contract.revenueSchedules && contract.revenueSchedules.length > 0 && (
+                  <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
+                    <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
+                      <FileText size={20} className="text-blue-500" />
+                      Lịch xuất Hóa đơn Doanh thu
+                    </h3>
+
+                    <div className="space-y-3">
+                      {contract.revenueSchedules.map((rev, idx) => (
+                        <div key={rev.id || idx} className="flex items-center justify-between p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-800 hover:border-blue-200 dark:hover:border-blue-700 transition-colors">
+                          <div className="flex items-center gap-4">
+                            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center text-xs font-black">
+                              {idx + 1}
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                                {rev.description || `Đợt ${idx + 1}`}
+                              </p>
+                              <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+                                <Calendar size={10} />
+                                {rev.date ? new Date(rev.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Chưa xác định'}
+                              </p>
+                            </div>
+                          </div>
+                          <span className="text-sm font-black text-blue-600 dark:text-blue-400">
+                            {formatVND(rev.amount || 0)}
+                          </span>
+                        </div>
+                      ))}
+
+                      {/* Total Row */}
+                      <div className="flex items-center justify-between pt-3 mt-2 border-t border-blue-100 dark:border-blue-800">
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Tổng giá trị xuất HĐ</span>
+                        <span className="text-sm font-black text-blue-700 dark:text-blue-300">
+                          {formatVND(contract.revenueSchedules.reduce((sum, r) => sum + (r.amount || 0), 0))}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
 
                 {/* 3. IMPLEMENTATION PLAN */}

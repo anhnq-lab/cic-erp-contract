@@ -138,7 +138,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
   }]);
 
   // 4. Financial Schedules (Hóa đơn & Tiền về & Chi trả NCC)
-  const [revenueSchedules, setRevenueSchedules] = useState<RevenueSchedule[]>([{ id: '1', date: '', amount: 0, description: 'Đợt 1' }]);
+  const [revenueSchedules, setRevenueSchedules] = useState<RevenueSchedule[]>(contract?.revenueSchedules || [{ id: '1', date: '', amount: 0, description: 'Đợt 1' }]);
   const [paymentSchedules, setPaymentSchedules] = useState<PaymentSchedule[]>([{ id: '1', date: '', amount: 0, description: 'Tạm ứng', type: 'Revenue' }]);
   const [supplierSchedules, setSupplierSchedules] = useState<PaymentSchedule[]>([{ id: '1', date: '', amount: 0, description: 'Thanh toán đợt 1', type: 'Expense' }]);
 
@@ -482,7 +482,8 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
         type: p.type
       })),
       lineItems: lineItems,
-      adminCosts: adminCosts
+      adminCosts: adminCosts,
+      revenueSchedules: revenueSchedules,
     };
 
     onSave(payload);

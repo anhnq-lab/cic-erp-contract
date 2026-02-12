@@ -124,10 +124,11 @@ const buildPayload = (data: Partial<Contract>): Record<string, any> => {
     });
 
     // Handle JSONB details field
-    if (data.lineItems !== undefined || data.adminCosts !== undefined) {
+    if (data.lineItems !== undefined || data.adminCosts !== undefined || (data as any).revenueSchedules !== undefined) {
         payload.details = {
             lineItems: data.lineItems || [],
-            adminCosts: data.adminCosts || {}
+            adminCosts: data.adminCosts || {},
+            revenueSchedules: (data as any).revenueSchedules || []
         };
     }
 
@@ -200,6 +201,7 @@ const mapContract = (c: any): Contract => {
         // Map details from JSONB
         lineItems: c.details?.lineItems || [],
         adminCosts: c.details?.adminCosts || undefined,
+        revenueSchedules: c.details?.revenueSchedules || [],
         documents: c.documents || [],
         draft_url: c.draft_url || undefined,
         // Parallel approval workflow fields

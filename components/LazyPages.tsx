@@ -88,7 +88,15 @@ export const LazyContractDetailPage: React.FC = () => {
             contractId={id}
             onBack={() => navigate(ROUTES.CONTRACTS)}
             onEdit={() => navigate(ROUTES.CONTRACT_EDIT(encodeURIComponent(id)))}
-            onDelete={async () => navigate(ROUTES.CONTRACTS)}
+            onDelete={async () => {
+                try {
+                    await ContractService.delete(id);
+                    toast.success('Đã xóa hợp đồng thành công!');
+                    navigate(ROUTES.CONTRACTS);
+                } catch (e: any) {
+                    toast.error('Lỗi xóa hợp đồng: ' + (e.message || e));
+                }
+            }}
         />
     );
 };

@@ -212,6 +212,7 @@ export interface Contract {
   adminCosts?: AdministrativeCosts;        // Legacy: fixed fields
   executionCosts?: ExecutionCostItem[];    // New: dynamic list of execution costs
   milestones?: Milestone[];
+  revenueSchedules?: RevenueSchedule[]; // Lịch xuất hóa đơn doanh thu
   paymentPhases?: PaymentPhase[];
   documents?: ContractDocument[];
   draft_url?: string; // URL to draft contract document (Google Doc) for legal review
