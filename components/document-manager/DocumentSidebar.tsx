@@ -7,7 +7,8 @@ import {
     FileText,
     FileSpreadsheet,
     LayoutGrid,
-    Building2
+    Building2,
+    FolderOpen
 } from 'lucide-react';
 import { DriveFolderMapping } from '../../services/driveInitService';
 import {
@@ -40,11 +41,23 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
 
     const getIconForFolderType = (type: string) => {
         switch (type) {
-            case 'HopDong': return <FileText size={16} />;
-            case 'PAKD': return <FileSpreadsheet size={16} />;
-            case 'HoaDon': return <FileText size={16} />;
-            case 'BaoCao': return <LayoutGrid size={16} />;
-            default: return <Folder size={16} />;
+            case 'HopDong': return <FileText size={14} />;
+            case 'PAKD': return <FileSpreadsheet size={14} />;
+            case 'HoaDon': return <FileText size={14} />;
+            case 'BaoCao': return <LayoutGrid size={14} />;
+            default: return <Folder size={14} />;
+        }
+    };
+
+    const getFolderTypeColor = (type: string) => {
+        switch (type) {
+            case 'HopDong': return 'text-indigo-500';
+            case 'PAKD': return 'text-emerald-500';
+            case 'HoaDon': return 'text-amber-500';
+            case 'BaoCao': return 'text-purple-500';
+            case 'Templates': return 'text-cyan-500';
+            case 'VanBan': return 'text-rose-500';
+            default: return 'text-slate-400';
         }
     };
 
@@ -69,16 +82,17 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
 
     return (
         <div className={`flex flex-col h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 ${className}`}>
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800">
-                <h3 className="font-semibold text-slate-700 dark:text-slate-200 uppercase text-xs tracking-wider">
+            <div className="p-3">
+                <h3 className="font-black text-slate-700 dark:text-slate-200 uppercase text-[10px] tracking-widest flex items-center gap-2">
+                    <FolderOpen size={14} className="text-indigo-500" />
                     Thư mục
                 </h3>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
+            <div className="flex-1 overflow-y-auto px-2 pb-4 space-y-1 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
                 {/* Global Folders */}
-                <div className="mb-4">
-                    <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                <div className="mb-3">
+                    <div className="px-3 py-1.5 text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
                         Chung
                     </div>
                     {GLOBAL_FOLDERS.map(folderName => {
@@ -91,13 +105,13 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
                             <button
                                 key={folderName}
                                 onClick={() => onSelectFolder(mapping.drive_folder_id, folderName)}
-                                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${isSelected
-                                        ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all ${isSelected
+                                    ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 font-bold shadow-sm border border-indigo-100 dark:border-indigo-800/40'
+                                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-transparent'
                                     }`}
                             >
-                                <Folder size={16} className={isSelected ? 'text-blue-500' : 'text-slate-400'} />
-                                <span className="truncate">{folderName}</span>
+                                <Folder size={15} className={isSelected ? 'text-indigo-500' : 'text-slate-400'} />
+                                <span className="truncate text-xs font-bold">{folderName}</span>
                             </button>
                         );
                     })}
@@ -105,7 +119,7 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
 
                 {/* Units */}
                 <div>
-                    <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                    <div className="px-3 py-1.5 text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
                         Đơn vị
                     </div>
                     {Object.entries(UNIT_FOLDER_MAP).map(([unitId, unitName]) => {
@@ -118,35 +132,35 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
                         const isSelected = selectedFolderId === unitMapping.drive_folder_id;
 
                         return (
-                            <div key={unitId} className="mb-1">
+                            <div key={unitId} className="mb-0.5">
                                 <div
-                                    className={`flex items-center gap-1 rounded-lg transition-colors pr-2 ${isSelected
-                                            ? 'bg-blue-50 dark:bg-blue-900/30'
-                                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                                    className={`flex items-center gap-0.5 rounded-lg transition-all pr-2 ${isSelected
+                                        ? 'bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/40 shadow-sm'
+                                        : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-transparent'
                                         }`}
                                 >
                                     <button
                                         onClick={() => toggleUnit(unitId)}
-                                        className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                                        className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                                     >
-                                        {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                                        {isExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
                                     </button>
 
                                     <button
                                         onClick={() => onSelectFolder(unitMapping.drive_folder_id, unitName)}
-                                        className={`flex-1 flex items-center gap-2 py-2 text-sm text-left ${isSelected
-                                                ? 'text-blue-600 dark:text-blue-400 font-medium'
-                                                : 'text-slate-700 dark:text-slate-200'
+                                        className={`flex-1 flex items-center gap-2 py-2 text-xs text-left font-bold ${isSelected
+                                            ? 'text-indigo-700 dark:text-indigo-400'
+                                            : 'text-slate-700 dark:text-slate-200'
                                             }`}
                                     >
-                                        <Building2 size={16} className={isSelected ? 'text-blue-500' : 'text-slate-400'} />
+                                        <Building2 size={14} className={isSelected ? 'text-indigo-500' : 'text-slate-400'} />
                                         <span className="truncate line-clamp-1" title={unitName}>{unitName}</span>
                                     </button>
                                 </div>
 
                                 {/* Subfolders */}
                                 {isExpanded && (
-                                    <div className="ml-4 pl-4 border-l border-slate-200 dark:border-slate-800 space-y-0.5 mt-1">
+                                    <div className="ml-5 pl-3 border-l-2 border-indigo-100 dark:border-indigo-800/40 space-y-0.5 mt-0.5 mb-1">
                                         {subfolders.map(sub => {
                                             const subMapping = getSubfolderMapping(unitId, sub);
                                             if (!subMapping) return null;
@@ -157,12 +171,12 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
                                                 <button
                                                     key={sub}
                                                     onClick={() => onSelectFolder(subMapping.drive_folder_id, sub)}
-                                                    className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${isSubSelected
-                                                            ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                                                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                                                    className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all ${isSubSelected
+                                                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 font-bold'
+                                                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:hover:text-slate-300'
                                                         }`}
                                                 >
-                                                    <span className={isSubSelected ? 'text-blue-500' : 'text-slate-400'}>
+                                                    <span className={isSubSelected ? 'text-indigo-500' : getFolderTypeColor(sub)}>
                                                         {getIconForFolderType(sub)}
                                                     </span>
                                                     <span className="truncate">{sub}</span>
