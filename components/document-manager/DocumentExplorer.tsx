@@ -107,9 +107,9 @@ const DocumentExplorer: React.FC<DocumentExplorerProps> = ({
     const documents = filteredFiles.filter(f => f.mimeType !== 'application/vnd.google-apps.folder');
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900/50">
+        <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950">
             {/* Toolbar */}
-            <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-4">
+            <div className="bg-white dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 px-6 py-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         {history.length > 0 && (
@@ -202,7 +202,7 @@ const DocumentExplorer: React.FC<DocumentExplorerProps> = ({
                                         <div
                                             key={file.id}
                                             className={`
-                                                group relative bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 
+                                                group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 
                                                 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-100/50 dark:hover:shadow-none transition-all cursor-pointer
                                                 ${viewMode === 'grid' ? 'flex flex-col items-center p-5 text-center rounded-xl' : 'flex items-center p-3 gap-4 rounded-lg'}
                                             `}
@@ -233,7 +233,7 @@ const DocumentExplorer: React.FC<DocumentExplorerProps> = ({
                                         <div
                                             key={file.id}
                                             className={`
-                                                group relative bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 
+                                                group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 
                                                 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-100/50 dark:hover:shadow-none transition-all cursor-pointer
                                                 ${viewMode === 'grid' ? 'flex flex-col items-center p-5 text-center rounded-xl' : 'flex items-center p-3 gap-4 rounded-lg'}
                                             `}

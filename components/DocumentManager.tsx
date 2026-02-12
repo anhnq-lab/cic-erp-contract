@@ -56,7 +56,7 @@ const DocumentManager: React.FC = () => {
     };
 
     return (
-        <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
+        <div className="flex h-screen bg-slate-50 dark:bg-slate-950/95 overflow-hidden">
             {/* Sidebar Toggle for Mobile */}
             {!isSidebarOpen && (
                 <button
@@ -139,8 +139,8 @@ const DocumentManager: React.FC = () => {
                         }}
                     />
                 ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-indigo-50/30 dark:from-slate-900/50 dark:to-indigo-950/20">
-                        <div className="bg-white dark:bg-slate-800/80 p-10 rounded-2xl shadow-xl shadow-indigo-100/50 dark:shadow-none text-center max-w-lg mx-4 border border-slate-200 dark:border-slate-700 dark-card-glow">
+                    <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-indigo-50/30 dark:from-slate-950 dark:to-indigo-950/30">
+                        <div className="bg-white dark:bg-slate-900 p-10 rounded-2xl shadow-xl shadow-indigo-100/50 dark:shadow-none text-center max-w-lg mx-4 border border-slate-200 dark:border-slate-800 dark-card-glow">
                             <div className="bg-gradient-to-br from-indigo-500 to-purple-600 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-200/50 dark:shadow-indigo-500/10">
                                 <FolderOpen size={36} className="text-white" />
                             </div>
