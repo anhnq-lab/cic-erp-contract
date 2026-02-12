@@ -361,56 +361,78 @@ export function generatePAKDTemplate(): void {
  */
 export async function fetchPAKDFromGoogleSheets(url: string, accessToken?: string): Promise<ParsedPAKD> {
     try {
-        // Extract sheet ID and gid from URL
+        // Extract sheet ID from URL
         const sheetIdMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
         if (!sheetIdMatch) {
             throw new Error('Định dạng link Google Sheets không đúng. Vui lòng kiểm tra lại.');
         }
 
-        const sheetId = sheetIdMatch[1];
-        const gidMatch = url.match(/gid=([0-9]+)/);
-        const gid = gidMatch ? gidMatch[1] : '0';
-
-        // Build export URL
-        // Pass access_token as query parameter (NOT as Authorization header) to avoid CORS preflight
-        // This is a standard OAuth 2.0 method and works with docs.google.com without needing
-        // to enable Google Drive API in Google Cloud Console
-        let exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=xlsx&gid=${gid}`;
+        let buffer: ArrayBuffer;
 
         if (accessToken) {
-            exportUrl += `&access_token=${encodeURIComponent(accessToken)}`;
-            console.log(`[PAKD Parser] Fetching with OAuth token (query param): sheetId=${sheetId}, gid=${gid}`);
+            // Use Supabase Edge Function proxy (server-side fetch, no CORS issues)
+            const { supabase } = await import('../lib/supabase');
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+            const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+            const proxyUrl = `${supabaseUrl}/functions/v1/google-sheets-proxy`;
+
+            // Get Supabase session token for Edge Function JWT verification
+            const { data: { session } } = await supabase.auth.getSession();
+            const supabaseToken = session?.access_token || '';
+
+            console.log(`[PAKD Parser] Fetching via Edge Function proxy (authenticated)`);
+
+            const response = await fetch(proxyUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${supabaseToken}`,
+                    'apikey': supabaseAnonKey,
+                },
+                body: JSON.stringify({ url, accessToken }),
+            });
+
+            if (!response.ok) {
+                let errorInfo = '';
+                try {
+                    const errorJson = await response.json();
+                    errorInfo = errorJson.error || errorJson.details || '';
+                    console.error(`[PAKD Parser] Proxy Error ${response.status}:`, errorJson);
+                } catch (_) {
+                    errorInfo = await response.text();
+                    console.error(`[PAKD Parser] Proxy Error ${response.status}:`, errorInfo);
+                }
+
+                if (response.status === 403 || response.status === 401) {
+                    throw new Error('Không có quyền truy cập file. Vui lòng đảm bảo tài khoản Google của bạn có quyền xem file này, hoặc thử đăng xuất rồi đăng nhập lại.');
+                }
+                if (response.status === 404) {
+                    throw new Error('Không tìm thấy file. Vui lòng kiểm tra link Google Sheets.');
+                }
+                throw new Error(`Lỗi tải dữ liệu (${response.status}). ${errorInfo}`);
+            }
+
+            buffer = await response.arrayBuffer();
         } else {
-            console.log(`[PAKD Parser] Fetching public (no token): sheetId=${sheetId}, gid=${gid}`);
+            // Fallback: direct fetch for public sheets (no auth)
+            const sheetId = sheetIdMatch[1];
+            const gidMatch = url.match(/gid=(-?[0-9]+)/);
+            const gid = gidMatch ? gidMatch[1] : '0';
+            const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=xlsx&gid=${gid}`;
+
+            console.log(`[PAKD Parser] Fetching public (no token): ${exportUrl}`);
+
+            const response = await fetch(exportUrl);
+            if (!response.ok) {
+                throw new Error(`Lỗi tải dữ liệu (${response.status}). Google Sheet cần được chia sẻ public hoặc bạn cần đăng nhập bằng Google.`);
+            }
+            buffer = await response.arrayBuffer();
         }
 
-        const response = await fetch(exportUrl);
-        if (!response.ok) {
-            // Log detailed error info for debugging
-            let errorBody = '';
-            try { errorBody = await response.text(); } catch (_) { }
-            console.error(`[PAKD Parser] Export Error ${response.status}:`, errorBody);
+        console.log(`[PAKD Parser] Received ${buffer.byteLength} bytes, parsing...`);
 
-            if (response.status === 401 || response.status === 403) {
-                throw new Error('Không có quyền truy cập file. Vui lòng đảm bảo tài khoản Google của bạn có quyền xem file này, hoặc thử đăng xuất rồi đăng nhập lại.');
-            }
-            if (response.status === 404) {
-                throw new Error('Không tìm thấy file. Vui lòng kiểm tra link Google Sheets.');
-            }
-            throw new Error(`Lỗi tải dữ liệu (${response.status}). Vui lòng kiểm tra quyền truy cập của Google Sheet.`);
-        }
-
-        const buffer = await response.arrayBuffer();
-
-        // 3. Parse ArrayBuffer
+        // Parse ArrayBuffer
         const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array', cellFormula: true });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
-        const merges = worksheet['!merges'] || [];
-
-        // Return a logic similar to parsePAKDExcel but from the buffer we already have
-        // (Refactored logic below to avoid duplicate code)
         return parsePAKDWorkbook(workbook);
     } catch (error: any) {
         console.error('[PAKD Parser] Google Sheets error:', error);
