@@ -125,5 +125,109 @@ export const DocumentService = {
         const { error } = await supabase.from('contract_documents').delete().eq('id', id);
         if (error) throw error;
         return true;
+    },
+
+    /**
+     * Upload file to Google Drive (instead of Supabase Storage).
+     * Auto-creates contract folder on Drive if needed.
+     * Falls back to Supabase Storage if Drive token is unavailable.
+     */
+    uploadToDrive: async (
+        contractId: string,
+        file: File,
+        unitId: string,
+        projectName: string
+    ) => {
+        const { getGoogleAccessToken } = await import('../contexts/AuthContext');
+        const token = getGoogleAccessToken();
+
+        // Fallback to Supabase if no Drive token
+        if (!token) {
+            console.warn('[DocumentService] No Drive token, falling back to Supabase Storage');
+            return DocumentService.upload(contractId, file);
+        }
+
+        const { GoogleDriveService } = await import('./googleDriveService');
+        const { DriveInitService } = await import('./driveInitService');
+
+        // Ensure contract folder exists on Drive
+        const { folderId } = await DriveInitService.createContractFolder(
+            contractId, unitId, projectName
+        );
+
+        // Upload to Drive
+        const driveFile = await GoogleDriveService.uploadFile(file, folderId);
+
+        // Record in DB as external link (Google Drive)
+        const { data, error } = await supabase.from('contract_documents').insert({
+            contract_id: contractId,
+            name: file.name,
+            url: driveFile.webViewLink || GoogleDriveService.getFolderUrl(driveFile.id),
+            file_path: null, // No Supabase storage path
+            type: `drive:${file.type || 'application/octet-stream'}`,
+            size: file.size
+        }).select().single();
+
+        if (error) throw error;
+
+        return {
+            id: data.id,
+            contractId: data.contract_id,
+            name: data.name,
+            url: data.url,
+            filePath: data.file_path,
+            type: data.type,
+            size: data.size,
+            uploadedAt: data.uploaded_at
+        };
+    },
+
+    /**
+     * Upload a generated blob (PDF / Excel) to Google Drive.
+     */
+    uploadBlobToDrive: async (
+        contractId: string,
+        blob: Blob,
+        fileName: string,
+        unitId: string,
+        projectName: string,
+        folderType: 'HopDong' | 'PAKD' | 'HoaDon' | 'BaoCao' = 'HopDong'
+    ) => {
+        const { GoogleDriveService } = await import('./googleDriveService');
+        const { DriveInitService } = await import('./driveInitService');
+
+        let folderId: string;
+        if (folderType === 'PAKD') {
+            const result = await DriveInitService.createPAKDFolder(contractId, unitId, projectName);
+            folderId = result.folderId;
+        } else {
+            const result = await DriveInitService.createContractFolder(contractId, unitId, projectName);
+            folderId = result.folderId;
+        }
+
+        const driveFile = await GoogleDriveService.uploadBlob(blob, fileName, folderId);
+
+        // Record in DB
+        const { data, error } = await supabase.from('contract_documents').insert({
+            contract_id: contractId,
+            name: fileName,
+            url: driveFile.webViewLink || GoogleDriveService.getFolderUrl(driveFile.id),
+            file_path: null,
+            type: `drive:${blob.type || 'application/octet-stream'}`,
+            size: blob.size
+        }).select().single();
+
+        if (error) throw error;
+
+        return {
+            id: data.id,
+            contractId: data.contract_id,
+            name: data.name,
+            url: data.url,
+            filePath: data.file_path,
+            type: data.type,
+            size: data.size,
+            uploadedAt: data.uploaded_at
+        };
     }
 };

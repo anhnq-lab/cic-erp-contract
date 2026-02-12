@@ -9,6 +9,8 @@ export * from './workflowService';
 export * from './auditLogService';
 export * from './permissionService';
 export * from './ExecutionCostService';
+export * from './googleDriveService';
+export * from './driveInitService';
 
 // Re-export specific APIs as legacy aliases if needed, or prefer using *Service naming.
 // To maintain compatibility with existing 'api.ts' consumers, we might want to update 'api.ts' to re-export these,

@@ -30,7 +30,9 @@ import {
   Users,
   Trash2,
   Plus,
-  Loader2
+  Loader2,
+  ExternalLink,
+  HardDrive
 } from 'lucide-react';
 import { Contract, Unit, Milestone, PaymentPhase, AdministrativeCosts, ContractDocument } from '../types';
 import { ContractService, UnitService, EmployeeService, CustomerService, DocumentService, WorkflowService, AuditLogService, AuditLog } from '../services';
@@ -80,6 +82,9 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
 
   // Audit Logs State
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+
+  // Drive folder state
+  const [driveFolderUrl, setDriveFolderUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialContract) {
@@ -169,14 +174,38 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
     }
   }, [contract?.id]);
 
+  // Check if contract has a Drive folder
+  useEffect(() => {
+    if (contract?.id) {
+      import('../services/driveInitService').then(({ DriveInitService }) => {
+        DriveInitService.getContractFolderId(contract.id)
+          .then(folderId => {
+            if (folderId) {
+              import('../services/googleDriveService').then(({ GoogleDriveService }) => {
+                setDriveFolderUrl(GoogleDriveService.getFolderUrl(folderId));
+              });
+            }
+          })
+          .catch(() => { }); // Silently fail
+      });
+    }
+  }, [contract?.id]);
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0] || !contract) return;
     const file = e.target.files[0];
     setIsUploading(true);
     try {
-      const newDoc = await DocumentService.upload(contract.id, file);
+      // Try uploading to Google Drive first, falls back to Supabase Storage
+      const newDoc = await DocumentService.uploadToDrive(
+        contract.id,
+        file,
+        contract.unitId,
+        contract.title || contract.partyA
+      );
       setDocuments(prev => [newDoc, ...prev]);
-      toast.success("Upload tài liệu thành công!");
+      const isDrive = newDoc.type?.startsWith('drive:');
+      toast.success(isDrive ? "Đã upload lên Google Drive!" : "Upload tài liệu thành công!");
     } catch (err: any) {
       toast.error("Upload thất bại: " + err.message);
     } finally {
@@ -686,12 +715,26 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                     <Paperclip size={18} className="text-slate-400" />
                     Tài liệu hồ sơ
                   </h4>
-                  <button
-                    onClick={() => setShowDocLinkDialog(true)}
-                    className="bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/30 dark:hover:bg-orange-900/50 text-orange-600 dark:text-orange-400 p-2 rounded-lg transition-colors flex items-center justify-center"
-                  >
-                    <Plus size={16} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {driveFolderUrl && (
+                      <a
+                        href={driveFolderUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/20 dark:hover:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 text-[11px] font-bold"
+                      >
+                        <HardDrive size={13} />
+                        Mở Drive
+                        <ExternalLink size={11} />
+                      </a>
+                    )}
+                    <button
+                      onClick={() => setShowDocLinkDialog(true)}
+                      className="bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/30 dark:hover:bg-orange-900/50 text-orange-600 dark:text-orange-400 p-2 rounded-lg transition-colors flex items-center justify-center"
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   {/* Draft URL - Dự thảo hợp đồng */}

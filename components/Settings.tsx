@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Moon, Sun, Shield, Settings2, FlaskConical, Users, Palette } from 'lucide-react';
+import { Moon, Sun, Shield, Settings2, FlaskConical, Users, Palette, HardDrive } from 'lucide-react';
 import DataSeeder from './admin/DataSeeder';
 import PilotRunner from './admin/PilotRunner';
 import PermissionManager from './settings/PermissionManager';
 import UserImpersonator from './settings/UserImpersonator';
+import DriveSettings from './settings/DriveSettings';
 import { useLayoutContext } from './layout/MainLayout';
 import { useAuth } from '../contexts/AuthContext';
 
-type SettingsTab = 'system' | 'permissions' | 'testing';
+type SettingsTab = 'system' | 'permissions' | 'drive' | 'testing';
 
 const Settings: React.FC = () => {
     const { theme, setTheme, accent, setAccent } = useLayoutContext();
@@ -19,6 +20,7 @@ const Settings: React.FC = () => {
     const tabs: { id: SettingsTab; label: string; icon: React.ReactNode; adminOnly?: boolean }[] = [
         { id: 'system', label: 'Cài đặt hệ thống', icon: <Settings2 size={18} /> },
         { id: 'permissions', label: 'Phân quyền người dùng', icon: <Shield size={18} />, adminOnly: true },
+        { id: 'drive', label: 'Google Drive', icon: <HardDrive size={18} />, adminOnly: true },
         { id: 'testing', label: 'Kiểm thử', icon: <FlaskConical size={18} /> },
     ];
 
@@ -133,6 +135,10 @@ const Settings: React.FC = () => {
                         </div>
                         <PermissionManager />
                     </div>
+                )}
+
+                {activeTab === 'drive' && isAdmin && (
+                    <DriveSettings />
                 )}
 
                 {activeTab === 'testing' && (

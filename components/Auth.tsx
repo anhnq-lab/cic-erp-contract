@@ -48,7 +48,7 @@ const Auth = () => {
                 provider: 'google',
                 options: {
                     redirectTo: window.location.origin,
-                    scopes: 'https://www.googleapis.com/auth/drive.readonly',
+                    scopes: 'https://www.googleapis.com/auth/drive.file',
                     queryParams: {
                         prompt: 'consent',       // Force re-consent to get new scope
                         access_type: 'offline',   // Request refresh token
