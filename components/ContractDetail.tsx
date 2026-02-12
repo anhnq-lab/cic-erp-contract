@@ -922,7 +922,8 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
                   contract.id,
                   doc.file,
                   contract.unitId,
-                  contract.title || contract.partyA
+                  contract.title || contract.partyA,
+                  doc.docType // Pass docType for renaming
                 );
                 setDocuments(prev => [newDoc, ...prev]);
                 toast.dismiss(toastId);

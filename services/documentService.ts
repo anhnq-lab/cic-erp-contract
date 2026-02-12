@@ -20,6 +20,37 @@ const sanitizeFileName = (fileName: string): string => {
     return ext ? `${truncatedName}.${ext}` : truncatedName;
 };
 
+/**
+ * Generate standard file name: [PREFIX]_[CONTRACT_CODE]_[YYYYMMDD]_[ORIGINAL_NAME]
+ */
+const generateStandardFileName = (contractId: string, originalName: string, docType: string = 'HD'): string => {
+    // 1. Sanitize Contract ID (remove special chars)
+    // Assuming contractId is human readable like "HĐ_001/BIM_..."
+    // We want "HD_001-BIM..."
+    const safeContractId = contractId.replace(/[/\\?%*:|"<>]/g, '-');
+
+    // 2. Get Date YYYYMMDD
+    const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+
+    // 3. Sanitize Original Name
+    // Remove extension first
+    const parts = originalName.split('.');
+    const ext = parts.length > 1 ? parts.pop() : '';
+    const nameWithoutExt = parts.join('.');
+
+    const safeOriginalName = nameWithoutExt
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove accents
+        .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+        .replace(/[^a-zA-Z0-9_-]/g, '_'); // Replace non-alphanumeric with underscore
+
+    // 4. Combine
+    const prefix = docType.toUpperCase();
+    const newName = `${prefix}_${safeContractId}_${date}_${safeOriginalName}`;
+
+    return ext ? `${newName}.${ext}` : newName;
+};
+
 export const DocumentService = {
     getByContractId: async (contractId: string) => {
         const { data, error } = await supabase.from('contract_documents').select('*').eq('contract_id', contractId);
@@ -136,7 +167,8 @@ export const DocumentService = {
         contractId: string,
         file: File,
         unitId: string,
-        projectName: string
+        projectName: string,
+        docType: string = 'HD' // Default to 'HD' (Hợp đồng)
     ) => {
         const { getGoogleAccessToken } = await import('../contexts/AuthContext');
         const token = getGoogleAccessToken();
@@ -155,8 +187,11 @@ export const DocumentService = {
             contractId, unitId, projectName
         );
 
-        // Upload to Drive
-        const driveFile = await GoogleDriveService.uploadFile(file, folderId);
+        // Generate standard name
+        const standardName = generateStandardFileName(contractId, file.name, docType, projectName);
+
+        // Upload to Drive with NEW name
+        const driveFile = await GoogleDriveService.uploadFile(file, folderId, standardName);
 
         // Record in DB as external link (Google Drive)
         const { data, error } = await supabase.from('contract_documents').insert({
@@ -208,12 +243,23 @@ export const DocumentService = {
             folderId = result.folderId;
         }
 
-        const driveFile = await GoogleDriveService.uploadBlob(blob, fileName, folderId);
+
+
+        // Map folder type to doc type prefix
+        let docType = 'HD';
+        if (folderType === 'PAKD') docType = 'PAKD';
+        else if (folderType === 'HoaDon') docType = 'HDON';
+        else if (folderType === 'BaoCao') docType = 'BC';
+
+        // Generate standard name
+        const standardName = generateStandardFileName(contractId, fileName, docType, projectName);
+
+        const driveFile = await GoogleDriveService.uploadBlob(blob, standardName, folderId);
 
         // Record in DB
         const { data, error } = await supabase.from('contract_documents').insert({
             contract_id: contractId,
-            name: fileName,
+            name: standardName,
             url: driveFile.webViewLink || GoogleDriveService.getFolderUrl(driveFile.id),
             file_path: null,
             type: `drive:${blob.type || 'application/octet-stream'}`,

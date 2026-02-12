@@ -4,7 +4,7 @@ import { X, Link, FileText, Table, FolderOpen, Plus, AlertCircle, Loader2, Refre
 interface AddDocumentLinkDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (doc: { name: string; url: string; type: 'drive' | 'doc' | 'sheet' | 'file' | 'other'; file?: File }) => void;
+    onSubmit: (doc: { name: string; url: string; type: 'drive' | 'doc' | 'sheet' | 'file' | 'other'; file?: File; docType?: string }) => void;
 }
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://jyohocjsnsyfgfsmjfqx.supabase.co';
@@ -51,6 +51,7 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
 }) => {
     const [name, setName] = useState('');
     const [url, setUrl] = useState('');
+    const [docType, setDocType] = useState('HD'); // Default to Contract
     const [file, setFile] = useState<File | null>(null);
     const [mode, setMode] = useState<'link' | 'upload'>('link');
     const [error, setError] = useState('');
@@ -136,7 +137,7 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
                 setError('Link không hợp lệ');
                 return;
             }
-            onSubmit({ name, url, type: detectedType });
+            onSubmit({ name, url, type: detectedType, docType });
         } else {
             if (!file) {
                 setError('Vui lòng chọn file');
@@ -144,7 +145,7 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
             }
             // For file upload, url is empty initially or could be a temporary blob url? 
             // We pass file object. Parent handles upload and gets URL.
-            onSubmit({ name, url: '', type: 'file', file });
+            onSubmit({ name, url: '', type: 'file', file, docType });
         }
 
         setName('');
@@ -325,6 +326,26 @@ export const AddDocumentLinkDialog: React.FC<AddDocumentLinkDialogProps> = ({
                             {error}
                         </p>
                     )}
+
+                    {/* Document Type Selector */}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            Loại tài liệu để đặt tên (VD: HD_001...)
+                        </label>
+                        <select
+                            value={docType}
+                            onChange={(e) => setDocType(e.target.value)}
+                            className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-800 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                        >
+                            <option value="HD">Hợp đồng (HD)</option>
+                            <option value="PL">Phụ lục (PL)</option>
+                            <option value="BB">Biên bản (BB)</option>
+                            <option value="HDON">Hóa đơn (HDON)</option>
+                            <option value="BG">Báo giá (BG)</option>
+                            <option value="HS">Hồ sơ khác (HS)</option>
+                            <option value="PAKD">Phương án KD (PAKD)</option>
+                        </select>
+                    </div>
                 </div>
 
                 {/* Footer */}
