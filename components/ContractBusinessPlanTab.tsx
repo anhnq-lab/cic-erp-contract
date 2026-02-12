@@ -117,7 +117,9 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
         const totalDirectCosts = lineItems.reduce((acc, item) => acc + (item.directCosts || 0), 0);
         const adminSum = Object.values(adminCosts).reduce((acc, val) => acc + (val || 0), 0);
 
-        const costs = totalInput + totalDirectCosts + adminSum;
+        // Note: adminCosts already includes direct cost fees (transferFee, contractorTax, importFee sums)
+        // So totalDirectCosts is NOT added separately to avoid double-counting
+        const costs = totalInput + adminSum;
         const grossProfit = totalOutput - costs;
         const margin = totalOutput > 0 ? (grossProfit / totalOutput) * 100 : 0;
 

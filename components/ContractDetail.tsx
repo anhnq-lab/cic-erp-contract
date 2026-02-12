@@ -232,8 +232,11 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
     };
     const totalAdmin = Object.values(adminCosts).reduce((acc: number, val: any) => acc + (val || 0), 0);
 
-    const totalCosts = totalInput + totalDirect + totalAdmin;
-    const grossProfit = totalOutput - totalCosts; // Or use contract.value if distinct
+    // Note: adminCosts already includes direct cost fees (bankFee=transferFee sum, 
+    // subcontractorFee=contractorTax sum, importLogistics=importFee sum from line items)
+    // So totalDirect is NOT added separately to avoid double-counting
+    const totalCosts = totalInput + totalAdmin;
+    const grossProfit = totalOutput - totalCosts;
     const margin = totalOutput > 0 ? (grossProfit / totalOutput) * 100 : 0;
 
     return {
