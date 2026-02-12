@@ -106,8 +106,8 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
                                 key={folderName}
                                 onClick={() => onSelectFolder(mapping.drive_folder_id, folderName)}
                                 className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all ${isSelected
-                                    ? 'bg-indigo-50 text-indigo-700 dark:bg-slate-700/80 dark:text-indigo-400 font-bold shadow-sm border border-indigo-100 dark:border-slate-600'
-                                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 border border-transparent'
+                                    ? 'bg-indigo-50 text-indigo-700 dark:bg-slate-800 dark:text-indigo-400 font-bold shadow-sm border border-indigo-100 dark:border-slate-700'
+                                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent'
                                     }`}
                             >
                                 <Folder size={15} className={isSelected ? 'text-indigo-500' : 'text-slate-400'} />
@@ -135,8 +135,8 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
                             <div key={unitId} className="mb-0.5">
                                 <div
                                     className={`flex items-center gap-0.5 rounded-lg transition-all pr-2 ${isSelected
-                                        ? 'bg-indigo-50 dark:bg-slate-700/80 border border-indigo-100 dark:border-slate-600 shadow-sm'
-                                        : 'hover:bg-slate-50 dark:hover:bg-slate-700/50 border border-transparent'
+                                        ? 'bg-indigo-50 dark:bg-slate-800 border border-indigo-100 dark:border-slate-700 shadow-sm'
+                                        : 'hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent'
                                         }`}
                                 >
                                     <button
@@ -172,8 +172,8 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
                                                     key={sub}
                                                     onClick={() => onSelectFolder(subMapping.drive_folder_id, sub)}
                                                     className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all ${isSubSelected
-                                                        ? 'bg-indigo-50 text-indigo-700 dark:bg-slate-700/80 dark:text-indigo-400 font-bold'
-                                                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-700 dark:hover:text-slate-300'
+                                                        ? 'bg-indigo-50 text-indigo-700 dark:bg-slate-800 dark:text-indigo-400 font-bold'
+                                                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300'
                                                         }`}
                                                 >
                                                     <span className={isSubSelected ? 'text-indigo-500' : getFolderTypeColor(sub)}>

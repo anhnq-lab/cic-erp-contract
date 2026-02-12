@@ -109,7 +109,7 @@ const DocumentExplorer: React.FC<DocumentExplorerProps> = ({
     return (
         <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950">
             {/* Toolbar */}
-            <div className="bg-white dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 px-6 py-4">
+            <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         {history.length > 0 && (
