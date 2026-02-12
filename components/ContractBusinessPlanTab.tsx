@@ -598,7 +598,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                         </td>
                                         {/* Input Price */}
                                         <td className="px-4 py-3 text-right">
-                                            <div className="relative group">
+                                            <div className="relative group/currency">
                                                 {isEditing ? (
                                                     <input
                                                         type="text"
@@ -614,7 +614,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                     <span className="text-slate-500 dark:text-slate-400">{formatVND(item.inputPrice)}</span>
                                                 )}
                                                 {item.foreignCurrency && (
-                                                    <div className="absolute top-full right-0 mt-2 w-56 p-3 bg-slate-900 text-white text-[10px] rounded-lg shadow-xl z-50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                                    <div className="absolute top-full right-0 mt-2 w-56 p-3 bg-slate-900 text-white text-[10px] rounded-lg shadow-xl z-50 opacity-0 group-hover/currency:opacity-100 transition-opacity pointer-events-none">
                                                         <div className="space-y-1.5">
                                                             <div className="flex justify-between items-center">
                                                                 <span className="font-medium">&#x1F4B1; Đơn giá ngoại tệ</span>
@@ -653,7 +653,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                         {/* Direct Costs (Modal trigger) */}
                                         <td className="px-4 py-3 text-right">
                                             {isEditing ? (
-                                                <div className="relative group">
+                                                <div className="relative group/costs">
                                                     <input
                                                         type="text"
                                                         readOnly
@@ -663,7 +663,7 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                         title="Nhấn để thêm chi phí trực tiếp"
                                                     />
                                                     {item.directCostDetails && item.directCostDetails.length > 0 && (
-                                                        <div className="absolute top-full right-0 mt-2 w-64 p-3 bg-slate-900 text-white text-[10px] rounded-lg shadow-xl z-50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                                        <div className="absolute top-full right-0 mt-2 w-64 p-3 bg-slate-900 text-white text-[10px] rounded-lg shadow-xl z-50 opacity-0 group-hover/costs:opacity-100 transition-opacity pointer-events-none">
                                                             <div className="space-y-1">
                                                                 {item.directCostDetails.map((detail, i) => (
                                                                     <div key={i} className="flex justify-between items-center border-b border-slate-700 pb-1 last:border-0 last:pb-0">
@@ -676,10 +676,10 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                     )}
                                                 </div>
                                             ) : (
-                                                <div className="relative group inline-block">
+                                                <div className="relative group/costs inline-block">
                                                     <span className="text-rose-500 dark:text-rose-400 font-bold cursor-help">{formatVND(item.directCosts || 0)}</span>
                                                     {item.directCostDetails && item.directCostDetails.length > 0 && (
-                                                        <div className="absolute bottom-full right-0 mb-2 w-64 p-3 bg-slate-900 text-white text-[10px] rounded-lg shadow-xl z-50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                                        <div className="absolute bottom-full right-0 mb-2 w-64 p-3 bg-slate-900 text-white text-[10px] rounded-lg shadow-xl z-50 opacity-0 group-hover/costs:opacity-100 transition-opacity pointer-events-none">
                                                             <div className="font-semibold text-[11px] mb-1.5 text-rose-300 border-b border-slate-700 pb-1">Chi tiết CP trực tiếp</div>
                                                             <div className="space-y-1">
                                                                 {item.directCostDetails.map((detail, i) => (

@@ -1021,7 +1021,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                   </select>
                                 </td>
                                 <td className="px-4 py-3 text-right">
-                                  <div className="relative group">
+                                  <div className="relative group/currency">
                                     <input
                                       type="text"
                                       value={item.inputPrice ? formatVND(item.inputPrice) : '0'}
@@ -1035,7 +1035,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                       className="w-full bg-transparent font-bold text-slate-500 text-right outline-none"
                                     />
                                     {item.foreignCurrency && (
-                                      <div className="absolute top-full right-0 mt-2 w-56 p-3 bg-slate-900 text-white text-[10px] rounded-lg shadow-xl z-50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                      <div className="absolute top-full right-0 mt-2 w-56 p-3 bg-slate-900 text-white text-[10px] rounded-lg shadow-xl z-50 opacity-0 group-hover/currency:opacity-100 transition-opacity pointer-events-none">
                                         <div className="space-y-1.5">
                                           <div className="flex justify-between items-center">
                                             <span className="font-medium">&#x1F4B1; Đơn giá ngoại tệ</span>
@@ -1069,7 +1069,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                   />
                                 </td>
                                 <td className="px-4 py-3 text-right">
-                                  <div className="relative group">
+                                  <div className="relative group/costs">
                                     <input
                                       type="text"
                                       readOnly
@@ -1079,7 +1079,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                     />
                                     {/* Hover Tooltip */}
                                     {item.directCostDetails && item.directCostDetails.length > 0 && (
-                                      <div className="absolute top-full right-0 mt-2 w-64 p-3 bg-slate-900 text-white text-[10px] rounded-lg shadow-xl z-50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                      <div className="absolute top-full right-0 mt-2 w-64 p-3 bg-slate-900 text-white text-[10px] rounded-lg shadow-xl z-50 opacity-0 group-hover/costs:opacity-100 transition-opacity pointer-events-none">
                                         <div className="space-y-1">
                                           {item.directCostDetails.map((detail, i) => (
                                             <div key={i} className="flex justify-between items-center border-b border-slate-700 pb-1 last:border-0 last:pb-0">
