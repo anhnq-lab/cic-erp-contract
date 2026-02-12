@@ -19,6 +19,8 @@ export function PAKDImportGoogleModal({ isOpen, onClose, onImport }: PAKDImportG
     const [isFetching, setIsFetching] = useState(false);
     const [previewData, setPreviewData] = useState<ParsedPAKD | null>(null);
 
+    const googleToken = getGoogleAccessToken();
+
     const handleFetch = async () => {
         if (!url.trim()) {
             toast.error('Vui lòng nhập link Google Sheets');
@@ -33,12 +35,14 @@ export function PAKDImportGoogleModal({ isOpen, onClose, onImport }: PAKDImportG
         setIsFetching(true);
         try {
             const token = getGoogleAccessToken();
+            console.log('[PAKD Google Import] Token available:', !!token, token ? `(${token.substring(0, 20)}...)` : '(none)');
             const parsed = await fetchPAKDFromGoogleSheets(url, token || undefined);
             setPreviewData(parsed);
             toast.success(`Đã tải ${parsed.lineItems.length} hạng mục từ Google Sheets`);
         } catch (error: any) {
             toast.error(error.message || 'Lỗi tải dữ liệu từ Google Sheets');
             console.error('[PAKD Google Import] Error:', error);
+            console.error('[PAKD Google Import] Token was:', !!getGoogleAccessToken());
         } finally {
             setIsFetching(false);
         }
@@ -88,6 +92,11 @@ export function PAKDImportGoogleModal({ isOpen, onClose, onImport }: PAKDImportG
                                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                                     Dán link Google Sheets của bạn
                                 </label>
+                                {/* Token status indicator */}
+                                <div className={`text-xs mb-2 flex items-center gap-1.5 ${googleToken ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                    <span className={`inline-block w-2 h-2 rounded-full ${googleToken ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                    {googleToken ? 'Đã kết nối Google — có thể đọc file riêng tư' : 'Chưa có Google token — chỉ đọc được file public. Hãy đăng xuất rồi đăng nhập lại.'}
+                                </div>
                                 <div className="relative group">
                                     <input
                                         type="url"

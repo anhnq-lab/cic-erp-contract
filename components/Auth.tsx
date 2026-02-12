@@ -49,6 +49,10 @@ const Auth = () => {
                 options: {
                     redirectTo: window.location.origin,
                     scopes: 'https://www.googleapis.com/auth/drive.readonly',
+                    queryParams: {
+                        prompt: 'consent',       // Force re-consent to get new scope
+                        access_type: 'offline',   // Request refresh token
+                    },
                 },
             });
             if (error) throw error;

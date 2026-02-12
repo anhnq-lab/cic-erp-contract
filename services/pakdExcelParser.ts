@@ -389,6 +389,11 @@ export async function fetchPAKDFromGoogleSheets(url: string, accessToken?: strin
 
         const response = await fetch(exportUrl, fetchOptions);
         if (!response.ok) {
+            // Log detailed error info for debugging
+            let errorBody = '';
+            try { errorBody = await response.text(); } catch (_) { }
+            console.error(`[PAKD Parser] API Error ${response.status}:`, errorBody);
+
             if (response.status === 401 || response.status === 403) {
                 throw new Error('Không có quyền truy cập file. Vui lòng đảm bảo tài khoản Google của bạn có quyền xem file này, hoặc thử đăng xuất rồi đăng nhập lại.');
             }
