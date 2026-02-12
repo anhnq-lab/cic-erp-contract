@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, User, Building2, Phone, Mail, Loader2, CheckCircle } from 'lucide-react';
+import { X, User, Building2, Phone, Mail, Loader2, CheckCircle, Hash, MapPin } from 'lucide-react';
 import { CustomerService } from '../../services/customerService';
 import { Customer } from '../../types';
 
@@ -27,6 +27,8 @@ const QuickAddCustomerDialog: React.FC<QuickAddCustomerDialogProps> = ({
     const [contactPerson, setContactPerson] = useState('');
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
+    const [taxCode, setTaxCode] = useState('');
+    const [address, setAddress] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
 
@@ -37,6 +39,8 @@ const QuickAddCustomerDialog: React.FC<QuickAddCustomerDialogProps> = ({
         setContactPerson('');
         setPhone('');
         setEmail('');
+        setTaxCode('');
+        setAddress('');
         setError('');
     };
 
@@ -59,6 +63,8 @@ const QuickAddCustomerDialog: React.FC<QuickAddCustomerDialogProps> = ({
                 contactPerson: contactPerson.trim(),
                 phone: phone.trim(),
                 email: email.trim(),
+                taxCode: taxCode.trim(),
+                address: address.trim(),
                 type: 'Customer'
             } as any);
 
@@ -185,6 +191,34 @@ const QuickAddCustomerDialog: React.FC<QuickAddCustomerDialogProps> = ({
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="contact@company.vn"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium focus:border-indigo-500 outline-none transition-all"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Tax Code + Address */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1">
+                                <Hash size={12} /> Mã số thuế
+                            </label>
+                            <input
+                                type="text"
+                                value={taxCode}
+                                onChange={(e) => setTaxCode(e.target.value)}
+                                placeholder="VD: 0123456789"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium focus:border-indigo-500 outline-none transition-all"
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1">
+                                <MapPin size={12} /> Địa chỉ
+                            </label>
+                            <input
+                                type="text"
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                placeholder="VD: 123 Nguyễn Huệ, Q.1, TP.HCM"
                                 className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium focus:border-indigo-500 outline-none transition-all"
                             />
                         </div>
