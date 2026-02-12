@@ -598,20 +598,40 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                         </td>
                                         {/* Input Price */}
                                         <td className="px-4 py-3 text-right">
-                                            {isEditing ? (
-                                                <input
-                                                    type="text"
-                                                    value={formatVND(item.inputPrice)}
-                                                    onChange={(e) => {
-                                                        const raw = e.target.value.replace(/\./g, '');
-                                                        if (!/^\d*$/.test(raw)) return;
-                                                        updateLineItem(idx, 'inputPrice', Number(raw) || 0);
-                                                    }}
-                                                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1 text-right text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                                />
-                                            ) : (
-                                                <span className="text-slate-500 dark:text-slate-400">{formatVND(item.inputPrice)}</span>
-                                            )}
+                                            <div className="relative group">
+                                                {isEditing ? (
+                                                    <input
+                                                        type="text"
+                                                        value={formatVND(item.inputPrice)}
+                                                        onChange={(e) => {
+                                                            const raw = e.target.value.replace(/\./g, '');
+                                                            if (!/^\d*$/.test(raw)) return;
+                                                            updateLineItem(idx, 'inputPrice', Number(raw) || 0);
+                                                        }}
+                                                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1 text-right text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                                    />
+                                                ) : (
+                                                    <span className="text-slate-500 dark:text-slate-400">{formatVND(item.inputPrice)}</span>
+                                                )}
+                                                {item.foreignCurrency && (
+                                                    <div className="absolute top-full right-0 mt-2 w-56 p-3 bg-slate-900 text-white text-[10px] rounded-lg shadow-xl z-50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                                        <div className="space-y-1.5">
+                                                            <div className="flex justify-between items-center">
+                                                                <span className="font-medium">&#x1F4B1; Đơn giá ngoại tệ</span>
+                                                                <span className="font-bold text-cyan-400">
+                                                                    {new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(item.foreignCurrency.amount)} {item.foreignCurrency.currency}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between items-center border-t border-slate-700 pt-1.5">
+                                                                <span className="font-medium">&#x1F4CA; Tỷ giá</span>
+                                                                <span className="font-bold text-amber-400">
+                                                                    {new Intl.NumberFormat('vi-VN').format(item.foreignCurrency.rate)}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </td>
                                         {/* Output Price */}
                                         <td className="px-4 py-3 text-right">
@@ -656,7 +676,23 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                     )}
                                                 </div>
                                             ) : (
-                                                <span className="text-rose-500 dark:text-rose-400 font-bold">{formatVND(item.directCosts || 0)}</span>
+                                                <div className="relative group inline-block">
+                                                    <span className="text-rose-500 dark:text-rose-400 font-bold cursor-help">{formatVND(item.directCosts || 0)}</span>
+                                                    {item.directCostDetails && item.directCostDetails.length > 0 && (
+                                                        <div className="absolute bottom-full right-0 mb-2 w-64 p-3 bg-slate-900 text-white text-[10px] rounded-lg shadow-xl z-50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                                            <div className="font-semibold text-[11px] mb-1.5 text-rose-300 border-b border-slate-700 pb-1">Chi tiết CP trực tiếp</div>
+                                                            <div className="space-y-1">
+                                                                {item.directCostDetails.map((detail, i) => (
+                                                                    <div key={i} className="flex justify-between items-center border-b border-slate-700 pb-1 last:border-0 last:pb-0">
+                                                                        <span className="font-medium">{detail.name}</span>
+                                                                        <span className="font-bold">{formatVND(detail.amount)}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                            <div className="absolute bottom-0 right-4 translate-y-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900"></div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             )}
                                         </td>
                                         {/* Margin */}

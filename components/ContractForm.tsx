@@ -878,6 +878,11 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                     { id: `dc-tax-${i}`, name: 'Thuế nhà thầu', amount: item.contractorTax },
                                     { id: `dc-transfer-${i}`, name: 'Chuyển tiền', amount: item.transferFee },
                                   ],
+                                  foreignCurrency: item.foreignCurrency ? {
+                                    amount: item.foreignCurrency.amount,
+                                    rate: item.foreignCurrency.rate,
+                                    currency: item.foreignCurrency.currency,
+                                  } : undefined,
                                 });
                               }
 
@@ -1016,18 +1021,38 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                   </select>
                                 </td>
                                 <td className="px-4 py-3 text-right">
-                                  <input
-                                    type="text"
-                                    value={item.inputPrice ? formatVND(item.inputPrice) : '0'}
-                                    onChange={(e) => {
-                                      const raw = e.target.value.replace(/\./g, '');
-                                      if (!/^\d*$/.test(raw)) return;
-                                      const newList = [...lineItems];
-                                      newList[index].inputPrice = Number(raw);
-                                      setLineItems(newList);
-                                    }}
-                                    className="w-full bg-transparent font-bold text-slate-500 text-right outline-none"
-                                  />
+                                  <div className="relative group">
+                                    <input
+                                      type="text"
+                                      value={item.inputPrice ? formatVND(item.inputPrice) : '0'}
+                                      onChange={(e) => {
+                                        const raw = e.target.value.replace(/\./g, '');
+                                        if (!/^\d*$/.test(raw)) return;
+                                        const newList = [...lineItems];
+                                        newList[index].inputPrice = Number(raw);
+                                        setLineItems(newList);
+                                      }}
+                                      className="w-full bg-transparent font-bold text-slate-500 text-right outline-none"
+                                    />
+                                    {item.foreignCurrency && (
+                                      <div className="absolute top-full right-0 mt-2 w-56 p-3 bg-slate-900 text-white text-[10px] rounded-lg shadow-xl z-50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                        <div className="space-y-1.5">
+                                          <div className="flex justify-between items-center">
+                                            <span className="font-medium">&#x1F4B1; Đơn giá ngoại tệ</span>
+                                            <span className="font-bold text-cyan-400">
+                                              {new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(item.foreignCurrency.amount)} {item.foreignCurrency.currency}
+                                            </span>
+                                          </div>
+                                          <div className="flex justify-between items-center border-t border-slate-700 pt-1.5">
+                                            <span className="font-medium">&#x1F4CA; Tỷ giá</span>
+                                            <span className="font-bold text-amber-400">
+                                              {new Intl.NumberFormat('vi-VN').format(item.foreignCurrency.rate)}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
                                 </td>
                                 <td className="px-4 py-3 text-right">
                                   <input

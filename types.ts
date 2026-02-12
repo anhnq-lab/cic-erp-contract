@@ -107,6 +107,12 @@ export interface DirectCostDetail {
   amount: number;
 }
 
+export interface ForeignCurrencyInfo {
+  amount: number;   // Đơn giá ngoại tệ (VD: 3136.5)
+  rate: number;     // Tỷ giá (VD: 26500)
+  currency: string; // "USD" | "EUR"
+}
+
 export interface LineItem {
   id: string;
   name: string;
@@ -116,6 +122,7 @@ export interface LineItem {
   outputPrice: number;
   directCosts: number;
   directCostDetails?: DirectCostDetail[];
+  foreignCurrency?: ForeignCurrencyInfo; // Thông tin ngoại tệ (nếu có)
 }
 
 /**

@@ -778,7 +778,7 @@ export const ContractService = {
             await supabase.from('contract_business_plans').insert({
                 contract_id: result.id,
                 version: 1,
-                status: 'Draft',
+                status: 'Approved', // Auto-approved - PAKD workflow temporarily disabled
                 financials: financials,
                 is_active: true,
                 created_by: user?.id

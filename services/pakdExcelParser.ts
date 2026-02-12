@@ -9,6 +9,12 @@
  */
 import * as XLSX from 'xlsx';
 
+export interface PAKDForeignCurrency {
+    amount: number;   // Đơn giá ngoại tệ (VD: 3136.5)
+    rate: number;     // Tỷ giá (VD: 26500)
+    currency: string; // "USD" | "EUR"
+}
+
 export interface PAKDLineItem {
     id: string;
     stt: number;
@@ -25,6 +31,7 @@ export interface PAKDLineItem {
     transferFee: number;   // Phí chuyển tiền
     margin: number;        // Chênh lệch
     marginPercent?: number; // % Lợi nhuận
+    foreignCurrency?: PAKDForeignCurrency; // Thông tin ngoại tệ (nếu có)
 }
 
 export interface PAKDAdminCosts {
@@ -236,7 +243,7 @@ export function parsePAKDExcel(file: File): Promise<ParsedPAKD> {
         reader.onload = (e) => {
             try {
                 const data = new Uint8Array(e.target?.result as ArrayBuffer);
-                const workbook = XLSX.read(data, { type: 'array' });
+                const workbook = XLSX.read(data, { type: 'array', cellFormula: true });
                 resolve(parsePAKDWorkbook(workbook));
             } catch (error) {
                 console.error('[PAKD Parser] Error parsing Excel:', error);
@@ -384,7 +391,7 @@ export async function fetchPAKDFromGoogleSheets(url: string): Promise<ParsedPAKD
         const buffer = await response.arrayBuffer();
 
         // 3. Parse ArrayBuffer
-        const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
+        const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array', cellFormula: true });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
@@ -402,6 +409,60 @@ export async function fetchPAKDFromGoogleSheets(url: string): Promise<ParsedPAKD
 /**
  * Shared logic to parse a workbook (from file or buffer)
  */
+/**
+ * Extract foreign currency info from a cell formula.
+ * Formulas like: =-3136.5*26500, =3136.5*26500, -3136.5*26500
+ * Returns { amount, rate } where rate is the larger number (tỷ giá VND)
+ */
+function extractForeignCurrencyFromFormula(
+    worksheet: XLSX.WorkSheet,
+    rowIndex: number,
+    colIndex: number,
+    header: PAKDHeader
+): PAKDForeignCurrency | undefined {
+    if (colIndex < 0) return undefined;
+
+    const cellAddr = XLSX.utils.encode_cell({ r: rowIndex, c: colIndex });
+    const cell = worksheet[cellAddr];
+    if (!cell || !cell.f) return undefined; // No formula
+
+    const formula = cell.f;
+    console.log(`[PAKD Parser] Cell ${cellAddr} formula: ${formula}`);
+
+    // Match patterns: =-A*B, =A*B, -A*B (with optional negative signs)
+    const match = formula.match(/=?\s*-?\s*([\d.,]+)\s*\*\s*-?\s*([\d.,]+)/);
+    if (!match) return undefined;
+
+    const num1 = parseFloat(match[1].replace(/,/g, '.'));
+    const num2 = parseFloat(match[2].replace(/,/g, '.'));
+    if (isNaN(num1) || isNaN(num2) || num1 === 0 || num2 === 0) return undefined;
+
+    // Tỷ giá VND thường lớn hơn nhiều so với đơn giá ngoại tệ
+    // VD: 3136.5 * 26500 → amount=3136.5, rate=26500
+    let amount: number, rate: number;
+    if (num2 > num1) {
+        amount = num1;
+        rate = num2;
+    } else {
+        amount = num2;
+        rate = num1;
+    }
+
+    // Nhận dạng loại tiền dựa vào tỷ giá trong header
+    let currency = 'USD'; // Mặc định
+    if (header.usdRate && Math.abs(rate - header.usdRate) < 1000) {
+        currency = 'USD';
+    } else if (header.eurRate && Math.abs(rate - header.eurRate) < 1000) {
+        currency = 'EUR';
+    } else if (rate > 20000 && rate < 30000) {
+        currency = 'USD';
+    } else if (rate > 25000 && rate < 35000) {
+        currency = 'EUR';
+    }
+
+    return { amount, rate, currency };
+}
+
 export function parsePAKDWorkbook(workbook: XLSX.WorkBook): ParsedPAKD {
     // Get first sheet
     const sheetName = workbook.SheetNames[0];
@@ -504,6 +565,9 @@ export function parsePAKDWorkbook(workbook: XLSX.WorkBook): ParsedPAKD {
             marginPercent = Math.round((margin / totalPrice) * 100 * 100) / 100;
         }
 
+        // Trích xuất thông tin ngoại tệ từ công thức đơn giá
+        const foreignCurrency = extractForeignCurrencyFromFormula(worksheet, rowIndex, COL.UNIT_COST, header);
+
         const item: PAKDLineItem = {
             id: `item-${Date.now()}-${rowIndex}`,
             stt: Number(getCellValue(row, COL.STT, lineItems.length + 1)) || lineItems.length + 1,
@@ -520,6 +584,7 @@ export function parsePAKDWorkbook(workbook: XLSX.WorkBook): ParsedPAKD {
             transferFee: transferFeeInfo.value,
             margin,
             marginPercent,
+            foreignCurrency,
         };
 
         lineItems.push(item);
@@ -637,6 +702,11 @@ export function convertToFormData(parsed: ParsedPAKD) {
                 transferFee: item.transferFee,
             },
             marginPercent: item.marginPercent,
+            foreignCurrency: item.foreignCurrency ? {
+                amount: item.foreignCurrency.amount,
+                rate: item.foreignCurrency.rate,
+                currency: item.foreignCurrency.currency,
+            } : undefined,
         })),
         adminCosts: {
             bankFee: parsed.adminCosts.bankFee,
