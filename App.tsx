@@ -11,6 +11,7 @@ import Dashboard from './components/Dashboard';
 import ContractList from './components/ContractList';
 import AIAssistant from './components/AIAssistant';
 import ContractDetail from './components/ContractDetail';
+import DocumentManager from './components/DocumentManager';
 import ContractForm from './components/ContractForm';
 import Analytics from './components/Analytics';
 import PersonnelList from './components/PersonnelList';
@@ -252,6 +253,8 @@ const App: React.FC = () => {
         return <Dashboard selectedUnit={selectedUnit} onSelectUnit={setSelectedUnit} onSelectContract={handleViewContract} />;
       case 'contracts':
         return <ContractList selectedUnit={selectedUnit} onSelectContract={handleViewContract} onAdd={() => setIsCreating(true)} onClone={handleCloneContract} />;
+      case 'documents':
+        return <DocumentManager />;
       case 'ai-assistant':
         return <AIAssistant />;
       case 'personnel':
