@@ -946,14 +946,16 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     </div>
 
                     <div className="overflow-x-auto rounded-lg border border-slate-100 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-800">
-                      <table className="w-full text-left text-xs min-w-[900px]">
+                      <table className="w-full text-left text-xs min-w-[1200px]">
                         <thead className="bg-slate-50 dark:bg-slate-800">
                           <tr>
                             <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter w-[320px]">Sản phẩm/Dịch vụ</th>
                             <th className="px-2 py-4 font-black text-slate-400 uppercase tracking-tighter w-10">SL</th>
                             <th className="px-4 py-4 font-black text-slate-400 uppercase tracking-tighter w-[180px]">Nhà cung cấp</th>
                             <th className="px-3 py-4 font-black text-slate-400 uppercase tracking-tighter text-right w-[120px] whitespace-nowrap">Giá Đầu vào</th>
+                            <th className="px-3 py-4 font-black text-cyan-500 uppercase tracking-tighter text-right w-[120px] whitespace-nowrap">TT Đầu vào</th>
                             <th className="px-3 py-4 font-black text-slate-400 uppercase tracking-tighter text-right w-[120px] whitespace-nowrap">Giá Đầu ra</th>
+                            <th className="px-3 py-4 font-black text-indigo-400 uppercase tracking-tighter text-right w-[120px] whitespace-nowrap">TT Đầu ra</th>
                             <th className="px-3 py-4 font-black text-slate-400 uppercase tracking-tighter text-right w-[110px] whitespace-nowrap">CP Trực tiếp</th>
                             <th className="px-3 py-4 font-black text-slate-400 uppercase tracking-tighter text-right w-[110px] whitespace-nowrap">Chênh lệch</th>
                             <th className="px-4 py-4 w-10"></th>
@@ -1054,6 +1056,9 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                     )}
                                   </div>
                                 </td>
+                                <td className="px-3 py-3 text-right">
+                                  <span className="font-bold text-cyan-600 dark:text-cyan-400">{formatVND(inputTotal)}</span>
+                                </td>
                                 <td className="px-4 py-3 text-right">
                                   <input
                                     type="text"
@@ -1067,6 +1072,9 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                                     }}
                                     className="w-full bg-transparent font-bold text-indigo-600 text-right outline-none"
                                   />
+                                </td>
+                                <td className="px-3 py-3 text-right">
+                                  <span className="font-bold text-indigo-600 dark:text-indigo-400">{formatVND(outputTotal)}</span>
                                 </td>
                                 <td className="px-4 py-3 text-right">
                                   <div className="relative group/costs">
@@ -1122,8 +1130,14 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                             <td className="px-4 py-4 text-right text-slate-600 dark:text-slate-400">
                               {formatVND(totals.totalInput)}
                             </td>
+                            <td className="px-3 py-4 text-right text-cyan-600 font-black">
+                              {formatVND(lineItems.reduce((acc, item) => acc + (item.quantity * item.inputPrice), 0))}
+                            </td>
                             <td className="px-4 py-4 text-right text-indigo-600">
                               {formatVND(totals.signingValue)}
+                            </td>
+                            <td className="px-3 py-4 text-right text-indigo-600 font-black">
+                              {formatVND(lineItems.reduce((acc, item) => acc + (item.quantity * item.outputPrice), 0))}
                             </td>
                             <td className="px-4 py-4 text-right text-rose-500">
                               {formatVND(totals.totalDirectCosts)}

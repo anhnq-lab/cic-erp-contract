@@ -517,14 +517,16 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                     </div>
                 </div>
                 <div className="mb-8 overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
-                    <table className="w-full text-left text-xs min-w-[900px]">
+                    <table className="w-full text-left text-xs min-w-[1200px]">
                         <thead className="bg-slate-50 dark:bg-slate-800">
                             <tr>
                                 <th className="px-4 py-3 font-bold text-slate-500 dark:text-slate-300 uppercase tracking-tighter text-xs w-[320px]">Sản phẩm/Dịch vụ</th>
                                 <th className="px-2 py-3 font-bold text-slate-500 dark:text-slate-300 uppercase tracking-tighter text-xs text-center w-10">SL</th>
                                 <th className="px-4 py-3 font-bold text-slate-500 dark:text-slate-300 uppercase tracking-tighter text-xs w-[180px]">Nhà cung cấp</th>
                                 <th className="px-3 py-3 font-bold text-slate-500 dark:text-slate-300 uppercase tracking-tighter text-xs text-right w-[120px] whitespace-nowrap">Giá Đầu vào</th>
+                                <th className="px-3 py-3 font-bold text-cyan-500 uppercase tracking-tighter text-xs text-right w-[120px] whitespace-nowrap">TT Đầu vào</th>
                                 <th className="px-3 py-3 font-bold text-slate-500 dark:text-slate-300 uppercase tracking-tighter text-xs text-right w-[120px] whitespace-nowrap">Giá Đầu ra</th>
+                                <th className="px-3 py-3 font-bold text-indigo-400 uppercase tracking-tighter text-xs text-right w-[120px] whitespace-nowrap">TT Đầu ra</th>
                                 <th className="px-3 py-3 font-bold text-slate-500 dark:text-slate-300 uppercase tracking-tighter text-xs text-right w-[110px] whitespace-nowrap">CP Trực tiếp</th>
                                 <th className="px-3 py-3 font-bold text-slate-500 dark:text-slate-300 uppercase tracking-tighter text-xs text-right w-[110px] whitespace-nowrap">Chênh lệch</th>
                                 {isEditing && <th className="px-2 py-3 w-10"></th>}
@@ -635,6 +637,10 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                                 )}
                                             </div>
                                         </td>
+                                        {/* TT Đầu vào */}
+                                        <td className="px-3 py-3 text-right">
+                                            <span className="font-bold text-cyan-600 dark:text-cyan-400">{formatVND(inputTotal)}</span>
+                                        </td>
                                         {/* Output Price */}
                                         <td className="px-4 py-3 text-right">
                                             {isEditing ? (
@@ -651,6 +657,10 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                                             ) : (
                                                 <span className="font-bold text-orange-600 dark:text-orange-400">{formatVND(item.outputPrice)}</span>
                                             )}
+                                        </td>
+                                        {/* TT Đầu ra */}
+                                        <td className="px-3 py-3 text-right">
+                                            <span className="font-bold text-indigo-600 dark:text-indigo-400">{formatVND(outputTotal)}</span>
                                         </td>
                                         {/* Direct Costs (Modal trigger) */}
                                         <td className="px-4 py-3 text-right">
@@ -724,9 +734,17 @@ const ContractBusinessPlanTab: React.FC<Props> = ({ contract, onUpdate }) => {
                             <tr className="bg-slate-50 dark:bg-slate-800 font-bold text-slate-800 dark:text-slate-100 border-t-2 border-slate-200 dark:border-slate-600">
                                 <td className="px-4 py-3" colSpan={3}>TỔNG CỘNG</td>
                                 <td className="px-4 py-3 text-right text-slate-500 dark:text-slate-400">
+                                    {formatVND(lineItems.reduce((acc, item) => acc + item.inputPrice, 0))}
+                                </td>
+                                <td className="px-3 py-3 text-right text-cyan-600 dark:text-cyan-400 font-black">
                                     {formatVND(lineItems.reduce((acc, item) => acc + (item.quantity * item.inputPrice), 0))}
                                 </td>
-                                <td className="px-4 py-3 text-right text-orange-600 dark:text-orange-400">{formatVND(financials.revenue)}</td>
+                                <td className="px-4 py-3 text-right text-orange-600 dark:text-orange-400">
+                                    {formatVND(lineItems.reduce((acc, item) => acc + item.outputPrice, 0))}
+                                </td>
+                                <td className="px-3 py-3 text-right text-indigo-600 dark:text-indigo-400 font-black">
+                                    {formatVND(lineItems.reduce((acc, item) => acc + (item.quantity * item.outputPrice), 0))}
+                                </td>
                                 <td className="px-4 py-3 text-right text-rose-500 dark:text-rose-400">
                                     {formatVND(lineItems.reduce((acc, item) => acc + (item.directCosts || 0), 0))}
                                 </td>
