@@ -58,21 +58,42 @@ async function saveFolderMapping(mapping: {
     parentMappingId?: string;
     createdBy?: string;
 }): Promise<FolderMappingRow> {
-    const { data, error } = await supabase
-        .from('drive_folder_mappings')
-        .upsert(
-            {
-                entity_type: mapping.entityType,
-                entity_id: mapping.entityId || null,
-                folder_type: mapping.folderType || null,
+    // First try to find existing mapping by entity composite key
+    const existing = await getFolderMapping(mapping.entityType, mapping.entityId, mapping.folderType);
+
+    if (existing) {
+        // Update existing mapping with new drive folder ID
+        const { data, error } = await supabase
+            .from('drive_folder_mappings')
+            .update({
                 drive_folder_id: mapping.driveFolderId,
                 drive_folder_url: mapping.driveFolderUrl || GoogleDriveService.getFolderUrl(mapping.driveFolderId),
                 drive_folder_name: mapping.driveFolderName || null,
                 parent_mapping_id: mapping.parentMappingId || null,
-                created_by: mapping.createdBy || null,
-            },
-            { onConflict: 'drive_folder_id' }
-        )
+            })
+            .eq('id', existing.id)
+            .select()
+            .single();
+        if (error) {
+            console.error('[DriveInit] Error updating mapping:', error);
+            throw error;
+        }
+        return data;
+    }
+
+    // Insert new mapping
+    const { data, error } = await supabase
+        .from('drive_folder_mappings')
+        .insert({
+            entity_type: mapping.entityType,
+            entity_id: mapping.entityId || null,
+            folder_type: mapping.folderType || null,
+            drive_folder_id: mapping.driveFolderId,
+            drive_folder_url: mapping.driveFolderUrl || GoogleDriveService.getFolderUrl(mapping.driveFolderId),
+            drive_folder_name: mapping.driveFolderName || null,
+            parent_mapping_id: mapping.parentMappingId || null,
+            created_by: mapping.createdBy || null,
+        })
         .select()
         .single();
 
@@ -95,17 +116,19 @@ async function getFolderMapping(
 
     if (entityId) {
         query = query.eq('entity_id', entityId);
+    } else {
+        query = query.is('entity_id', null);
     }
     if (folderType) {
         query = query.eq('folder_type', folderType);
     }
 
-    const { data, error } = await query.maybeSingle();
+    const { data, error } = await query.order('created_at', { ascending: false }).limit(1);
     if (error) {
         console.error('[DriveInit] Error getting mapping:', error);
         return null;
     }
-    return data;
+    return data && data.length > 0 ? data[0] : null;
 }
 
 // ============================================
