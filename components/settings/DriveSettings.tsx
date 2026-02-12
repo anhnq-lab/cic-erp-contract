@@ -106,8 +106,8 @@ const DriveSettings: React.FC = () => {
 
             {/* Status Card */}
             <div className={`p-4 rounded-lg border ${isInitialized
-                    ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800'
-                    : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
+                ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800'
+                : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
                 }`}>
                 <div className="flex items-center gap-3">
                     {isInitialized ? (
@@ -139,7 +139,7 @@ const DriveSettings: React.FC = () => {
             </div>
 
             {/* Folder Structure Preview */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-600">
                 <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
                     <FolderTree size={16} className="text-orange-500" />
                     Cấu trúc thư mục: {ROOT_FOLDER_NAME}
@@ -258,9 +258,9 @@ const DriveSettings: React.FC = () => {
                                     <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                         <td className="px-3 py-1.5">
                                             <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold ${m.entity_type === 'root' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                                                    : m.entity_type === 'unit' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                                        : m.entity_type === 'contract' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                                                            : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                                                : m.entity_type === 'unit' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                                    : m.entity_type === 'contract' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                                                        : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
                                                 }`}>
                                                 {m.entity_type}
                                             </span>
