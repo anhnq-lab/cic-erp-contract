@@ -361,30 +361,33 @@ export function generatePAKDTemplate(): void {
  */
 export async function fetchPAKDFromGoogleSheets(url: string, accessToken?: string): Promise<ParsedPAKD> {
     try {
-        // 1. Convert URL to export format (XLSX)
-        // From: https://docs.google.com/spreadsheets/d/[ID]/edit#gid=[GID]
-        // To:   https://docs.google.com/spreadsheets/d/[ID]/export?format=xlsx&gid=[GID]
-
-        let exportUrl = url;
+        // Extract sheet ID from URL
         const sheetIdMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-
-        if (sheetIdMatch) {
-            const sheetId = sheetIdMatch[1];
-            const gidMatch = url.match(/gid=([0-9]+)/);
-            const gid = gidMatch ? gidMatch[1] : '0';
-            exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=xlsx&gid=${gid}`;
-        } else {
+        if (!sheetIdMatch) {
             throw new Error('Định dạng link Google Sheets không đúng. Vui lòng kiểm tra lại.');
         }
 
-        console.log(`[PAKD Parser] Fetching from Google Sheets: ${exportUrl}`, { hasToken: !!accessToken });
+        const sheetId = sheetIdMatch[1];
+        let exportUrl: string;
+        const fetchOptions: RequestInit = {};
 
-        // 2. Fetch data — use OAuth token if available (allows private sheets)
-        const headers: HeadersInit = {};
         if (accessToken) {
-            headers['Authorization'] = `Bearer ${accessToken}`;
+            // Use Google Drive API (supports CORS with Authorization header)
+            // docs.google.com/export does NOT handle CORS preflight for Authorization headers
+            exportUrl = `https://www.googleapis.com/drive/v3/files/${sheetId}/export?mimeType=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`;
+            fetchOptions.headers = {
+                'Authorization': `Bearer ${accessToken}`,
+            };
+            console.log(`[PAKD Parser] Fetching via Google Drive API (authenticated): ${exportUrl}`);
+        } else {
+            // Fallback: public export via docs.google.com (no auth, sheet must be public)
+            const gidMatch = url.match(/gid=([0-9]+)/);
+            const gid = gidMatch ? gidMatch[1] : '0';
+            exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=xlsx&gid=${gid}`;
+            console.log(`[PAKD Parser] Fetching via public export URL: ${exportUrl}`);
         }
-        const response = await fetch(exportUrl, { headers });
+
+        const response = await fetch(exportUrl, fetchOptions);
         if (!response.ok) {
             if (response.status === 401 || response.status === 403) {
                 throw new Error('Không có quyền truy cập file. Vui lòng đảm bảo tài khoản Google của bạn có quyền xem file này, hoặc thử đăng xuất rồi đăng nhập lại.');

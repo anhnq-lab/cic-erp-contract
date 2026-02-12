@@ -44,6 +44,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             setSession(session);
             setUser(session?.user ?? null);
+
+            // Persist Google provider_token for Google Sheets API access
+            if (session?.provider_token) {
+                sessionStorage.setItem('google_provider_token', session.provider_token);
+                console.log('[AuthContext] Google provider_token saved (getSession)');
+            }
+
             if (session?.user) {
                 console.log('[AuthContext] User found, fetching profile...');
                 fetchProfile(session.user.id, session.user.email);
