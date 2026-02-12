@@ -915,10 +915,27 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract: initialContra
           onClose={() => setShowDocLinkDialog(false)}
           onSubmit={async (doc) => {
             try {
-              const newDoc = await DocumentService.addLink(contract.id, doc);
-              setDocuments(prev => [newDoc, ...prev]);
-              toast.success('Đã thêm tài liệu thành công!');
+              if (doc.file) {
+                // Handle File Upload
+                const toastId = toast.loading('Đang tải lên tài liệu...');
+                const newDoc = await DocumentService.uploadToDrive(
+                  contract.id,
+                  doc.file,
+                  contract.unitId,
+                  contract.title || contract.partyA
+                );
+                setDocuments(prev => [newDoc, ...prev]);
+                toast.dismiss(toastId);
+                toast.success('Đã tải lên tài liệu thành công!');
+              } else {
+                // Handle Link Add
+                const newDoc = await DocumentService.addLink(contract.id, doc);
+                setDocuments(prev => [newDoc, ...prev]);
+                toast.success('Đã thêm tài liệu thành công!');
+              }
+              setShowDocLinkDialog(false);
             } catch (err: any) {
+              toast.dismiss();
               toast.error('Thêm tài liệu thất bại: ' + err.message);
             }
           }}
