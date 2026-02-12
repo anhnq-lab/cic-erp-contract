@@ -46,7 +46,7 @@ export interface Employee {
 export interface Unit {
   id: string;
   name: string;
-  type: 'Company' | 'Branch' | 'Center';
+  type: 'Company' | 'Branch' | 'Center' | 'BackOffice';
   code: string;
   target: KPIPlan;
   lastYearActual?: KPIPlan; // Dữ liệu năm trước để so sánh YoY

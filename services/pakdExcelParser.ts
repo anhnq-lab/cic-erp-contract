@@ -371,14 +371,9 @@ export async function fetchPAKDFromGoogleSheets(url: string, accessToken?: strin
 
         if (accessToken) {
             // Use Supabase Edge Function proxy (server-side fetch, no CORS issues)
-            const { supabase } = await import('../lib/supabase');
             const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
             const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
             const proxyUrl = `${supabaseUrl}/functions/v1/google-sheets-proxy`;
-
-            // Get Supabase session token for Edge Function JWT verification
-            const { data: { session } } = await supabase.auth.getSession();
-            const supabaseToken = session?.access_token || '';
 
             console.log(`[PAKD Parser] Fetching via Edge Function proxy (authenticated)`);
 
@@ -386,7 +381,6 @@ export async function fetchPAKDFromGoogleSheets(url: string, accessToken?: strin
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${supabaseToken}`,
                     'apikey': supabaseAnonKey,
                 },
                 body: JSON.stringify({ url, accessToken }),

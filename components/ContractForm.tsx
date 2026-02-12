@@ -59,9 +59,10 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
         setSuppliers(suppliersRes.data?.filter(c => c.type === 'Supplier' || c.type === 'Both') || []);
         setExecutionCostTypes(executionCostTypesRes);
 
-        // Set default unit if creating new and no unit selected yet
+        // Set default unit if creating new and no unit selected yet (skip admin units)
         if (!isEditing && !unitId && unitsData.length > 0) {
-          setUnitId(unitsData[0].id);
+          const operationalUnits = unitsData.filter(u => u.id !== 'all' && u.type !== 'Company' && u.type !== 'BackOffice');
+          if (operationalUnits.length > 0) setUnitId(operationalUnits[0].id);
         }
       } catch (error) {
         console.error(error);
@@ -653,7 +654,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                       className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 rounded-lg text-sm font-bold outline-none focus:border-indigo-500 transition-all"
                     >
                       <option value="">-- Chọn đơn vị --</option>
-                      {units.filter(u => u.id !== 'all').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                      {units.filter(u => u.id !== 'all' && u.type !== 'Company' && u.type !== 'BackOffice').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                     </select>
                   </div>
 
