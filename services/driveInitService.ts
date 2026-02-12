@@ -12,9 +12,11 @@ import {
     GoogleDriveService,
     ROOT_FOLDER_NAME,
     UNIT_FOLDER_MAP,
-    UNIT_SUBFOLDERS,
+    BUSINESS_UNIT_SUBFOLDERS,
     GLOBAL_FOLDERS,
     DriveFile,
+    getUnitSubfolders,
+    ADMIN_UNIT_SUBFOLDERS
 } from './googleDriveService';
 
 // ============================================
@@ -126,7 +128,17 @@ export const DriveInitService = {
         const units = Object.entries(UNIT_FOLDER_MAP);
         // root + (units * subfolders) + global folders + year folders
         const currentYear = new Date().getFullYear();
-        const total = 1 + (units.length * (UNIT_SUBFOLDERS.length + 1)) + GLOBAL_FOLDERS.length + (units.length * UNIT_SUBFOLDERS.length); // year folders
+
+        // Calculate total items to track progress
+        let total = 1 + units.length + GLOBAL_FOLDERS.length; // root + unit folders + global folders
+
+        // Add subfolders and year folders for each unit
+        for (const [unitId] of units) {
+            const subfolders = getUnitSubfolders(unitId);
+            total += subfolders.length; // subfolders
+            total += subfolders.length; // year folders inside subfolders
+        }
+
         let current = 0;
         let totalCreated = 0;
 
@@ -167,7 +179,8 @@ export const DriveInitService = {
                 totalCreated++;
 
                 // 3. Create subfolders for each unit
-                for (const subName of UNIT_SUBFOLDERS) {
+                const subfolders = getUnitSubfolders(unitId);
+                for (const subName of subfolders) {
                     reportProgress(`${unitPrefix}/${subName}`);
                     const subFolder = await GoogleDriveService.getOrCreateFolder(subName, unitFolder.id);
                     const subMapping = await saveFolderMapping({

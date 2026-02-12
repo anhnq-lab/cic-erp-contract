@@ -8,6 +8,7 @@ export const ROUTES = {
     CONTRACT_EDIT: (id: string) => `/contracts/${id}/edit`,
     PAYMENTS: '/payments',
     ANALYTICS: '/analytics',
+    DOCUMENTS: '/documents',
     AI_ASSISTANT: '/ai-assistant',
     PERSONNEL: '/personnel',
     PERSONNEL_DETAIL: (id: string) => `/personnel/${id}`,

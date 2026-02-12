@@ -47,17 +47,22 @@ export interface DrivePermission {
     domain?: string;
 }
 
-// ============================================
-// Unit Folder Prefix Mapping
-// ============================================
+/** Standard subfolder structure for Business Units */
+export const BUSINESS_UNIT_SUBFOLDERS = ['PAKD', 'HopDong', 'HoaDon', 'BaoCao', 'Templates'] as const;
 
-/** Maps unit IDs to their folder prefix names */
+/** Standard subfolder structure for Admin Units (HĐQT, BGĐ, TCKT, HCNS) */
+export const ADMIN_UNIT_SUBFOLDERS = ['VanBan', 'BaoCao', 'Templates'] as const;
+/** 
+ * Maps unit IDs to their folder prefix names 
+ * - Admin Units: HĐQT, BGĐ, P-HCNS, P-TCKT
+ * - Business Units: Everything else
+ */
 export const UNIT_FOLDER_MAP: Record<string, string> = {
     'hdqt': 'HDQT',
     'bgd': 'BGD',
-    'hcm': 'CN-HCM',
     'hcns': 'P-HCNS',
     'tckt': 'P-TCKT',
+    'hcm': 'CN-HCM',
     'bim': 'TT-BIM',
     'css': 'TT-CSS',
     'dcs': 'TT-DCS',
@@ -67,14 +72,22 @@ export const UNIT_FOLDER_MAP: Record<string, string> = {
     'tvtk': 'TT-TVTK',
 };
 
-/** Standard subfolder structure for each unit */
-export const UNIT_SUBFOLDERS = ['PAKD', 'HopDong', 'HoaDon', 'BaoCao', 'Templates'] as const;
+/** List of Admin Unit IDs */
+export const ADMIN_UNIT_IDS = ['hdqt', 'bgd', 'hcns', 'tckt'];
 
 /** Global (non-unit) folders */
 export const GLOBAL_FOLDERS = ['_KhachHang', '_NhanSu', '_BaoCaoTongHop', '_Templates'] as const;
 
 /** Root folder name */
 export const ROOT_FOLDER_NAME = 'CIC-Document';
+
+/** Helper to get subfolders for a specific unit */
+export function getUnitSubfolders(unitId: string): readonly string[] {
+    if (ADMIN_UNIT_IDS.includes(unitId)) {
+        return ADMIN_UNIT_SUBFOLDERS;
+    }
+    return BUSINESS_UNIT_SUBFOLDERS;
+}
 
 // ============================================
 // Token Helper

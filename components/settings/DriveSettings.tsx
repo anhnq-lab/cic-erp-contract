@@ -4,7 +4,11 @@ import {
     ExternalLink, RefreshCw, Trash2, FolderTree
 } from 'lucide-react';
 import { DriveInitService, InitProgress } from '../../services/driveInitService';
-import { UNIT_FOLDER_MAP, UNIT_SUBFOLDERS, ROOT_FOLDER_NAME } from '../../services/googleDriveService';
+import {
+    UNIT_FOLDER_MAP,
+    ROOT_FOLDER_NAME,
+    getUnitSubfolders
+} from '../../services/googleDriveService';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -146,16 +150,19 @@ const DriveSettings: React.FC = () => {
                 </h4>
                 <div className="text-xs font-mono space-y-1 text-slate-600 dark:text-slate-400 max-h-48 overflow-y-auto">
                     <div className="font-bold text-orange-600 dark:text-orange-400">📁 {ROOT_FOLDER_NAME}/</div>
-                    {Object.entries(UNIT_FOLDER_MAP).map(([id, prefix]) => (
-                        <div key={id}>
-                            <div className="pl-4">
-                                📁 {prefix}/
-                                <span className="text-slate-400 ml-2">
-                                    ({UNIT_SUBFOLDERS.join(', ')})
-                                </span>
+                    {Object.entries(UNIT_FOLDER_MAP).map(([id, prefix]) => {
+                        const subfolders = getUnitSubfolders(id);
+                        return (
+                            <div key={id}>
+                                <div className="pl-4">
+                                    📁 {prefix}/
+                                    <span className="text-slate-400 ml-2">
+                                        ({subfolders.join(', ')})
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                     <div className="pl-4 text-slate-500 dark:text-slate-500">
                         📁 _KhachHang/ • 📁 _NhanSu/ • 📁 _BaoCaoTongHop/ • 📁 _Templates/
                     </div>

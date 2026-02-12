@@ -26,6 +26,7 @@ import {
     LazyUnitDetailPage as UnitDetailPage,
     LazySettingsPage as SettingsPage,
     LazyUserGuidePage as UserGuidePage,
+    LazyDocumentManagerPage as DocumentManagerPage,
 } from '../components/LazyPages';
 
 // Route Configuration
@@ -49,6 +50,9 @@ export const router = createBrowserRouter([
 
             // Analytics
             { path: 'analytics', element: <AnalyticsPage /> },
+
+            // Documents
+            { path: 'documents', element: <DocumentManagerPage /> },
 
             // AI Assistant
             { path: 'ai-assistant', element: <AIAssistantPage /> },

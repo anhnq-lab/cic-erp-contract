@@ -8,7 +8,8 @@ import {
   Users,
   Building2,
   Package,
-  HelpCircle
+  HelpCircle,
+  FolderOpen
 } from 'lucide-react';
 import { Contract, Unit, ImplementationStage, ContractType, Employee, Customer, Product, ProductCategory, Payment, PaymentStatus, PaymentMethod, UserRole, PlanStatus } from './types';
 
@@ -171,6 +172,7 @@ export const NAV_ITEMS = [
   { id: 'payments', label: 'Thanh toán', icon: <Package size={20} /> },
   { id: 'analytics', label: 'Thống kê', icon: <PieChart size={20} /> },
   { id: 'ai-assistant', label: 'AI Phân tích', icon: <BrainCircuit size={20} /> },
+  { id: 'documents', label: 'Tài liệu', icon: <FolderOpen size={20} /> },
 
   // Danh mục
   { id: 'units', label: 'Đơn vị', icon: <Building2 size={20} /> },
