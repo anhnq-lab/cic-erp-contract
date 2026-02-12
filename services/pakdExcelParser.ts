@@ -359,7 +359,7 @@ export function generatePAKDTemplate(): void {
  * Fetch and parse PAKD from Google Sheets URL
  * Supports converting standard Google Sheets 'edit' URLs to export URLs
  */
-export async function fetchPAKDFromGoogleSheets(url: string): Promise<ParsedPAKD> {
+export async function fetchPAKDFromGoogleSheets(url: string, accessToken?: string): Promise<ParsedPAKD> {
     try {
         // 1. Convert URL to export format (XLSX)
         // From: https://docs.google.com/spreadsheets/d/[ID]/edit#gid=[GID]
@@ -377,13 +377,20 @@ export async function fetchPAKDFromGoogleSheets(url: string): Promise<ParsedPAKD
             throw new Error('Định dạng link Google Sheets không đúng. Vui lòng kiểm tra lại.');
         }
 
-        console.log(`[PAKD Parser] Fetching from Google Sheets: ${exportUrl}`);
+        console.log(`[PAKD Parser] Fetching from Google Sheets: ${exportUrl}`, { hasToken: !!accessToken });
 
-        // 2. Fetch data (Requires sheet to be "Anyone with link can view")
-        const response = await fetch(exportUrl);
+        // 2. Fetch data — use OAuth token if available (allows private sheets)
+        const headers: HeadersInit = {};
+        if (accessToken) {
+            headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+        const response = await fetch(exportUrl, { headers });
         if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                throw new Error('Không có quyền truy cập file. Vui lòng đảm bảo tài khoản Google của bạn có quyền xem file này, hoặc thử đăng xuất rồi đăng nhập lại.');
+            }
             if (response.status === 404) {
-                throw new Error('Không tìm thấy File. Vui lòng đảm bảo link đúng và Sheet ở chế độ công khai (Anyone with link can view).');
+                throw new Error('Không tìm thấy file. Vui lòng kiểm tra link Google Sheets.');
             }
             throw new Error(`Lỗi tải dữ liệu (${response.status}). Vui lòng kiểm tra quyền truy cập của Google Sheet.`);
         }

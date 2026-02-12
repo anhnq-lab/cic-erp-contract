@@ -5,6 +5,7 @@
 import React, { useState } from 'react';
 import { Link2, X, Download, Loader2, FileSpreadsheet, CheckCircle, AlertTriangle } from 'lucide-react';
 import { fetchPAKDFromGoogleSheets, ParsedPAKD } from '../../services/pakdExcelParser';
+import { getGoogleAccessToken } from '../../contexts/AuthContext';
 import { toast } from 'sonner';
 
 interface PAKDImportGoogleModalProps {
@@ -31,7 +32,8 @@ export function PAKDImportGoogleModal({ isOpen, onClose, onImport }: PAKDImportG
 
         setIsFetching(true);
         try {
-            const parsed = await fetchPAKDFromGoogleSheets(url);
+            const token = getGoogleAccessToken();
+            const parsed = await fetchPAKDFromGoogleSheets(url, token || undefined);
             setPreviewData(parsed);
             toast.success(`Đã tải ${parsed.lineItems.length} hạng mục từ Google Sheets`);
         } catch (error: any) {
@@ -114,15 +116,16 @@ export function PAKDImportGoogleModal({ isOpen, onClose, onImport }: PAKDImportG
                                 </div>
                             </div>
 
-                            <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg border border-amber-100 dark:border-amber-900/30">
+                            <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-lg border border-emerald-100 dark:border-emerald-900/30">
                                 <div className="flex gap-3">
-                                    <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+                                    <FileSpreadsheet className="w-5 h-5 text-emerald-600 shrink-0" />
                                     <div className="space-y-1">
-                                        <p className="text-sm font-bold text-amber-900 dark:text-amber-200">Lưu ý quan trọng</p>
-                                        <ul className="text-xs text-amber-800/80 dark:text-amber-300/80 space-y-1 list-disc pl-4">
-                                            <li>Google Sheet phải được đặt ở chế độ <b>"Bất kỳ ai có liên kết đều có thể xem"</b> (Public).</li>
+                                        <p className="text-sm font-bold text-emerald-900 dark:text-emerald-200">Hướng dẫn</p>
+                                        <ul className="text-xs text-emerald-800/80 dark:text-emerald-300/80 space-y-1 list-disc pl-4">
+                                            <li>Bạn chỉ cần có <b>quyền xem</b> Google Sheet này (được share hoặc qua link). <b>Không cần public.</b></li>
                                             <li>Dữ liệu phải đúng định dạng template PAKD của hệ thống.</li>
                                             <li>Nếu Sheet có nhiều tab, hệ thống sẽ lấy dữ liệu từ tab đầu tiên.</li>
+                                            <li>Nếu gặp lỗi quyền, hãy thử <b>đăng xuất rồi đăng nhập lại</b>.</li>
                                         </ul>
                                     </div>
                                 </div>

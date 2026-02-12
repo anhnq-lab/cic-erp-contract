@@ -48,6 +48,7 @@ const Auth = () => {
                 provider: 'google',
                 options: {
                     redirectTo: window.location.origin,
+                    scopes: 'https://www.googleapis.com/auth/spreadsheets.readonly',
                 },
             });
             if (error) throw error;

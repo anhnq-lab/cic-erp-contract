@@ -68,10 +68,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setSession(session);
             setUser(session?.user ?? null);
 
+            // Persist Google provider_token for Google Sheets API access
+            if (session?.provider_token) {
+                sessionStorage.setItem('google_provider_token', session.provider_token);
+                console.log('[AuthContext] Google provider_token saved to sessionStorage');
+            }
+
             if (session?.user) {
                 await fetchProfile(session.user.id, session.user.email);
             } else {
                 setProfile(null);
+                sessionStorage.removeItem('google_provider_token');
                 setIsLoading(false);
             }
         });
@@ -228,3 +235,12 @@ export const useAuth = () => {
     }
     return context;
 };
+
+/**
+ * Get Google OAuth access token from sessionStorage.
+ * Available after user signs in with Google (with spreadsheets scope).
+ * Used to fetch private Google Sheets without requiring public sharing.
+ */
+export function getGoogleAccessToken(): string | null {
+    return sessionStorage.getItem('google_provider_token');
+}
