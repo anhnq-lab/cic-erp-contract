@@ -10,7 +10,7 @@ import {
     Building2,
     FolderOpen
 } from 'lucide-react';
-import { DriveFolderMapping } from '../../services/driveInitService';
+import { FolderMappingRow } from '../../services/driveInitService';
 import {
     UNIT_FOLDER_MAP,
     GLOBAL_FOLDERS,
@@ -18,7 +18,7 @@ import {
 } from '../../services/googleDriveService';
 
 interface DocumentSidebarProps {
-    mappings: DriveFolderMapping[];
+    mappings: FolderMappingRow[];
     selectedFolderId: string | null;
     onSelectFolder: (folderId: string, folderName: string) => void;
     className?: string;
