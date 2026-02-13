@@ -83,6 +83,10 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
   const [customerId, setCustomerId] = useState(contract?.customerId || null);
   const [title, setTitle] = useState(contract?.title || '');
   const [clientName, setClientName] = useState(contract?.partyA || '');
+  const [isDealerSale, setIsDealerSale] = useState(contract?.isDealerSale || false);
+  const [endUserId, setEndUserId] = useState<string | null>(contract?.endUserId || null);
+  const [endUserName, setEndUserName] = useState(contract?.endUserName || '');
+  const [showAddEndUserDialog, setShowAddEndUserDialog] = useState(false);
   const [signedDate, setSignedDate] = useState(contract?.signedDate || new Date().toISOString().split('T')[0]);
 
   // CRITICAL FIX: Sync state when contract prop changes (for edit mode)
@@ -97,6 +101,9 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
       setCustomerId(contract.customerId || null);
       setTitle(contract.title || '');
       setClientName(contract.partyA || '');
+      setIsDealerSale(contract.isDealerSale || false);
+      setEndUserId(contract.endUserId || null);
+      setEndUserName(contract.endUserName || '');
       setSignedDate(contract.signedDate || new Date().toISOString().split('T')[0]);
 
       // Contacts
@@ -123,7 +130,12 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
         if (cust) setClientName(cust.name);
       }).catch(err => console.error('Failed to fetch customer:', err));
     }
-  }, [isEditing, contract?.customerId]);
+    if (isEditing && contract?.endUserId && !endUserName) {
+      CustomerService.getById(contract.endUserId).then(cust => {
+        if (cust) setEndUserName(cust.name);
+      }).catch(err => console.error('Failed to fetch end user:', err));
+    }
+  }, [isEditing, contract?.customerId, contract?.endUserId]);
 
   // Quick Add Customer Dialog
   const [showAddCustomerDialog, setShowAddCustomerDialog] = useState(false);
@@ -455,6 +467,9 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
       partyB: 'CIC', // Default
       clientInitials: clientName ? clientName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 5) : 'KH',
       customerId: customerId || null,
+      isDealerSale,
+      endUserId: isDealerSale ? (endUserId || null) : null,
+      endUserName: isDealerSale ? endUserName : null,
       unitId,
       coordinatingUnitId: coordinatingUnitId || null,
       unitAllocations: unitAllocations.length > 0 ? unitAllocations : null,
@@ -756,6 +771,65 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                       className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 rounded-lg text-sm font-bold focus:border-indigo-500 outline-none"
                     />
                   </div>
+                </div>
+
+                {/* Dealer Sale Checkbox + End User */}
+                <div className="space-y-3 mt-2">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${isDealerSale
+                      ? 'bg-amber-500 border-amber-500 text-white'
+                      : 'border-slate-300 dark:border-slate-600 group-hover:border-amber-400'
+                      }`}
+                      onClick={() => {
+                        setIsDealerSale(!isDealerSale);
+                        if (isDealerSale) {
+                          setEndUserId(null);
+                          setEndUserName('');
+                        }
+                      }}
+                    >
+                      {isDealerSale && (
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Bán qua đại lý</span>
+                    {isDealerSale && (
+                      <span className="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-black rounded-full uppercase">
+                        Khách hàng ở trên = Đại lý
+                      </span>
+                    )}
+                  </label>
+
+                  {isDealerSale && (
+                    <div className="ml-8 space-y-2 animate-in slide-in-from-top-2 duration-300">
+                      <SearchableSelect
+                        label="Người dùng cuối (End User)"
+                        value={endUserId}
+                        placeholder="Gõ để tìm End User..."
+                        getDisplayValue={(id) => id === endUserId ? endUserName : undefined}
+                        onChange={(euId) => {
+                          setEndUserId(euId);
+                          if (euId) {
+                            CustomerService.getById(euId).then(cust => {
+                              if (cust) setEndUserName(cust.name);
+                            });
+                          } else {
+                            setEndUserName('');
+                          }
+                        }}
+                        onSearch={async (query) => {
+                          const results = await CustomerService.search(query, 20);
+                          return results
+                            .filter(c => !c.type || c.type === 'Customer' || c.type === 'Both')
+                            .map(c => ({ id: c.id, name: c.name, subText: c.industry }));
+                        }}
+                        onAddNew={() => setShowAddEndUserDialog(true)}
+                        addNewLabel="+ Thêm End User mới"
+                      />
+                    </div>
+                  )}
                 </div>
 
 
@@ -1653,6 +1727,17 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
           setCustomerId(customer.id);
           setClientName(customer.name);
           toast.success(`Đã thêm khách hàng: ${customer.name}`);
+        }}
+      />
+
+      {/* Quick Add End User Dialog (for dealer sales) */}
+      <QuickAddCustomerDialog
+        isOpen={showAddEndUserDialog}
+        onClose={() => setShowAddEndUserDialog(false)}
+        onCreated={(customer) => {
+          setEndUserId(customer.id);
+          setEndUserName(customer.name);
+          toast.success(`Đã thêm End User: ${customer.name}`);
         }}
       />
     </div >

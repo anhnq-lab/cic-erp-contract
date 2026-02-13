@@ -188,6 +188,9 @@ export interface Contract {
   title: string;
   contractType: ContractType;
   customerId: string; // FK to Customer
+  isDealerSale?: boolean; // Bán qua đại lý
+  endUserId?: string; // FK to Customer (End user khi bán qua đại lý)
+  endUserName?: string; // Tên người dùng cuối
   partyA: string;
   partyB: string;
   clientInitials: string;
