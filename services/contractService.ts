@@ -96,6 +96,7 @@ const buildPayload = (data: Partial<Contract>): Record<string, any> => {
         clientInitials: 'client_initials',
         customerId: 'customer_id',
         isDealerSale: 'is_dealer_sale',
+        hasVat: 'has_vat',
         endUserId: 'end_user_id',
         endUserName: 'end_user_name',
         unitId: 'unit_id',
@@ -182,6 +183,7 @@ const mapContract = (c: any): Contract => {
         clientInitials: c.client_initials || '',
         customerId: c.customer_id || '',
         isDealerSale: c.is_dealer_sale || false,
+        hasVat: c.has_vat !== false, // default true
         endUserId: c.end_user_id || undefined,
         endUserName: c.end_user_name || undefined,
         unitId: c.unit_id || '',

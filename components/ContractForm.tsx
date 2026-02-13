@@ -88,6 +88,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
   const [endUserName, setEndUserName] = useState(contract?.endUserName || '');
   const [showAddEndUserDialog, setShowAddEndUserDialog] = useState(false);
   const [signedDate, setSignedDate] = useState(contract?.signedDate || new Date().toISOString().split('T')[0]);
+  const [hasVat, setHasVat] = useState(contract?.hasVat !== false); // default true
 
   // CRITICAL FIX: Sync state when contract prop changes (for edit mode)
   // useState only reads initial value once on mount, so we need useEffect to update
@@ -105,6 +106,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
       setEndUserId(contract.endUserId || null);
       setEndUserName(contract.endUserName || '');
       setSignedDate(contract.signedDate || new Date().toISOString().split('T')[0]);
+      setHasVat(contract.hasVat !== false);
 
       // Contacts
       if (contract.contacts && contract.contacts.length > 0) {
@@ -433,7 +435,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
     // Supplier Discount = hệ số % x tổng đầu vào => GIẢM chi phí
     const supplierDiscountAmount = totalInput * (supplierDiscount / 100);
 
-    const estimatedRevenue = signingValue / 1.1; // Giá trị ký kết trừ thuế VAT (giả định 10%)
+    const estimatedRevenue = hasVat ? signingValue / 1.1 : signingValue; // Doanh thu trước thuế
     // Total costs = Đầu vào + Chi phí trực tiếp (line items) + Chi phí thực hiện (dynamic) - Chiết khấu NCC
     // Note: adminSum is legacy and mostly unused now, execution costs are the main additional costs
     const totalCosts = totalInput + totalDirectCosts + executionCostsSum - supplierDiscountAmount;
@@ -441,7 +443,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
     const profitMargin = signingValue > 0 ? (grossProfit / signingValue) * 100 : 0;
 
     return { signingValue, estimatedRevenue, totalCosts, grossProfit, profitMargin, totalInput, totalDirectCosts, adminSum, executionCostsSum, supplierDiscount, supplierDiscountAmount };
-  }, [lineItems, adminCosts, executionCosts, supplierDiscount]);
+  }, [lineItems, adminCosts, executionCosts, supplierDiscount, hasVat]);
 
   const formatVND = (val: number) => new Intl.NumberFormat('vi-VN').format(Math.round(val));
 
@@ -468,6 +470,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
       clientInitials: clientName ? clientName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 5) : 'KH',
       customerId: customerId || null,
       isDealerSale,
+      hasVat,
       endUserId: isDealerSale ? (endUserId || null) : null,
       endUserName: isDealerSale ? endUserName : null,
       unitId,
@@ -772,66 +775,90 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                     />
                   </div>
                 </div>
-
-                {/* Dealer Sale Checkbox + End User */}
-                <div className="space-y-3 mt-2">
+                {/* Options Row: VAT Toggle + Dealer Sale */}
+                <div className="flex flex-wrap items-start gap-6 mt-2">
+                  {/* VAT Toggle */}
                   <label className="flex items-center gap-3 cursor-pointer group">
-                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${isDealerSale
-                      ? 'bg-amber-500 border-amber-500 text-white'
-                      : 'border-slate-300 dark:border-slate-600 group-hover:border-amber-400'
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${hasVat
+                      ? 'bg-emerald-500 border-emerald-500 text-white'
+                      : 'border-slate-300 dark:border-slate-600 group-hover:border-emerald-400'
                       }`}
-                      onClick={() => {
-                        setIsDealerSale(!isDealerSale);
-                        if (isDealerSale) {
-                          setEndUserId(null);
-                          setEndUserName('');
-                        }
-                      }}
+                      onClick={() => setHasVat(!hasVat)}
                     >
-                      {isDealerSale && (
+                      {hasVat && (
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
                       )}
                     </div>
-                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Bán qua đại lý</span>
-                    {isDealerSale && (
-                      <span className="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-black rounded-full uppercase">
-                        Khách hàng ở trên = Đại lý
-                      </span>
-                    )}
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Có VAT (10%)</span>
+                    <span className={`px-2 py-0.5 text-[10px] font-black rounded-full uppercase ${hasVat
+                      ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                      : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
+                      }`}>
+                      {hasVat ? 'DT = Ký kết / 1.1' : 'DT = Ký kết'}
+                    </span>
                   </label>
 
-                  {isDealerSale && (
-                    <div className="ml-8 space-y-2 animate-in slide-in-from-top-2 duration-300">
-                      <SearchableSelect
-                        label="Người dùng cuối (End User)"
-                        value={endUserId}
-                        placeholder="Gõ để tìm End User..."
-                        getDisplayValue={(id) => id === endUserId ? endUserName : undefined}
-                        onChange={(euId) => {
-                          setEndUserId(euId);
-                          if (euId) {
-                            CustomerService.getById(euId).then(cust => {
-                              if (cust) setEndUserName(cust.name);
-                            });
-                          } else {
+                  {/* Dealer Sale Checkbox + End User */}
+                  <div className="space-y-3">
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${isDealerSale
+                        ? 'bg-amber-500 border-amber-500 text-white'
+                        : 'border-slate-300 dark:border-slate-600 group-hover:border-amber-400'
+                        }`}
+                        onClick={() => {
+                          setIsDealerSale(!isDealerSale);
+                          if (isDealerSale) {
+                            setEndUserId(null);
                             setEndUserName('');
                           }
                         }}
-                        onSearch={async (query) => {
-                          const results = await CustomerService.search(query, 20);
-                          return results
-                            .filter(c => !c.type || c.type === 'Customer' || c.type === 'Both')
-                            .map(c => ({ id: c.id, name: c.name, subText: c.industry }));
-                        }}
-                        onAddNew={() => setShowAddEndUserDialog(true)}
-                        addNewLabel="+ Thêm End User mới"
-                      />
-                    </div>
-                  )}
-                </div>
+                      >
+                        {isDealerSale && (
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </div>
+                      <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Bán qua đại lý</span>
+                      {isDealerSale && (
+                        <span className="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-black rounded-full uppercase">
+                          Khách hàng ở trên = Đại lý
+                        </span>
+                      )}
+                    </label>
 
+                    {isDealerSale && (
+                      <div className="ml-8 space-y-2 animate-in slide-in-from-top-2 duration-300">
+                        <SearchableSelect
+                          label="Người dùng cuối (End User)"
+                          value={endUserId}
+                          placeholder="Gõ để tìm End User..."
+                          getDisplayValue={(id) => id === endUserId ? endUserName : undefined}
+                          onChange={(euId) => {
+                            setEndUserId(euId);
+                            if (euId) {
+                              CustomerService.getById(euId).then(cust => {
+                                if (cust) setEndUserName(cust.name);
+                              });
+                            } else {
+                              setEndUserName('');
+                            }
+                          }}
+                          onSearch={async (query) => {
+                            const results = await CustomerService.search(query, 20);
+                            return results
+                              .filter(c => !c.type || c.type === 'Customer' || c.type === 'Both')
+                              .map(c => ({ id: c.id, name: c.name, subText: c.industry }));
+                          }}
+                          onAddNew={() => setShowAddEndUserDialog(true)}
+                          addNewLabel="+ Thêm End User mới"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
 
                 {/* Removed Manual Value Input per request */}
 
