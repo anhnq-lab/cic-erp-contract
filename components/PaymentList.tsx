@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import {
-    MoreVertical,
     ChevronLeft,
     ChevronRight,
     Loader2,
@@ -16,9 +15,7 @@ import {
     FileText,
     Building2,
     Calendar,
-    Plus,
-    Pencil,
-    Trash2
+    Plus
 } from 'lucide-react';
 import { Payment, PaymentStatus, Customer } from '../types';
 import { PaymentService, ContractService, CustomerService } from '../services';
@@ -46,7 +43,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
     // CRUD state
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingPayment, setEditingPayment] = useState<Payment | undefined>(undefined);
-    const [actionMenuId, setActionMenuId] = useState<string | null>(null);
+
 
     // Debounce search
     useEffect(() => {
@@ -145,7 +142,6 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
     const handleEdit = (payment: Payment) => {
         setEditingPayment(payment);
         setIsFormOpen(true);
-        setActionMenuId(null);
     };
 
     const handleDelete = async (id: string) => {
@@ -159,7 +155,6 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                 toast.error("Xóa thất bại");
             }
         }
-        setActionMenuId(null);
     };
 
     const handleSave = async (paymentData: any) => {
@@ -318,13 +313,13 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                                 <th className="text-left py-4 px-5 text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden sm:table-cell">Hạn</th>
                                 <th className="text-right py-4 px-5 text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Số tiền</th>
                                 <th className="text-center py-4 px-5 text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Trạng thái</th>
-                                <th className="py-4 px-5 w-12"></th>
+
                             </tr>
                         </thead>
                         <tbody>
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={7} className="p-8 text-center text-slate-500">
+                                    <td colSpan={6} className="p-8 text-center text-slate-500">
                                         <Loader2 className="animate-spin inline-block mr-2" /> Đang tải dữ liệu...
                                     </td>
                                 </tr>
@@ -335,7 +330,8 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                                 return (
                                     <tr
                                         key={payment.id}
-                                        className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors group"
+                                        onClick={() => handleEdit(payment)}
+                                        className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-indigo-50/50 dark:hover:bg-slate-700 transition-colors group cursor-pointer"
                                     >
                                         <td className="py-4 px-5">
                                             <div className="flex items-center gap-3">
@@ -358,7 +354,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                                         </td>
                                         <td className="py-4 px-5 hidden md:table-cell">
                                             <button
-                                                onClick={() => onSelectContract?.(payment.contractId)}
+                                                onClick={(e) => { e.stopPropagation(); onSelectContract?.(payment.contractId); }}
                                                 className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700"
                                             >
                                                 <FileText size={14} />
@@ -385,30 +381,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ onSelectContract }) => {
                                                 {statusConfig.label}
                                             </span>
                                         </td>
-                                        <td className="py-4 px-5 relative">
-                                            <button
-                                                onClick={() => setActionMenuId(actionMenuId === payment.id ? null : payment.id)}
-                                                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all"
-                                            >
-                                                <MoreVertical size={16} />
-                                            </button>
-                                            {actionMenuId === payment.id && (
-                                                <div className="absolute right-0 top-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-20 py-1 min-w-[140px]">
-                                                    <button
-                                                        onClick={() => handleEdit(payment)}
-                                                        className="w-full px-4 py-2 text-left text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"
-                                                    >
-                                                        <Pencil size={14} /> Sửa
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(payment.id)}
-                                                        className="w-full px-4 py-2 text-left text-sm font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 flex items-center gap-2"
-                                                    >
-                                                        <Trash2 size={14} /> Xóa
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </td>
+
                                     </tr>
                                 );
                             })}
