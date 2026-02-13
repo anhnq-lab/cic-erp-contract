@@ -185,7 +185,6 @@ const mapContract = (c: any): Contract => {
         salespersonId: c.employee_id || c.salesperson_id || undefined,
         value: c.value || 0,
         estimatedCost: c.estimated_cost || 0,
-        actualRevenue: c.actual_revenue || 0,
         invoicedAmount: c.invoiced_amount || 0,
         actualCost: c.actual_cost || 0,
         status: c.status || 'Pending',
@@ -204,8 +203,22 @@ const mapContract = (c: any): Contract => {
         revenueSchedules: c.details?.revenueSchedules || [],
         documents: c.documents || [],
         draft_url: c.draft_url || undefined,
-        // Tiền về: sum of paid_amount from joined payments
-        cashReceived: c.payments?.reduce((sum: number, p: any) => sum + (Number(p.paid_amount) || 0), 0) || 0,
+        // Doanh thu: tính từ hoá đơn đã xuất (payments có status 'Đã xuất HĐ' hoặc 'Tiền về')
+        actualRevenue: (() => {
+            const payments: any[] = c.payments || [];
+            const invoicedRevenue = payments
+                .filter((p: any) => (p.payment_type === 'Revenue' || !p.payment_type) && ['Đã xuất HĐ', 'Tiền về', 'Paid'].includes(p.status))
+                .reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0);
+            // Ưu tiên doanh thu từ hoá đơn, fallback về actual_revenue từ contract
+            return invoicedRevenue > 0 ? invoicedRevenue : (c.actual_revenue || 0);
+        })(),
+        // Tiền về: chỉ tính payments đã nhận tiền thực tế
+        cashReceived: (() => {
+            const payments: any[] = c.payments || [];
+            return payments
+                .filter((p: any) => (p.payment_type === 'Revenue' || !p.payment_type) && ['Tiền về', 'Paid'].includes(p.status))
+                .reduce((sum: number, p: any) => sum + (Number(p.paid_amount) || 0), 0);
+        })(),
         // Parallel approval workflow fields
         legal_approved: c.legal_approved || false,
         finance_approved: c.finance_approved || false
@@ -282,7 +295,7 @@ export const ContractService = {
 
         let query = supabase
             .from('contracts')
-            .select('*, payments(paid_amount)', { count: 'exact' });
+            .select('*, payments(amount, paid_amount, status, payment_type)', { count: 'exact' });
 
         // Apply filters
         if (search) {
