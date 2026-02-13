@@ -190,6 +190,7 @@ export interface Contract {
   customerId: string; // FK to Customer
   isDealerSale?: boolean; // Bán qua đại lý
   hasVat?: boolean; // Hợp đồng có VAT (default true)
+  vatRate?: number; // Thuế suất VAT (0, 8, 10) - default 10
   endUserId?: string; // FK to Customer (End user khi bán qua đại lý)
   endUserName?: string; // Tên người dùng cuối
   partyA: string;

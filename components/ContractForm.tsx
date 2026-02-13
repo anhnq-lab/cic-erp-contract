@@ -89,6 +89,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
   const [showAddEndUserDialog, setShowAddEndUserDialog] = useState(false);
   const [signedDate, setSignedDate] = useState(contract?.signedDate || new Date().toISOString().split('T')[0]);
   const [hasVat, setHasVat] = useState(contract?.hasVat !== false); // default true
+  const [vatRate, setVatRate] = useState(contract?.vatRate ?? 10); // 8 or 10
 
   // CRITICAL FIX: Sync state when contract prop changes (for edit mode)
   // useState only reads initial value once on mount, so we need useEffect to update
@@ -107,6 +108,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
       setEndUserName(contract.endUserName || '');
       setSignedDate(contract.signedDate || new Date().toISOString().split('T')[0]);
       setHasVat(contract.hasVat !== false);
+      setVatRate(contract.vatRate ?? 10);
 
       // Contacts
       if (contract.contacts && contract.contacts.length > 0) {
@@ -435,7 +437,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
     // Supplier Discount = hệ số % x tổng đầu vào => GIẢM chi phí
     const supplierDiscountAmount = totalInput * (supplierDiscount / 100);
 
-    const estimatedRevenue = hasVat ? signingValue / 1.1 : signingValue; // Doanh thu trước thuế
+    const estimatedRevenue = hasVat ? signingValue / (1 + vatRate / 100) : signingValue; // Doanh thu trước thuế
     // Total costs = Đầu vào + Chi phí trực tiếp (line items) + Chi phí thực hiện (dynamic) - Chiết khấu NCC
     // Note: adminSum is legacy and mostly unused now, execution costs are the main additional costs
     const totalCosts = totalInput + totalDirectCosts + executionCostsSum - supplierDiscountAmount;
@@ -443,7 +445,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
     const profitMargin = signingValue > 0 ? (grossProfit / signingValue) * 100 : 0;
 
     return { signingValue, estimatedRevenue, totalCosts, grossProfit, profitMargin, totalInput, totalDirectCosts, adminSum, executionCostsSum, supplierDiscount, supplierDiscountAmount };
-  }, [lineItems, adminCosts, executionCosts, supplierDiscount, hasVat]);
+  }, [lineItems, adminCosts, executionCosts, supplierDiscount, hasVat, vatRate]);
 
   const formatVND = (val: number) => new Intl.NumberFormat('vi-VN').format(Math.round(val));
 
@@ -471,6 +473,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
       customerId: customerId || null,
       isDealerSale,
       hasVat,
+      vatRate: hasVat ? vatRate : 0,
       endUserId: isDealerSale ? (endUserId || null) : null,
       endUserName: isDealerSale ? endUserName : null,
       unitId,
@@ -791,12 +794,29 @@ const ContractForm: React.FC<ContractFormProps> = ({ contract, isCloning = false
                         </svg>
                       )}
                     </div>
-                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Có VAT (10%)</span>
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Có VAT</span>
+                    {hasVat && (
+                      <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 gap-0.5">
+                        {[8, 10].map(rate => (
+                          <button
+                            key={rate}
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); setVatRate(rate); }}
+                            className={`px-2.5 py-1 rounded-md text-[11px] font-black transition-all ${vatRate === rate
+                                ? 'bg-emerald-500 text-white shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                              }`}
+                          >
+                            {rate}%
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     <span className={`px-2 py-0.5 text-[10px] font-black rounded-full uppercase ${hasVat
-                      ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-                      : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
+                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                        : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
                       }`}>
-                      {hasVat ? 'DT = Ký kết / 1.1' : 'DT = Ký kết'}
+                      {hasVat ? `DT = Ký kết / ${(1 + vatRate / 100).toFixed(2)}` : 'DT = Ký kết'}
                     </span>
                   </label>
 
