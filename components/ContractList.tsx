@@ -523,18 +523,19 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
 
       {/* TABLE */}
       <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-lg transition-colors overflow-x-auto">
-        <table className="w-full text-left border-separate border-spacing-0 min-w-[1400px]">
+        <table className="w-full text-left border-separate border-spacing-0 min-w-[1600px]">
           <thead>
             <tr className="z-20">
               {[
                 { label: 'STT', align: 'center', width: 'w-12' },
-                { label: 'Mã hiệu / Loại', align: 'left' },
-                { label: 'Nội dung thực hiện', align: 'left' },
-                { label: 'Phụ trách kinh doanh', align: 'left' },
-                { label: 'Giá trị ký', align: 'right' },
+                { label: 'Số hợp đồng', align: 'left' },
+                { label: 'Nội dung hợp đồng', align: 'left' },
+                { label: 'Phụ trách KD', align: 'left' },
+                { label: 'Ký kết', align: 'right' },
+                { label: 'Doanh thu', align: 'right' },
+                { label: 'Lợi nhuận gộp', align: 'right', color: 'text-emerald-700 dark:text-emerald-400' },
                 { label: 'Tiền về', align: 'right' },
-                { label: 'Lợi nhuận', align: 'right', color: 'text-emerald-700 dark:text-emerald-400' },
-                { label: 'Tỷ suất', align: 'center' },
+                { label: 'Tỷ suất LN/DT', align: 'center' },
                 { label: 'Trạng thái', align: 'center' },
                 { label: '', align: 'right' }
               ].map((col, idx) => (
@@ -569,6 +570,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                   <td className="px-4 py-5 text-right"><div className="w-24 h-4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse ml-auto"></div></td>
                   <td className="px-4 py-5 text-right"><div className="w-24 h-4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse ml-auto"></div></td>
                   <td className="px-4 py-5 text-right"><div className="w-24 h-4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse ml-auto"></div></td>
+                  <td className="px-4 py-5 text-right"><div className="w-24 h-4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse ml-auto"></div></td>
                   <td className="px-4 py-5 text-center"><div className="w-12 h-6 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse mx-auto"></div></td>
                   <td className="px-4 py-5 text-center"><div className="w-20 h-6 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse mx-auto"></div></td>
                   <td className="px-4 py-5"><div className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded animate-pulse ml-auto"></div></td>
@@ -576,13 +578,15 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
               ))
             ) : contracts.length === 0 ? (
               <tr>
-                <td colSpan={10} className="p-8 text-center text-slate-500">
+                <td colSpan={11} className="p-8 text-center text-slate-500">
                   Không tìm thấy hợp đồng nào
                 </td>
               </tr>
             ) : contracts.map((contract, index) => {
               const profit = (contract.value || 0) - (contract.estimatedCost || 0);
-              const margin = (contract.value || 0) > 0 ? (profit / contract.value) * 100 : 0;
+              const revenue = contract.actualRevenue || 0;
+              const cashReceived = contract.cashReceived || 0;
+              const margin = revenue > 0 ? (profit / revenue) * 100 : ((contract.value || 0) > 0 ? (profit / contract.value) * 100 : 0);
               const salesperson = salespeople.find(s => s.id === contract.salespersonId);
 
               // STT calculate based on page
@@ -631,21 +635,31 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                       <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{salesperson?.name || 'Chưa gán'}</span>
                     </div>
                   </td>
+                  {/* Ký kết (Giá trị ký) */}
                   <td className="px-4 py-5 text-right bg-white dark:bg-slate-900">
                     <span className="text-sm font-black text-slate-900 dark:text-slate-100">
                       {formatCurrency(contract.value || 0)}
                     </span>
                   </td>
+                  {/* Doanh thu */}
                   <td className="px-4 py-5 text-right bg-white dark:bg-slate-900">
                     <span className="text-sm font-black text-slate-900 dark:text-slate-100">
-                      {formatCurrency(contract.actualRevenue || 0)}
+                      {formatCurrency(revenue)}
                     </span>
                   </td>
+                  {/* Lợi nhuận gộp */}
                   <td className="px-4 py-5 text-right bg-white dark:bg-slate-900">
                     <span className="text-sm font-black text-emerald-700 dark:text-emerald-400">
                       {formatCurrency(profit)}
                     </span>
                   </td>
+                  {/* Tiền về */}
+                  <td className="px-4 py-5 text-right bg-white dark:bg-slate-900">
+                    <span className={`text-sm font-black ${cashReceived > 0 ? 'text-blue-700 dark:text-blue-400' : 'text-slate-400 dark:text-slate-600'}`}>
+                      {formatCurrency(cashReceived)}
+                    </span>
+                  </td>
+                  {/* Tỷ suất LN/DT */}
                   <td className="px-4 py-5 text-center bg-white dark:bg-slate-900">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${margin > 50 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400' : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-400'}`}>
                       {margin.toFixed(0)}%

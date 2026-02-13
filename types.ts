@@ -200,6 +200,7 @@ export interface Contract {
   estimatedCost: number;
   actualRevenue: number;
   invoicedAmount?: number; // Đã xuất hóa đơn
+  cashReceived?: number; // Tiền về thực tế (tổng paid_amount từ payments)
   actualCost: number;
   status: ContractStatus;
   stage: ImplementationStage;

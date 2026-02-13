@@ -204,6 +204,8 @@ const mapContract = (c: any): Contract => {
         revenueSchedules: c.details?.revenueSchedules || [],
         documents: c.documents || [],
         draft_url: c.draft_url || undefined,
+        // Tiền về: sum of paid_amount from joined payments
+        cashReceived: c.payments?.reduce((sum: number, p: any) => sum + (Number(p.paid_amount) || 0), 0) || 0,
         // Parallel approval workflow fields
         legal_approved: c.legal_approved || false,
         finance_approved: c.finance_approved || false
@@ -278,7 +280,7 @@ export const ContractService = {
 
         let query = supabase
             .from('contracts')
-            .select('*', { count: 'exact' });
+            .select('*, payments(paid_amount)', { count: 'exact' });
 
         // Apply filters
         if (search) {
