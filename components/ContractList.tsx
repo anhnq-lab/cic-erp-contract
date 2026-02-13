@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { Search, Filter, Plus, MoreVertical, ExternalLink, User, Loader2, DollarSign, Briefcase, TrendingUp, Calendar, Building2, ChevronLeft, ChevronRight, Download, Upload, Copy } from 'lucide-react';
+import { Search, Filter, Plus, MoreVertical, ExternalLink, User, Loader2, DollarSign, Briefcase, TrendingUp, Calendar, Building2, ChevronLeft, ChevronRight, Download, Upload, Copy, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { ContractService, EmployeeService, UnitService } from '../services';
 import { ContractStatus, Unit, Contract, Employee, UserRole } from '../types';
 import { CONTRACT_STATUS_LABELS } from '../constants';
@@ -42,6 +42,10 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState({ totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0 });
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  // Sort state
+  const [sortBy, setSortBy] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   // Debounce search
   useEffect(() => {
@@ -162,7 +166,9 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
           search: debouncedSearch,
           status: statusFilter,
           unitId: effectiveUnitId,
-          year: yearFilter
+          year: yearFilter,
+          sortBy: sortBy || undefined,
+          sortDir: sortBy ? sortDir : undefined
         };
 
         const [listRes, statsRes] = await Promise.all([
@@ -181,7 +187,7 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
       }
     };
     fetchContracts();
-  }, [page, limit, debouncedSearch, statusFilter, yearFilter, unitFilter, selectedUnit, isImpersonating, impersonatedUser]);
+  }, [page, limit, debouncedSearch, statusFilter, yearFilter, unitFilter, selectedUnit, isImpersonating, impersonatedUser, sortBy, sortDir]);
 
   // Extract unique years (We can keep this separate or hardcode for now since we don't have all data to derive from)
   // For server-side, it's better to verify available years from API, but for now fallback to static range or keeping simple
@@ -528,15 +534,15 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
             <tr className="z-20">
               {[
                 { label: 'STT', align: 'center', width: 'w-12' },
-                { label: 'Số hợp đồng', align: 'left' },
-                { label: 'Nội dung hợp đồng', align: 'left' },
+                { label: 'Số hợp đồng', align: 'left', sortKey: 'signedDate' },
+                { label: 'Nội dung hợp đồng', align: 'left', sortKey: 'title' },
                 { label: 'Phụ trách KD', align: 'left' },
-                { label: 'Ký kết', align: 'right' },
-                { label: 'Doanh thu', align: 'right' },
-                { label: 'Lợi nhuận gộp', align: 'right', color: 'text-emerald-700 dark:text-emerald-400' },
+                { label: 'Ký kết', align: 'right', sortKey: 'value' },
+                { label: 'Doanh thu', align: 'right', sortKey: 'actualRevenue' },
+                { label: 'Lợi nhuận gộp', align: 'right', color: 'text-emerald-700 dark:text-emerald-400', sortKey: 'estimatedCost' },
                 { label: 'Tiền về', align: 'right' },
                 { label: 'Tỷ suất LN/DT', align: 'center' },
-                { label: 'Trạng thái', align: 'center' },
+                { label: 'Trạng thái', align: 'center', sortKey: 'status' },
                 { label: '', align: 'right' }
               ].map((col, idx) => (
                 <th
@@ -544,9 +550,35 @@ const ContractList: React.FC<ContractListProps> = ({ selectedUnit, onSelectContr
                   className={`sticky top-0 z-20 bg-slate-50 dark:bg-slate-800 px-4 py-5 text-[10px] font-black uppercase tracking-widest border-b border-slate-200 dark:border-slate-700
                     ${col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'}
                     ${col.color || 'text-slate-500 dark:text-slate-400'}
-                    ${col.width || ''}`}
+                    ${col.width || ''}
+                    ${col.sortKey ? 'cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 select-none transition-colors' : ''}`}
+                  onClick={() => {
+                    if (!col.sortKey) return;
+                    if (sortBy === col.sortKey) {
+                      if (sortDir === 'desc') {
+                        setSortDir('asc');
+                      } else {
+                        setSortBy(null); // Reset sort
+                      }
+                    } else {
+                      setSortBy(col.sortKey);
+                      setSortDir('desc');
+                    }
+                    setPage(1);
+                  }}
                 >
-                  {col.label}
+                  <span className="inline-flex items-center gap-1">
+                    {col.label}
+                    {col.sortKey && (
+                      sortBy === col.sortKey ? (
+                        sortDir === 'desc'
+                          ? <ArrowDown size={12} className="text-indigo-500" />
+                          : <ArrowUp size={12} className="text-indigo-500" />
+                      ) : (
+                        <ArrowUpDown size={12} className="opacity-30" />
+                      )
+                    )}
+                  </span>
                 </th>
               ))}
             </tr>

@@ -273,8 +273,10 @@ export const ContractService = {
         status?: string;
         unitId?: string;
         year?: string;
+        sortBy?: string;
+        sortDir?: 'asc' | 'desc';
     }): Promise<{ data: Contract[]; count: number }> => {
-        const { page, limit, search, status, unitId, year } = params;
+        const { page, limit, search, status, unitId, year, sortBy, sortDir } = params;
         const from = (page - 1) * limit;
         const to = from + limit - 1;
 
@@ -298,8 +300,27 @@ export const ContractService = {
             query = query.gte('signed_date', startDate).lte('signed_date', endDate);
         }
 
+        // Sort mapping: frontend key → DB column
+        const SORT_MAP: Record<string, string> = {
+            id: 'id',
+            signedDate: 'signed_date',
+            value: 'value',
+            actualRevenue: 'actual_revenue',
+            estimatedCost: 'estimated_cost',
+            status: 'status',
+            title: 'title',
+            partyA: 'party_a',
+        };
+
+        const dbSortColumn = sortBy ? SORT_MAP[sortBy] : null;
+        if (dbSortColumn) {
+            query = query.order(dbSortColumn, { ascending: sortDir === 'asc' });
+        } else {
+            query = query.order('created_at', { ascending: false });
+        }
+
         // Apply pagination
-        query = query.order('created_at', { ascending: false }).range(from, to);
+        query = query.range(from, to);
 
         const { data, error, count } = await query;
 
