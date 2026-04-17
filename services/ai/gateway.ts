@@ -43,14 +43,17 @@ function getLocalAIBaseURL(model?: string): string {
     if (typeof window !== 'undefined') {
       // Ưu tiên localStorage override (user có thể set từ Personal Settings)
       const stored = localStorage.getItem('cic_local_ai_base_url');
-      if (stored && (/^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.|ai-api\.cic\.com\.vn|118\.70\.182\.173)/.test(stored) || stored.startsWith('/api/'))) {
+      if (stored) {
+        // Nếu user set proxy path → dùng Vite proxy (dev) hoặc Vercel handler (prod)
         if (stored.startsWith('/api/')) {
           return isGemma ? '/api/vllm_gemma' : '/api/vllm';
         }
-        // URL tường minh → vẫn dùng proxy path tương ứng để tránh CORS
-        return isGemma ? '/api/vllm_gemma' : '/api/vllm';
+        // Nếu user set URL tường minh (domain Mắt Bão / IP tĩnh) → gọi thẳng
+        // Server phải có CORS headers: Access-Control-Allow-Origin: *
+        const isAllowed = /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.|ai-api\.cic\.com\.vn|118\.70\.182\.173)/.test(stored);
+        if (isAllowed) return stored;
       }
-      // Mặc định: luôn dùng Vite proxy path (tránh CORS/SSL khi gọi trực tiếp từ browser)
+      // Mặc định: Vite proxy (dev) — trên Vercel sẽ 404 và fallback cloud
       return isGemma ? '/api/vllm_gemma' : '/api/vllm';
     }
     // Server-side / Node: gọi trực tiếp
