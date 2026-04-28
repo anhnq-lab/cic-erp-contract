@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "gen:types": "npx supabase gen types typescript --project-id jyohocjsnsyfgfsmjfqx > lib/database.types.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
