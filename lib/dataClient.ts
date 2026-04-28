@@ -1,16 +1,21 @@
 /**
  * Isolated Supabase Client for Data Operations
- * 
- * This client is separate from the Auth client to ensure:
- * 1. Data fetching is NOT blocked by auth state
- * 2. No race conditions between auth and data loading
- * 3. Reliable and predictable data access
- * 
- * Use this client for ALL data operations (select, insert, update, delete, rpc)
- * Use authClient (lib/supabase.ts) ONLY for auth operations (login, logout, session)
- * 
- * Auth session is synced from authClient so that DB triggers (e.g. audit_logs)
- * can identify the user via auth.uid().
+ *
+ * Client này tách biệt với Auth client để đảm bảo:
+ * 1. Data fetching KHÔNG bị chặn bởi auth state
+ * 2. Không có race condition giữa auth và data loading
+ * 3. Truy cập dữ liệu đáng tin cậy, dự đoán được
+ *
+ * Dùng client này cho MỌI thao tác dữ liệu (select, insert, update, delete, rpc)
+ * Dùng authClient (lib/supabase.ts) CHỈ cho thao tác auth (login, logout, session)
+ *
+ * Auth session được sync từ authClient để DB triggers (vd: audit_logs)
+ * có thể nhận diện user qua auth.uid().
+ *
+ * ⚠️  BẢO MẬT: Client này LUÔN dùng anon key.
+ *     Service role key KHÔNG BAO GIỜ được dùng ở đây vì Vite bundle
+ *     mọi biến VITE_* vào client code → lộ service_role = bypass toàn bộ RLS.
+ *     Service role chỉ dùng trong: api/, supabase/functions/, scripts/, workers/
  */
 
 import { createClient, Session } from '@supabase/supabase-js';
@@ -33,17 +38,14 @@ function getEnv(key: string, backup: string = ''): string {
 
 const supabaseUrl = getEnv('VITE_SUPABASE_URL', DEFAULT_SUPABASE_URL);
 
-// If in dev bypass mode and service role key is provided, use it to instantly bypass all RLS
-const isDevBypass = getEnv('VITE_DEV_BYPASS_AUTH') === 'true';
-const supabaseKey = (isDevBypass && getEnv('VITE_SUPABASE_SERVICE_ROLE_KEY')) 
-    ? getEnv('VITE_SUPABASE_SERVICE_ROLE_KEY') 
-    : (getEnv('VITE_SUPABASE_ANON_KEY', DEFAULT_SUPABASE_ANON_KEY));
+// Luôn dùng anon key — KHÔNG dùng service_role ở client
+const supabaseKey = getEnv('VITE_SUPABASE_ANON_KEY', DEFAULT_SUPABASE_ANON_KEY);
 
 export const dataClient = createClient(supabaseUrl, supabaseKey, {
     auth: {
-        persistSession: false,      // Don't save session to localStorage
-        autoRefreshToken: false,    // Don't auto-refresh tokens
-        detectSessionInUrl: false   // Don't look for auth tokens in URL
+        persistSession: false,      // Không lưu session vào localStorage
+        autoRefreshToken: false,    // Không tự refresh token
+        detectSessionInUrl: false   // Không tìm auth token trong URL
     }
 });
 

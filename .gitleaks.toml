@@ -1,0 +1,30 @@
+# Cấu hình gitleaks cho CIC ERP Contract
+# Tài liệu: https://github.com/gitleaks/gitleaks
+
+title = "CIC ERP Gitleaks Config"
+
+[allowlist]
+  description = "Allowlist cho các pattern an toàn trong dự án"
+
+  # File được phép chứa key pattern (test fixtures, examples, docs)
+  paths = [
+    '''.env.example''',
+    '''plans/.*\.md''',
+    '''docs/.*''',
+    '''tests/.*fixtures.*''',
+    '''coverage/.*''',
+  ]
+
+  # Regex pattern được phép (không phải secret thật)
+  regexes = [
+    # Supabase anon key — được thiết kế để public, không phải secret
+    '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5b2hvY2pzbnN5Zmdmc21qZnF4Iiwicm9sZSI6ImFub24i''',
+    # Placeholder values dùng trong CI
+    '''placeholder_anon_key''',
+    '''https://placeholder\.supabase\.co''',
+    # sk-cic-2026 — đây LÀ secret cần tìm, KHÔNG allowlist
+    # (Để gitleaks bắt nếu ai đó vô tình thêm lại)
+  ]
+
+  # Commit được phép (nếu cần skip commit cụ thể)
+  commits = []
