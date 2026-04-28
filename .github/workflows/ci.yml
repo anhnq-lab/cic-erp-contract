@@ -24,19 +24,37 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # ─── Type check ─────────────────────────────────────────────
+      # Non-blocking: project has pre-existing TS errors.
+      # Remove continue-on-error once all errors are resolved (Phase 1 goal).
       - name: Type check
         run: npx tsc --noEmit
-        # Non-blocking: project has pre-existing TS errors.
-        # Remove continue-on-error once all errors are resolved.
         continue-on-error: true
 
-      - name: Run tests
-        run: npm test
+      # ─── Tests + coverage report ────────────────────────────────
+      - name: Run tests with coverage
+        run: npm run test:coverage
         env:
           # Prevent real Supabase calls in tests
           VITE_SUPABASE_URL: https://placeholder.supabase.co
           VITE_SUPABASE_ANON_KEY: placeholder_anon_key
 
+      # Upload coverage to GitHub job summary (no external service needed)
+      - name: Coverage summary
+        if: always()
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            echo "## 📊 Test Coverage" >> $GITHUB_STEP_SUMMARY
+            node -e "
+              const c = require('./coverage/coverage-summary.json').total;
+              const row = (k) => \`| \${k.padEnd(12)} | \${String(c[k].pct+'%').padStart(6)} | \${c[k].covered}/\${c[k].total} |\`;
+              console.log('| Metric       |    Pct | Covered/Total |');
+              console.log('|:-------------|-------:|:--------------|');
+              ['lines','statements','functions','branches'].forEach(k => console.log(row(k)));
+            " >> $GITHUB_STEP_SUMMARY
+          fi
+
+      # ─── Production build (uses Vercel secrets) ─────────────────
       - name: Build
         run: npm run build
         env:

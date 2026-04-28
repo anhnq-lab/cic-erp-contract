@@ -32,6 +32,9 @@ dist-ssr
 *.xlsx
 ~$*
 
+# Test coverage output
+coverage/
+
 # Vercel
 .vercel
 

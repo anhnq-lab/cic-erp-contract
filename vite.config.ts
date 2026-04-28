@@ -191,6 +191,12 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, '.'),
       }
     },
+    // ─── Strip console.* and debugger from production bundle ────
+    // esbuild handles this at parse time — zero runtime overhead.
+    // Keeps console.warn/error in dev (mode !== 'production').
+    esbuild: {
+      drop: mode === 'production' ? ['console', 'debugger'] : [],
+    },
     build: {
       rollupOptions: {
         output: {
