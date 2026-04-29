@@ -103,9 +103,9 @@ describe('Permission Helpers', () => {
         });
 
         it('should use DB permissions if provided', () => {
-            const dbPerms = new Map([
+            const dbPerms = new Map<string, Set<string>>([
                 ['units', new Set(['view'])],
-                ['employees', new Set()] // Empty set -> no 'view'
+                ['employees', new Set<string>()] // Empty set -> no 'view'
             ]);
             
             // Even if NVKD normally can't view units, DB says yes

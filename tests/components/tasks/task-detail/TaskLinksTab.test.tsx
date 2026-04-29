@@ -65,7 +65,7 @@ describe('TaskLinksTab component', () => {
         const setLinks = vi.fn();
         const bufferChange = vi.fn();
         const links = [
-            { id: 'L1', task_id: 'T1', entity_type: 'contract', entity_id: 'C1', entity_label: 'Hợp đồng 1' }
+            { id: 'L1', task_id: 'T1', entity_type: 'contract', entity_id: 'C1', entity_label: 'Hợp đồng 1', link_type: 'related', created_at: '2024-01-01T00:00:00Z' }
         ];
 
         render(<TaskLinksTab task={mockTask} links={links} setLinks={setLinks} profile={{}} bufferChange={bufferChange} />);

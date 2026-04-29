@@ -104,7 +104,7 @@ describe('TaskCommentService', () => {
              expect(tree[0].id).toBe('cm1');
              expect(tree[0].user_name).toBe('Nguyen Van A');
              expect(tree[0].replies).toHaveLength(1);
-             expect(tree[0].replies[0].id).toBe('cm2');
+             expect(tree[0].replies![0].id).toBe('cm2');
         });
     });
 

@@ -108,14 +108,14 @@ describe('PaymentService', () => {
             const res = await PaymentService.getAll();
             expect(res).toHaveLength(1);
             expect(res[0].id).toBe('pay1');
-            expect(res[0].contractCode).toBe('C-001');
+            expect((res[0] as any).contractCode).toBe('C-001');
         });
 
         it('getByContractId', async () => {
             setupRestMock([mockPaymentRow]);
             const res = await PaymentService.getByContractId('c1');
             expect(res[0].contractId).toBe('c1');
-            expect(res[0].unitId).toBe('u1');
+            expect((res[0] as any).unitId).toBe('u1');
         });
 
         it('getByCustomerId', async () => {

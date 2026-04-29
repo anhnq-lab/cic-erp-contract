@@ -255,11 +255,11 @@ describe('TaskService', () => {
     // ── update ───────────────────────────────────────────────────────────────
     describe('update', () => {
         it('updates and returns the mapped task', async () => {
-            const updatedRow = { ...mockTaskRow, title: 'Tiêu đề mới', priority: 'High' };
+            const updatedRow = { ...mockTaskRow, title: 'Tiêu đề mới', priority: 'high' };
             setupMock(updatedRow);
-            const result = await TaskService.update('task-1', { title: 'Tiêu đề mới', priority: 'High' });
+            const result = await TaskService.update('task-1', { title: 'Tiêu đề mới', priority: 'high' });
             expect(result.title).toBe('Tiêu đề mới');
-            expect(result.priority).toBe('High');
+            expect(result.priority).toBe('high');
         });
 
         it('throws on DB error', async () => {

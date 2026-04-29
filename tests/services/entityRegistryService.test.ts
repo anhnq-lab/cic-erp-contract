@@ -114,7 +114,7 @@ describe('EntityRegistryService', () => {
 
     describe('create', () => {
         it('inserts new entity and clears cache', async () => {
-            const newItem = { entity_type: 'new_type', label: 'New Type' };
+            const newItem = { entity_type: 'new_type', label: 'New Type', is_active: true };
             setupMock([newItem]);
             
             const result = await EntityRegistryService.create(newItem);
@@ -123,7 +123,7 @@ describe('EntityRegistryService', () => {
         });
         
         it('throws error if insert fails', async () => {
-            const newItem = { entity_type: 'new_type', label: 'New Type' };
+            const newItem = { entity_type: 'new_type', label: 'New Type', is_active: true };
             setupMock(null, new Error('Insert Error'));
             await expect(EntityRegistryService.create(newItem)).rejects.toThrow('Insert Error');
         });

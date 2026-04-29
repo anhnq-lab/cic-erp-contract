@@ -249,7 +249,7 @@ describe('EmployeeService', () => {
              }]);
              const res = await EmployeeService.getWithStats('all', '', 2026);
              expect(res[0].id).toBe('emp1');
-             expect(res[0].stats?.totalSigning).toBe(1000);
+             expect((res[0] as any).stats?.totalSigning).toBe(1000);
         });
 
         it('falls back to JS aggregation if periodFilter is provided', async () => {
@@ -272,7 +272,7 @@ describe('EmployeeService', () => {
 
              const res = await EmployeeService.getWithStats('all', '', 2026, 'M6');
              expect(res[0].id).toBe('emp1');
-             expect(res[0].stats?.totalSigning).toBe(500); // from mockContractRow
+             expect((res[0] as any).stats?.totalSigning).toBe(500); // from mockContractRow
         });
     });
 });

@@ -53,8 +53,6 @@
     "scripts",
     "services/ai/openclaw",
     "services/ai/openclaw/**",
-    "tests",
-    "tests/**",
     "test_query.ts"
   ]
 }
