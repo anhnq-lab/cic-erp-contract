@@ -12,8 +12,10 @@ import type {
   TaskFilterOptions,
   TaskVisibilityContext,
   ApprovalMode,
+  ApprovalStatus,
   ApprovalStep,
 } from '../types/taskTypes';
+import type { DbTask, UpdateTask } from '../lib/db';
 import { DiscussionService } from './discussionService';
 import { TelegramNotificationService } from './telegramNotificationService';
 
@@ -25,26 +27,27 @@ const TASK_SELECT = `
 /**
  * Map raw DB row to Task type
  */
-function mapTask(row: any): Task {
+function mapTask(row: DbTask & { status?: TaskStatus }): Task {
   return {
     ...row,
+    space_id: row.space_id ?? undefined,
     status: row.status || undefined,
     assignees: row.assignees || [],
     watchers: row.watchers || [],
     supporters: row.supporters || [],
     approvers: row.approvers || [],
     tags: row.tags || [],
-    custom_fields: row.custom_fields || {},
+    custom_fields: (row.custom_fields as Record<string, unknown>) || {},
     auto_generated: row.auto_generated || false,
     is_private: row.is_private || false,
     is_pinned: row.is_pinned || false,
     time_spent: row.time_spent || 0,
     sort_order: row.sort_order || 0,
-    approval_status: row.approval_status || undefined,
+    approval_status: (row.approval_status as ApprovalStatus) || undefined,
     approval_parent_id: row.approval_parent_id || undefined,
-    approval_mode: row.approval_mode || 'all',
+    approval_mode: (row.approval_mode as ApprovalMode) || 'all',
     approval_comment: row.approval_comment || undefined,
-  };
+  } as Task;
 }
 
 export const TaskService = {
@@ -127,7 +130,7 @@ export const TaskService = {
           // Don't notify the person who created the task if they assigned it to themselves
           if (assigneeId === task.created_by && !task.auto_generated) continue;
 
-          const emp = emps?.find((e: any) => e.id === assigneeId);
+          const emp = emps?.find((e: Pick<DbTask, 'id'> & { full_name: string | null }) => e.id === assigneeId);
           TelegramNotificationService.notifyTaskChange({
             eventType: 'assigned',
             taskId: task.id,
@@ -664,7 +667,7 @@ export const TaskService = {
 
     // Filter out test data for non-Admin users
     if (role !== 'Admin') {
-      data = data.filter((t: any) => !(t.tags || []).includes('_test_data'));
+      data = data.filter((t) => !(t.tags || []).includes('_test_data'));
     }
 
     const statuses = await this.getStatuses();
@@ -832,7 +835,7 @@ export const TaskService = {
 
     // Hide test data for non-Admin
     if (ctx.role !== 'Admin') {
-      allTasks = allTasks.filter((t: any) => !(t.tags || []).includes('_test_data'));
+      allTasks = allTasks.filter((t) => !(t.tags || []).includes('_test_data'));
     }
 
     // Build per-employee stats (per-employee có thể double-count nếu nhiều sub cùng assign)
@@ -884,7 +887,7 @@ export const TaskService = {
    */
   async bulkUpdateStatus(taskIds: string[], statusId: string, userId?: string): Promise<void> {
     const status = (await this.getStatuses()).find(s => s.id === statusId);
-    const updates: any = { status_id: statusId };
+    const updates: UpdateTask = { status_id: statusId };
     if (status?.is_done) {
       updates.completed_at = new Date().toISOString();
       updates.completed_by = userId;
@@ -921,7 +924,7 @@ export const TaskService = {
 
     if (error) throw error;
     const tagSet = new Set<string>();
-    (data || []).forEach((row: any) => {
+    (data || []).forEach((row: Pick<DbTask, 'tags'>) => {
       if (Array.isArray(row.tags)) {
         row.tags.forEach((t: string) => {
           if (t && t !== '_test_data') tagSet.add(t);
@@ -939,7 +942,7 @@ export const TaskService = {
     if (!task) throw new Error('Task not found');
     
     const newPinned = !task.is_pinned;
-    await this.update(taskId, { is_pinned: newPinned } as any);
+    await this.update(taskId, { is_pinned: newPinned });
     return newPinned;
   },
 
@@ -1288,8 +1291,9 @@ export const TaskService = {
       .eq('approval_parent_id', parentTask.id)
       .not('approval_status', 'is', null);
 
-    const thisLevelSubtasks = (levelSubtasks || []).filter(
-      (t: any) => t.custom_fields?.approval_level === completedLevel
+    type LevelSubtask = Pick<DbTask, 'id' | 'approval_status' | 'custom_fields'>;
+    const thisLevelSubtasks = (levelSubtasks as LevelSubtask[] || []).filter(
+      (t) => (t.custom_fields as Record<string, unknown>)?.approval_level === completedLevel
     );
 
     const levelMode = currentStep.mode || 'all';
@@ -1297,11 +1301,11 @@ export const TaskService = {
 
     if (levelMode === 'any') {
       // ANY: at least one approved
-      levelDone = thisLevelSubtasks.some((t: any) => t.approval_status === 'approved');
+      levelDone = thisLevelSubtasks.some((t) => t.approval_status === 'approved');
     } else {
       // ALL: all must be approved
       levelDone = thisLevelSubtasks.length > 0 &&
-        thisLevelSubtasks.every((t: any) => t.approval_status === 'approved');
+        thisLevelSubtasks.every((t) => t.approval_status === 'approved');
     }
 
     if (!levelDone) return; // Still waiting for other approvers in this level
@@ -1311,7 +1315,7 @@ export const TaskService = {
       const statuses = await this.getStatuses();
       const cancelStatus = statuses.find(s => s.name === 'Hủy');
       const doneStatus = statuses.find(s => s.is_done && s.name !== 'Hủy');
-      const pendingInLevel = thisLevelSubtasks.filter((t: any) => t.approval_status === 'pending');
+      const pendingInLevel = thisLevelSubtasks.filter((t) => t.approval_status === 'pending');
       for (const p of pendingInLevel) {
         await this.update(p.id, {
           approval_status: 'approved',

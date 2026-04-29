@@ -18,7 +18,7 @@ export const isAll = (value: string | undefined | null): boolean =>
  * @returns 0-100 percentage. 0 means "skip this contract for this unit".
  */
 export const getUnitSharePct = (
-    contract: { unit_id?: string; unit_allocations?: { allocations?: any[] } },
+    contract: { unit_id?: string | null; unit_allocations?: { allocations?: any[] } | null },
     targetUnitId: string
 ): number => {
     const allocations: any[] = contract.unit_allocations?.allocations || [];

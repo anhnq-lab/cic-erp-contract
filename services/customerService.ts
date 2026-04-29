@@ -1,5 +1,6 @@
 import { dataClient as supabase } from '../lib/dataClient';
 import { Customer, CustomerContact } from '../types';
+import type { DbCustomer, UpdateCustomer } from '../lib/db';
 
 export interface DuplicateMatch {
     id: string;
@@ -11,7 +12,7 @@ export interface DuplicateMatch {
 }
 
 // Normalize industry: DB may store string or JSON array string
-const normalizeIndustry = (raw: any): string[] => {
+const normalizeIndustry = (raw: unknown): string[] => {
     if (!raw) return [];
     if (Array.isArray(raw)) return raw;
     if (typeof raw === 'string') {
@@ -30,54 +31,65 @@ const serializeIndustry = (industry: string[] | string | undefined): string => {
     return JSON.stringify(industry);
 };
 
+// RPC get_customers_with_stats returns extra computed columns alongside DbCustomer fields
+type DbCustomerWithStats = DbCustomer & {
+    contract_count?: number | null;
+    total_value?: number | null;
+    total_revenue?: number | null;
+    active_contracts_count?: number | null;
+};
+
 // Helper to map DB Customer to Frontend Customer
-const mapCustomer = (c: any): Customer => ({
+const mapCustomer = (c: DbCustomerWithStats): Customer => ({
     id: c.id,
-    name: c.name,
-    shortName: c.short_name || c.shortName,
+    name: c.name ?? '',
+    shortName: c.short_name ?? '',
     industry: normalizeIndustry(c.industry),
-    contactPerson: c.contact_person || c.contactPerson,
-    phone: c.phone,
-    email: c.email,
-    address: c.address,
-    taxCode: c.tax_code || c.taxCode,
-    website: c.website,
-    notes: c.notes,
-    bankName: c.bank_name || c.bankName,
-    bankBranch: c.bank_branch || c.bankBranch,
-    bankAccount: c.bank_account || c.bankAccount,
-    foundedDate: c.founded_date || c.foundedDate,
-    type: c.type || 'Customer',
+    contactPerson: c.contact_person ?? '',
+    phone: c.phone ?? '',
+    email: c.email ?? '',
+    address: c.address ?? '',
+    taxCode: c.tax_code ?? undefined,
+    website: c.website ?? undefined,
+    notes: c.notes ?? undefined,
+    bankName: c.bank_name ?? undefined,
+    bankBranch: c.bank_branch ?? undefined,
+    bankAccount: c.bank_account ?? undefined,
+    foundedDate: c.founded_date ?? undefined,
+    type: (c.type as Customer['type']) ?? 'Customer',
     // Extended info
-    internationalName: c.international_name || c.internationalName || null,
-    representative: c.representative || null,
-    businessType: c.business_type || c.businessType || null,
-    businessStatus: c.business_status || c.businessStatus || 'Đang hoạt động',
+    internationalName: c.international_name ?? undefined,
+    representative: c.representative ?? undefined,
+    businessType: c.business_type ?? undefined,
+    businessStatus: c.business_status ?? 'Đang hoạt động',
     // CRM fields
-    rating: c.rating || 'Standard',
-    source: c.source,
-    paymentTerms: c.payment_terms || c.paymentTerms,
-    creditLimit: c.credit_limit !== undefined ? Number(c.credit_limit) : (c.creditLimit !== undefined ? Number(c.creditLimit) : 0),
-    stats: c.contract_count !== undefined ? {
-        contractCount: Number(c.contract_count),
-        totalValue: Number(c.total_value),
-        totalRevenue: Number(c.total_revenue),
-        activeContracts: Number(c.active_contracts_count)
-    } : undefined
+    rating: (c.rating as Customer['rating']) ?? 'Standard',
+    source: c.source ?? undefined,
+    paymentTerms: c.payment_terms ?? undefined,
+    creditLimit: c.credit_limit !== null ? Number(c.credit_limit) : 0,
+    // Computed stats from get_customers_with_stats RPC
+    ...(c.contract_count != null ? {
+        stats: {
+            contractCount: Number(c.contract_count),
+            totalValue: Number(c.total_value ?? 0),
+            totalRevenue: Number(c.total_revenue ?? 0),
+            activeContracts: Number(c.active_contracts_count ?? 0),
+        },
+    } : {}),
 });
 
 // Map DB customer_contacts row
-const mapContact = (c: any): CustomerContact => ({
-    id: c.id,
-    customerId: c.customer_id,
-    name: c.name,
-    position: c.position,
-    department: c.department,
-    phone: c.phone,
-    email: c.email,
-    isPrimary: c.is_primary ?? false,
-    notes: c.notes,
-    createdAt: c.created_at,
+const mapContact = (c: Record<string, unknown>): CustomerContact => ({
+    id: c.id as string,
+    customerId: c.customer_id as string,
+    name: c.name as string,
+    position: c.position as string | undefined,
+    department: c.department as string | undefined,
+    phone: c.phone as string | undefined,
+    email: c.email as string | undefined,
+    isPrimary: (c.is_primary as boolean) ?? false,
+    notes: c.notes as string | undefined,
+    createdAt: c.created_at as string | undefined,
 });
 
 export interface CustomerFilterParams {
@@ -198,7 +210,7 @@ export const CustomerService = {
     },
 
     update: async (id: string, data: Partial<Customer>): Promise<Customer | undefined> => {
-        const payload: any = {};
+        const payload: UpdateCustomer = {};
         if (data.name) payload.name = data.name;
         if (data.shortName) payload.short_name = data.shortName;
         if (data.industry) payload.industry = serializeIndustry(data.industry);
@@ -274,7 +286,7 @@ export const CustomerService = {
                 console.error('[CustomerService.checkDuplicate] RPC error:', error);
                 return [];
             }
-            return (data || []).map((r: any) => ({
+            return (data || []).map((r: Record<string, unknown>) => ({
                 id: r.id,
                 name: r.name,
                 shortName: r.short_name,
@@ -299,7 +311,7 @@ export const CustomerService = {
         try {
             const { data: rpcData } = await supabase.rpc('search_customers_unaccent', { search_term: query });
             if (rpcData && rpcData.length > 0) {
-                matchedIds = rpcData.map((r: any) => r.id);
+                matchedIds = rpcData.map((r: { id: string }) => r.id);
             } else if (rpcData) {
                 matchedIds = [];
             }
@@ -326,7 +338,7 @@ export const CustomerService = {
             console.error('[CustomerService.search] Error:', error);
             return [];
         }
-        return (data || []).map(mapCustomer);
+        return (data || []).map(c => mapCustomer(c as unknown as DbCustomerWithStats));
     },
 
     /**
@@ -346,7 +358,7 @@ export const CustomerService = {
             console.error('[CustomerService.searchSuppliers] Error:', error);
             return [];
         }
-        return (data || []).map(mapCustomer);
+        return (data || []).map(c => mapCustomer(c as unknown as DbCustomerWithStats));
     },
 
     /**
@@ -464,7 +476,7 @@ export const CustomerService = {
     },
 
     updateContact: async (id: string, contact: Partial<CustomerContact>): Promise<CustomerContact> => {
-        const payload: any = {};
+        const payload: Record<string, unknown> = {};
         if (contact.name !== undefined) payload.name = contact.name;
         if (contact.position !== undefined) payload.position = contact.position || null;
         if (contact.department !== undefined) payload.department = contact.department || null;

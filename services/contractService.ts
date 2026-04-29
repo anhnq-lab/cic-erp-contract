@@ -1,9 +1,56 @@
 import { dataClient as supabase } from '../lib/dataClient';
 import { Contract } from '../types';
+import type { DbContract, DbPayment, UpdateContract } from '../lib/db';
 import { TelegramNotificationService } from './telegramNotificationService';
 import { normalizeTag } from './contractTagService';
 import { ContractTaskDefinitionService } from './contractTaskDefinitionService';
 import type { MilestoneBaseDateType } from './contractTaskDefinitionService';
+
+// ─── Internal typed helpers (used across multiple service methods) ────────────
+type EmpAlloc = { employeeId: string; percent?: number };
+type UnitAlloc = { role: string; employeeId?: string; unitId?: string; percent?: number };
+type PaymentRow = {
+    voucher_type?: string | null;
+    status?: string | null;
+    amount?: number | null;
+    invoice_date?: string | null;
+    payment_date?: string | null;
+    due_date?: string | null;
+    vat_invoice_items?: Array<{ amountBeforeVAT?: number }>;
+};
+// RawContract: snake_case DB row shape returned by queries (not the full DbContract)
+// unit_allocations uses any[] to satisfy getUnitSharePct parameter type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type RawContract = {
+    id: string;
+    title?: string | null;
+    contract_code?: string | null;
+    code?: string | null;
+    value?: number | null;
+    actual_revenue?: number | null;
+    actual_cost?: number | null;
+    estimated_cost?: number | null;
+    status?: string | null;
+    unit_id?: string | null;
+    employee_id?: string | null;
+    signed_date?: string | null;
+    end_date?: string | null;
+    party_a?: string | null;
+    category?: string | null;
+    has_vat?: boolean | null;
+    vat_rate?: number | null;
+    contract_type?: string | null;
+    classification?: string | null;
+    unit_allocations?: { allocations?: any[] } | null;
+    employee_allocations?: EmpAlloc[] | null;
+    // Pre-computed aggregate columns (used in getStats optimized path)
+    admin_profit?: number | null;
+    rev_profit?: number | null;
+    cash_received?: number | null;
+};
+type StatsContract = RawContract;
+type ContractWithPayments = RawContract & { payments?: PaymentRow[] };
+// ─────────────────────────────────────────────────────────────────────────────
 
 // Sub-module imports
 import { mapContract } from './contract/contractMapper';
@@ -79,11 +126,11 @@ export const ContractService = {
         const contract = mapContract(contractData);
 
         // Sync payment phase statuses from actual payments
-        const paymentsData: any[] = contractData?.payments || [];
+        const paymentsData = (contractData?.payments || []) as Pick<DbPayment, 'phase_id' | 'status'>[];
 
         if (paymentsData.length > 0 && contract.paymentPhases) {
             contract.paymentPhases = contract.paymentPhases.map(phase => {
-                const linkedPayment = paymentsData.find((p: any) => p.phase_id === phase.id);
+                const linkedPayment = paymentsData.find((p) => p.phase_id === phase.id);
                 if (linkedPayment) {
                     let newStatus = phase.status;
                     if (linkedPayment.status === 'Tiền về' || linkedPayment.status === 'Paid') {
@@ -91,7 +138,7 @@ export const ContractService = {
                     } else if (linkedPayment.status === 'Tạm ứng') {
                         newStatus = 'Advance';
                     }
-                    return { ...phase, status: newStatus as any };
+                    return { ...phase, status: newStatus as typeof phase.status };
                 }
                 return phase;
             });
@@ -140,7 +187,7 @@ export const ContractService = {
             try {
                 const { data: rpcData } = await supabase.rpc('search_contracts_ids_unaccent', { search_term: search });
                 if (rpcData && rpcData.length > 0) {
-                    unaccentMatchIds = rpcData.map((r: any) => r.id);
+                    unaccentMatchIds = rpcData.map((r: { id: string }) => r.id);
                 }
             } catch (e) {
                 console.warn('[ContractService] unaccent search RPC failed, falling back to ilike:', e);
@@ -201,18 +248,18 @@ export const ContractService = {
             if (error) throw error;
 
             // Helper: get employee's percentage within the contract (from employee_allocations)
-            const getEmployeePct = (c: any, targetEmployeeId: string): number => {
-                const empAllocs: any[] = c.employee_allocations || [];
+            const getEmployeePct = (c: RawContract, targetEmployeeId: string): number => {
+                const empAllocs = (c.employee_allocations || []) as EmpAlloc[];
                 if (empAllocs.length === 0) {
                     // Legacy: if contract's employee_id matches, 100%
                     return c.employee_id === targetEmployeeId ? 100 : 0;
                 }
-                const match = empAllocs.find((a: any) => a.employeeId === targetEmployeeId);
+                const match = empAllocs.find((a) => a.employeeId === targetEmployeeId);
                 if (match) return match.percent || 100;
                 // Also check unit_allocations for support unit employees
-                const unitAllocations: any[] = c.unit_allocations?.allocations || [];
+                const unitAllocations = (c.unit_allocations?.allocations || []) as UnitAlloc[];
                 const supportMatch = unitAllocations.find(
-                    (a: any) => a.role === 'support' && a.employeeId === targetEmployeeId
+                    (a) => a.role === 'support' && a.employeeId === targetEmployeeId
                 );
                 if (supportMatch) return 100; // support unit PIC gets 100% of their unit's share
                 return 0;
@@ -220,7 +267,7 @@ export const ContractService = {
 
             // Filter in JS: include contracts where this unit is lead or support
             const filteredContracts: Contract[] = [];
-            (data || []).forEach((c: any) => {
+            (data as RawContract[] || []).forEach((c) => {
                 const allocationPct = getUnitSharePct(c, unitId!);
                 if (allocationPct === 0) return;
 
@@ -233,13 +280,17 @@ export const ContractService = {
                 const isLeadUnit = c.unit_id === unitId;
                 const allocationRole = isLeadUnit ? 'lead' : 'support';
 
-                const mapped = mapContract(c);
+                const mapped = mapContract(c) as Contract & {
+                    _allocationRole?: string;
+                    _allocationPct?: number;
+                    _employeePct?: number;
+                };
                 // Tag with allocation info for UI display
-                (mapped as any)._allocationRole = allocationRole;
-                (mapped as any)._allocationPct = allocationPct;
+                mapped._allocationRole = allocationRole;
+                mapped._allocationPct = allocationPct;
                 // Tag with employee allocation info
                 if (salespersonId) {
-                    (mapped as any)._employeePct = getEmployeePct(c, salespersonId);
+                    mapped._employeePct = getEmployeePct(c, salespersonId);
                 }
                 filteredContracts.push(mapped);
             });
@@ -337,7 +388,7 @@ export const ContractService = {
      * Advanced Search for EntityPicker
      * Supports filtering by permissions, tags, JSONB products, and unaccent names
      */
-    searchAuthorized: async (query: string, profile: any, limit = 20): Promise<Contract[]> => {
+    searchAuthorized: async (query: string, profile: { id: string; role?: string; role_code?: string; unit_id?: string }, limit = 20): Promise<Contract[]> => {
         if (!query || query.length < 2) return [];
 
         let tagMatchIds: string[] = [];
@@ -350,7 +401,7 @@ export const ContractService = {
                  .eq('user_id', profile.id)
                  .ilike('tag', `%${safeTagQuery}%`);
                if (tagData) {
-                   tagMatchIds = tagData.map((r: any) => r.contract_id);
+                   tagMatchIds = tagData.map((r: { contract_id: string }) => r.contract_id);
                }
             }
         } catch (e) {
@@ -361,7 +412,7 @@ export const ContractService = {
         try {
             const { data: rpcData } = await supabase.rpc('search_contracts_ids_unaccent', { search_term: query });
             if (rpcData && rpcData.length > 0) {
-                unaccentMatchIds = rpcData.map((r: any) => r.id);
+                unaccentMatchIds = rpcData.map((r: { id: string }) => r.id);
             }
         } catch (e) {
             console.warn('[ContractService] searchAuthorized unaccent RPC failed:', e);
@@ -395,13 +446,13 @@ export const ContractService = {
         const userUnitId = profile?.unit_id;
         const userId = profile?.id;
 
-        const getEmployeePct = (c: any, targetEmployeeId: string): number => {
-            const empAllocs: any[] = c.employee_allocations || [];
+        const getEmployeePct = (c: RawContract, targetEmployeeId: string): number => {
+            const empAllocs = (c.employee_allocations || []) as EmpAlloc[];
             if (empAllocs.length === 0) return c.employee_id === targetEmployeeId ? 100 : 0;
-            const match = empAllocs.find((a: any) => a.employeeId === targetEmployeeId);
+            const match = empAllocs.find((a) => a.employeeId === targetEmployeeId);
             if (match) return match.percent || 100;
-            const unitAllocations: any[] = c.unit_allocations?.allocations || [];
-            const supportMatch = unitAllocations.find((a: any) => a.role === 'support' && a.employeeId === targetEmployeeId);
+            const unitAllocations = (c.unit_allocations?.allocations || []) as UnitAlloc[];
+            const supportMatch = unitAllocations.find((a) => a.role === 'support' && a.employeeId === targetEmployeeId);
             if (supportMatch) return 100;
             return 0;
         };
@@ -414,7 +465,7 @@ export const ContractService = {
             if (isAdmin) {
                 hasAccess = true;
             } else {
-                const allocationPct = getUnitSharePct(c, userUnitId);
+                const allocationPct = getUnitSharePct(c, userUnitId ?? 'all');
                 const empPct = getEmployeePct(c, userId);
                 if (allocationPct > 0 || empPct > 0) {
                     hasAccess = true;
@@ -451,9 +502,10 @@ export const ContractService = {
             if (error) throw error;
 
             const nameSet = new Set<string>();
-            (data || []).forEach((c: any) => {
-                const lineItems = c.details?.lineItems || [];
-                lineItems.forEach((li: any) => {
+            (data || []).forEach((c: Pick<DbContract, 'details'>) => {
+                const details = c.details as { lineItems?: Array<{ name?: string }> } | null;
+                const lineItems = details?.lineItems || [];
+                lineItems.forEach((li) => {
                     if (li.name && li.name.trim()) {
                         nameSet.add(li.name.trim());
                     }
@@ -538,7 +590,7 @@ export const ContractService = {
             try {
                 const { data: rpcData } = await supabase.rpc('search_contracts_ids_unaccent', { search_term: search });
                 if (rpcData && rpcData.length > 0) {
-                    unaccentMatchIds = rpcData.map((r: any) => r.id);
+                    unaccentMatchIds = rpcData.map((r: { id: string }) => r.id);
                 }
             } catch (e) {
                 console.warn('[ContractService] unaccent search RPC failed in getStats:', e);
@@ -597,24 +649,24 @@ export const ContractService = {
             : isFilteringByUnit ? [unitId!] : [];
 
         // Helper: check if employee is associated with a contract (via employee_id or employee_allocations)
-        const isEmployeeInContract = (c: any, empId: string): boolean => {
+        const isEmployeeInContract = (c: StatsContract, empId: string): boolean => {
             if (c.employee_id === empId) return true;
-            const empAllocs: any[] = c.employee_allocations || [];
-            if (empAllocs.some((a: any) => a.employeeId === empId)) return true;
-            const unitAllocs: any[] = c.unit_allocations?.allocations || [];
-            return unitAllocs.some((a: any) => a.role === 'support' && a.employeeId === empId);
+            const empAllocs = (c.employee_allocations || []) as EmpAlloc[];
+            if (empAllocs.some((a) => a.employeeId === empId)) return true;
+            const unitAllocs = (c.unit_allocations?.allocations || []) as UnitAlloc[];
+            return unitAllocs.some((a) => a.role === 'support' && a.employeeId === empId);
         };
 
         // Helper: get employee's fraction = unitSharePct × employeePct / 100
-        const getEmployeeSharePct = (c: any, empId: string): number => {
-            const empAllocs: any[] = c.employee_allocations || [];
+        const getEmployeeSharePct = (c: StatsContract, empId: string): number => {
+            const empAllocs = (c.employee_allocations || []) as EmpAlloc[];
             if (empAllocs.length > 0) {
-                const match = empAllocs.find((a: any) => a.employeeId === empId);
+                const match = empAllocs.find((a) => a.employeeId === empId);
                 if (match) return match.percent || 100;
             }
             // Check support unit allocations
-            const unitAllocs: any[] = c.unit_allocations?.allocations || [];
-            const supportMatch = unitAllocs.find((a: any) => a.role === 'support' && a.employeeId === empId);
+            const unitAllocs = (c.unit_allocations?.allocations || []) as UnitAlloc[];
+            const supportMatch = unitAllocs.find((a) => a.role === 'support' && a.employeeId === empId);
             if (supportMatch) return 100; // PIC of support unit gets 100% of that unit's share
             // Legacy: primary employee gets 100%
             if (c.employee_id === empId) return 100;
@@ -623,7 +675,7 @@ export const ContractService = {
 
         // Count statuses from unfiltered data (but respecting unit + salesperson filter)
         const statusCounts = { processingCount: 0, suspendedCount: 0, handoverCount: 0, acceptanceCount: 0, completedCount: 0, newContractsCount: 0, renewalContractsCount: 0 };
-        (statusData || []).forEach((c: any) => {
+        (statusData as StatsContract[] || []).forEach((c) => {
             if (isFilteringByUnit) {
                 let matchedPct = 0;
                 for (const targetUnitId of unitIds) {
@@ -645,11 +697,12 @@ export const ContractService = {
         });
 
         // OPTIMIZED: Calculate aggregates from pre-computed columns — no payment recalculation
-        let maxContract: any = null;
-        let minContract: any = null;
+        type MinMaxContract = { title: string | null; code: string | null; value: number; customer: string | null; unit_id: string | null };
+        let maxContract: MinMaxContract | null = null;
+        let minContract: MinMaxContract | null = null;
         const unitBreakdown: Record<string, { count: number, value: number }> = {};
 
-        const financials = (data || []).reduce((acc, curr: any) => {
+        const financials = (data as StatsContract[] || []).reduce((acc, curr) => {
             const val = curr.value || 0;
             const rev = curr.actual_revenue || 0;
             const adminProfit = curr.admin_profit || 0;
@@ -684,10 +737,10 @@ export const ContractService = {
             // Track Max and Min
             if (trueVal > 0) {
                 if (!maxContract || trueVal > maxContract.value) {
-                    maxContract = { title: curr.title, code: curr.contract_code, value: trueVal, customer: curr.party_a, unit_id: curr.unit_id };
+                    maxContract = { title: curr.title ?? null, code: curr.contract_code ?? null, value: trueVal, customer: curr.party_a ?? null, unit_id: curr.unit_id ?? null };
                 }
                 if (!minContract || trueVal < minContract.value) {
-                    minContract = { title: curr.title, code: curr.contract_code, value: trueVal, customer: curr.party_a, unit_id: curr.unit_id };
+                    minContract = { title: curr.title ?? null, code: curr.contract_code ?? null, value: trueVal, customer: curr.party_a ?? null, unit_id: curr.unit_id ?? null };
                 }
             }
 
@@ -825,10 +878,11 @@ export const ContractService = {
             return d >= startPeriodDate && d <= endPeriodDate;
         };
 
-        return (data || []).reduce((acc: any, curr: any) => {
+        type StatsAcc = { totalContracts: number; totalValue: number; totalRevenue: number; totalProfit: number; totalSigningProfit: number; totalRevenueProfit: number; totalCash: number; activeCount: number; pendingCount: number; completedCount: number; expiredCount: number; processingCount: number; acceptanceCount: number; suspendedCount: number; handoverCount: number; newContractsCount: number; renewalContractsCount: number };
+        return (data as ContractWithPayments[] || []).reduce((acc: StatsAcc, curr) => {
             let sharePct = 100;
             if (isFilteringByUnit) {
-                sharePct = getUnitSharePct(curr, unitId);
+                sharePct = getUnitSharePct(curr, unitId ?? 'all');
             }
             if (sharePct === 0) return acc;
             
@@ -845,15 +899,16 @@ export const ContractService = {
                 acc.totalProfit += expectedProfit * fraction;
                 acc.totalSigningProfit += expectedProfit * fraction;
                 
-                acc.activeCount += (['Processing', 'Acceptance', 'Handover'].includes(curr.status) ? 1 : 0);
-                acc.pendingCount += (curr.status === 'Pending' ? 1 : 0);
-                acc.suspendedCount += (curr.status === 'Suspended' ? 1 : 0);
-                acc.completedCount += (curr.status === 'Completed' ? 1 : 0);
-                acc.acceptanceCount += (curr.status === 'Acceptance' ? 1 : 0);
-                acc.processingCount += (curr.status === 'Processing' ? 1 : 0);
-                acc.handoverCount += (curr.status === 'Handover' ? 1 : 0);
+                const st = curr.status ?? '';
+                acc.activeCount += (['Processing', 'Acceptance', 'Handover'].includes(st) ? 1 : 0);
+                acc.pendingCount += (st === 'Pending' ? 1 : 0);
+                acc.suspendedCount += (st === 'Suspended' ? 1 : 0);
+                acc.completedCount += (st === 'Completed' ? 1 : 0);
+                acc.acceptanceCount += (st === 'Acceptance' ? 1 : 0);
+                acc.processingCount += (st === 'Processing' ? 1 : 0);
+                acc.handoverCount += (st === 'Handover' ? 1 : 0);
                 acc.expiredCount += (
-                    ['Processing', 'Acceptance'].includes(curr.status) && curr.end_date && new Date(curr.end_date) < new Date() ? 1 : 0
+                    ['Processing', 'Acceptance'].includes(st) && curr.end_date && new Date(curr.end_date) < new Date() ? 1 : 0
                 );
             }
             
@@ -862,15 +917,15 @@ export const ContractService = {
             
             // Revenue (Doanh thu)
             const revenuePayments = payments.filter(
-                (p: any) => p.voucher_type === 'VAT_INVOICE' &&
-                    ['Đã xuất HĐ', 'Đã giao KH', 'Tiền về', 'Paid'].includes(p.status) &&
+                (p) => p.voucher_type === 'VAT_INVOICE' &&
+                    ['Đã xuất HĐ', 'Đã giao KH', 'Tiền về', 'Paid'].includes(p.status ?? '') &&
                     isInPeriod(p.invoice_date || p.payment_date)
             );
             
             let contractRevInPeriod = 0;
-            revenuePayments.forEach((p: any) => {
+            revenuePayments.forEach((p) => {
                 if (p.vat_invoice_items && p.vat_invoice_items.length > 0) {
-                    contractRevInPeriod += p.vat_invoice_items.reduce((s: number, item: any) => s + (Number(item.amountBeforeVAT) || 0), 0);
+                    contractRevInPeriod += p.vat_invoice_items.reduce((s: number, item) => s + (Number(item.amountBeforeVAT) || 0), 0);
                 } else {
                     const gross = Number(p.amount) || 0;
                     const hasVat = curr.has_vat !== false;
@@ -882,11 +937,11 @@ export const ContractService = {
             
             // Cash (Tiền về)
             const cashPayments = payments.filter(
-                (p: any) => p.voucher_type === 'RECEIPT' &&
-                    ['Tạm ứng', 'Tiền về', 'Paid'].includes(p.status) &&
+                (p) => p.voucher_type === 'RECEIPT' &&
+                    ['Tạm ứng', 'Tiền về', 'Paid'].includes(p.status ?? '') &&
                     isInPeriod(p.payment_date)
             );
-            const contractCashInPeriod = cashPayments.reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0);
+            const contractCashInPeriod = cashPayments.reduce((sum: number, p) => sum + (Number(p.amount) || 0), 0);
             
             acc.totalRevenue += contractRevInPeriod * fraction;
             acc.totalCash += contractCashInPeriod * fraction;
@@ -898,7 +953,7 @@ export const ContractService = {
             }
 
             return acc;
-        }, { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0, totalSigningProfit: 0, totalRevenueProfit: 0, totalCash: 0, activeCount: 0, pendingCount: 0, completedCount: 0, expiredCount: 0, processingCount: 0, acceptanceCount: 0, suspendedCount: 0, handoverCount: 0 });
+        }, { totalContracts: 0, totalValue: 0, totalRevenue: 0, totalProfit: 0, totalSigningProfit: 0, totalRevenueProfit: 0, totalCash: 0, activeCount: 0, pendingCount: 0, completedCount: 0, expiredCount: 0, processingCount: 0, acceptanceCount: 0, suspendedCount: 0, handoverCount: 0, newContractsCount: 0, renewalContractsCount: 0 });
     },
 
     /**
@@ -923,12 +978,12 @@ export const ContractService = {
 
             // Calculate completion date = max(last VAT invoice date, last receipt date)
             const vatDates = payments
-                .filter((p: any) => p.voucher_type === 'VAT_INVOICE' && ['Đã xuất HĐ', 'Đã giao KH', 'Tiền về'].includes(p.status))
-                .map((p: any) => p.invoice_date || p.payment_date || p.due_date)
+                .filter((p) => p.voucher_type === 'VAT_INVOICE' && ['Đã xuất HĐ', 'Đã giao KH', 'Tiền về'].includes(p.status ?? ''))
+                .map((p) => p.invoice_date || p.payment_date || p.due_date)
                 .filter(Boolean);
             const receiptDates = payments
-                .filter((p: any) => p.voucher_type === 'RECEIPT' && ['Tạm ứng', 'Tiền về'].includes(p.status))
-                .map((p: any) => p.payment_date)
+                .filter((p) => p.voucher_type === 'RECEIPT' && ['Tạm ứng', 'Tiền về'].includes(p.status ?? ''))
+                .map((p) => p.payment_date)
                 .filter(Boolean);
             const allDates = [...vatDates, ...receiptDates].sort();
             const newCompletedDate = allDates.length > 0 ? allDates[allDates.length - 1] : null;
@@ -988,12 +1043,12 @@ export const ContractService = {
                 if (totalInvoiced >= contractValue && totalCash >= contractValue && contract.status !== 'Completed') {
                     // Calculate completed_date = max(last VAT invoice date, last receipt date)
                     const vatDates = payments
-                        .filter((p: any) => p.voucher_type === 'VAT_INVOICE' && ['Đã xuất HĐ', 'Đã giao KH', 'Tiền về'].includes(p.status))
-                        .map((p: any) => p.invoice_date || p.payment_date || p.due_date)
+                        .filter((p) => p.voucher_type === 'VAT_INVOICE' && ['Đã xuất HĐ', 'Đã giao KH', 'Tiền về'].includes(p.status ?? ''))
+                        .map((p) => p.invoice_date || p.payment_date || p.due_date)
                         .filter(Boolean);
                     const receiptDates = payments
-                        .filter((p: any) => p.voucher_type === 'RECEIPT' && ['Tạm ứng', 'Tiền về'].includes(p.status))
-                        .map((p: any) => p.payment_date)
+                        .filter((p) => p.voucher_type === 'RECEIPT' && ['Tạm ứng', 'Tiền về'].includes(p.status ?? ''))
+                        .map((p) => p.payment_date)
                         .filter(Boolean);
                     const allDates = [...vatDates, ...receiptDates].sort();
                     const completedDate = allDates.length > 0 ? allDates[allDates.length - 1] : new Date().toISOString().split('T')[0];
@@ -1021,12 +1076,12 @@ export const ContractService = {
                 for (const contract of missingDateContracts) {
                     const payments = contract.payments || [];
                     const vatDates = payments
-                        .filter((p: any) => p.voucher_type === 'VAT_INVOICE' && ['Đã xuất HĐ', 'Đã giao KH', 'Tiền về'].includes(p.status))
-                        .map((p: any) => p.invoice_date || p.payment_date || p.due_date)
+                        .filter((p) => p.voucher_type === 'VAT_INVOICE' && ['Đã xuất HĐ', 'Đã giao KH', 'Tiền về'].includes(p.status ?? ''))
+                        .map((p) => p.invoice_date || p.payment_date || p.due_date)
                         .filter(Boolean);
                     const receiptDates = payments
-                        .filter((p: any) => p.voucher_type === 'RECEIPT' && ['Tạm ứng', 'Tiền về'].includes(p.status))
-                        .map((p: any) => p.payment_date)
+                        .filter((p) => p.voucher_type === 'RECEIPT' && ['Tạm ứng', 'Tiền về'].includes(p.status ?? ''))
+                        .map((p) => p.payment_date)
                         .filter(Boolean);
                     const allDates = [...vatDates, ...receiptDates].sort();
                     const completedDate = allDates.length > 0 ? allDates[allDates.length - 1] : new Date().toISOString().split('T')[0];
@@ -1108,10 +1163,10 @@ export const ContractService = {
             monthlyData[m] = { revenue: 0, profit: 0, revProfit: 0, signing: 0 };
         }
 
-        (data || []).forEach((c: any) => {
+        (data as unknown as ContractWithPayments[] || []).forEach((c) => {
             let sharePct = 100;
             if (isFilteringByUnit) {
-                sharePct = getUnitSharePct(c, unitId);
+                sharePct = getUnitSharePct(c, unitId ?? 'all');
             }
             if (sharePct === 0) return;
             const fraction = sharePct / 100;
@@ -1131,11 +1186,11 @@ export const ContractService = {
             // 2. Revenue (based on payment.invoice_date or payment.payment_date)
             const payments = c.payments || [];
             const revenuePayments = payments.filter(
-                (p: any) => p.voucher_type === 'VAT_INVOICE' &&
-                    ['Đã xuất HĐ', 'Đã giao KH', 'Tiền về', 'Paid'].includes(p.status)
+                (p) => p.voucher_type === 'VAT_INVOICE' &&
+                    ['Đã xuất HĐ', 'Đã giao KH', 'Tiền về', 'Paid'].includes(p.status ?? '')
             );
 
-            revenuePayments.forEach((p: any) => {
+            revenuePayments.forEach((p) => {
                 const pDateStr = p.invoice_date || p.payment_date;
                 if (!pDateStr) return;
                 
@@ -1145,7 +1200,7 @@ export const ContractService = {
                     
                     let preVatAmount = 0;
                     if (p.vat_invoice_items && p.vat_invoice_items.length > 0) {
-                        preVatAmount = p.vat_invoice_items.reduce((s: number, item: any) => s + (Number(item.amountBeforeVAT) || 0), 0);
+                        preVatAmount = p.vat_invoice_items.reduce((s: number, item) => s + (Number(item.amountBeforeVAT) || 0), 0);
                     } else {
                         const gross = Number(p.amount) || 0;
                         const hasVat = c.has_vat !== false;
@@ -1214,7 +1269,7 @@ export const ContractService = {
     /**
      * CREATE - Professional implementation with validation, retry, and audit
      */
-    create: async (data: Contract): Promise<Contract> => {
+    create: async (data: Contract & { workflowSteps?: unknown; customTasks?: Array<{ title: string; description?: string; [k: string]: unknown }> }): Promise<Contract> => {
         // 1. Validate input
         const errors = validateContract(data, true);
         if (errors.length > 0) {
@@ -1281,10 +1336,10 @@ export const ContractService = {
             const spaceId = (rawUnitId && rawUnitId !== 'all') ? rawUnitId : undefined;
 
             // A. Workflow-driven tasks (from checkbox system)
-            if ((data as any).workflowSteps) {
+            if (data.workflowSteps) {
                 await ContractTaskDefinitionService.generateFromWorkflow(
                     result.id,
-                    (data as any).workflowSteps,
+                    data.workflowSteps,
                     {
                         lineItems: data.lineItems || [],
                         salespersonId: data.salespersonId || result.employee_id || '',
@@ -1298,7 +1353,7 @@ export const ContractService = {
             // B. Manual custom tasks (legacy + manual add-ons)
             if (data.customTasks && data.customTasks.length > 0) {
                 await ContractTaskDefinitionService.bulkCreate(
-                    data.customTasks.map((taskDef: any, idx: number) => ({
+                    data.customTasks.map((taskDef, idx) => ({
                         contract_id: result.id,
                         title: taskDef.title,
                         description: taskDef.description || '',
@@ -1357,7 +1412,7 @@ export const ContractService = {
     /**
      * UPDATE - Professional implementation with partial update support
      */
-    update: async (id: string, data: Partial<Contract>): Promise<Contract | undefined> => {
+    update: async (id: string, data: Partial<Contract> & { workflowSteps?: unknown; customTasks?: Array<{ title: string; description?: string; [k: string]: unknown }> }): Promise<Contract | undefined> => {
         // Fetch old data for detailed audit log
         const oldContract = await ContractService.getById(id);
         const oldPayload = oldContract ? buildPayload(oldContract) : null;
@@ -1412,10 +1467,10 @@ export const ContractService = {
             const user = (await supabase.auth.getUser()).data.user;
 
             // A. Workflow-driven tasks (from checkbox system)
-            if ((data as any).workflowSteps) {
+            if (data.workflowSteps) {
                 await ContractTaskDefinitionService.generateFromWorkflow(
                     id,
-                    (data as any).workflowSteps,
+                    data.workflowSteps,
                     {
                         lineItems: data.lineItems || [],
                         salespersonId: data.salespersonId || result.employee_id || '',
@@ -1428,7 +1483,7 @@ export const ContractService = {
             // B. Manual custom tasks (legacy + manual add-ons)
             if (data.customTasks && data.customTasks.length > 0) {
                 await ContractTaskDefinitionService.bulkCreate(
-                    data.customTasks.map((taskDef: any, idx: number) => ({
+                    data.customTasks.map((taskDef, idx) => ({
                         contract_id: id,
                         title: taskDef.title,
                         description: taskDef.description || '',
@@ -1617,6 +1672,7 @@ export const ContractService = {
      */
     getNextContractNumber: async (unitId: string, year: number, isPreview: boolean = false): Promise<number> => {
         const rpcName = isPreview ? 'preview_next_contract_number' : 'get_next_contract_number';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic RPC name not in generated types yet
         const { data, error } = await supabase.rpc(rpcName as any, {
             p_unit_id: unitId,
             p_year: year
