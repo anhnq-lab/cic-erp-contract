@@ -2,6 +2,7 @@ import React from 'react';
 import { AlertTriangle, CheckCircle2, Clock, Crown, Edit3, Eye, Plus, ShieldCheck, User, Users, X, XCircle } from 'lucide-react';
 import { DatePickerField, PersonBadge, type PersonInfo, PRIORITIES } from '../TaskDetailSubComponents';
 import PeoplePickerPopover from '../PeoplePickerPopover';
+import TaskRecurringSection from './TaskRecurringSection';
 import type { Task, TaskStatus, ApprovalStep, ApprovalMode } from '../../../types/taskTypes';
 import { formatDate, formatDateTime } from '../../../utils/formatters';
 
@@ -20,6 +21,7 @@ interface TaskSidebarProps {
   editingStepLevel: number | null;
   setEditingStepLevel: (val: number | null) => void;
   isPendingApproval: boolean;
+  onUpdate: () => void;
 }
 
 export const TaskSidebar: React.FC<TaskSidebarProps> = ({
@@ -37,6 +39,7 @@ export const TaskSidebar: React.FC<TaskSidebarProps> = ({
   editingStepLevel,
   setEditingStepLevel,
   isPendingApproval,
+  onUpdate,
 }) => {
   return (
     <div className="w-72 flex-shrink-0 overflow-y-auto border-l border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
@@ -426,6 +429,11 @@ export const TaskSidebar: React.FC<TaskSidebarProps> = ({
               />
             )}
           </div>
+        </div>
+
+        {/* LỊCH LẶP */}
+        <div className="pt-3 border-t border-slate-200 dark:border-slate-700">
+          <TaskRecurringSection task={task} onUpdate={onUpdate} />
         </div>
 
         {/* Metadata */}
