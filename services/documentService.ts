@@ -1,4 +1,7 @@
-// @ts-nocheck
+// @ts-nocheck -- Supabase Storage API types (FileObject, upload response) are not fully
+// typed in @supabase/supabase-js v2 for all browser/node scenarios. Strict typing
+// would require major refactor of the upload/download pipeline. TODO: remove after
+// upgrading to @supabase/supabase-js v3 which has improved storage types.
 import { dataClient as supabase } from '../lib/dataClient';
 import { DocumentRegistryService } from './documentRegistryService';
 

@@ -1,4 +1,6 @@
-// @ts-nocheck
+// @ts-nocheck -- Tool definition files use dynamic OpenAI function-calling schemas
+// that cannot be statically typed without extensive generic types.
+// These follow the OpenAI tool spec: { type, function: { name, description, parameters } }.
 import type { OpenClawTool, UserContext } from '../types';
 import { dataClient as supabase } from '../../../../lib/dataClient';
 

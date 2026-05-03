@@ -1,4 +1,6 @@
-// @ts-nocheck
+// @ts-nocheck -- AI gateway message types (tool_calls, tool_call_id) follow OpenAI
+// function-calling spec but are not yet typed in the internal ChatMessage interface.
+// This file would need a complete ChatMessage type overhaul to remove this directive.
 import { callAgentTurn } from '../gateway';
 import { streamChat } from '../gateway';
 import { extractMentionContextFromText } from '../../mentionService';

@@ -125,6 +125,91 @@ describe('Permission Helpers', () => {
             const hidden = getHiddenNavItems('NVKD', undefined, dbPerms);
             expect(hidden.has('units')).toBe(true);
         });
+
+        it('should hide tasks when DB explicitly denies tasks.view', () => {
+            const dbPerms = new Map<string, Set<string>>([
+                ['tasks', new Set<string>()] // has tasks key but no 'view'
+            ]);
+            const hidden = getHiddenNavItems('NVKD', undefined, dbPerms);
+            expect(hidden.has('tasks')).toBe(true);
+        });
+
+        it('should show tasks when DB grants tasks.view', () => {
+            const dbPerms = new Map<string, Set<string>>([
+                ['tasks', new Set(['view'])]
+            ]);
+            const hidden = getHiddenNavItems('NVKD', undefined, dbPerms);
+            expect(hidden.has('tasks')).toBe(false);
+        });
+
+        it('should hide analytics when DB explicitly denies analytics.view', () => {
+            const dbPerms = new Map<string, Set<string>>([
+                ['analytics', new Set<string>()] // has analytics key but no 'view'
+            ]);
+            const hidden = getHiddenNavItems('NVKD', undefined, dbPerms);
+            expect(hidden.has('analytics')).toBe(true);
+        });
+
+        it('should show analytics when DB grants analytics.view', () => {
+            const dbPerms = new Map<string, Set<string>>([
+                ['analytics', new Set(['view'])]
+            ]);
+            const hidden = getHiddenNavItems('NVKD', undefined, dbPerms);
+            expect(hidden.has('analytics')).toBe(false);
+        });
+
+        it('should show analytics by default for Admin and Leadership without DB perms', () => {
+            expect(getHiddenNavItems('Admin').has('analytics')).toBe(false);
+            expect(getHiddenNavItems('Leadership').has('analytics')).toBe(false);
+        });
+
+        it('should hide analytics by default for NVKD without DB perms', () => {
+            expect(getHiddenNavItems('NVKD').has('analytics')).toBe(true);
+        });
+
+        it('should hide tools when DB explicitly denies tools.view', () => {
+            const dbPerms = new Map<string, Set<string>>([
+                ['tools', new Set<string>()]
+            ]);
+            const hidden = getHiddenNavItems('Admin', undefined, dbPerms);
+            expect(hidden.has('tools')).toBe(true);
+        });
+
+        it('should grant tools access when DB grants tools.view to non-admin', () => {
+            const dbPerms = new Map<string, Set<string>>([
+                ['tools', new Set(['view'])]
+            ]);
+            const hidden = getHiddenNavItems('NVKD', undefined, dbPerms);
+            expect(hidden.has('tools')).toBe(false);
+        });
+
+        it('should hide projects when DB explicitly denies projects.view', () => {
+            const dbPerms = new Map<string, Set<string>>([
+                ['projects', new Set<string>()]
+            ]);
+            const hidden = getHiddenNavItems('Admin', undefined, dbPerms);
+            expect(hidden.has('projects')).toBe(true);
+        });
+
+        it('should hide reports when DB explicitly denies reports.view', () => {
+            const dbPerms = new Map<string, Set<string>>([
+                ['reports', new Set<string>()]
+            ]);
+            const hidden = getHiddenNavItems('Admin', undefined, dbPerms);
+            expect(hidden.has('reports')).toBe(true);
+        });
+
+        it('should grant reports access when DB grants reports.view to non-admin', () => {
+            const dbPerms = new Map<string, Set<string>>([
+                ['reports', new Set(['view'])]
+            ]);
+            const hidden = getHiddenNavItems('NVKD', undefined, dbPerms);
+            expect(hidden.has('reports')).toBe(false);
+        });
+
+        it('should include marketing in GLOBAL_VIEW_ROLES (canViewProjects)', () => {
+            expect(canViewProjects('Marketing')).toBe(true);
+        });
     });
 
     describe('canUpdateContractFinancials', () => {
