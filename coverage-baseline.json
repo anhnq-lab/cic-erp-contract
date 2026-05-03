@@ -1,8 +1,8 @@
 {
-  "lines": 46.4,
-  "statements": 42.25,
-  "functions": 43.09,
-  "branches": 37.45,
+  "lines": 47.19,
+  "statements": 42.95,
+  "functions": 42.13,
+  "branches": 38.67,
   "_updated": "2026-05-03",
   "_note": "Baseline set at Phase 3 completion. CI gate blocks PRs that drop any metric by more than 2 percentage points."
 }
