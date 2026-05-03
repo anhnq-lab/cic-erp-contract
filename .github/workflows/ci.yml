@@ -54,6 +54,12 @@ jobs:
             " >> $GITHUB_STEP_SUMMARY
           fi
 
+      # ─── Coverage gate ─────────────────────────────────────────────
+      # Blocks PR if any coverage metric drops >2 pp below baseline.
+      # Update baseline: node scripts/check-coverage.cjs --update-baseline
+      - name: Coverage gate
+        run: node scripts/check-coverage.cjs --threshold 2
+
       # ─── Production build (uses Vercel secrets) ─────────────────
       - name: Build
         run: npm run build
