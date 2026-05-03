@@ -2,22 +2,25 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { EmployeeService } from '../services';
 import { Employee } from '../types';
 import { queryKeys } from '../lib/queryClient';
+import { QUERY_TIMES } from '../lib/queryDefaults';
 
-// Get all employees
+// Get all employees — master data tier (10 min stale, 30 min gc)
 export function useEmployees(unitId?: string) {
     return useQuery({
         queryKey: unitId ? queryKeys.employees.byUnit(unitId) : queryKeys.employees.all,
         queryFn: () => EmployeeService.getAll(),
         select: (data) => unitId ? data.filter(e => e.unitId === unitId) : data,
+        ...QUERY_TIMES.employees,
     });
 }
 
-// Get single employee
+// Get single employee — master data tier
 export function useEmployee(id: string) {
     return useQuery({
         queryKey: queryKeys.employees.detail(id),
         queryFn: () => EmployeeService.getById(id),
         enabled: !!id,
+        ...QUERY_TIMES.employees,
     });
 }
 

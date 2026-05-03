@@ -2,6 +2,7 @@ import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import type { Plugin } from 'vite';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // ─── SECURITY: Block direct browser access to source files ──
 // Prevents users from navigating to /components/Header.tsx etc.
@@ -201,18 +202,50 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: {
-            // Heavy libs — lazy-loaded only when needed
-            'xlsx': ['xlsx'],
-            'recharts': ['recharts'],
-            'pdf': ['jspdf', 'jspdf-autotable', 'pdfjs-dist'],
-            'ui-vendor': ['lucide-react', 'framer-motion', '@dnd-kit/core', '@dnd-kit/utilities'],
-            'ai-vendor': ['@google/generative-ai', 'openai'],
-            // Supabase SDK
+            // ─── Core framework ────────────────────────────────────────
+            'react-vendor': ['react', 'react-dom', 'react-router-dom', 'react-is'],
+            'tanstack': ['@tanstack/react-query'],
+            // ─── Backend SDK ────────────────────────────────────────────
             'supabase': ['@supabase/supabase-js'],
-            // React core
-            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            // ─── AI providers ───────────────────────────────────────────
+            'ai-vendor': ['@google/generative-ai', 'openai'],
+            // ─── UI utilities ───────────────────────────────────────────
+            'ui-vendor': ['lucide-react', 'framer-motion', 'sonner'],
+            // ─── Drag-and-drop (used only in a few places) ──────────────
+            'dnd': ['@dnd-kit/core', '@dnd-kit/utilities'],
+            // ─── Rich text editor (heavy — only used in contract/task forms) ─
+            // Note: @tiptap/pm is omitted — it only exposes subpath exports
+            // (@tiptap/pm/state etc.) and cannot be chunked by bare specifier.
+            'tiptap': [
+              '@tiptap/react',
+              '@tiptap/starter-kit',
+              '@tiptap/extension-image',
+            ],
+            // ─── Charts (only used on Analytics/Dashboard pages) ────────
+            'recharts': ['recharts'],
+            // ─── Spreadsheet (only used on import/export) ───────────────
+            'xlsx': ['xlsx'],
+            // ─── PDF generation & parsing (export/viewer) ────────────────
+            'pdf': ['jspdf', 'jspdf-autotable', 'pdfjs-dist'],
+            // ─── Document export (DOCX generation) ───────────────────────
+            'docx-export': ['docx', 'mammoth'],
+            // ─── Markdown rendering ─────────────────────────────────────
+            'markdown': ['marked', 'react-markdown', 'remark-gfm'],
+            // ─── Date utilities ─────────────────────────────────────────
+            'date': ['date-fns'],
           }
-        }
+        },
+        plugins: [
+          // Bundle visualizer — outputs to docs/perf/bundle-stats.html
+          // View after build: open docs/perf/bundle-stats.html
+          visualizer({
+            filename: 'docs/perf/bundle-stats.html',
+            open: false,
+            gzipSize: true,
+            brotliSize: true,
+            template: 'treemap',
+          }) as any,
+        ],
       }
     }
   };

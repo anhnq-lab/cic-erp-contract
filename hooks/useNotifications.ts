@@ -156,7 +156,9 @@ export function useNotifications(): UseNotificationsReturn {
         }, POLL_INTERVAL_MS);
 
         return () => {
-            channel.unsubscribe();
+            // Use removeChannel (not just .unsubscribe()) to fully clean up
+            // the channel from Supabase client's internal registry and prevent leaks.
+            supabase.removeChannel(channel);
             channelRef.current = null;
             if (pollRef.current) {
                 clearInterval(pollRef.current);

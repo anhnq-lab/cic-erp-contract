@@ -1,21 +1,22 @@
 import { useQuery } from '@tanstack/react-query';
 import { UnitService } from '../services';
 import { queryKeys } from '../lib/queryClient';
+import { QUERY_TIMES } from '../lib/queryDefaults';
 
-// Get all units - cached permanently (staleTime: Infinity)
+// Get all units — static tier (staleTime: Infinity, units rarely change)
 export function useUnits() {
     return useQuery({
         queryKey: queryKeys.units.all,
         queryFn: () => UnitService.getAll(),
-        staleTime: Infinity, // Units rarely change, cache forever
+        ...QUERY_TIMES.units, // staleTime: Infinity
     });
 }
 
-// Get units with stats (signing, revenue, profit) - cached 5 minutes
+// Get units with stats (signing, revenue, profit) — standard tier (2 min stale)
 export function useUnitsWithStats(year?: number) {
     return useQuery({
         queryKey: [...queryKeys.units.all, 'withStats', year || new Date().getFullYear()],
         queryFn: () => UnitService.getWithStats(year),
-        staleTime: 5 * 60 * 1000, // 5 minutes
+        ...QUERY_TIMES.contracts, // Stats change as contracts are signed
     });
 }
