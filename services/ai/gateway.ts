@@ -99,20 +99,31 @@ function getEnvKey(provider: AIProvider): string {
   return '';
 }
 
-// ─── Edge Function availability ──────────────
-const edgeFnStatus: Record<string, boolean | null> = {};
+// ─── Edge Function availability (with TTL cache) ──────────────
+// Trước đây cache `false` vĩnh viễn → user phải reload khi edge fn deploy lại.
+// Bây giờ cache 5 phút → tự retry sau khi TTL hết hạn.
+const EDGE_CACHE_TTL_MS = 5 * 60_000; // 5 phút
+const edgeFnStatus = new Map<string, { value: boolean; expiresAt: number }>();
 
 async function isEdgeFunctionAvailable(fnName: string): Promise<boolean> {
-  if (edgeFnStatus[fnName] !== undefined && edgeFnStatus[fnName] !== null) {
-    return edgeFnStatus[fnName]!;
+  const cached = edgeFnStatus.get(fnName);
+  if (cached && cached.expiresAt > Date.now()) {
+    console.debug(`[Gateway] Edge fn "${fnName}" cache hit: ${cached.value}`);
+    return cached.value;
   }
+
+  // Cache miss — probe the function
+  let value = false;
   try {
     await supabase.functions.invoke(fnName, { body: { action: 'ping' } });
-    edgeFnStatus[fnName] = true;
+    value = true;
   } catch {
-    edgeFnStatus[fnName] = false;
+    value = false;
   }
-  return edgeFnStatus[fnName]!;
+
+  edgeFnStatus.set(fnName, { value, expiresAt: Date.now() + EDGE_CACHE_TTL_MS });
+  console.debug(`[Gateway] Edge fn "${fnName}" probe: ${value} (cached 5 min)`);
+  return value;
 }
 
 // ═══════════════════════════════════════
@@ -147,6 +158,77 @@ async function logAICall(entry: AILogEntry): Promise<void> {
 }
 
 // ═══════════════════════════════════════
+// QUOTA CHECK (Task 5.1 — Rate limiting)
+// ═══════════════════════════════════════
+
+/**
+ * Kiểm tra và tăng quota cho user trước mỗi AI request.
+ * Throws nếu user vượt giới hạn (minute / hour / daily cost).
+ * No-op khi không có userId (anonymous / server-side calls).
+ */
+async function checkQuota(userId: string | undefined, estimatedCostUsd: number): Promise<void> {
+  if (!userId) return; // Server-side / unauthenticated → skip
+
+  try {
+    const { data, error } = await supabase.rpc('check_and_increment_ai_quota', {
+      p_user_id: userId,
+      p_estimated_cost: estimatedCostUsd,
+    });
+
+    if (error) {
+      // Quota DB unavailable → warn but don't block (fail open)
+      console.warn('[Gateway] Quota check DB error (fail open):', error.message);
+      return;
+    }
+
+    const result = (data as any)?.[0];
+    if (result && result.allowed === false) {
+      throw new Error(`AI Quota exceeded: ${result.reason || 'Đã vượt giới hạn sử dụng AI. Vui lòng thử lại sau.'}`);
+    }
+  } catch (err: any) {
+    // Re-throw quota errors; swallow infra errors (fail open)
+    if (err.message?.startsWith('AI Quota exceeded:')) throw err;
+    console.warn('[Gateway] Quota check failed (fail open):', err.message);
+  }
+}
+
+// ═══════════════════════════════════════
+// PROMPT INJECTION SANITIZER (Task 5.8)
+// ═══════════════════════════════════════
+
+/**
+ * Sanitize user input trước khi đưa vào prompt để chống injection.
+ * - Escape code fences (```), vì chúng có thể wrap malicious content
+ * - Remove special LLM tokens (<|im_start|>, <|endoftext|>, etc.)
+ * - Remove role override patterns ("System:", "Assistant:", etc.)
+ * - Hard length limit 10.000 ký tự
+ */
+export function sanitizeUserInput(input: string): string {
+  return input
+    .replace(/```/g, '\\`\\`\\`')                      // Escape code fences
+    .replace(/<\|[^|]*?\|>/g, '')                       // Remove special tokens like <|im_start|>
+    .replace(/\b(System|Assistant|User)\s*:/gi, '')     // Block role injection headers
+    .replace(/ignore\s+(all\s+)?previous\s+instructions?/gi, '')  // Neutralize common injection phrase
+    .substring(0, 10_000);                               // Hard length cap
+}
+
+/**
+ * Kiểm tra xem AI output có dấu hiệu prompt injection leakage không.
+ * Trả về true nếu phát hiện dấu hiệu nguy hiểm → caller nên filter hoặc log.
+ */
+export function detectInjectionLeakage(output: string): boolean {
+  const RED_FLAGS = [
+    /system\s+prompt\s*:/i,
+    /you\s+are\s+now\s+/i,
+    /ignore\s+previous/i,
+    /jailbreak/i,
+    /DAN\s+mode/i,
+    /<\|im_start\|>/i,
+  ];
+  return RED_FLAGS.some(re => re.test(output));
+}
+
+// ═══════════════════════════════════════
 // STREAMING CHAT — Core
 // ═══════════════════════════════════════
 
@@ -159,6 +241,11 @@ export async function* streamChat(request: ChatRequest): AsyncGenerator<string> 
   let outputBuffer = '';
   let success = true;
   let errorMsg = '';
+
+  // ── Quota check (Task 5.1) ──────────────────────────────────────
+  const userId = request.meta?.userId;
+  const estimatedCost = estimateCost(request.model || 'gemini-2.0-flash', 1500, 500);
+  await checkQuota(userId, estimatedCost);
 
   // Helper: wrap a sub-generator while collecting output
   async function* collectAndYield(gen: AsyncGenerator<string>): AsyncGenerator<string> {
@@ -706,6 +793,13 @@ function extractGemmaToolCalls(content: string): { tool_calls: any[], cleaned_co
  * Gọi 1 turn của Agent. Trả về cả message và tool_calls (không stream).
  */
 export async function callAgentTurn(request: ChatRequest): Promise<{ message?: string; tool_calls?: any[] }> {
+  // ── Quota check (Task 5.1) — only on first turn to avoid double-counting ──
+  const userId = request.meta?.userId;
+  if (userId) {
+    const estimatedCost = estimateCost(request.model || 'gemini-2.0-flash', 800, 200);
+    await checkQuota(userId, estimatedCost);
+  }
+
   const customKey = getCustomKey('openai');
   const apiKey = customKey || getEnvKey('openai');
   const provider = detectProvider(request.model);
