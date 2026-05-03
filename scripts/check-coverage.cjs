@@ -68,15 +68,7 @@ for (const r of rows) {
 }
 console.log('');
 
-if (failed) {
-  console.error(`❌ Coverage gate FAILED — one or more metrics dropped >${THRESHOLD} pp below baseline.`);
-  console.error('   Fix by adding tests or update baseline with: node scripts/check-coverage.js --update-baseline');
-  process.exit(1);
-} else {
-  console.log('✅ Coverage gate PASSED');
-}
-
-// ── Optional: --update-baseline ──────────────────────────────────────────────
+// ── Optional: --update-baseline (must run before exit) ───────────────────────
 if (process.argv.includes('--update-baseline')) {
   const newBaseline = {
     lines: current.lines.pct,
@@ -88,4 +80,13 @@ if (process.argv.includes('--update-baseline')) {
   };
   fs.writeFileSync(BASELINE_PATH, JSON.stringify(newBaseline, null, 2) + '\n');
   console.log('📝 Baseline updated:', BASELINE_PATH);
+  process.exit(0);
+}
+
+if (failed) {
+  console.error(`❌ Coverage gate FAILED — one or more metrics dropped >${THRESHOLD} pp below baseline.`);
+  console.error('   Fix by adding tests or update baseline with: node scripts/check-coverage.js --update-baseline');
+  process.exit(1);
+} else {
+  console.log('✅ Coverage gate PASSED');
 }
