@@ -60,3 +60,9 @@ test_vllm_*.py
 verify_tool.ts
 temp_employees.json
 tmp_parse.js
+
+# Test outputs & coverage
+coverage/
+coverage_report.txt
+test_output.txt
+*.lcov
