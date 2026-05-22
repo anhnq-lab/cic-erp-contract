@@ -2,12 +2,14 @@ import React from 'react';
 import { AlertTriangle, CheckCircle2, Clock, Crown, Edit3, Eye, Plus, ShieldCheck, User, Users, X, XCircle } from 'lucide-react';
 import { DatePickerField, PersonBadge, type PersonInfo, PRIORITIES } from '../TaskDetailSubComponents';
 import PeoplePickerPopover from '../PeoplePickerPopover';
+import TaskRecurringSection from './TaskRecurringSection';
 import type { Task, TaskStatus, ApprovalStep, ApprovalMode } from '../../../types/taskTypes';
 import { formatDate, formatDateTime } from '../../../utils/formatters';
 
 interface TaskSidebarProps {
   task: Task;
   statuses: TaskStatus[];
+  onUpdate: () => void;
   currentStatus?: { color: string };
   currentPriority: { bg: string; darkBg: string; color: string; darkColor: string };
   isOverdue: boolean;
@@ -25,6 +27,7 @@ interface TaskSidebarProps {
 export const TaskSidebar: React.FC<TaskSidebarProps> = ({
   task,
   statuses,
+  onUpdate,
   currentStatus,
   currentPriority,
   isOverdue,
@@ -426,6 +429,11 @@ export const TaskSidebar: React.FC<TaskSidebarProps> = ({
               />
             )}
           </div>
+        </div>
+
+        {/* LỊCH LẶP (T7.5) */}
+        <div className="pt-3 border-t border-slate-200 dark:border-slate-700">
+          <TaskRecurringSection task={task} onUpdate={onUpdate} />
         </div>
 
         {/* Metadata */}
